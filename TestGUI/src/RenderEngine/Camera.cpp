@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include <iostream>
+
 
 void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform)
 {
@@ -40,7 +42,7 @@ void Camera::Inputs(GLFWwindow* window)
 		if (firstClicked)
 		{
 			firstClicked = false;
-			glfwSetCursorPos(window, width / 2, height / 2);
+			glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
 		}
 
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -48,8 +50,10 @@ void Camera::Inputs(GLFWwindow* window)
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		float rotX = sensitivity * (float)(mouseY - height / 2) / height;
-		float rotY = sensitivity * (float)(mouseX - width / 2) / height;
+		float rotX = sensitivity * (mouseY - (int)height / 2) / height;
+		float rotY = sensitivity * (mouseX - (int)width / 2) / height;
+		// NOTE: Below is for debug
+		//std::cout << "Rotation X: " << rotX << "\tHeight/2: " << (height / 2.0) << "\tmouseY: " << mouseY << std::endl;
 
 		glm::vec3 newOrientation = glm::rotate(orientation, glm::radians(-rotX), glm::normalize(glm::cross(orientation, up)));
 
@@ -58,7 +62,7 @@ void Camera::Inputs(GLFWwindow* window)
 
 		orientation = glm::rotate(orientation, glm::radians(-rotY), up);
 
-		glfwSetCursorPos(window, width / 2, height / 2);
+		glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
 	}
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
