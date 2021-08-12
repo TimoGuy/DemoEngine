@@ -17,11 +17,13 @@ public:
 	RenderManager();
 	~RenderManager();
 
+	int run(void);
+
 private:
 
 	GLFWwindow* window;
 	GLuint vert_shader, frag_shader, program_id;
-	GLuint vbo, vao;
+	GLuint vbo, vao, ebo;
 
 	void initialize();
 	void setupViewPort();
@@ -30,6 +32,5 @@ private:
     void createRect();
 	int createShader(GLenum type, const char* fname);
 	const GLchar* readFile(const char* filename);
-	int run(void);
 	void finalize();
 };

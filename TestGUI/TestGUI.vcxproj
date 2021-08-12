@@ -90,6 +90,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\RenderEngine\Camera.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.manager\RenderManager.cpp" />
+    <ClCompile Include="src\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag" />
@@ -99,6 +100,9 @@
     <ClInclude Include="src\RenderEngine\Camera.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="cool_img.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
