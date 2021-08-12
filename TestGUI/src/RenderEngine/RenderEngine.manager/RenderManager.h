@@ -21,6 +21,7 @@ private:
 	GLuint vbo, vao;
 
 	void initialize();
+	void setupViewPort();
 	void createWindow(const char* windowName);
 	void createProgram();
     void createRect();

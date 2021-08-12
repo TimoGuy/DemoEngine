@@ -36,12 +36,23 @@
 	void RenderManager::initialize()
 	{
 		createWindow("Test Window");
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		glViewport(0, 0, width, height);
+		setupViewPort();
 
 		createProgram();
 		createRect();
+	}
+
+	void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
+	{
+		glViewport(0, 0, width, height);
+	}
+
+	void RenderManager::setupViewPort()
+	{
+		int width, height;
+		glfwGetFramebufferSize(window, &width, &height);
+		glfwSetFramebufferSizeCallback(window, frameBufferSizeChangedCallback);
+		glViewport(0, 0, width, height);
 	}
 
 	void RenderManager::createRect()
@@ -133,6 +144,8 @@
 
 		glfwMakeContextCurrent(window);
 		gladLoadGL();
+
+		// TODO: in the future may wanna use glfwGetWindowContentScale(window, &xscale, &yscale); for scaled desktop users (and everybody apple)
 	}
 
 	void RenderManager::finalize()
