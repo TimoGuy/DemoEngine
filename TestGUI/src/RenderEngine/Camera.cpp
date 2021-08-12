@@ -3,7 +3,14 @@
 #include <iostream>
 
 
-void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform)
+Camera::Camera()
+{
+	position = glm::vec3(0.0f, 0.0f, 2.0f);
+	orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+	up = glm::vec3(0.0f, 1.0f, 0.0f);
+}
+
+void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform, bool noPosition)
 {
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 projection = glm::mat4(1.0f);
@@ -11,11 +18,15 @@ void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID,
 	view = glm::lookAt(position, position + orientation, up);
 	projection = glm::perspective(glm::radians(FOVdegrees), (float)(width / height), zNear, zFar);
 
-	glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+	if (noPosition)
+		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * glm::mat4(glm::mat3(view))));
+	else
+		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
 }
 
 void Camera::Inputs(GLFWwindow* window)
 {
+	std::cout << "Pos:\tx:\t" << position.x << "\ty:\t" << position.y << "\tz:\t" << position.z << std::endl;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		position += speed * orientation;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

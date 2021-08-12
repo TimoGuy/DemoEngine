@@ -21,9 +21,9 @@ public:
 	float speed = 0.1f;
 	float sensitivity = 100.0f;
 
-	Camera() { }
+	Camera();
 
-	void Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform);
+	void Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform, bool noPosition);
 	void Inputs(GLFWwindow* window);
 
 private:

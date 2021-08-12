@@ -102,7 +102,13 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="cool_img.png" />
+    <Image Include="res\cool_img.png" />
+    <Image Include="res\skybox\bluecloud_bk.jpg" />
+    <Image Include="res\skybox\bluecloud_dn.jpg" />
+    <Image Include="res\skybox\bluecloud_ft.jpg" />
+    <Image Include="res\skybox\bluecloud_lf.jpg" />
+    <Image Include="res\skybox\bluecloud_rt.jpg" />
+    <Image Include="res\skybox\bluecloud_up.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

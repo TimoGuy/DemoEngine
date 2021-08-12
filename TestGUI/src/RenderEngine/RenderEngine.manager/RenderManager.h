@@ -22,8 +22,9 @@ public:
 private:
 
 	GLFWwindow* window;
-	GLuint vert_shader, frag_shader, program_id;
+	GLuint vert_shader, frag_shader, program_id, skybox_program_id;
 	GLuint vbo, vao, ebo;
+	GLuint skyboxVAO, skyboxVBO;
 
 	void initialize();
 	void setupViewPort();

@@ -1,6 +1,11 @@
 #include "RenderManager.h"
+
 #include <stb/stb_image.h>
+#include <vector>
+#include <string>
+
 #include "../Camera.h"
+
 
 Camera camera;
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
@@ -48,6 +53,10 @@ void RenderManager::initialize()
 	setupViewPort();
 
 	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+	/*glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);*/
 
 	createProgram();
 	createRect();
@@ -61,77 +70,188 @@ void RenderManager::setupViewPort()
 	frameBufferSizeChangedCallback(nullptr, width, height);
 }
 
-GLuint texture;
+GLuint texture, cubemapTexture;
 void RenderManager::createRect()
 {
-	float vertices[] = {
-		-.5f,	0.5f,	-.1f,			0.0f, 1.0f,
-		-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
-		0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
-		0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
-		-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
-		0.5f,	-.5f,	0.1f,			1.0f, 0.0f
-	};
+	//
+	// Create Quad
+	//
+	{
+		float vertices[] = {
+			-.5f,	0.5f,	-.1f,			0.0f, 1.0f,
+			-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
+			0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
+			0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
+			-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
+			0.5f,	-.5f,	0.1f,			1.0f, 0.0f
+		};
 
-	GLuint indices[] = {
-		0, 1, 2,
-		3, 4, 5
-	};
+		GLuint indices[] = {
+			0, 1, 2,
+			3, 4, 5
+		};
 
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ebo);
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ebo);
 
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+		glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 
 	//
 	// Create Texture
 	//
-	int imgWidth, imgHeight, numColorChannels;
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* bytes = stbi_load("cool_img.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-
-	std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
-
-	if (bytes == NULL)
 	{
-		std::cout << stbi_failure_reason() << std::endl;
+		int imgWidth, imgHeight, numColorChannels;
+		stbi_set_flip_vertically_on_load(true);
+		unsigned char* bytes = stbi_load("res/cool_img.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		glGenTextures(1, &texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glUniform1i(
+			glGetUniformLocation(this->program_id, "tex0"),
+			0
+		);
 	}
 
-	glGenTextures(1, &texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//
+	// Create Cubemap for Skybox
+	//
+	{
+		std::vector<std::string> textureFaces = {
+			std::string("res/skybox/bluecloud_rt.jpg"),
+			std::string("res/skybox/bluecloud_lf.jpg"),
+			std::string("res/skybox/bluecloud_up.jpg"),
+			std::string("res/skybox/bluecloud_dn.jpg"),
+			std::string("res/skybox/bluecloud_ft.jpg"),
+			std::string("res/skybox/bluecloud_bk.jpg")
+		};
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
+		glGenTextures(1, &cubemapTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 
-	stbi_image_free(bytes);
-	glBindTexture(GL_TEXTURE_2D, 0);
+		int width, height, nrChannels;
+		unsigned char* data;
+		for (unsigned int i = 0; i < textureFaces.size(); i++)
+		{
+			data = stbi_load(textureFaces[i].c_str(), &width, &height, &nrChannels, STBI_default);
+			glTexImage2D(
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+		}
 
-	glUniform1i(
-		glGetUniformLocation(this->program_id, "tex0"),
-		0
-	);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		//glUniform1i(		// OPTIONAL
+		//	glGetUniformLocation(this->skybox_program_id, "skyboxTex"),
+		//	0
+		//);
+	}
+
+	//
+	// Create VAO, VBO for Skybox
+	//
+	{
+		float skyboxVertices[] = {
+			// positions          
+			-1.0f,  1.0f, -1.0f,
+			-1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+
+			-1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f, -1.0f,
+			-1.0f,  1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f,
+
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+
+			-1.0f, -1.0f,  1.0f,
+			-1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f, -1.0f,  1.0f,
+			-1.0f, -1.0f,  1.0f,
+
+			-1.0f,  1.0f, -1.0f,
+			 1.0f,  1.0f, -1.0f,
+			 1.0f,  1.0f,  1.0f,
+			 1.0f,  1.0f,  1.0f,
+			-1.0f,  1.0f,  1.0f,
+			-1.0f,  1.0f, -1.0f,
+
+			-1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,
+			 1.0f, -1.0f, -1.0f,
+			 1.0f, -1.0f, -1.0f,
+			-1.0f, -1.0f,  1.0f,
+			 1.0f, -1.0f,  1.0f
+		};
+
+		glGenVertexArrays(1, &skyboxVAO);
+		glGenBuffers(1, &skyboxVBO);
+
+		glBindVertexArray(skyboxVAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
 }
 
 void RenderManager::createProgram()
@@ -142,6 +262,17 @@ void RenderManager::createProgram()
 	glAttachShader(this->program_id, this->vert_shader);
 	glAttachShader(this->program_id, this->frag_shader);
 	glLinkProgram(this->program_id);
+	glDeleteShader(vert_shader);
+	glDeleteShader(frag_shader);
+
+	skybox_program_id = glCreateProgram();
+	int vShader = createShader(GL_VERTEX_SHADER, "skybox.vert");
+	int fShader = createShader(GL_FRAGMENT_SHADER, "skybox.frag");
+	glAttachShader(skybox_program_id, vShader);
+	glAttachShader(skybox_program_id, fShader);
+	glLinkProgram(skybox_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
 }
 
 int RenderManager::createShader(GLenum type, const char* fname)
@@ -173,15 +304,25 @@ int RenderManager::run(void)
 	{
 		glfwPollEvents();
 		camera.Inputs(window);
-		camera.Matrix(45.0f, 0.1f, 100.0f, this->program_id, "cameraMatrix");
 
 		//
 		// Render
 		//
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// Draw skybox
+		glDepthMask(GL_FALSE);
+		glUseProgram(skybox_program_id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		camera.Matrix(45.0f, 0.1f, 100.0f, this->skybox_program_id, "skyboxProjViewMatrix", true);
+		glBindVertexArray(skyboxVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);
+
+		// Draw quad
 		glUseProgram(this->program_id);
 		glBindTexture(GL_TEXTURE_2D, texture);
-
+		camera.Matrix(45.0f, 0.1f, 100.0f, this->program_id, "cameraMatrix", false);		// Uniforms must be set after the shader program is set
 		glBindVertexArray(this->vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

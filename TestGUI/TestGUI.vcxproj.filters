@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{8010023a-fe4e-4ad0-af98-fba16e0fe1ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Textures\Skybox">
+      <UniqueIdentifier>{9102739b-d0a9-4bf8-9e19-aed1284879dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -57,8 +60,26 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="cool_img.png">
+    <Image Include="res\cool_img.png">
       <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_bk.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_dn.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_ft.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_lf.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_rt.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
+    </Image>
+    <Image Include="res\skybox\bluecloud_up.jpg">
+      <Filter>Resource Files\Textures\Skybox</Filter>
     </Image>
   </ItemGroup>
 </Project>
