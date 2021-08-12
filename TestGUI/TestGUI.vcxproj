@@ -79,6 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\RenderEngine\RenderEngine.object\RenderableObject.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.manager\RenderManager.cpp" />
   </ItemGroup>
@@ -87,6 +88,7 @@
     <None Include="vertex.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\RenderEngine\RenderEngine.object\RenderableObject.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
   </ItemGroup>

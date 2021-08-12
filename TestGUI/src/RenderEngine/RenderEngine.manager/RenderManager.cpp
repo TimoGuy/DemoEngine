@@ -3,7 +3,7 @@
 	RenderManager::RenderManager()
 	{
 		this->initialize();
-		this->run();
+		//this->run();
 	}
 
 	RenderManager::~RenderManager()
@@ -47,27 +47,7 @@
 
 	void RenderManager::createRect()
 	{
-		float vertices[] = {
-			-0.5, 0.5, 0,
-			-0.5, -0.5, 0,
-			0.5, 0.5, 0,
-			0.5, 0.5, 0,
-			-0.5, -0.5, 0,
-			0.5, -0.5, 0
-		};
 
-		vbo = 0;
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
-
-		vao = 0;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
-		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	}
 
 	void RenderManager::createProgram()
@@ -110,7 +90,9 @@
 			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(this->program_id);
 			glBindVertexArray(this->vao);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			for (int i = 0; i < this->renderList.size(); i++)
+				this->renderList.at(i).render();
+			//glDrawArrays(GL_TRIANGLES, 0, 6); // TODO change size from 6 to however many verts need to be drawn, or glDrawElements??
 
 			glfwPollEvents();
 			glfwSwapBuffers(this->window);
@@ -137,4 +119,9 @@
 
 	void RenderManager::finalize()
 	{
+	}
+
+	std::vector<RenderableObject>* RenderManager::getRenderList()
+	{
+		return &this->renderList;
 	}

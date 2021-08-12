@@ -1,0 +1,5 @@
+﻿  Main.cpp
+Main.obj : error LNK2019: unresolved external symbol _glfwInit referenced in function _main
+Main.obj : error LNK2019: unresolved external symbol _glfwTerminate referenced in function _main
+Main.obj : error LNK2019: unresolved external symbol _glfwCreateWindow referenced in function _main
+C:\Users\Trevor\source\repos\TestGUI\Debug\TestGUI.exe : fatal error LNK1120: 3 unresolved externals
