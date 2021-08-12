@@ -24,6 +24,9 @@
     <ClCompile Include="src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderEngine\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag" />
@@ -34,6 +37,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderEngine\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
