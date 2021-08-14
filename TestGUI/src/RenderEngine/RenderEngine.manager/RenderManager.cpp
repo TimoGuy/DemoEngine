@@ -36,7 +36,6 @@
 	void RenderManager::initialize()
 	{
 		createWindow("Test Window");
-		glewInit();
 		int width, height;
 		glfwGetFramebufferSize(window, &width, &height);
 		glViewport(0, 0, width, height);
@@ -115,6 +114,7 @@
 		}
 
 		glfwMakeContextCurrent(window);
+		gladLoadGL();
 	}
 
 	void RenderManager::finalize()
