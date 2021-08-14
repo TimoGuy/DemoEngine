@@ -1,13 +1,14 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <vector>
 
 class RenderableObject
 {
 public:
-	RenderableObject(int id, float* vertices, float* normals);
+	RenderableObject(int id, std::vector<float> vertices, std::vector<float> normals);
 	~RenderableObject();
 	int getID();
 	void render();
@@ -15,7 +16,7 @@ public:
 private:
 	int id;
 	GLuint vao = 0, vbo = 0;
-	float* vertices;
-	float* normals;
+	std::vector<float> vertices;
+	std::vector<float> normals;
 };
 

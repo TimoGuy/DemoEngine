@@ -52,11 +52,13 @@
 	void RenderManager::createProgram()
 	{
 		this->program_id = glCreateProgram();
-		this->vert_shader = createShader(GL_VERTEX_SHADER, "vertex.vert");
-		this->frag_shader = createShader(GL_FRAGMENT_SHADER, "fragment.frag");
-		glAttachShader(this->program_id, this->vert_shader);
-		glAttachShader(this->program_id, this->frag_shader);
+		int vert_shader = createShader(GL_VERTEX_SHADER, "vertex.vert");
+		int frag_shader = createShader(GL_FRAGMENT_SHADER, "fragment.frag");
+		glAttachShader(this->program_id, vert_shader);
+		glAttachShader(this->program_id, frag_shader);
 		glLinkProgram(this->program_id);
+		glDeleteShader(vert_shader);
+		glDeleteShader(frag_shader);
 	}
 
 	int RenderManager::createShader(GLenum type, const char* fname)
@@ -88,7 +90,6 @@
 		{
 			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(this->program_id);
-			glBindVertexArray(this->vao);
 			for (int i = 0; i < this->renderList.size(); i++)
 				this->renderList.at(i).render();
 			//glDrawArrays(GL_TRIANGLES, 0, 6); // TODO change size from 6 to however many verts need to be drawn, or glDrawElements??

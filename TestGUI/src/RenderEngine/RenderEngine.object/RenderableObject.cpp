@@ -1,10 +1,23 @@
 #include "RenderableObject.h"
+#include <iostream>
 
-RenderableObject::RenderableObject(int id, float* vertices, float* normals)
+
+RenderableObject::RenderableObject(int id, std::vector<float> vertices, std::vector<float> normals)
 {
 	this->id = id;
 	this->vertices = vertices;
 	this->normals = normals;
+
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	std::cout << sizeof(RenderableObject::vertices) << std::endl;
+	glBufferData(GL_ARRAY_BUFFER, RenderableObject::vertices.size() * sizeof(float), &RenderableObject::vertices.at(0), GL_STATIC_DRAW);
+
+	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 }
 
 RenderableObject::~RenderableObject()
@@ -18,14 +31,6 @@ int RenderableObject::getID()
 
 void RenderableObject::render()
 {
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-	glDrawArrays(GL_POINTS, 0, 6);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 }

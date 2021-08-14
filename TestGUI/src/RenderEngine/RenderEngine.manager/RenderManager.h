@@ -21,8 +21,7 @@ public:
 private:
 
 	GLFWwindow* window;
-	GLuint vert_shader, frag_shader, program_id;
-	GLuint vbo, vao;
+	GLuint program_id;
 	std::vector<RenderableObject> renderList;
 
 	void initialize();
