@@ -3,8 +3,10 @@
 #include <stb/stb_image.h>
 #include <vector>
 #include <string>
+#include <glm/gtx/scalar_multiplication.hpp>
 
 #include "../Camera.h"
+#include "../RenderEngine.model/Model.h"
 
 
 Camera camera;
@@ -256,18 +258,29 @@ void RenderManager::createRect()
 
 void RenderManager::createProgram()
 {
+	int vShader, fShader;
+
 	this->program_id = glCreateProgram();
-	this->vert_shader = createShader(GL_VERTEX_SHADER, "vertex.vert");
-	this->frag_shader = createShader(GL_FRAGMENT_SHADER, "fragment.frag");
-	glAttachShader(this->program_id, this->vert_shader);
-	glAttachShader(this->program_id, this->frag_shader);
+	vShader = createShader(GL_VERTEX_SHADER, "vertex.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "fragment.frag");
+	glAttachShader(this->program_id, vShader);
+	glAttachShader(this->program_id, fShader);
 	glLinkProgram(this->program_id);
-	glDeleteShader(vert_shader);
-	glDeleteShader(frag_shader);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	this->model_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "model.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "model.frag");
+	glAttachShader(this->model_program_id, vShader);
+	glAttachShader(this->model_program_id, fShader);
+	glLinkProgram(this->model_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
 
 	skybox_program_id = glCreateProgram();
-	int vShader = createShader(GL_VERTEX_SHADER, "skybox.vert");
-	int fShader = createShader(GL_FRAGMENT_SHADER, "skybox.frag");
+	vShader = createShader(GL_VERTEX_SHADER, "skybox.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "skybox.frag");
 	glAttachShader(skybox_program_id, vShader);
 	glAttachShader(skybox_program_id, fShader);
 	glLinkProgram(skybox_program_id);
@@ -300,6 +313,11 @@ int RenderManager::createShader(GLenum type, const char* fname)
 
 int RenderManager::run(void)
 {
+	// TEMP: try model loading
+	Model tryModel("res/player_slime.fbx");
+
+	float zFar = 2000.0f;
+
 	while (!glfwWindowShouldClose(this->window))
 	{
 		glfwPollEvents();
@@ -314,7 +332,7 @@ int RenderManager::run(void)
 		glDepthMask(GL_FALSE);
 		glUseProgram(skybox_program_id);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		camera.Matrix(45.0f, 0.1f, 100.0f, this->skybox_program_id, "skyboxProjViewMatrix", true);
+		camera.Matrix(45.0f, 0.1f, zFar, this->skybox_program_id, "skyboxProjViewMatrix", true);
 		glBindVertexArray(skyboxVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glDepthMask(GL_TRUE);
@@ -322,9 +340,32 @@ int RenderManager::run(void)
 		// Draw quad
 		glUseProgram(this->program_id);
 		glBindTexture(GL_TEXTURE_2D, texture);
-		camera.Matrix(45.0f, 0.1f, 100.0f, this->program_id, "cameraMatrix", false);		// Uniforms must be set after the shader program is set
+		camera.Matrix(45.0f, 0.1f, zFar, this->program_id, "cameraMatrix", false);		// Uniforms must be set after the shader program is set
 		glBindVertexArray(this->vao);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		// Draw the model!!!!
+		glUseProgram(this->model_program_id);
+		camera.Matrix(45.0f, 0.1f, zFar, this->model_program_id, "cameraMatrix", false);
+
+		glm::mat4 modelMatrix =
+			glm::translate(glm::vec3(5.0f, 0.0f, 0.0f))
+			* glm::scale(
+				glm::mat4(1.0f),
+				glm::vec3(0.01f)
+			);
+		glUniformMatrix4fv(
+			glGetUniformLocation(this->model_program_id, "modelMatrix"),
+			1,
+			GL_FALSE,
+			glm::value_ptr(modelMatrix)
+		);
+
+		glUniform3f(glGetUniformLocation(this->model_program_id, "lightPosition"), 500.0f, 500.0f, 200.0f);
+		glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
+		glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+
+		tryModel.render(this->model_program_id);
 
 		glfwSwapBuffers(this->window);
 	}

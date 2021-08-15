@@ -26,7 +26,7 @@ void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID,
 
 void Camera::Inputs(GLFWwindow* window)
 {
-	std::cout << "Pos:\tx:\t" << position.x << "\ty:\t" << position.y << "\tz:\t" << position.z << std::endl;
+	//std::cout << "Pos:\tx:\t" << position.x << "\ty:\t" << position.y << "\tz:\t" << position.z << std::endl;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		position += speed * orientation;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

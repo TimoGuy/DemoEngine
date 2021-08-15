@@ -22,7 +22,7 @@ public:
 private:
 
 	GLFWwindow* window;
-	GLuint vert_shader, frag_shader, program_id, skybox_program_id;
+	GLuint program_id, skybox_program_id, model_program_id;
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
 
