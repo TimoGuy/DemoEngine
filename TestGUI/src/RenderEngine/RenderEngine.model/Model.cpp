@@ -69,10 +69,11 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vertex.position = vector;
 
 		// normal
-		vector.x = mesh->mVertices[i].x;
-		vector.y = mesh->mVertices[i].y;
-		vector.z = mesh->mVertices[i].z;
-		vertex.normal = vector;
+		glm::vec3 normal;
+		normal.x = mesh->mNormals[i].x;
+		normal.y = mesh->mNormals[i].y;
+		normal.z = mesh->mNormals[i].z;
+		vertex.normal = normal;
 
 		// texcoord
 		if (mesh->mTextureCoords[0])		// NOTE: sometimes meshes can have more than one texcoords, since there can be up to 8 per vertex!!! Dang!

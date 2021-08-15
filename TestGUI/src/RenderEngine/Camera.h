@@ -24,9 +24,11 @@ public:
 	Camera();
 
 	void Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform, bool noPosition);
+	glm::vec3 PositionToClipSpace(glm::vec3 positionInSpace);
 	void Inputs(GLFWwindow* window);
 
 private:
 	bool firstClicked = true;
+	double savedMouseX, savedMouseY;
 };
 

@@ -9,12 +9,13 @@ out vec3 fragPosition;
 out vec3 normalVector;
 
 uniform mat4 modelMatrix;
+uniform mat3 normalsModelMatrix;
 uniform mat4 cameraMatrix;
 
 void main()
 {
 	fragPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
-	normalVector = mat3(transpose(inverse(modelMatrix))) * normal;
+	normalVector = normalsModelMatrix * normal;
 	//fragPosition = vertexPosition;
 	//normalVector = normal;
 

@@ -1,5 +1,7 @@
 #include "Camera.h"
 
+#include "../ImGui/imgui.h"
+
 #include <iostream>
 
 
@@ -22,6 +24,17 @@ void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID,
 		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * glm::mat4(glm::mat3(view))));
 	else
 		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+}
+
+glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
+{
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 projection = glm::mat4(1.0f);
+
+	view = glm::lookAt(position, position + orientation, up);
+	projection = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 10000.0f);		// NOTE: Hardcoded
+
+	return glm::vec3(projection * view * glm::vec4(pointInSpace, 1.0f));
 }
 
 void Camera::Inputs(GLFWwindow* window)
@@ -53,16 +66,17 @@ void Camera::Inputs(GLFWwindow* window)
 		if (firstClicked)
 		{
 			firstClicked = false;
-			glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
+			glfwGetCursorPos(window, &savedMouseX, &savedMouseY);
 		}
 
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		float rotX = sensitivity * (mouseY - (int)height / 2) / height;
-		float rotY = sensitivity * (mouseX - (int)width / 2) / height;
+		float rotX = sensitivity * (mouseY - savedMouseY) / height;
+		float rotY = sensitivity * (mouseX - savedMouseX) / height;
 		// NOTE: Below is for debug
 		//std::cout << "Rotation X: " << rotX << "\tHeight/2: " << (height / 2.0) << "\tmouseY: " << mouseY << std::endl;
 
@@ -73,11 +87,13 @@ void Camera::Inputs(GLFWwindow* window)
 
 		orientation = glm::rotate(orientation, glm::radians(-rotY), up);
 
-		glfwSetCursorPos(window, width / 2.0f, height / 2.0f);
+		glfwSetCursorPos(window, savedMouseX, savedMouseY);
 	}
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 	{
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+		if (!firstClicked) glfwSetCursorPos(window, width / 2, height / 2);
 		firstClicked = true;
 	}
 }

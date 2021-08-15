@@ -12,7 +12,6 @@
 
 class RenderManager
 {
-
 public:
 	RenderManager();
 	~RenderManager();
@@ -26,12 +25,18 @@ private:
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
 
+	glm::vec3 lightPosition;
+
 	void initialize();
 	void setupViewPort();
+	void setupImGui();
 	void createWindow(const char* windowName);
 	void createProgram();
     void createRect();
 	int createShader(GLenum type, const char* fname);
 	const GLchar* readFile(const char* filename);
+
+	void renderImGui();
+
 	void finalize();
 };
