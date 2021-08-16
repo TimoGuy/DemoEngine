@@ -13,7 +13,7 @@
 #include "../Camera.h"
 #include "../RenderEngine.model/Model.h"
 
-#define SINGLE_BUFFERED_MODE 1
+#define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
 #include <thread>
@@ -68,11 +68,11 @@ void RenderManager::initialize()
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
-	/*glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);*/
+	glFrontFace(GL_CCW);
 
-	lightPosition = glm::vec3(500.0f, 500.0f, 200.0f);
+	lightPosition = glm::vec3(7.0f, 5.0f, 3.0f);
 
 	createProgram();
 	createRect();
@@ -407,7 +407,6 @@ int RenderManager::run(void)
 			// Draw the model!!!!
 			glUseProgram(this->model_program_id);
 			camera.Matrix(45.0f, 0.1f, zFar, this->model_program_id, "cameraMatrix", false);
-
 			glm::mat4 modelMatrix =
 				glm::translate(glm::vec3(5.0f, 0.0f, 0.0f))
 				* glm::scale(
@@ -426,11 +425,69 @@ int RenderManager::run(void)
 				GL_FALSE,
 				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
 			);
-
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
 			glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+			tryModel.render(this->model_program_id);
 
+			modelMatrix =
+				glm::translate(glm::vec3(5.0f, 0.0f, 5.0f))
+				* glm::scale(
+					glm::mat4(1.0f),
+					glm::vec3(0.01f)
+				);
+			glUniformMatrix4fv(
+				glGetUniformLocation(this->model_program_id, "modelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(modelMatrix)
+			);
+			glUniformMatrix3fv(
+				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+			);
+			tryModel.render(this->model_program_id);
+
+			modelMatrix =
+				glm::translate(glm::vec3(10.0f, 0.0f, 5.0f))
+				* glm::scale(
+					glm::mat4(1.0f),
+					glm::vec3(0.01f)
+				);
+			glUniformMatrix4fv(
+				glGetUniformLocation(this->model_program_id, "modelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(modelMatrix)
+			);
+			glUniformMatrix3fv(
+				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+			);
+			tryModel.render(this->model_program_id);
+
+			modelMatrix =
+				glm::translate(glm::vec3(10.0f, 0.0f, 0.0f))
+				* glm::scale(
+					glm::mat4(1.0f),
+					glm::vec3(0.01f)
+				);
+			glUniformMatrix4fv(
+				glGetUniformLocation(this->model_program_id, "modelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(modelMatrix)
+			);
+			glUniformMatrix3fv(
+				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
+				1,
+				GL_FALSE,
+				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+			);
 			tryModel.render(this->model_program_id);
 		}
 
@@ -454,6 +511,8 @@ void RenderManager::renderImGui()
 	static bool showScenePropterties = true;
 	static float gizmoSize1to1 = 30.0f;
 	static float clipZ;
+
+	static bool renderWireframeMode = false;
 
 	//
 	// Menu Bar
@@ -481,6 +540,14 @@ void RenderManager::renderImGui()
 			{
 				if (ImGui::MenuItem("Analytics Overlay", NULL, &showAnalyticsOverlay)) {}
 				if (ImGui::MenuItem("Scene Properties", NULL, &showScenePropterties)) {}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Rendering"))
+			{
+				if (ImGui::MenuItem("Wireframe Mode", NULL, &renderWireframeMode))
+				{
+					glPolygonMode(GL_FRONT_AND_BACK, renderWireframeMode ? GL_LINE : GL_FILL);
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -572,6 +639,7 @@ void RenderManager::renderImGui()
 			lightPosition.z = lightPosVec[2];
 			ImGui::DragFloat("Gizmo Size one to one", &gizmoSize1to1);
 			ImGui::Text("ClipZ: %.2f", clipZ);
+			ImGui::Separator();
 		}
 		ImGui::End();
 	}
@@ -614,8 +682,11 @@ void RenderManager::createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-#endif
 	window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+#else
+	window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	glfwSwapInterval(1);
+#endif
 
 	if (!window)
 	{
