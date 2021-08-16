@@ -86,6 +86,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.cpp" />
     <ClCompile Include="src\ImGui\imgui.cpp" />
     <ClCompile Include="src\ImGui\imgui_demo.cpp" />
     <ClCompile Include="src\ImGui\imgui_draw.cpp" />
@@ -111,6 +114,9 @@
     <None Include="vertex.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.h" />
     <ClInclude Include="src\ImGui\imconfig.h" />
     <ClInclude Include="src\ImGui\imgui.h" />
     <ClInclude Include="src\ImGui\imgui_impl_glfw.h" />

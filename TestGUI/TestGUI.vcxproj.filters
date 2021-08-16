@@ -66,6 +66,15 @@
     <ClCompile Include="src\ImGui\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag">
@@ -118,6 +127,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ImGui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

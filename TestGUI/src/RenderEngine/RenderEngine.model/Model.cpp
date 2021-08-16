@@ -25,6 +25,7 @@ void Model::loadModel(std::string path)
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
+		return;
 	}
 
 	directory = path.substr(0, path.find_last_of('/'));
@@ -58,6 +59,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
+		setVertexBoneDataToDefault(vertex);
 
 		//
 		// Process vertex positions, normals, and tex coords
@@ -115,6 +117,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
 		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
+
+	// Process Bones
+	extractBoneWeightForVertices(vertices, mesh, scene);
 
 	return Mesh(vertices, indices, textures);
 }
@@ -196,4 +201,100 @@ unsigned int textureFromFile(const char* path, const std::string& directory)
 	}
 
 	return textureID;
+}
+
+
+void Model::setVertexBoneDataToDefault(Vertex& vertex)
+{
+	for (unsigned int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		vertex.boneIds[i] = -1;
+		vertex.boneWeights[i] = 0.0f;
+	}
+}
+
+
+void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
+{
+	int smallestBoneWeightIndex = -1;
+	for (unsigned int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	{
+		if (vertex.boneIds[i] < 0)
+		{
+			// Add bone weight to this empty slot for a bone weight
+			vertex.boneIds[i] = boneId;
+			vertex.boneWeights[i] = boneWeight;
+			return;
+		}
+		else
+		{
+			// Find the smallest bone weight in case all slots are filled
+			if (smallestBoneWeightIndex < 0 ||
+				vertex.boneWeights[i] < vertex.boneWeights[smallestBoneWeightIndex])
+			{
+				smallestBoneWeightIndex = i;
+			}
+		}
+	}
+
+	//
+	// Try to override lowest bone weight
+	//
+	std::cout << "Max Bone weight exceeded; overriding..." << std::endl;
+	if (vertex.boneWeights[smallestBoneWeightIndex] < boneWeight)
+	{
+		// Use heavier bone!
+		vertex.boneIds[smallestBoneWeightIndex] = boneId;
+		vertex.boneWeights[smallestBoneWeightIndex] = boneWeight;
+		std::cout << "\tSuccess" << std::endl;
+		return;
+	}
+
+	std::cout << "\tFailed" << std::endl;
+}
+
+
+void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+{
+	for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
+	{
+		int boneId = -1;
+		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+		if (boneInfoMap.find(boneName) == boneInfoMap.end())
+		{
+			// Create new bone info and add to map
+			BoneInfo newBoneInfo;
+			newBoneInfo.id = boneCounter;
+			{
+				glm::mat4 to;
+				aiMatrix4x4 from = mesh->mBones[boneIndex]->mOffsetMatrix;
+				//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+				to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+				to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+				to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+				to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+				newBoneInfo.offset = to;
+			}
+			boneInfoMap[boneName] = newBoneInfo;
+			boneCounter++;
+
+			boneId = newBoneInfo.id;
+		}
+		else
+		{
+			boneId = boneInfoMap[boneName].id;
+		}
+
+		assert(boneId != -1);
+		auto weights = mesh->mBones[boneIndex]->mWeights;
+		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+		for (unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++)
+		{
+			int vertexId = weights[weightIndex].mVertexId;
+			float weight = weights[weightIndex].mWeight;
+			assert(vertexId <= vertices.size());
+			addVertexBoneData(vertices[vertexId], boneId, weight);
+		}
+	}
 }

@@ -43,6 +43,5 @@ void main()
 	fragmentColor = vec4((ambient + diffuse + specular) * objectColor.rgb, objectColor.a);
 
 	//fragmentColor = vec4(normalVector, 1.0f);
-
 	//fragmentColor = vec4(texCoord, 0.0f, 1.0f);
 }

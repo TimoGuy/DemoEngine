@@ -11,7 +11,7 @@
 #include "../../ImGui/imgui_impl_opengl3.h"
 
 #include "../Camera.h"
-#include "../RenderEngine.model/Model.h"
+#include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
@@ -349,6 +349,8 @@ int RenderManager::run(void)
 
 	// TEMP: try model loading
 	Model tryModel("res/player_slime.fbx");
+	Animation runAnimation("res/player_slime.fbx", &tryModel);
+	Animator animator(&runAnimation);
 
 	float zFar = 2000.0f;
 
@@ -356,6 +358,9 @@ int RenderManager::run(void)
 	const float desiredFrameTime = 1000.0f / 80.0f;
 	float startFrameTime = 0;
 #endif
+
+	float deltaTime;
+	float lastFrame = glfwGetTime();
 
 	while (!glfwWindowShouldClose(this->window))
 	{
@@ -367,6 +372,12 @@ int RenderManager::run(void)
 
 		if (!io.WantCaptureMouse || ImGui::GetMouseCursor() == ImGuiMouseCursor_None)
 			camera.Inputs(window);
+
+		// Update Animation
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		animator.updateAnimation(deltaTime);
 
 		//
 		// ImGui Render Pass
@@ -411,7 +422,7 @@ int RenderManager::run(void)
 				glm::translate(glm::vec3(5.0f, 0.0f, 0.0f))
 				* glm::scale(
 					glm::mat4(1.0f),
-					glm::vec3(0.01f)
+					glm::vec3(0.0001f)
 				);
 			glUniformMatrix4fv(
 				glGetUniformLocation(this->model_program_id, "modelMatrix"),
@@ -428,9 +439,17 @@ int RenderManager::run(void)
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
 			glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+			auto transforms = animator.getFinalBoneMatrices();
+			for (int i = 0; i < transforms.size(); i++)
+				glUniformMatrix4fv(
+					glGetUniformLocation(this->model_program_id, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+					1,
+					GL_FALSE,
+					glm::value_ptr(transforms[i])
+				);
 			tryModel.render(this->model_program_id);
 
-			modelMatrix =
+			/*modelMatrix =
 				glm::translate(glm::vec3(5.0f, 0.0f, 5.0f))
 				* glm::scale(
 					glm::mat4(1.0f),
@@ -488,7 +507,7 @@ int RenderManager::run(void)
 				GL_FALSE,
 				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
 			);
-			tryModel.render(this->model_program_id);
+			tryModel.render(this->model_program_id);*/
 		}
 
 

@@ -4,11 +4,15 @@
 #include <string>
 #include <vector>
 
+#define MAX_BONE_INFLUENCE 4
+
 struct Vertex
 {
 	glm::vec3 position;
 	glm::vec3 normal;
 	glm::vec2 texCoords;
+	int boneIds[MAX_BONE_INFLUENCE];
+	float boneWeights[MAX_BONE_INFLUENCE];
 };
 
 struct Texture
