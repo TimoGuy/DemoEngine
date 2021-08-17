@@ -13,6 +13,7 @@ struct Vertex
 	glm::vec2 texCoords;
 	int boneIds[MAX_BONE_INFLUENCE];
 	float boneWeights[MAX_BONE_INFLUENCE];
+	int numWeights = 0;
 };
 
 struct Texture

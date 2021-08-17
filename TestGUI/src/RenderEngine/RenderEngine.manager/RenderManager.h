@@ -26,6 +26,8 @@ private:
 	GLuint skyboxVAO, skyboxVBO;
 
 	glm::vec3 lightPosition;
+	glm::vec3 modelPosition;
+	glm::vec3 modelEulerAngles;
 
 	void initialize();
 	void setupViewPort();

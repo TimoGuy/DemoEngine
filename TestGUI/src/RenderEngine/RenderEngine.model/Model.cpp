@@ -216,6 +216,15 @@ void Model::setVertexBoneDataToDefault(Vertex& vertex)
 
 void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
 {
+	static int highestNumWeights = -1;
+	vertex.numWeights++;
+	if (vertex.numWeights > highestNumWeights)
+	{
+		highestNumWeights = vertex.numWeights;
+		std::cout << "\t\tHIGHEST NUM WEIGHTS:::" << highestNumWeights << std::endl;
+	}
+
+	//boneId = 3;
 	int smallestBoneWeightIndex = -1;
 	for (unsigned int i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
@@ -276,6 +285,7 @@ void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* 
 				newBoneInfo.offset = to;
 			}
 			boneInfoMap[boneName] = newBoneInfo;
+			std::cout << "Created new bone: " << boneName << "\tID: " << boneCounter << std::endl;
 			boneCounter++;
 
 			boneId = newBoneInfo.id;

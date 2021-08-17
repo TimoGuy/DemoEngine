@@ -11,7 +11,7 @@ Animation::Animation(const std::string& animationPath, Model* model)
 	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
 	assert(scene && scene->mRootNode);
 
-	auto animation = scene->mAnimations[3];
+	auto animation = scene->mAnimations[0];		// #5 is idle for slime girl btw
 	duration = animation->mDuration;
 	ticksPerSecond = animation->mTicksPerSecond;
 	readHierarchyData(rootNode, scene->mRootNode);
@@ -68,7 +68,7 @@ void Animation::readHierarchyData(AssimpNodeData& dest, const aiNode* src)
 
 	dest.name = src->mName.data;
 	{
-		glm::mat4 to;
+		glm::mat4 to = glm::mat4(1.0f);
 		aiMatrix4x4 from = src->mTransformation;
 		//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
 		to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;

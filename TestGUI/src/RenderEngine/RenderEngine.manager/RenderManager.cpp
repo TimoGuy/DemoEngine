@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/imgui_impl_glfw.h"
@@ -30,6 +31,8 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 
 RenderManager::RenderManager()
 {
+	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
+	modelEulerAngles = glm::vec3(90.0f, 0.0f, 0.0f);
 	this->initialize();
 }
 
@@ -155,7 +158,7 @@ void RenderManager::createRect()
 		stbi_set_flip_vertically_on_load(true);
 		unsigned char* bytes = stbi_load("res/cool_img.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-		std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
+		//std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
 
 		if (bytes == NULL)
 		{
@@ -419,7 +422,8 @@ int RenderManager::run(void)
 			glUseProgram(this->model_program_id);
 			camera.Matrix(45.0f, 0.1f, zFar, this->model_program_id, "cameraMatrix", false);
 			glm::mat4 modelMatrix =
-				glm::translate(glm::vec3(5.0f, 0.0f, 0.0f))
+				glm::translate(modelPosition)
+				* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
 				* glm::scale(
 					glm::mat4(1.0f),
 					glm::vec3(0.0001f)
@@ -448,66 +452,6 @@ int RenderManager::run(void)
 					glm::value_ptr(transforms[i])
 				);
 			tryModel.render(this->model_program_id);
-
-			/*modelMatrix =
-				glm::translate(glm::vec3(5.0f, 0.0f, 5.0f))
-				* glm::scale(
-					glm::mat4(1.0f),
-					glm::vec3(0.01f)
-				);
-			glUniformMatrix4fv(
-				glGetUniformLocation(this->model_program_id, "modelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(modelMatrix)
-			);
-			glUniformMatrix3fv(
-				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-			);
-			tryModel.render(this->model_program_id);
-
-			modelMatrix =
-				glm::translate(glm::vec3(10.0f, 0.0f, 5.0f))
-				* glm::scale(
-					glm::mat4(1.0f),
-					glm::vec3(0.01f)
-				);
-			glUniformMatrix4fv(
-				glGetUniformLocation(this->model_program_id, "modelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(modelMatrix)
-			);
-			glUniformMatrix3fv(
-				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-			);
-			tryModel.render(this->model_program_id);
-
-			modelMatrix =
-				glm::translate(glm::vec3(10.0f, 0.0f, 0.0f))
-				* glm::scale(
-					glm::mat4(1.0f),
-					glm::vec3(0.01f)
-				);
-			glUniformMatrix4fv(
-				glGetUniformLocation(this->model_program_id, "modelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(modelMatrix)
-			);
-			glUniformMatrix3fv(
-				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-			);
-			tryModel.render(this->model_program_id);*/
 		}
 
 
@@ -659,6 +603,9 @@ void RenderManager::renderImGui()
 			ImGui::DragFloat("Gizmo Size one to one", &gizmoSize1to1);
 			ImGui::Text("ClipZ: %.2f", clipZ);
 			ImGui::Separator();
+
+			ImGui::DragFloat3("Model Position", &modelPosition.x);
+			ImGui::DragFloat3("Model Euler Angles", &modelEulerAngles.x);
 		}
 		ImGui::End();
 	}
@@ -677,7 +624,7 @@ void RenderManager::renderImGui()
 
 		float defaultHeight = std::tanf(glm::radians(45.0f)) * clipZ;
 		float t = gizmoSize1to1 / defaultHeight;
-		std::cout << t << std::endl;
+		//std::cout << t << std::endl;
 		gizmoRadius = t * (b - a) + a;
 	}
 
