@@ -351,8 +351,8 @@ int RenderManager::run(void)
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 	// TEMP: try model loading
-	Model tryModel("res/player_slime.fbx");
-	Animation runAnimation("res/player_slime.fbx", &tryModel);
+	Model tryModel("res/player_lava.fbx");
+	Animation runAnimation("res/player_lava.fbx", &tryModel);
 	Animator animator(&runAnimation);
 
 	float zFar = 2000.0f;

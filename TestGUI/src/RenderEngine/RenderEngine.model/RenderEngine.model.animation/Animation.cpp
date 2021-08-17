@@ -8,7 +8,7 @@
 Animation::Animation(const std::string& animationPath, Model* model)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
+	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
 	assert(scene && scene->mRootNode);
 
 	auto animation = scene->mAnimations[0];		// #5 is idle for slime girl btw

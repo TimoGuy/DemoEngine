@@ -110,7 +110,7 @@ glm::mat4 Bone::interpolatePosition(float animationTime)
 
 glm::mat4 Bone::interpolateRotation(float animationTime)
 {
-	if (1 == numPositions)
+	if (1 == numRotations)
 	{
 		auto rotation = glm::normalize(rotations[0].orientation);
 		return glm::toMat4(rotation);
@@ -129,7 +129,7 @@ glm::mat4 Bone::interpolateScaling(float animationTime)
 	if (1 == numScales)
 		return glm::scale(glm::mat4(1.0f), scales[0].scale);
 
-	int p0Index = getPositionIndex(animationTime);
+	int p0Index = getScaleIndex(animationTime);
 	int p1Index = p0Index + 1;
 	float scaleFactor = getScaleFactor(scales[p0Index].timeStamp, scales[p1Index].timeStamp, animationTime);
 	glm::vec3 finalScale = glm::mix(scales[p0Index].scale, scales[p1Index].scale, scaleFactor);

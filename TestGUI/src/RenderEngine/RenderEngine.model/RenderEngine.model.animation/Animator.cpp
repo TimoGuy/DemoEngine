@@ -5,6 +5,7 @@ Animator::Animator(Animation* animation) : deltaTime(0.0f)
 {
 	currentTime = 0.0f;
 	currentAnimation = animation;
+	globalRootInverseMatrix = glm::inverse(currentAnimation->getRootNode().transformation);
 
 	finalBoneMatrices.reserve(100);
 
@@ -22,8 +23,7 @@ void Animator::updateAnimation(float deltaTime)
 	{
 		currentTime += currentAnimation->getTicksPerSecond() * deltaTime;
 		currentTime = fmod(currentTime, currentAnimation->getDuration());
-		globalRootInverseMatrix = glm::inverse(currentAnimation->getRootNode().transformation);
-		std::cout << "----------------" << std::endl;
+		//std::cout << "----------------" << std::endl;
 		calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f));
 	}
 }
@@ -58,7 +58,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		int index = boneInfoMap[nodeName].id;
 		glm::mat4 offset = boneInfoMap[nodeName].offset;
 		finalBoneMatrices[index] = globalRootInverseMatrix * globalTransformation * offset;
-		std::cout << "BONE: " << index << std::endl;
+		//std::cout << "BONE: " << index << std::endl;
 	}
 
 	// Recursively find childrens' bone transformation
