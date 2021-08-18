@@ -14,6 +14,9 @@
 #include "../Camera.h"
 #include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
+
+#include <assimp/matrix4x4.h>
+
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
@@ -351,8 +354,13 @@ int RenderManager::run(void)
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 	// TEMP: try model loading
-	Model tryModel("res/player_slime.fbx");
-	Animation runAnimation("res/player_slime.fbx", &tryModel);
+	/*Model tryModel("res/boblampclean.md5mesh");
+	Animation runAnimation("res/boblampclean.md5anim", &tryModel);*/
+	/*Model tryModel("res/player_slime.fbx");
+	Animation runAnimation("res/player_slime.fbx", &tryModel);*/
+	std::cout << "Hello???" << std::endl;
+	Model tryModel("res/capoeira.fbx");
+	Animation runAnimation("res/capoeira.fbx", &tryModel);
 	Animator animator(&runAnimation);
 
 	float zFar = 2000.0f;
@@ -377,6 +385,7 @@ int RenderManager::run(void)
 			camera.Inputs(window);
 
 		// Update Animation
+		float startTime = glfwGetTime();
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -426,7 +435,7 @@ int RenderManager::run(void)
 				* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
 				* glm::scale(
 					glm::mat4(1.0f),
-					glm::vec3(0.0001f)
+					glm::vec3(modelScale)
 				);
 			glUniformMatrix4fv(
 				glGetUniformLocation(this->model_program_id, "modelMatrix"),
@@ -443,6 +452,7 @@ int RenderManager::run(void)
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
 			glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
 			glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+
 			auto transforms = animator.getFinalBoneMatrices();
 			for (int i = 0; i < transforms.size(); i++)
 				glUniformMatrix4fv(
@@ -451,7 +461,9 @@ int RenderManager::run(void)
 					GL_FALSE,
 					glm::value_ptr(transforms[i])
 				);
-			glUniform1i(glGetUniformLocation(this->model_program_id, "boneIndex"), selectedBone);
+
+			// TODO: Testing this
+			//glUniform1i(glGetUniformLocation(this->model_program_id, "boneIndex"), selectedBone);
 			tryModel.render(this->model_program_id);
 		}
 
@@ -611,6 +623,7 @@ void RenderManager::renderImGui()
 			ImGui::Separator();
 
 			ImGui::DragInt("Bone ID (TEST)", &selectedBone);
+			ImGui::InputFloat("Model Scale", &modelScale);
 		}
 		ImGui::End();
 	}

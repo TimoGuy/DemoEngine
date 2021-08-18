@@ -1,11 +1,10 @@
 #include "Animator.h"
-#include <iostream>
+//#include <iostream>
 
 Animator::Animator(Animation* animation) : deltaTime(0.0f)
 {
 	currentTime = 0.0f;
 	currentAnimation = animation;
-	globalRootInverseMatrix = glm::inverse(currentAnimation->getRootNode().transformation);
 
 	finalBoneMatrices.reserve(100);
 
@@ -38,6 +37,7 @@ void Animator::playAnimation(Animation* animation)
 
 void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
 {
+	//std::cout << "Bone: " << node->name << std::endl;
 	std::string nodeName = node->name;
 	glm::mat4 nodeTransform = node->transformation;
 
@@ -57,7 +57,8 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		// Populate bone matrices for shader
 		int index = boneInfoMap[nodeName].id;
 		glm::mat4 offset = boneInfoMap[nodeName].offset;
-		finalBoneMatrices[index] = globalRootInverseMatrix * globalTransformation * offset;
+		finalBoneMatrices[index] = currentAnimation->getGlobalRootInverseMatrix() * globalTransformation * offset;
+		//finalBoneMatrices[index] = globalTransformation;
 		//std::cout << "BONE: " << index << std::endl;
 	}
 

@@ -23,6 +23,7 @@ public:
 	inline float getDuration() { return duration; }
 	inline const AssimpNodeData& getRootNode() { return rootNode; }
 	inline const std::map<std::string, BoneInfo>& getBoneIdMap() { return boneInfoMap; }
+	inline const glm::mat4 getGlobalRootInverseMatrix() { return globalRootInverseMatrix; }
 
 private:
 	void readMissingBones(const aiAnimation* animation, Model& model);
@@ -32,6 +33,7 @@ private:
 	int ticksPerSecond;
 	std::vector<Bone> bones;
 	AssimpNodeData rootNode;
+	glm::mat4 globalRootInverseMatrix;
 	std::map<std::string, BoneInfo> boneInfoMap;
 };
 

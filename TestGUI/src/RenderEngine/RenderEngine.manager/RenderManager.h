@@ -25,6 +25,7 @@ private:
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
 	int selectedBone = 0;
+	float modelScale = 0.01f;
 
 	glm::vec3 lightPosition;
 	glm::vec3 modelPosition;

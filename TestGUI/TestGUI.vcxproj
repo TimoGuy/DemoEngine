@@ -130,6 +130,7 @@
     <ClInclude Include="src\RenderEngine\Camera.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
+    <ClInclude Include="src\SkinningTech.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\cool_img.png" />

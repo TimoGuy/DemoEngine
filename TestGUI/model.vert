@@ -17,7 +17,7 @@ const int MAX_BONE_INFLUENCE = 4;//8;
 uniform mat4 finalBoneMatrices[MAX_BONES];
 
 // JOJOJOOJO
-uniform int boneIndex;
+//uniform int boneIndex;
 
 out vec2 texCoord;
 out vec3 fragPosition;		// For lighting in frag shader
@@ -28,72 +28,29 @@ void main()
 	//
 	// Do Bone Transformations
 	//
-	/*mat4 totalPosition = mat4(1.0f);
-	vec3 totalNormal = vec3(0.0f);
+	mat4 boneTransform = mat4(0.0f);
+	mat3 normTransform = mat3(0.0f);
 	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (boneIds[i] == -1)
 			continue;
 		if (boneIds[i] >= MAX_BONES)
 		{
-			totalPosition = mat4(1.0f);
+			boneTransform = mat4(1.0f);
 			break;
 		}
 
 		// Apply bone transformation since valid bone!
-		vec4 localPosition = finalBoneMatrices[boneIds[i]] * vec4(vertexPosition, 1.0f);
-		totalPosition += finalBoneMatrices[boneIds[i]] * boneWeights[i];
-
-		vec3 localNormal = mat3(finalBoneMatrices[boneIds[i]]) * normal;
-		totalNormal += localNormal * boneWeights[i];		// NOTE: I don't know if this is correct!
-	}*/
-	/*mat4 BoneTransform = finalBoneMatrices[boneIds[0]] * boneWeights[0];
-    BoneTransform     += finalBoneMatrices[boneIds[1]] * boneWeights[1];
-    BoneTransform     += finalBoneMatrices[boneIds[2]] * boneWeights[2];
-    BoneTransform     += finalBoneMatrices[boneIds[3]] * boneWeights[3];*/
-    //BoneTransform     += finalBoneMatrices[boneIds2[0]] * boneWeights2[0];
-    //BoneTransform     += finalBoneMatrices[boneIds2[1]] * boneWeights2[1];
-    //BoneTransform     += finalBoneMatrices[boneIds2[2]] * boneWeights2[2];
-    //BoneTransform     += finalBoneMatrices[boneIds2[3]] * boneWeights2[3];
-
-	mat4 BoneTransform = finalBoneMatrices[boneIndex];
-
-	//
-	// Prepare for Fragment shader
-	//
-	fragPosition = vec3(modelMatrix * BoneTransform * vec4(vertexPosition, 1.0));
-	normalVector = normalsModelMatrix * normal;//normalize(totalNormal);
-
-	gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
-	texCoord = uvCoordinate;
-}
-
-
-
-/*vec4 totalBoneTransform = vec4(0.0f);
-	vec3 totalNormal = vec3(0.0f);
-	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-	{
-		if (boneIds[i] == -1)
-			continue;
-		if (boneIds[i] >= MAX_BONES)
-		{
-			totalBoneTransform = vec4(1.0f);
-			break;
-		}
-
-		// Apply bone transformation since valid bone!
-		totalBoneTransform += finalBoneMatrices[boneIds[i]] * boneWeights[i];
-
-		vec3 localNormal = mat3(finalBoneMatrices[boneIds[i]]) * normal;
-		totalNormal += localNormal * boneWeights[i];		// NOTE: I don't know if this is correct!
+		boneTransform += finalBoneMatrices[boneIds[i]] * boneWeights[i];
+		normTransform += mat3(finalBoneMatrices[boneIds[i]] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
 	}
 
 	//
 	// Prepare for Fragment shader
 	//
-	fragPosition = vec3(modelMatrix * (totalBoneTransform * vec4(vertexPosition, 1.0)));
-	normalVector = normalsModelMatrix * normalize(totalNormal);
+	fragPosition = vec3(modelMatrix * boneTransform * vec4(vertexPosition, 1.0));
+	normalVector = normalsModelMatrix * normTransform * normal;
 
 	gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
-	texCoord = uvCoordinate;*/
+	texCoord = uvCoordinate;
+}
