@@ -16,6 +16,9 @@ const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;//8;
 uniform mat4 finalBoneMatrices[MAX_BONES];
 
+// JOJOJOOJO
+uniform int boneIndex;
+
 out vec2 texCoord;
 out vec3 fragPosition;		// For lighting in frag shader
 out vec3 normalVector;
@@ -44,14 +47,16 @@ void main()
 		vec3 localNormal = mat3(finalBoneMatrices[boneIds[i]]) * normal;
 		totalNormal += localNormal * boneWeights[i];		// NOTE: I don't know if this is correct!
 	}*/
-	mat4 BoneTransform = finalBoneMatrices[boneIds[0]] * boneWeights[0];
+	/*mat4 BoneTransform = finalBoneMatrices[boneIds[0]] * boneWeights[0];
     BoneTransform     += finalBoneMatrices[boneIds[1]] * boneWeights[1];
     BoneTransform     += finalBoneMatrices[boneIds[2]] * boneWeights[2];
-    BoneTransform     += finalBoneMatrices[boneIds[3]] * boneWeights[3];
+    BoneTransform     += finalBoneMatrices[boneIds[3]] * boneWeights[3];*/
     //BoneTransform     += finalBoneMatrices[boneIds2[0]] * boneWeights2[0];
     //BoneTransform     += finalBoneMatrices[boneIds2[1]] * boneWeights2[1];
     //BoneTransform     += finalBoneMatrices[boneIds2[2]] * boneWeights2[2];
     //BoneTransform     += finalBoneMatrices[boneIds2[3]] * boneWeights2[3];
+
+	mat4 BoneTransform = finalBoneMatrices[boneIndex];
 
 	//
 	// Prepare for Fragment shader

@@ -351,8 +351,8 @@ int RenderManager::run(void)
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 	// TEMP: try model loading
-	Model tryModel("res/player_lava.fbx");
-	Animation runAnimation("res/player_lava.fbx", &tryModel);
+	Model tryModel("res/player_slime.fbx");
+	Animation runAnimation("res/player_slime.fbx", &tryModel);
 	Animator animator(&runAnimation);
 
 	float zFar = 2000.0f;
@@ -451,6 +451,7 @@ int RenderManager::run(void)
 					GL_FALSE,
 					glm::value_ptr(transforms[i])
 				);
+			glUniform1i(glGetUniformLocation(this->model_program_id, "boneIndex"), selectedBone);
 			tryModel.render(this->model_program_id);
 		}
 
@@ -606,6 +607,10 @@ void RenderManager::renderImGui()
 
 			ImGui::DragFloat3("Model Position", &modelPosition.x);
 			ImGui::DragFloat3("Model Euler Angles", &modelEulerAngles.x);
+
+			ImGui::Separator();
+
+			ImGui::DragInt("Bone ID (TEST)", &selectedBone);
 		}
 		ImGui::End();
 	}
