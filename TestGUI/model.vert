@@ -15,6 +15,7 @@ uniform mat4 cameraMatrix;
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 finalBoneMatrices[MAX_BONES];
+uniform int boneMatrixOffsetInt;
 
 // JOJOJOOJO
 //uniform int boneIndex;
@@ -40,18 +41,20 @@ void main()
 			boneTransform = mat4(1.0f);
 			break;
 		}
+		int selectedBone = boneIds[i];
+		if (selectedBone == boneMatrixOffsetInt) continue;
 
 		if (!first)
 		{
 			// Apply bone transformation since valid bone!
-			boneTransform += finalBoneMatrices[boneIds[i]] * boneWeights[i];
-			normTransform += mat3(finalBoneMatrices[boneIds[i]] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
+			boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
+			normTransform += mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
 		}
 		else
 		{
 			first = false;
-			boneTransform = finalBoneMatrices[boneIds[i]] * boneWeights[i];
-			normTransform = mat3(finalBoneMatrices[boneIds[i]] * boneWeights[i]);
+			boneTransform = finalBoneMatrices[selectedBone] * boneWeights[i];
+			normTransform = mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);
 		}
 	}
 

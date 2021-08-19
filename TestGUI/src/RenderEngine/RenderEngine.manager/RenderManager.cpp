@@ -359,8 +359,8 @@ int RenderManager::run(void)
 	Animation runAnimation("res/boblampclean.md5anim", &tryModel);*/
 	/*Model tryModel("res/thinmatrix.dae");
 	Animation runAnimation("res/thinmatrix.dae", &tryModel);*/
-	Model tryModel("res/slime_no_clothes.fbx");
-	Animation runAnimation("res/slime_no_clothes.fbx", &tryModel);
+	Model tryModel("res/slime_glb.glb");
+	Animation runAnimation("res/slime_glb.glb", &tryModel);
 	/*Model tryModel("res/slime_capoeira.fbx");
 	Animation runAnimation("res/slime_capoeira.fbx", &tryModel);*/
 	Animator animator(&runAnimation);
@@ -391,7 +391,7 @@ int RenderManager::run(void)
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		animator.updateAnimation(deltaTime);
+		animator.updateAnimation(deltaTime * deltaTimeMultiplier);
 
 		//
 		// ImGui Render Pass
@@ -626,6 +626,7 @@ void RenderManager::renderImGui()
 
 			ImGui::DragInt("Bone ID (TEST)", &selectedBone);
 			ImGui::InputFloat("Model Scale", &modelScale);
+			ImGui::InputFloat("Model Animation Speed", &deltaTimeMultiplier);
 		}
 		ImGui::End();
 	}

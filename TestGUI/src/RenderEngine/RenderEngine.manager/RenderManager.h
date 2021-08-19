@@ -26,6 +26,7 @@ private:
 	GLuint skyboxVAO, skyboxVBO;
 	int selectedBone = 0;
 	float modelScale = 0.01f;
+	float deltaTimeMultiplier = 1.0f;
 
 	glm::vec3 lightPosition;
 	glm::vec3 modelPosition;
