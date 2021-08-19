@@ -8,10 +8,10 @@
 Animation::Animation(const std::string& animationPath, Model* model)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_LimitBoneWeights);
+	const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
 	assert(scene && scene->mRootNode);
 
-	auto animation = scene->mAnimations[0];		// #5 is idle for slime girl btw; #14 is the capoeira for slime_capoeira.fbx
+	auto animation = scene->mAnimations[5];		// #5 is idle for slime girl btw; #14 is the capoeira for slime_capoeira.fbx
 	duration = animation->mDuration;
 	ticksPerSecond = animation->mTicksPerSecond;
 

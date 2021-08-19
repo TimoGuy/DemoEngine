@@ -354,13 +354,15 @@ int RenderManager::run(void)
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
 	// TEMP: try model loading
+	std::cout << "Hello???" << std::endl;
 	/*Model tryModel("res/boblampclean.md5mesh");
 	Animation runAnimation("res/boblampclean.md5anim", &tryModel);*/
-	/*Model tryModel("res/player_slime.fbx");
-	Animation runAnimation("res/player_slime.fbx", &tryModel);*/
-	std::cout << "Hello???" << std::endl;
-	Model tryModel("res/capoeira.fbx");
-	Animation runAnimation("res/capoeira.fbx", &tryModel);
+	/*Model tryModel("res/thinmatrix.dae");
+	Animation runAnimation("res/thinmatrix.dae", &tryModel);*/
+	Model tryModel("res/slime_no_clothes.fbx");
+	Animation runAnimation("res/slime_no_clothes.fbx", &tryModel);
+	/*Model tryModel("res/slime_capoeira.fbx");
+	Animation runAnimation("res/slime_capoeira.fbx", &tryModel);*/
 	Animator animator(&runAnimation);
 
 	float zFar = 2000.0f;

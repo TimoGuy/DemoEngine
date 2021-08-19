@@ -20,7 +20,7 @@ void Model::render(unsigned int shaderId)
 void Model::loadModel(std::string path)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
+	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
 
 	Model::scene = scene;
 
@@ -238,31 +238,31 @@ void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
 			vertex.boneWeights[i] = boneWeight;
 			return;
 		}
-		else
-		{
-			// Find the smallest bone weight in case all slots are filled
-			if (smallestBoneWeightIndex < 0 ||
-				vertex.boneWeights[i] < vertex.boneWeights[smallestBoneWeightIndex])
-			{
-				smallestBoneWeightIndex = i;
-			}
-		}
+		//else
+		//{
+		//	// Find the smallest bone weight in case all slots are filled
+		//	if (smallestBoneWeightIndex < 0 ||
+		//		vertex.boneWeights[i] < vertex.boneWeights[smallestBoneWeightIndex])
+		//	{
+		//		smallestBoneWeightIndex = i;
+		//	}
+		//}
 	}
 
 	//
 	// Try to override lowest bone weight
 	//
-	std::cout << "Max Bone weight exceeded; overriding..." << std::endl;
-	if (vertex.boneWeights[smallestBoneWeightIndex] < boneWeight)
-	{
-		// Use heavier bone!
-		vertex.boneIds[smallestBoneWeightIndex] = boneId;
-		vertex.boneWeights[smallestBoneWeightIndex] = boneWeight;
-		std::cout << "\tSuccess" << std::endl;
-		return;
-	}
+	////std::cout << "Max Bone weight exceeded; overriding..." << std::endl;
+	//if (vertex.boneWeights[smallestBoneWeightIndex] < boneWeight)
+	//{
+	//	// Use heavier bone!
+	//	vertex.boneIds[smallestBoneWeightIndex] = boneId;
+	//	vertex.boneWeights[smallestBoneWeightIndex] = boneWeight;
+	//	//std::cout << "\tSuccess" << std::endl;
+	//	return;
+	//}
 
-	std::cout << "\tFailed" << std::endl;
+	////std::cout << "\tFailed" << std::endl;
 }
 
 
@@ -271,7 +271,7 @@ void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* 
 	for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
 	{
 		int boneId = -1;
-		std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+		std::string boneName(mesh->mBones[boneIndex]->mName.data);
 		if (boneInfoMap.find(boneName) == boneInfoMap.end())
 		{
 			// Create new bone info and add to map
@@ -302,7 +302,7 @@ void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* 
 		auto weights = mesh->mBones[boneIndex]->mWeights;
 		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
 
-		for (unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++)
+		for (unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++)	// Hi
 		{
 			int vertexId = weights[weightIndex].mVertexId;
 			float weight = weights[weightIndex].mWeight;
