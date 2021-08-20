@@ -83,7 +83,7 @@ void RenderManager::initialize()
 
 	createProgram();
 	createRect();
-	createShadowMap();
+	createCascadingShadowMap();
 }
 
 void RenderManager::setupViewPort()
@@ -298,26 +298,58 @@ void RenderManager::createRect()
 	}
 }
 
-void RenderManager::createShadowMap()
+void RenderManager::createCascadingShadowMap()
 {
 	glGenFramebuffers(1, &depthMapFBO);
 
-	glGenTextures(1, &depthMapTexture);
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	depthMapTextures.resize(4);		// NOTE: 4 Is more than enough for shadow cascades!
+
+	glGenTextures(depthMapTextures.size(), &depthMapTextures[0]);
+
+	for (unsigned int i = 0; i < depthMapTextures.size(); i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, depthMapTextures[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTextures[0], 0);
 	glDrawBuffer(GL_NONE);		// This prevents this framebuffer from having a "diffuse" layer, since we just need the depth
 	glReadBuffer(GL_NONE);
 
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+		printf("Framebuffer error, status: 0x%x\n", status);
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderManager::bindShadowCascadeForWriting(unsigned int cascadeIndex)
+{
+	assert(cascadeIndex < depthMapTextures.size());
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTextures[cascadeIndex], 0);
+}
+
+void RenderManager::bindShadowCascadeForReading()
+{
+	glActiveTexture(CASCADE_SHADOW_TEXTURE_UNIT0);
+	glBindTexture(GL_TEXTURE_2D, depthMapTextures[0]);
+	glActiveTexture(CASCADE_SHADOW_TEXTURE_UNIT1);
+	glBindTexture(GL_TEXTURE_2D, depthMapTextures[1]);
+	glActiveTexture(CASCADE_SHADOW_TEXTURE_UNIT2);
+	glBindTexture(GL_TEXTURE_2D, depthMapTextures[2]);
+	glActiveTexture(CASCADE_SHADOW_TEXTURE_UNIT3);
+	glBindTexture(GL_TEXTURE_2D, depthMapTextures[3]);
 }
 
 void RenderManager::createProgram()

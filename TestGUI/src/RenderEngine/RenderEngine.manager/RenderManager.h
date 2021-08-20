@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 
 #include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
@@ -26,7 +27,7 @@ private:
 	GLuint skyboxVAO, skyboxVBO;
 
 	GLuint depthMapFBO;
-	GLuint depthMapTexture;
+	std::vector<GLuint> depthMapTextures;
 	
 	int selectedBone = 0;
 	float modelScale = 1.0f;
@@ -49,7 +50,9 @@ private:
 	void createWindow(const char* windowName);
 	void createProgram();
     void createRect();
-	void createShadowMap();
+	void createCascadingShadowMap();
+	void bindShadowCascadeForWriting(unsigned int cascadeIndex);
+	void bindShadowCascadeForReading();
 	int createShader(GLenum type, const char* fname);
 	const GLchar* readFile(const char* filename);
 
