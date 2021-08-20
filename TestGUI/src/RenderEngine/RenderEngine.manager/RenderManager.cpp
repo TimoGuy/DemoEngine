@@ -23,7 +23,7 @@
 #endif
 
 
-const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 unsigned int screenWidth, screenHeight;
 Camera camera;
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
@@ -35,6 +35,7 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 RenderManager::RenderManager()
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
+	planePosition = glm::vec3(0.0f, -3.6f, 0.0f);
 	modelEulerAngles = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->initialize();
 }
@@ -118,12 +119,12 @@ void RenderManager::createRect()
 	//
 	{
 		float vertices[] = {
-			50.0f,	-5.0f,	50.0f,			1.0f, 1.0f,
-			-50.0f,	-5.0f,	-50.0f,			0.0f, 0.0f,
-			-50.0f,	-5.0f,	50.0f,			0.0f, 1.0f,
-			50.0f,	-5.0f,	-50.0f,			1.0f, 0.0f,
-			-50.0f,	-5.0f,	-50.0f,			0.0f, 0.0f,
-			50.0f,	-5.0f,	50.0f,			1.0f, 1.0f
+			50.0f,	0.0f,	50.0f,		0.0f, 1.0f, 0.0f,		1.0f, 1.0f,
+			-50.0f,	0.0f,	-50.0f,		0.0f, 1.0f, 0.0f,		0.0f, 0.0f,
+			-50.0f,	0.0f,	50.0f,		0.0f, 1.0f, 0.0f,		0.0f, 1.0f,
+			50.0f,	0.0f,	-50.0f,		0.0f, 1.0f, 0.0f,		1.0f, 0.0f,
+			-50.0f,	0.0f,	-50.0f,		0.0f, 1.0f, 0.0f,		0.0f, 0.0f,
+			50.0f,	0.0f,	50.0f,		0.0f, 1.0f, 0.0f,		1.0f, 1.0f
 		};
 
 		GLuint indices[] = {
@@ -143,11 +144,14 @@ void RenderManager::createRect()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 
-		glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer((GLuint)1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
+
+		glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(2);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -303,8 +307,10 @@ void RenderManager::createShadowMap()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
@@ -380,7 +386,7 @@ int RenderManager::createShader(GLenum type, const char* fname)
 
 		GLchar* log = (GLchar*)malloc(sizeof(GLchar) * (len + 1));
 		glGetShaderInfoLog(shader_id, len, &len, log);
-		printf("Shader compilation failed: %s\n", log);
+		printf("[%s]\nShader compilation failed:\n%s\n", fname, log);
 		free((GLchar*)log);
 	}
 
@@ -449,7 +455,7 @@ int RenderManager::run(void)
 				const float lightZNear = 1.0f, lightZFar = 7.5f;
 				glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, lightZNear, lightZFar);
 
-				glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+				glm::mat4 lightView = glm::lookAt(lightPosition,
 												glm::vec3(0.0f, 0.0f, 0.0f),
 												glm::vec3(0.0f, 1.0f, 0.0f));
 				glm::mat4 cameraProjection = camera.calculateProjectionMatrix();
@@ -525,8 +531,25 @@ void RenderManager::renderScene(bool shadowVersion)
 	glActiveTexture(GL_TEXTURE0);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));		// Uniforms must be set after the shader program is set
+	glm::mat4 modelMatrix = glm::translate(planePosition);
+	glUniformMatrix4fv(
+		glGetUniformLocation(programId, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(modelMatrix)
+	);
+	glUniformMatrix3fv(
+		glGetUniformLocation(programId, "normalsModelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+	);
+	glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);
 	glBindVertexArray(this->vao);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
 	// Draw the model!!!!
 	programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
@@ -539,7 +562,7 @@ void RenderManager::renderScene(bool shadowVersion)
 	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
 	glActiveTexture(GL_TEXTURE0);
 
-	glm::mat4 modelMatrix =
+	modelMatrix =
 		glm::translate(modelPosition)
 		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
 		* glm::scale(
@@ -547,31 +570,31 @@ void RenderManager::renderScene(bool shadowVersion)
 			glm::vec3(modelScale)
 		);
 	glUniformMatrix4fv(
-		glGetUniformLocation(this->model_program_id, "modelMatrix"),
+		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
 		glm::value_ptr(modelMatrix)
 	);
 	glUniformMatrix3fv(
-		glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
+		glGetUniformLocation(programId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
 		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
 	);
-	glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
-	glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
-	glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+	glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);
 
 	auto transforms = animator.getFinalBoneMatrices();
 	for (int i = 0; i < transforms.size(); i++)
 		glUniformMatrix4fv(
-			glGetUniformLocation(this->model_program_id, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
 			1,
 			GL_FALSE,
 			glm::value_ptr(transforms[i])
 		);
 
-	tryModel.render(this->model_program_id);
+	tryModel.render(programId);
 }
 
 void RenderManager::renderImGui()
@@ -582,6 +605,8 @@ void RenderManager::renderImGui()
 	static float clipZ;
 
 	static bool renderWireframeMode = false;
+
+	static bool showShadowMap = false;
 
 	//
 	// Menu Bar
@@ -715,9 +740,21 @@ void RenderManager::renderImGui()
 
 			ImGui::Separator();
 
+			ImGui::DragFloat3("Plane Position", &planePosition.x);
+
+			ImGui::Separator();
+
 			ImGui::DragInt("Bone ID (TEST)", &selectedBone);
 			ImGui::InputFloat("Model Scale", &modelScale);
 			ImGui::InputFloat("Model Animation Speed", &deltaTimeMultiplier);
+
+			ImGui::Separator();
+
+			ImGui::Checkbox("Display shadow map", &showShadowMap);
+			if (showShadowMap)
+			{
+				ImGui::Image((void*)(intptr_t)depthMapTexture, ImVec2(512, 512));
+			}
 		}
 		ImGui::End();
 	}

@@ -15,14 +15,30 @@ uniform vec3 viewPosition;
 uniform vec3 lightColor;
 
 
-float shadowCalculation()
+float shadowCalculation(vec3 lightDir)
 {
 	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able
 	projectionCoords = projectionCoords * 0.5 + 0.5;		// Make into NDC coordinates for sampling the depth tex
 
 	float closestDepth = texture(shadowMap, projectionCoords.xy).r;
 	float currentDepth = projectionCoords.z;
-	float shadow = currentDepth - 0.005 > closestDepth ? 1.0 : 0.0;
+	float bias = max(0.05 * (1.0 - dot(normalVector, lightDir)), 0.005);
+	
+	// PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projectionCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+	if(projectionCoords.z > 1.0)
+        shadow = 0.0;
 
 	return shadow;
 }
@@ -59,10 +75,10 @@ void main()
 	//
 	// Calculate Shadow
 	//
-	float shadow = shadowCalculation();
+	float shadow = shadowCalculation(lightDir);
 
 	fragmentColor = vec4((ambient + (1.0 - shadow) * (diffuse + specular)) * objectColor.rgb, objectColor.a);
-	if (shadow > 0.5) fragmentColor = vec4(1, 0, 0, 1);			// DEBUG
+	//if (shadow > 0.5) fragmentColor = vec4(1, 0, 0, 1);			// DEBUG
 
 	// Apply gamma correction
 	const float gammaValue = 2.2f;

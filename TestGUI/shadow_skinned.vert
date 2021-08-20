@@ -36,13 +36,11 @@ void main()
 		{
 			// Apply bone transformation since valid bone!
 			boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
-			normTransform += mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
 		}
 		else
 		{
 			first = false;
 			boneTransform = finalBoneMatrices[selectedBone] * boneWeights[i];
-			normTransform = mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);
 		}
 	}
 

@@ -24,8 +24,10 @@ private:
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, shadow_skinned_program_id;
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
+
 	GLuint depthMapFBO;
 	GLuint depthMapTexture;
+	
 	int selectedBone = 0;
 	float modelScale = 1.0f;
 	float deltaTimeMultiplier = 42.0f;
@@ -35,6 +37,7 @@ private:
 
 	glm::vec3 lightPosition;
 	glm::vec3 modelPosition;
+	glm::vec3 planePosition;
 	glm::vec3 modelEulerAngles;
 
 	glm::mat4	lightProjection, lightView,
