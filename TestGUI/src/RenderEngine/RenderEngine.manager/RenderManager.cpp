@@ -452,8 +452,14 @@ int RenderManager::run(void)
 			// Setup projection matrix for rendering
 			//
 			{
-				const float lightZNear = 1.0f, lightZFar = 7.5f;
-				glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, lightZNear, lightZFar);
+				glm::mat4 lightProjection = glm::ortho(
+					-lightOrthoExtent,
+					lightOrthoExtent,
+					-lightOrthoExtent,
+					lightOrthoExtent,
+					lightOrthoZNearFar.x,
+					lightOrthoZNearFar.y
+				);
 
 				glm::mat4 lightView = glm::lookAt(lightPosition,
 												glm::vec3(0.0f, 0.0f, 0.0f),
@@ -749,6 +755,9 @@ void RenderManager::renderImGui()
 			ImGui::InputFloat("Model Animation Speed", &deltaTimeMultiplier);
 
 			ImGui::Separator();
+
+			ImGui::DragFloat("Light Projection Extent", &lightOrthoExtent);
+			ImGui::DragFloat2("Light Projection zNear, zFar", &lightOrthoZNearFar.x);
 
 			ImGui::Checkbox("Display shadow map", &showShadowMap);
 			if (showShadowMap)

@@ -43,6 +43,9 @@ private:
 	glm::mat4	lightProjection, lightView,
 				cameraProjection, cameraView;
 
+	float lightOrthoExtent = 10.0f;
+	glm::vec2 lightOrthoZNearFar = glm::vec2(1.0f, 20.0f);		// This is about the limit for a first cascade before things start to disappear
+
 	void initialize();
 	void setupViewPort();
 	void setupImGui();
