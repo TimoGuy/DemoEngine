@@ -17,6 +17,7 @@ struct BoneInfo
 class Model
 {
 public:
+	Model() { scene = nullptr; }		// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path) { loadModel(path); }
 	void render(unsigned int shaderId);
 

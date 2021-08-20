@@ -12,7 +12,6 @@
 #include "../../ImGui/imgui_impl_opengl3.h"
 
 #include "../Camera.h"
-#include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
 #include <assimp/matrix4x4.h>
@@ -24,12 +23,13 @@
 #endif
 
 
+const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+unsigned int screenWidth, screenHeight;
 Camera camera;
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
-	glViewport(0, 0, width, height);
-	camera.width = width;
-	camera.height = height;
+	camera.width = screenWidth = width;
+	camera.height = screenHeight = height;
 }
 
 RenderManager::RenderManager()
@@ -82,6 +82,7 @@ void RenderManager::initialize()
 
 	createProgram();
 	createRect();
+	createShadowMap();
 }
 
 void RenderManager::setupViewPort()
@@ -117,12 +118,12 @@ void RenderManager::createRect()
 	//
 	{
 		float vertices[] = {
-			-.5f,	0.5f,	-.1f,			0.0f, 1.0f,
-			-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
-			0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
-			0.5f,	0.5f,	-.1f,			1.0f, 1.0f,
-			-.5f,	-.5f,	0.1f,			0.0f, 0.0f,
-			0.5f,	-.5f,	0.1f,			1.0f, 0.0f
+			50.0f,	-5.0f,	50.0f,			1.0f, 1.0f,
+			-50.0f,	-5.0f,	-50.0f,			0.0f, 0.0f,
+			-50.0f,	-5.0f,	50.0f,			0.0f, 1.0f,
+			50.0f,	-5.0f,	-50.0f,			1.0f, 0.0f,
+			-50.0f,	-5.0f,	-50.0f,			0.0f, 0.0f,
+			50.0f,	-5.0f,	50.0f,			1.0f, 1.0f
 		};
 
 		GLuint indices[] = {
@@ -293,6 +294,26 @@ void RenderManager::createRect()
 	}
 }
 
+void RenderManager::createShadowMap()
+{
+	glGenFramebuffers(1, &depthMapFBO);
+
+	glGenTextures(1, &depthMapTexture);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+	glDrawBuffer(GL_NONE);		// This prevents this framebuffer from having a "diffuse" layer, since we just need the depth
+	glReadBuffer(GL_NONE);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RenderManager::createProgram()
 {
 	int vShader, fShader;
@@ -321,6 +342,24 @@ void RenderManager::createProgram()
 	glAttachShader(skybox_program_id, vShader);
 	glAttachShader(skybox_program_id, fShader);
 	glLinkProgram(skybox_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	shadow_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "shadow.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
+	glAttachShader(shadow_program_id, vShader);
+	glAttachShader(shadow_program_id, fShader);
+	glLinkProgram(shadow_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	shadow_skinned_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "shadow_skinned.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
+	glAttachShader(shadow_skinned_program_id, vShader);
+	glAttachShader(shadow_skinned_program_id, fShader);
+	glLinkProgram(shadow_skinned_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 }
@@ -353,19 +392,12 @@ int RenderManager::run(void)
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
-	// TEMP: try model loading
-	std::cout << "Hello???" << std::endl;
-	/*Model tryModel("res/boblampclean.md5mesh");
-	Animation runAnimation("res/boblampclean.md5anim", &tryModel);*/
-	/*Model tryModel("res/thinmatrix.dae");
-	Animation runAnimation("res/thinmatrix.dae", &tryModel);*/
-	Model tryModel("res/slime_glb.glb");
+	// Model and animation loading
+	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
+	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
+	tryModel = Model("res/slime_glb.glb");
 	Animation runAnimation("res/slime_glb.glb", &tryModel);
-	/*Model tryModel("res/slime_capoeira.fbx");
-	Animation runAnimation("res/slime_capoeira.fbx", &tryModel);*/
-	Animator animator(&runAnimation);
-
-	float zFar = 2000.0f;
+	animator = Animator(&runAnimation);
 
 #if SINGLE_BUFFERED_MODE
 	const float desiredFrameTime = 1000.0f / 80.0f;
@@ -410,66 +442,43 @@ int RenderManager::run(void)
 		// Render
 		//
 		{
+			//
+			// Setup projection matrix for rendering
+			//
+			{
+				const float lightZNear = 1.0f, lightZFar = 7.5f;
+				glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, lightZNear, lightZFar);
+
+				glm::mat4 lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f),
+												glm::vec3(0.0f, 0.0f, 0.0f),
+												glm::vec3(0.0f, 1.0f, 0.0f));
+				glm::mat4 cameraProjection = camera.calculateProjectionMatrix();
+				glm::mat4 cameraView = camera.calculateViewMatrix();
+				updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
+			}
+
+			// -----------------------------------------------------------------------------------------------------------------------------
+			// Render shadow map to depth framebuffer
+			// -----------------------------------------------------------------------------------------------------------------------------
+			glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+			glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			renderScene(true);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+			// -----------------------------------------------------------------------------------------------------------------------------
+			// Render scene normally
+			// -----------------------------------------------------------------------------------------------------------------------------
+			glViewport(0, 0, screenWidth, screenHeight);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// Draw skybox
-			glDepthMask(GL_FALSE);
-			glUseProgram(skybox_program_id);
-			glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-			camera.Matrix(45.0f, 0.1f, zFar, this->skybox_program_id, "skyboxProjViewMatrix", true);
-			glBindVertexArray(skyboxVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-			glDepthMask(GL_TRUE);
-
-			// Draw quad
-			glUseProgram(this->program_id);
-			glBindTexture(GL_TEXTURE_2D, texture);
-			camera.Matrix(45.0f, 0.1f, zFar, this->program_id, "cameraMatrix", false);		// Uniforms must be set after the shader program is set
-			glBindVertexArray(this->vao);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-			// Draw the model!!!!
-			glUseProgram(this->model_program_id);
-			camera.Matrix(45.0f, 0.1f, zFar, this->model_program_id, "cameraMatrix", false);
-			glm::mat4 modelMatrix =
-				glm::translate(modelPosition)
-				* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
-				* glm::scale(
-					glm::mat4(1.0f),
-					glm::vec3(modelScale)
-				);
-			glUniformMatrix4fv(
-				glGetUniformLocation(this->model_program_id, "modelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(modelMatrix)
-			);
-			glUniformMatrix3fv(
-				glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-			);
-			glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
-			glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
-			glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
-
-			auto transforms = animator.getFinalBoneMatrices();
-			for (int i = 0; i < transforms.size(); i++)
-				glUniformMatrix4fv(
-					glGetUniformLocation(this->model_program_id, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-					1,
-					GL_FALSE,
-					glm::value_ptr(transforms[i])
-				);
-
-			// TODO: Testing this
-			//glUniform1i(glGetUniformLocation(this->model_program_id, "boneIndex"), selectedBone);
-			tryModel.render(this->model_program_id);
+			renderScene(false);
 		}
 
-
+		// ImGui buffer swap
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
 #if SINGLE_BUFFERED_MODE
 		glFlush();
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
@@ -480,6 +489,89 @@ int RenderManager::run(void)
 
 	glfwTerminate();
 	return 0;
+}
+
+void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView)
+{
+	RenderManager::lightProjection = lightProjection;
+	RenderManager::lightView = lightView;
+	RenderManager::cameraProjection = cameraProjection;
+	RenderManager::cameraView = cameraView;
+}
+
+void RenderManager::renderScene(bool shadowVersion)
+{
+	if (!shadowVersion)
+	{
+		// Draw skybox
+		glDepthMask(GL_FALSE);
+		glUseProgram(skybox_program_id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
+		glBindVertexArray(skyboxVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDepthMask(GL_TRUE);
+	}
+
+	// Draw quad
+	int programId = shadowVersion ? this->shadow_program_id : this->program_id;
+	glUseProgram(programId);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(glGetUniformLocation(programId, "tex0"), 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));		// Uniforms must be set after the shader program is set
+	glBindVertexArray(this->vao);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	// Draw the model!!!!
+	programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
+	glUseProgram(programId);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
+	glActiveTexture(GL_TEXTURE0);
+
+	glm::mat4 modelMatrix =
+		glm::translate(modelPosition)
+		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
+		* glm::scale(
+			glm::mat4(1.0f),
+			glm::vec3(modelScale)
+		);
+	glUniformMatrix4fv(
+		glGetUniformLocation(this->model_program_id, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(modelMatrix)
+	);
+	glUniformMatrix3fv(
+		glGetUniformLocation(this->model_program_id, "normalsModelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+	);
+	glUniform3fv(glGetUniformLocation(this->model_program_id, "lightPosition"), 1, &lightPosition[0]);
+	glUniform3fv(glGetUniformLocation(this->model_program_id, "viewPosition"), 1, &camera.position[0]);
+	glUniform3f(glGetUniformLocation(this->model_program_id, "lightColor"), 1.0f, 1.0f, 1.0f);
+
+	auto transforms = animator.getFinalBoneMatrices();
+	for (int i = 0; i < transforms.size(); i++)
+		glUniformMatrix4fv(
+			glGetUniformLocation(this->model_program_id, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+			1,
+			GL_FALSE,
+			glm::value_ptr(transforms[i])
+		);
+
+	tryModel.render(this->model_program_id);
 }
 
 void RenderManager::renderImGui()

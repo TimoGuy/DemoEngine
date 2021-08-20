@@ -5,25 +5,21 @@
 #include <iostream>
 
 
-Camera::Camera()
+Camera::Camera() : savedMouseX(-1.0), savedMouseY(-1.0)
 {
 	position = glm::vec3(0.0f, 0.0f, 2.0f);
 	orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	up = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
-void Camera::Matrix(float FOVdegrees, float zNear, float zFar, GLuint programID, const char* uniform, bool noPosition)
+glm::mat4 Camera::calculateProjectionMatrix()
 {
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 projection = glm::mat4(1.0f);
-	
-	view = glm::lookAt(position, position + orientation, up);
-	projection = glm::perspective(glm::radians(FOVdegrees), (float)(width / height), zNear, zFar);
+	return glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 2000.0f);		// NOTE: Hardcoded!!!
+}
 
-	if (noPosition)
-		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * glm::mat4(glm::mat3(view))));
-	else
-		glUniformMatrix4fv(glGetUniformLocation(programID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+glm::mat4 Camera::calculateViewMatrix()
+{
+	return glm::lookAt(position, position + orientation, up);
 }
 
 glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
@@ -32,7 +28,7 @@ glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
 	glm::mat4 projection = glm::mat4(1.0f);
 
 	view = glm::lookAt(position, position + orientation, up);
-	projection = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 10000.0f);		// NOTE: Hardcoded
+	projection = glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 2000.0f);		// NOTE: Hardcoded!!!!
 
 	return glm::vec3(projection * view * glm::vec4(pointInSpace, 1.0f));
 }

@@ -4,13 +4,29 @@ out vec4 fragmentColor;
 
 in vec2 texCoord;
 in vec3 fragPosition;
+in vec4 fragPositionLightSpace;
 in vec3 normalVector;
 
 uniform sampler2D texture_diffuse1;		// NOTE: depending on the number of textures, you may need more samplers
+uniform sampler2D shadowMap;
 
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform vec3 lightColor;
+
+
+float shadowCalculation()
+{
+	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able
+	projectionCoords = projectionCoords * 0.5 + 0.5;		// Make into NDC coordinates for sampling the depth tex
+
+	float closestDepth = texture(shadowMap, projectionCoords.xy).r;
+	float currentDepth = projectionCoords.z;
+	float shadow = currentDepth - 0.005 > closestDepth ? 1.0 : 0.0;
+
+	return shadow;
+}
+
 
 void main()
 {
@@ -40,7 +56,13 @@ void main()
 	float spec = pow(max(dot(normalVector, halfwayDir), 0.0), 32);
 	vec3 specular = specularStrength * spec * lightColor;
 
-	fragmentColor = vec4((ambient + diffuse + specular) * objectColor.rgb, objectColor.a);
+	//
+	// Calculate Shadow
+	//
+	float shadow = shadowCalculation();
+
+	fragmentColor = vec4((ambient + (1.0 - shadow) * (diffuse + specular)) * objectColor.rgb, objectColor.a);
+	if (shadow > 0.5) fragmentColor = vec4(1, 0, 0, 1);			// DEBUG
 
 	// Apply gamma correction
 	const float gammaValue = 2.2f;

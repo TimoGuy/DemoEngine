@@ -108,7 +108,6 @@
     <None Include="fragment.frag" />
     <None Include="model.frag" />
     <None Include="model.vert" />
-    <None Include="res\player_slime.fbx" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
     <None Include="vertex.vert" />
@@ -133,7 +132,6 @@
     <ClInclude Include="src\SkinningTech.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\cool_img.png" />
     <Image Include="res\skybox\bluecloud_bk.jpg" />
     <Image Include="res\skybox\bluecloud_dn.jpg" />
     <Image Include="res\skybox\bluecloud_ft.jpg" />

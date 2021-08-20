@@ -87,7 +87,6 @@
     <None Include="model.vert" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
-    <None Include="res\player_slime.fbx" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.h">
@@ -143,9 +142,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\cool_img.png">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
     <Image Include="res\skybox\bluecloud_bk.jpg">
       <Filter>Resource Files\Textures\Skybox</Filter>
     </Image>

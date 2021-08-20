@@ -6,6 +6,7 @@
 class Animator
 {
 public:
+	Animator() { }		// NOTE: Creation of the default constructor is just to appease the compiler
 	Animator(Animation* animation);
 	
 	void updateAnimation(float deltaTime);

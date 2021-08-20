@@ -7,18 +7,12 @@ layout (location=3) in ivec4 boneIds;
 layout (location=4) in vec4 boneWeights;
 
 uniform mat4 modelMatrix;
-uniform mat3 normalsModelMatrix;
-uniform mat4 cameraMatrix;
 uniform mat4 lightSpaceMatrix;
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 finalBoneMatrices[MAX_BONES];
 
-out vec2 texCoord;
-out vec3 fragPosition;		// For lighting in frag shader
-out vec4 fragPositionLightSpace;
-out vec3 normalVector;
 
 void main()
 {
@@ -26,7 +20,6 @@ void main()
 	// Do Bone Transformations
 	//
 	mat4 boneTransform = mat4(1.0f);
-	mat3 normTransform = mat3(1.0f);
 	bool first = true;
 	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
@@ -53,13 +46,7 @@ void main()
 		}
 	}
 
-	//
-	// Prepare for Fragment shader
-	//
-	fragPosition = vec3(modelMatrix * boneTransform * vec4(vertexPosition, 1.0));
-	fragPositionLightSpace = lightSpaceMatrix * vec4(fragPosition, 1.0);
-	normalVector = normalize(normalsModelMatrix * normTransform * normal);
 
-	gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
-	texCoord = uvCoordinate;
+	vec3 fragPosition = vec3(modelMatrix * boneTransform * vec4(vertexPosition, 1.0));
+	gl_Position = lightSpaceMatrix * vec4(fragPosition, 1.0);
 }
