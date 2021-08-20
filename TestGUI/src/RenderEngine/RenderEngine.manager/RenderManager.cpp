@@ -35,7 +35,7 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 RenderManager::RenderManager()
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
-	modelEulerAngles = glm::vec3(90.0f, 0.0f, 0.0f);
+	modelEulerAngles = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->initialize();
 }
 
@@ -176,7 +176,7 @@ void RenderManager::createRect()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		stbi_image_free(bytes);
@@ -387,7 +387,6 @@ int RenderManager::run(void)
 			camera.Inputs(window);
 
 		// Update Animation
-		float startTime = glfwGetTime();
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;

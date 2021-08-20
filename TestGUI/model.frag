@@ -32,16 +32,17 @@ void main()
 	vec3 diffuse = diff * lightColor;
 
 	//
-	// Specular Light
+	// Specular Light (Use Blinn-phong model with specular) <https://learnopengl.com/Advanced-Lighting/Advanced-Lighting>
 	//
 	float specularStrength = 0.5;
 	vec3 viewDir = normalize(viewPosition - fragPosition);
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+	vec3 halfwayDir = normalize(lightDir + viewDir);
+	float spec = pow(max(dot(normalVector, halfwayDir), 0.0), 32);
 	vec3 specular = specularStrength * spec * lightColor;
 
 	fragmentColor = vec4((ambient + diffuse + specular) * objectColor.rgb, objectColor.a);
 
-	//fragmentColor = vec4(normalVector, 1.0f);
-	//fragmentColor = vec4(texCoord, 0.0f, 1.0f);
+	// Apply gamma correction
+	const float gammaValue = 2.2f;
+	fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gammaValue));
 }
