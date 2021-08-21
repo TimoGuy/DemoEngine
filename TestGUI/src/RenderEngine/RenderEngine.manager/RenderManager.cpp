@@ -401,9 +401,9 @@ int RenderManager::run(void)
 	// Model and animation loading
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
-	tryModel = Model("res/slime_glb.glb");
-	Animation runAnimation("res/slime_glb.glb", &tryModel);
-	animator = Animator(&runAnimation);
+	std::vector<Animation> tryModelAnimations;
+	tryModel = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
+	animator = Animator(&tryModelAnimations);
 
 #if SINGLE_BUFFERED_MODE
 	const float desiredFrameTime = 1000.0f / 80.0f;
@@ -425,6 +425,19 @@ int RenderManager::run(void)
 			camera.Inputs(window);
 
 		// Update Animation
+		if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+			animator.playAnimation(0, 12.0f);
+		if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+			animator.playAnimation(1, 12.0f);
+		if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+			animator.playAnimation(2, 12.0f);
+		if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+			animator.playAnimation(3, 12.0f);
+		if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+			animator.playAnimation(4, 12.0f);
+		if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+			animator.playAnimation(5, 12.0f);
+
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;

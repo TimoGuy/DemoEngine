@@ -6,6 +6,7 @@
 #include <map>
 
 #include "Mesh.h"
+class Animation;
 
 
 struct BoneInfo
@@ -18,7 +19,8 @@ class Model
 {
 public:
 	Model() { scene = nullptr; }		// NOTE: Creation of the default constructor is just to appease the compiler
-	Model(const char* path) { loadModel(path); }
+	Model(const char* path);
+	Model(const char* path, std::vector<Animation>& animations, std::vector<int> animationIndices);
 	void render(unsigned int shaderId);
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
@@ -34,7 +36,7 @@ private:
 
 	const aiScene* scene;
 
-	void loadModel(std::string path);
+	void loadModel(std::string path, std::vector<Animation>& animations, std::vector<int> animationIndices);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName);

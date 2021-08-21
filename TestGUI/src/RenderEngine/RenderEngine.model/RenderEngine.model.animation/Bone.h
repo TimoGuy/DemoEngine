@@ -30,16 +30,14 @@ private:
 	std::vector<KeyScale>		scales;
 	int numPositions, numRotations, numScales;
 
-	glm::mat4 localTransform;
 	std::string name;
 	int id;
 
 public:
 	Bone(const std::string& name, int id, const aiNodeAnim* channel);
 	
-	void update(float animationTime);
-	
-	glm::mat4 getLocalTransform() { return localTransform; }
+	void update(float animationTime, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale);
+
 	std::string getBoneName() const { return name; }
 	int getBoneId() { return id; }
 
@@ -49,8 +47,8 @@ public:
 
 private:
 	float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
-	glm::mat4 interpolatePosition(float animationTime);
-	glm::mat4 interpolateRotation(float animationTime);
-	glm::mat4 interpolateScaling(float animationTime);
+	glm::vec3 interpolatePosition(float animationTime);
+	glm::quat interpolateRotation(float animationTime);
+	glm::vec3 interpolateScaling(float animationTime);
 };
 

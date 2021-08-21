@@ -7,6 +7,22 @@
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
+#include "RenderEngine.model.animation/Animation.h"
+
+
+Model::Model(const char* path)
+{
+	std::vector<Animation> garbage;
+	std::vector<int> garbage2;
+	loadModel(path, garbage, garbage2);
+}
+
+
+Model::Model(const char* path, std::vector<Animation>& animations, std::vector<int> animationIndices)
+{
+	loadModel(path, animations, animationIndices);
+}
+
 
 void Model::render(unsigned int shaderId)
 {
@@ -17,7 +33,7 @@ void Model::render(unsigned int shaderId)
 }
 
 
-void Model::loadModel(std::string path)
+void Model::loadModel(std::string path, std::vector<Animation>& animations, std::vector<int> animationIndices)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
@@ -33,6 +49,16 @@ void Model::loadModel(std::string path)
 
 	directory = path.substr(0, path.find_last_of('/'));
 	processNode(scene->mRootNode, scene);		// This starts the recursive process of loading in the model as vertices!
+
+	//
+	// Load in animations
+	//
+	for (unsigned int i = 0; i < animationIndices.size(); i++)
+	{
+		int animationIndex = animationIndices[i];
+		Animation newAnimation(scene, this, animationIndex);
+		animations.push_back(newAnimation);
+	}
 }
 
 

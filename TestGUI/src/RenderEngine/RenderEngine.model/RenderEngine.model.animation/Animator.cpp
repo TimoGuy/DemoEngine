@@ -1,10 +1,12 @@
 #include "Animator.h"
+
+#include <glm/gtx/quaternion.hpp>
 //#include <iostream>
 
-Animator::Animator(Animation* animation) : deltaTime(0.0f)
+
+Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
 {
-	currentTime = 0.0f;
-	currentAnimation = animation;
+	playAnimation(0);
 
 	finalBoneMatrices.reserve(100);
 
@@ -23,30 +25,82 @@ void Animator::updateAnimation(float deltaTime)
 		currentTime += currentAnimation->getTicksPerSecond() * deltaTime;
 		currentTime = fmod(currentTime, currentAnimation->getDuration());
 		//std::cout << "----------------" << std::endl;
-		calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f));
 	}
+	bool useNextAnimation = false;
+	if (nextAnimation)
+	{
+		nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
+		nextTime = fmod(nextTime, nextAnimation->getDuration());
+		mixTime -= deltaTime;
+
+		if (mixTime <= 0.0f)
+		{
+			// Switch over to primary animation only
+			currentTime = nextTime;
+			currentAnimation = nextAnimation;
+			nextTime = totalMixTime = -1.0f;
+			nextAnimation = nullptr;
+		}
+		else useNextAnimation = true;
+	}
+	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), useNextAnimation);
 }
 
 
-void Animator::playAnimation(Animation* animation)
+void Animator::playAnimation(unsigned int animationIndex)
 {
-	currentAnimation = animation;
+	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
+
+	assert(animationIndex < animations->size());
 	currentTime = 0.0f;
+	currentAnimation = &(*animations)[animationIndex];
 }
 
 
-void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
+void Animator::playAnimation(unsigned int animationIndex, float mixTime)
+{
+	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
+
+	assert(animationIndex < animations->size());
+	nextTime = 0.0f;
+	nextAnimation = &(*animations)[animationIndex];
+	Animator::mixTime = Animator::totalMixTime = mixTime;
+}
+
+
+void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, bool useNextAnimation)
 {
 	//std::cout << "Bone: " << node->name << std::endl;
 	std::string nodeName = node->name;
 	glm::mat4 nodeTransform = node->transformation;
 
 	Bone* bone = currentAnimation->findBone(nodeName);
-
 	if (bone)
 	{
-		bone->update(currentTime);
-		nodeTransform = bone->getLocalTransform();
+		glm::vec3 position;
+		glm::quat rotation;
+		glm::vec3 scale;
+		bone->update(currentTime, position, rotation, scale);
+
+		if (useNextAnimation)
+		{
+			Bone* nextBone = nextAnimation->findBone(nodeName);
+			if (nextBone)
+			{
+				glm::vec3 nextPosition;
+				glm::quat nextRotation;
+				glm::vec3 nextScale;
+				nextBone->update(nextTime, nextPosition, nextRotation, nextScale);
+
+				float mixScaleFactor = 1.0 - mixTime / totalMixTime;
+				position = glm::mix(position, nextPosition, mixScaleFactor);
+				rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
+				scale = glm::mix(scale, nextScale, mixScaleFactor);
+			}
+		}
+
+		// Convert this all to matrix4x4
+		nodeTransform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)) * glm::scale(glm::mat4(1.0f), scale);
 	}
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;
@@ -65,6 +119,6 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 	// Recursively find childrens' bone transformation
 	for (unsigned int i = 0; i < node->childrenCount; i++)
 	{
-		calculateBoneTransform(&node->children[i], globalTransformation);
+		calculateBoneTransform(&node->children[i], globalTransformation, useNextAnimation);
 	}
 }

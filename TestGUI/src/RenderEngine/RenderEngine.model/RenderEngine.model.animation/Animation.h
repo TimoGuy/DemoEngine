@@ -15,7 +15,7 @@ class Animation
 {
 public:
 	Animation() = default;
-	Animation(const std::string& animationPath, Model* model);
+	Animation(const aiScene* scene, Model* model, unsigned int animationIndex);
 
 	Bone* findBone(const std::string& name);
 
