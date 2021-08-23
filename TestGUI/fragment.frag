@@ -10,6 +10,8 @@ in vec3 normalVector;
 uniform sampler2D tex0;
 uniform sampler2D shadowMap;
 
+uniform vec3 diffuseTint;
+
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform vec3 lightColor;
@@ -46,8 +48,7 @@ float shadowCalculation(vec3 lightDir)
 
 void main()
 {
-	//vec4 objectColor = mix(texture(tex0, texCoord), vec4(0.3, 0.3, 0.3, 1.0), 0.8);
-	vec4 objectColor = vec4(0.3, 0.3, 0.3, 1.0);
+	vec4 objectColor = texture(tex0, texCoord) * vec4(diffuseTint, 1.0f);
 
 	//
 	// Ambient light

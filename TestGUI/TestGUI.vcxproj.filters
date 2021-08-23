@@ -87,6 +87,11 @@
     <None Include="model.vert" />
     <None Include="skybox.frag" />
     <None Include="skybox.vert" />
+    <None Include="shadow.vert" />
+    <None Include="shadow_skinned.vert" />
+    <None Include="do_nothing.frag" />
+    <None Include="text.vert" />
+    <None Include="text.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.h">

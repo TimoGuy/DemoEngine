@@ -7,6 +7,9 @@
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/imgui_impl_glfw.h"
 #include "../../ImGui/imgui_impl_opengl3.h"
@@ -78,12 +81,15 @@ void RenderManager::initialize()
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	lightPosition = glm::vec3(7.0f, 5.0f, 3.0f);
 
 	createProgram();
 	createRect();
 	createShadowMap();
+	createFonts();
 }
 
 void RenderManager::setupViewPort()
@@ -296,6 +302,35 @@ void RenderManager::createRect()
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 	}
+
+	////
+	//// Create PBR Materials
+	////
+	//{
+	//	// Albedo
+	//	int imgWidth, imgHeight, numColorChannels;
+	//	stbi_set_flip_vertically_on_load(true);
+	//	unsigned char* bytes = stbi_load("res/cerberus/cerberus_A.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+	//	if (bytes == NULL)
+	//	{
+	//		std::cout << stbi_failure_reason() << std::endl;
+	//	}
+
+	//	glGenTextures(1, &pbrNormalTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+	//}
 }
 
 void RenderManager::createShadowMap()
@@ -368,6 +403,24 @@ void RenderManager::createProgram()
 	glLinkProgram(shadow_skinned_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
+
+	/*pbr_program_id = glCreateProgram();				// TODO: for this to work, some extensions need to get enabled
+	vShader = createShader(GL_VERTEX_SHADER, "pbr.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "pbr.frag");
+	glAttachShader(pbr_program_id, vShader);
+	glAttachShader(pbr_program_id, fShader);
+	glLinkProgram(pbr_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);*/
+
+	text_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "text.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "text.frag");
+	glAttachShader(text_program_id, vShader);
+	glAttachShader(text_program_id, fShader);
+	glLinkProgram(text_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
 }
 
 int RenderManager::createShader(GLenum type, const char* fname)
@@ -393,6 +446,88 @@ int RenderManager::createShader(GLenum type, const char* fname)
 	return shader_id;
 }
 
+void RenderManager::createFonts()
+{
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft))
+	{
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+		return;
+	}
+
+	FT_Face face;
+	if (FT_New_Face(ft, "res/arial.ttf", 0, &face))
+	{
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+		return;
+	}
+
+	FT_Set_Pixel_Sizes(face, 0, 48);
+
+	//
+	// Load ASCII first 128 characters (test for now)
+	//
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	for (unsigned char c = 0; c < 128; c++)
+	{
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+
+		// Generate texture
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer
+		);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Store character
+		Character newChar = {
+			texture,
+			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			face->glyph->advance.x
+		};
+		characters.insert(std::pair<char, Character>(c, newChar));
+	}
+
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+	//
+	// Initialize vao and vbo for drawing text
+	//
+	glGenVertexArrays(1, &textVAO);
+	glGenBuffers(1, &textVBO);
+	glBindVertexArray(textVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
 int RenderManager::run(void)
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -404,6 +539,8 @@ int RenderManager::run(void)
 	std::vector<Animation> tryModelAnimations;
 	tryModel = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
 	animator = Animator(&tryModelAnimations);
+
+	pbrModel = Model("res/cerberus/cerberus.fbx");
 
 #if SINGLE_BUFFERED_MODE
 	const float desiredFrameTime = 1000.0f / 80.0f;
@@ -548,6 +685,8 @@ void RenderManager::renderScene(bool shadowVersion)
 	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
 	glActiveTexture(GL_TEXTURE0);
+	glm::vec3 tint(0.3f, 0.3f, 0.3f);
+	glUniform3fv(glGetUniformLocation(programId, "diffuseTint"), 1, &tint[0]);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));		// Uniforms must be set after the shader program is set
 	glm::mat4 modelMatrix = glm::translate(planePosition);
@@ -614,6 +753,24 @@ void RenderManager::renderScene(bool shadowVersion)
 		);
 
 	tryModel.render(programId);
+
+	////
+	//// Draw cerberus model
+	////
+	//programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
+	//		// TODO: Set the rest of this up eh!
+	//pbrModel.render(programId);
+
+	//
+	// Draw Text
+	//
+	if (!shadowVersion)
+	{
+		programId = text_program_id;
+		modelMatrix =
+			glm::translate(textPosition);
+		renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
+	}
 }
 
 void RenderManager::renderImGui()
@@ -777,6 +934,10 @@ void RenderManager::renderImGui()
 			{
 				ImGui::Image((void*)(intptr_t)depthMapTexture, ImVec2(512, 512));
 			}
+
+			ImGui::Separator();
+
+			ImGui::DragFloat3("Text Position", &textPosition.x);
 		}
 		ImGui::End();
 	}
@@ -812,6 +973,59 @@ void RenderManager::renderImGui()
 	}
 }
 
+void RenderManager::renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color)
+{
+	// Activate corresponding render state
+	glUseProgram(programId);
+	glUniform3f(glGetUniformLocation(programId, "diffuseTint"), color.x, color.y, color.z);
+	glUniformMatrix4fv(
+		glGetUniformLocation(programId, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(modelMatrix)
+	);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(textVAO);
+
+	// iterate through all characters
+	float x = 0;
+	float y = 0;
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = characters[*c];
+
+		float xpos = x + ch.bearing.x;
+		float ypos = y - (ch.size.y - ch.bearing.y);
+
+		float w = ch.size.x;
+		float h = ch.size.y;
+		// update VBO for each character
+		float vertices[6][4] = {
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos,     ypos,       0.0f, 1.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+			{ xpos + w, ypos + h,   1.0f, 0.0f }
+		};
+		// render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.textureId);
+		// update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += (ch.advance >> 6); // bitshift by 6 to get value in pixels (2^6 = 64)
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void RenderManager::createWindow(const char* windowName)
 {
 	if (!glfwInit())
@@ -832,8 +1046,6 @@ void RenderManager::createWindow(const char* windowName)
 
 	glfwMakeContextCurrent(window);
 	gladLoadGL();
-
-	// TODO: in the future may wanna use glfwGetWindowContentScale(window, &xscale, &yscale); for scaled desktop users (and everybody apple)
 }
 
 void RenderManager::finalize()
