@@ -25,6 +25,7 @@
 #include <thread>
 #endif
 
+void renderCube();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 unsigned int screenWidth, screenHeight;
@@ -38,6 +39,8 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 RenderManager::RenderManager()
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
+	pbrModelPosition = glm::vec3(0.0f, 0.5f, 0.0f);
+	pbrModelScale = glm::vec3(1.0f);
 	planePosition = glm::vec3(0.0f, -3.6f, 0.0f);
 	modelEulerAngles = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->initialize();
@@ -199,44 +202,147 @@ void RenderManager::createRect()
 		);
 	}
 
+	////
+	//// Create Cubemap for Skybox
+	////
+	//{
+	//	/*std::vector<std::string> textureFaces = {
+	//		std::string("res/skybox/bluecloud_rt.jpg"),
+	//		std::string("res/skybox/bluecloud_lf.jpg"),
+	//		std::string("res/skybox/bluecloud_up.jpg"),
+	//		std::string("res/skybox/bluecloud_dn.jpg"),
+	//		std::string("res/skybox/bluecloud_ft.jpg"),
+	//		std::string("res/skybox/bluecloud_bk.jpg")
+	//	};*/
+
+	//	std::vector<std::string> textureFaces = {
+	//		std::string("res/skybox/good_town/px.png"),
+	//		std::string("res/skybox/good_town/nx.png"),
+	//		std::string("res/skybox/good_town/py.png"),
+	//		std::string("res/skybox/good_town/ny.png"),
+	//		std::string("res/skybox/good_town/pz.png"),
+	//		std::string("res/skybox/good_town/nz.png")
+	//	};
+
+	//	glGenTextures(1, &cubemapTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+
+	//	int width, height, nrChannels;
+	//	unsigned char* data;
+	//	for (unsigned int i = 0; i < textureFaces.size(); i++)
+	//	{
+	//		data = stbi_load(textureFaces[i].c_str(), &width, &height, &nrChannels, STBI_default);
+	//		glTexImage2D(
+	//			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+	//			0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
+	//		);
+	//	}
+
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	//	//glUniform1i(		// OPTIONAL
+	//	//	glGetUniformLocation(this->skybox_program_id, "skyboxTex"),
+	//	//	0
+	//	//);
+	//}
+
 	//
-	// Create Cubemap for Skybox
+	// Create skybox from hdr radiance file
 	//
 	{
-		std::vector<std::string> textureFaces = {
-			std::string("res/skybox/bluecloud_rt.jpg"),
-			std::string("res/skybox/bluecloud_lf.jpg"),
-			std::string("res/skybox/bluecloud_up.jpg"),
-			std::string("res/skybox/bluecloud_dn.jpg"),
-			std::string("res/skybox/bluecloud_ft.jpg"),
-			std::string("res/skybox/bluecloud_bk.jpg")
-		};
+		const int cubemapSideSize = 512;
 
-		glGenTextures(1, &cubemapTexture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-
-		int width, height, nrChannels;
-		unsigned char* data;
-		for (unsigned int i = 0; i < textureFaces.size(); i++)
+		//
+		// Load in the hdr file
+		//
+		stbi_set_flip_vertically_on_load(true);
+		int width, height, nrComponents;
+		float* data = stbi_loadf("res/skybox/environment.hdr", &width, &height, &nrComponents, STBI_default);
+		unsigned int hdrTexture;
+		if (data)
 		{
-			data = stbi_load(textureFaces[i].c_str(), &width, &height, &nrChannels, STBI_default);
-			glTexImage2D(
-				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-			);
+			glGenTextures(1, &hdrTexture);
+			glBindTexture(GL_TEXTURE_2D, hdrTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Failed to load HDR image." << std::endl;
 		}
 
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//
+		// Create the framebuffer and renderbuffer to capture the hdr skybox
+		//
+		unsigned int captureFBO, captureRBO;
+		glGenFramebuffers(1, &captureFBO);
+		glGenRenderbuffers(1, &captureRBO);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, cubemapSideSize, cubemapSideSize);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+		//
+		// Create cubemap for the framebuffer and renderbuffer
+		//
+		glGenTextures(1, &envCubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			// note that we store each face with 16 bit floating point values
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+				cubemapSideSize, cubemapSideSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		//glUniform1i(		// OPTIONAL
-		//	glGetUniformLocation(this->skybox_program_id, "skyboxTex"),
-		//	0
-		//);
+		//
+		// Render out the hdr skybox to the framebuffer
+		//
+		glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+		glm::mat4 captureViews[] =
+		{
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		   glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+		};
+
+		// convert HDR equirectangular environment map to cubemap equivalent
+		glUseProgram(hdri_program_id);
+		glUniform1i(glGetUniformLocation(this->hdri_program_id, "equirectangularMap"), 0);
+		glUniformMatrix4fv(glGetUniformLocation(this->hdri_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, hdrTexture);
+
+		glViewport(0, 0, cubemapSideSize, cubemapSideSize); // don't forget to configure the viewport to the capture dimensions.
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			glUniformMatrix4fv(glGetUniformLocation(this->hdri_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			renderCube(); // renders a 1x1 cube in NDR
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	//
@@ -303,34 +409,107 @@ void RenderManager::createRect()
 		glBindVertexArray(0);
 	}
 
-	////
-	//// Create PBR Materials
-	////
-	//{
-	//	// Albedo
-	//	int imgWidth, imgHeight, numColorChannels;
-	//	stbi_set_flip_vertically_on_load(true);
-	//	unsigned char* bytes = stbi_load("res/cerberus/cerberus_A.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//
+	// Create PBR Materials
+	//
+	{
+		// Albedo
+		int imgWidth, imgHeight, numColorChannels;
+		//stbi_set_flip_vertically_on_load(true);
+		//unsigned char* bytes = stbi_load("res/cerberus/cerberus_A.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		unsigned char* bytes = stbi_load("res/rusted_iron/rustediron2_basecolor.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-	//	if (bytes == NULL)
-	//	{
-	//		std::cout << stbi_failure_reason() << std::endl;
-	//	}
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
 
-	//	glGenTextures(1, &pbrNormalTexture);
-	//	glActiveTexture(GL_TEXTURE0);
-	//	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glGenTextures(1, &pbrAlbedoTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-	//	glGenerateMipmap(GL_TEXTURE_2D);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+		glGenerateMipmap(GL_TEXTURE_2D);
 
-	//	stbi_image_free(bytes);
-	//	glBindTexture(GL_TEXTURE_2D, 0);
-	//}
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		// Normal
+		//bytes = stbi_load("res/cerberus/cerberus_N.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_normal.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		glGenTextures(1, &pbrNormalTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		// Metalness
+		//bytes = stbi_load("res/cerberus/cerberus_M.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		glGenTextures(1, &pbrMetalnessTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		// Roughness
+		//bytes = stbi_load("res/cerberus/cerberus_R.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		glGenTextures(1, &pbrRoughnessTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 }
 
 void RenderManager::createShadowMap()
@@ -404,14 +583,14 @@ void RenderManager::createProgram()
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 
-	/*pbr_program_id = glCreateProgram();				// TODO: for this to work, some extensions need to get enabled
+	pbr_program_id = glCreateProgram();
 	vShader = createShader(GL_VERTEX_SHADER, "pbr.vert");
 	fShader = createShader(GL_FRAGMENT_SHADER, "pbr.frag");
 	glAttachShader(pbr_program_id, vShader);
 	glAttachShader(pbr_program_id, fShader);
 	glLinkProgram(pbr_program_id);
 	glDeleteShader(vShader);
-	glDeleteShader(fShader);*/
+	glDeleteShader(fShader);
 
 	text_program_id = glCreateProgram();
 	vShader = createShader(GL_VERTEX_SHADER, "text.vert");
@@ -419,6 +598,15 @@ void RenderManager::createProgram()
 	glAttachShader(text_program_id, vShader);
 	glAttachShader(text_program_id, fShader);
 	glLinkProgram(text_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	hdri_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "hdri_equirectangular.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "hdri_equirectangular.frag");
+	glAttachShader(hdri_program_id, vShader);
+	glAttachShader(hdri_program_id, fShader);
+	glLinkProgram(hdri_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 }
@@ -540,7 +728,7 @@ int RenderManager::run(void)
 	tryModel = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
 	animator = Animator(&tryModelAnimations);
 
-	pbrModel = Model("res/cerberus/cerberus.fbx");
+	pbrModel = Model("res/uv_sphere.glb");
 
 #if SINGLE_BUFFERED_MODE
 	const float desiredFrameTime = 1000.0f / 80.0f;
@@ -668,7 +856,7 @@ void RenderManager::renderScene(bool shadowVersion)
 		// Draw skybox
 		glDepthMask(GL_FALSE);
 		glUseProgram(skybox_program_id);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap/*cubemapTexture*/);
 		glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
 		glBindVertexArray(skyboxVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -754,12 +942,48 @@ void RenderManager::renderScene(bool shadowVersion)
 
 	tryModel.render(programId);
 
-	////
-	//// Draw cerberus model
-	////
-	//programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
-	//		// TODO: Set the rest of this up eh!
-	//pbrModel.render(programId);
+	//
+	// Draw PBR sphere!!!!
+	//
+	programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
+	glUseProgram(programId);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
+	glUniform1i(glGetUniformLocation(programId, "albedoMap"), 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
+	glUniform1i(glGetUniformLocation(programId, "normalMap"), 1);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
+	glUniform1i(glGetUniformLocation(programId, "metallicMap"), 2);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
+	glUniform1i(glGetUniformLocation(programId, "roughnessMap"), 3);
+	glActiveTexture(GL_TEXTURE0);
+
+	modelMatrix =
+		glm::translate(pbrModelPosition)
+		* glm::scale(glm::mat4(1.0f), pbrModelScale);
+	glUniformMatrix4fv(
+		glGetUniformLocation(programId, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(modelMatrix)
+	);
+	glUniformMatrix3fv(
+		glGetUniformLocation(programId, "normalsModelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+	);
+	glUniform3fv(glGetUniformLocation(programId, "lightPositions[0]"), 1, &lightPosition[0]);
+	glUniform3f(glGetUniformLocation(programId, "lightColors[0]"), 150.0f, 150.0f, 150.0f);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+
+	pbrModel.render(programId);
 
 	//
 	// Draw Text
@@ -938,6 +1162,11 @@ void RenderManager::renderImGui()
 			ImGui::Separator();
 
 			ImGui::DragFloat3("Text Position", &textPosition.x);
+
+			ImGui::Separator();
+
+			ImGui::DragFloat3("PBR Position", &pbrModelPosition.x);
+			ImGui::DragFloat3("PBR Scale", &pbrModelScale.x);
 		}
 		ImGui::End();
 	}
@@ -1062,4 +1291,80 @@ void RenderManager::finalize()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+
+// renderCube() renders a 1x1 3D cube in NDC.
+// -------------------------------------------------
+unsigned int cubeVAO = 0;
+unsigned int cubeVBO = 0;
+void renderCube()
+{
+	// initialize (if necessary)
+	if (cubeVAO == 0)
+	{
+		float vertices[] = {
+			// back face
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+			 1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+			-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+			-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+			// front face
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			 1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+			-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+			-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+			// left face
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+			// right face
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+			 1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+			 1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+			// bottom face
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			 1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			 1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+			-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+			-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+			// top face
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			 1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			 1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+			 1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+			-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+			-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+		};
+		glGenVertexArrays(1, &cubeVAO);
+		glGenBuffers(1, &cubeVBO);
+		// fill buffer
+		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// link vertex attributes
+		glBindVertexArray(cubeVAO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+	// render Cube
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
 }
