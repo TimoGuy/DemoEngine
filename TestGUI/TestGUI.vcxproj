@@ -113,6 +113,8 @@
     <None Include="irradiance_convolution.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
+    <None Include="pbr.frag" />
+    <None Include="pbr.vert" />
     <None Include="shadow.vert" />
     <None Include="shadow_skinned.vert" />
     <None Include="skybox.frag" />
