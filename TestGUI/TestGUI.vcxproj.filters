@@ -92,6 +92,10 @@
     <None Include="do_nothing.frag" />
     <None Include="text.vert" />
     <None Include="text.frag" />
+    <None Include="hdri_equirectangular.frag" />
+    <None Include="hdri_equirectangular.vert" />
+    <None Include="irradiance_convolution.vert" />
+    <None Include="irradiance_convolution.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.h">

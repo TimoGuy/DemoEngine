@@ -107,6 +107,10 @@
   <ItemGroup>
     <None Include="do_nothing.frag" />
     <None Include="fragment.frag" />
+    <None Include="hdri_equirectangular.frag" />
+    <None Include="hdri_equirectangular.vert" />
+    <None Include="irradiance_convolution.frag" />
+    <None Include="irradiance_convolution.vert" />
     <None Include="model.frag" />
     <None Include="model.vert" />
     <None Include="shadow.vert" />
