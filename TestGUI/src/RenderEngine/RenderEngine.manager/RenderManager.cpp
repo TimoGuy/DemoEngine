@@ -81,10 +81,15 @@ void RenderManager::initialize()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+	
 	//glEnable(GL_CULL_FACE);				// NOTE: commented out because of the diffuse irradiance texture creation in the framebuffer objects and renderbuffer objects. For some reason the backfaces were getting culled, causing the skybox to never get recorded into the framebuffer object. (AP: find way to have culling but also have this framebuffer action happen too)
 	//glCullFace(GL_BACK);
 	//glFrontFace(GL_CCW);
+	
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -384,6 +389,27 @@ void RenderManager::createRect()
 			renderCube();
 		}
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//
+		// Create prefilter map for specular roughness
+		//
+		const int prefilterMapSize = 128;
+
+		unsigned int prefilterMap;
+		glGenTextures(1, &prefilterMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilterMapSize, prefilterMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	}
 
 	//
@@ -657,6 +683,15 @@ void RenderManager::createProgram()
 	glAttachShader(irradiance_program_id, vShader);
 	glAttachShader(irradiance_program_id, fShader);
 	glLinkProgram(irradiance_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	specular_ibl_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "specular_ibl.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "specular_ibl.frag");
+	glAttachShader(specular_ibl_program_id, vShader);
+	glAttachShader(specular_ibl_program_id, fShader);
+	glLinkProgram(specular_ibl_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 }
