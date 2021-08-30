@@ -93,11 +93,13 @@
     <None Include="text.vert" />
     <None Include="text.frag" />
     <None Include="hdri_equirectangular.frag" />
-    <None Include="hdri_equirectangular.vert" />
-    <None Include="irradiance_convolution.vert" />
+    <None Include="cubemap.vert" />
     <None Include="irradiance_convolution.frag" />
     <None Include="pbr.frag" />
     <None Include="pbr.vert" />
+    <None Include="prefilter.frag" />
+    <None Include="brdf.vert" />
+    <None Include="brdf.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.h">

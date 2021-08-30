@@ -26,6 +26,7 @@
 #endif
 
 void renderCube();
+void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 unsigned int screenWidth, screenHeight;
@@ -395,7 +396,7 @@ void RenderManager::createRect()
 		//
 		const int prefilterMapSize = 128;
 
-		unsigned int prefilterMap;
+		//unsigned int prefilterMap;
 		glGenTextures(1, &prefilterMap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 		for (unsigned int i = 0; i < 6; i++)
@@ -409,7 +410,69 @@ void RenderManager::createRect()
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);		// Use mips to capture more "diffused" roughness
+
+		//
+		// Run Monte-carlo simulation on the environment lighting
+		//
+		glUseProgram(prefilter_program_id);
+		glUniform1i(glGetUniformLocation(prefilter_program_id, "environmentMap"), 0);
+		glUniformMatrix4fv(glGetUniformLocation(prefilter_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		unsigned int maxMipLevels = 5;
+		for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+		{
+			// Resize to mip level size
+			unsigned int mipWidth = 128 * std::pow(0.5, mip);
+			unsigned int mipHeight = 128 * std::pow(0.5, mip);
+			glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+			glViewport(0, 0, mipWidth, mipHeight);
+
+			float roughness = (float)mip / (float)(maxMipLevels - 1);
+			glUniform1f(glGetUniformLocation(prefilter_program_id, "roughness"), roughness);
+			for (unsigned int i = 0; i < 6; i++)
+			{
+				glUniformMatrix4fv(glGetUniformLocation(prefilter_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				renderCube();
+			}
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//
+		// Create PBR BRDF LUT
+		//
+		const int brdfLUTSize = 512;
+
+		//unsigned int brdfLUTTexture;
+		glGenTextures(1, &brdfLUTTexture);
+
+		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, brdfLUTSize, brdfLUTSize, 0, GL_RG, GL_FLOAT, 0);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Redo the render buffer to create the brdf texture
+		glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, brdfLUTSize, brdfLUTSize);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+
+		glViewport(0, 0, brdfLUTSize, brdfLUTSize);
+		glUseProgram(brdf_program_id);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderQuad();
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	//
@@ -669,7 +732,7 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	hdri_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "hdri_equirectangular.vert");
+	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
 	fShader = createShader(GL_FRAGMENT_SHADER, "hdri_equirectangular.frag");
 	glAttachShader(hdri_program_id, vShader);
 	glAttachShader(hdri_program_id, fShader);
@@ -678,7 +741,7 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	irradiance_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "irradiance_convolution.vert");
+	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
 	fShader = createShader(GL_FRAGMENT_SHADER, "irradiance_convolution.frag");
 	glAttachShader(irradiance_program_id, vShader);
 	glAttachShader(irradiance_program_id, fShader);
@@ -686,12 +749,21 @@ void RenderManager::createProgram()
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 
-	specular_ibl_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "specular_ibl.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "specular_ibl.frag");
-	glAttachShader(specular_ibl_program_id, vShader);
-	glAttachShader(specular_ibl_program_id, fShader);
-	glLinkProgram(specular_ibl_program_id);
+	prefilter_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "prefilter.frag");
+	glAttachShader(prefilter_program_id, vShader);
+	glAttachShader(prefilter_program_id, fShader);
+	glLinkProgram(prefilter_program_id);
+	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	brdf_program_id = glCreateProgram();
+	vShader = createShader(GL_VERTEX_SHADER, "brdf.vert");
+	fShader = createShader(GL_FRAGMENT_SHADER, "brdf.frag");
+	glAttachShader(brdf_program_id, vShader);
+	glAttachShader(brdf_program_id, fShader);
+	glLinkProgram(brdf_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 }
@@ -1041,18 +1113,31 @@ void RenderManager::renderScene(bool shadowVersion)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
 	glUniform1i(glGetUniformLocation(programId, "albedoMap"), 0);
+	
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
 	glUniform1i(glGetUniformLocation(programId, "normalMap"), 1);
+	
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
 	glUniform1i(glGetUniformLocation(programId, "metallicMap"), 2);
+
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
 	glUniform1i(glGetUniformLocation(programId, "roughnessMap"), 3);
+
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 	glUniform1i(glGetUniformLocation(programId, "irradianceMap"), 4);
+
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+	glUniform1i(glGetUniformLocation(programId, "prefilterMap"), 5);
+
+	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glUniform1i(glGetUniformLocation(programId, "brdfLUT"), 6);
+
 	glActiveTexture(GL_TEXTURE0);
 
 	modelMatrix =
@@ -1466,5 +1551,36 @@ void renderCube()
 	// render Cube
 	glBindVertexArray(cubeVAO);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+	if (quadVAO == 0)
+	{
+		float quadVertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	}
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
 }

@@ -32,11 +32,11 @@ public:
 private:
 
 	GLFWwindow* window;
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, shadow_skinned_program_id, pbr_program_id, text_program_id, hdri_program_id, irradiance_program_id, specular_ibl_program_id;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, shadow_skinned_program_id, pbr_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
 
-	GLuint envCubemap, irradianceMap;
+	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
 
 	GLuint depthMapFBO;
 	GLuint depthMapTexture;
