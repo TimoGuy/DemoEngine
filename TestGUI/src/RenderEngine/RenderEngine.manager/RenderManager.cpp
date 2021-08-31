@@ -1030,55 +1030,10 @@ void RenderManager::renderScene(bool shadowVersion)
 		glDepthMask(GL_TRUE);
 	}
 
-	// Draw the model!!!!
-	int programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
-	glUseProgram(programId);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
-	glActiveTexture(GL_TEXTURE0);
-
-	glm::mat4 modelMatrix =
-		glm::translate(modelPosition)
-		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
-		* glm::scale(
-			glm::mat4(1.0f),
-			glm::vec3(modelScale)
-		);
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(modelMatrix)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(programId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-	);
-	glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
-	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);
-
-	auto transforms = animator.getFinalBoneMatrices();
-	for (int i = 0; i < transforms.size(); i++)
-		glUniformMatrix4fv(
-			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-			1,
-			GL_FALSE,
-			glm::value_ptr(transforms[i])
-		);
-
-	tryModel.render(programId);
-
 	//
 	// Draw PBR sphere!!!!
 	//
-	programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
+	int programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
 	glUseProgram(programId);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
@@ -1118,7 +1073,7 @@ void RenderManager::renderScene(bool shadowVersion)
 
 	glActiveTexture(GL_TEXTURE0);
 
-	modelMatrix =
+	glm::mat4 modelMatrix =
 		glm::translate(pbrModelPosition)
 		* glm::scale(glm::mat4(1.0f), pbrModelScale);
 	glUniformMatrix4fv(
@@ -1138,6 +1093,52 @@ void RenderManager::renderScene(bool shadowVersion)
 	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
 
 	pbrModel.render(programId);
+
+	// Draw the model!!!!
+	// 
+	//programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
+	//glUseProgram(programId);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+
+	/*glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
+	glActiveTexture(GL_TEXTURE0);*/
+
+	modelMatrix =
+		glm::translate(modelPosition)
+		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
+		* glm::scale(
+			glm::mat4(1.0f),
+			glm::vec3(modelScale)
+		);
+	glUniformMatrix4fv(
+		glGetUniformLocation(programId, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(modelMatrix)
+	);
+	glUniformMatrix3fv(
+		glGetUniformLocation(programId, "normalsModelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+	);
+	glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);
+
+	auto transforms = animator.getFinalBoneMatrices();
+	for (int i = 0; i < transforms.size(); i++)
+		glUniformMatrix4fv(
+			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+			1,
+			GL_FALSE,
+			glm::value_ptr(transforms[i])
+		);
+
+	tryModel.render(programId);
 
 	// Draw quad
 	//programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
