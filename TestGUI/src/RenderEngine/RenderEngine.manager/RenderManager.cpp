@@ -544,8 +544,8 @@ void RenderManager::createRect()
 		// Albedo
 		int imgWidth, imgHeight, numColorChannels;
 		//stbi_set_flip_vertically_on_load(true);
-		//unsigned char* bytes = stbi_load("res/rusted_iron/rustediron2_basecolor.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		unsigned char* bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-albedo.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		unsigned char* bytes = stbi_load("res/rusted_iron/rustediron2_basecolor.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		//unsigned char* bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-albedo.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
 		if (bytes == NULL)
 		{
@@ -568,8 +568,8 @@ void RenderManager::createRect()
 
 
 		// Normal
-		//bytes = stbi_load("res/rusted_iron/rustediron2_normal.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-normal-ogl.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_normal.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-normal-ogl.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
 		if (bytes == NULL)
 		{
@@ -592,8 +592,8 @@ void RenderManager::createRect()
 
 
 		// Metalness
-		//bytes = stbi_load("res/rusted_iron/rustediron2_metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
 		if (bytes == NULL)
 		{
@@ -616,8 +616,8 @@ void RenderManager::createRect()
 
 
 		// Roughness
-		//bytes = stbi_load("res/rusted_iron/rustediron2_roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		bytes = stbi_load("res/rusted_iron/rustediron2_roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
 		if (bytes == NULL)
 		{
@@ -1083,6 +1083,7 @@ void RenderManager::renderScene(bool shadowVersion)
 	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
 
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
 	glUniform1i(glGetUniformLocation(programId, "albedoMap"), 0);
@@ -1110,6 +1111,10 @@ void RenderManager::renderScene(bool shadowVersion)
 	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
 	glUniform1i(glGetUniformLocation(programId, "brdfLUT"), 6);
+
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 7);
 
 	glActiveTexture(GL_TEXTURE0);
 

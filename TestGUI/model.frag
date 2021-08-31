@@ -17,7 +17,7 @@ uniform vec3 lightColor;
 
 float shadowCalculation(vec3 lightDir)
 {
-	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able
+	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able to
 	projectionCoords = projectionCoords * 0.5 + 0.5;		// Make into NDC coordinates for sampling the depth tex
 
 	float closestDepth = texture(shadowMap, projectionCoords.xy).r;

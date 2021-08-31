@@ -3,6 +3,7 @@
 out vec4 FragColor;
 in vec2 texCoord;
 in vec3 fragPosition;
+in vec4 fragPositionLightSpace;
 in vec3 normalVector;
 
 // material parameters
@@ -11,6 +12,9 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+
+// Shadow map
+uniform sampler2D shadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -24,6 +28,34 @@ uniform vec3 lightColors[1];
 uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
+// ----------------------------------------------------------------------------
+float shadowCalculation(vec3 lightDir)
+{
+	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able to
+	projectionCoords = projectionCoords * 0.5 + 0.5;		// Make into NDC coordinates for sampling the depth tex
+
+	float closestDepth = texture(shadowMap, projectionCoords.xy).r;
+	float currentDepth = projectionCoords.z;
+	float bias = max(0.05 * (1.0 - dot(normalVector, lightDir)), 0.005);
+	
+	// PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, projectionCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+	if(projectionCoords.z > 1.0)
+        shadow = 0.0;
+
+	return shadow;
+}
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
@@ -164,10 +196,17 @@ void main()
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     //
+	// Calculate Shadow
+	//
+	vec3 lightDir = normalize(lightPositions[0] - fragPosition);        // @Hardcode
+	float shadow = shadowCalculation(lightDir);
+
+    //
     // Combine the colors with the shading
     //
     vec3 ambient = (kD * diffuse + specular) * ao;
     vec3 color = ambient + Lo;
+    color *= 1.0 - (shadow * 0.5);                                     // NOTE: I do not know if this is the right implementation for shadows... but it looks pretty okay for now.
 
     // HDR tonemapping          TODO: Implement hdr and then have there be tonemapping at the end and bloom!
     color = color / (color + vec3(1.0));
