@@ -14,6 +14,10 @@ Camera::Camera() : savedMouseX(-1.0), savedMouseY(-1.0)
 
 glm::mat4 Camera::calculateProjectionMatrix()
 {
+	// Note: When minimizing the window, there's a divide by zero error that happens with width/height
+	if (width == 0.0f || height == 0.0f)
+		return glm::mat4(1.0f);
+
 	return glm::perspective(glm::radians(45.0f), (float)(width / height), 0.1f, 2000.0f);		// NOTE: Hardcoded!!!
 }
 
@@ -24,6 +28,10 @@ glm::mat4 Camera::calculateViewMatrix()
 
 glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
 {
+	// Note: When minimizing the window, there's a divide by zero error that happens with width/height
+	if (width == 0.0f || height == 0.0f)
+		return glm::vec3(0.0f);
+
 	glm::mat4 view = glm::mat4(1.0f);
 	glm::mat4 projection = glm::mat4(1.0f);
 
