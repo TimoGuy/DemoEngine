@@ -1,13 +1,11 @@
-#include "RenderEngine/RenderEngine.h"
+#include "GameLoop/GameLoop.h"
 
-RenderManager* renderManager;
-
-int main();
 
 int main(void)
 {
-	renderManager = new RenderManager();
-	int exitCode = renderManager->run();
-	delete renderManager;
+	// WARNING: a lot can go wrong in these next three lines
+	GameLoop::initialize();
+	GameLoop::run();
+	GameLoop::destroy();
 	return 0;
 }

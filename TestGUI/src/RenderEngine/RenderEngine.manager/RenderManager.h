@@ -11,6 +11,7 @@
 
 #include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
+class Camera;
 
 struct Character
 {
@@ -27,11 +28,14 @@ public:
 	RenderManager();
 	~RenderManager();
 
-	int run(void);
+	void renderImGuiPass(Camera& camera);
+
+	void reportCamera(Camera& camera);
+	void renderShadowPass(Camera& camera);
+	void renderGeometryPass(Camera& camera);
 
 private:
 
-	GLFWwindow* window;
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, shadow_skinned_program_id, pbr_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
 	GLuint vbo, vao, ebo;
 	GLuint skyboxVAO, skyboxVBO;
@@ -66,11 +70,6 @@ private:
 	float lightOrthoExtent = 10.0f;
 	glm::vec2 lightOrthoZNearFar = glm::vec2(1.0f, 20.0f);		// This is about the limit for a first cascade before things start to disappear
 
-	void initialize();
-	void setupViewPort();
-	void setupImGui();
-	void setupPhysx();
-	void createWindow(const char* windowName);
 	void createProgram();
     void createRect();
 	void createShadowMap();
@@ -83,9 +82,7 @@ private:
 
 	void updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView);
 
-	void renderImGui();
-	void renderScene(bool shadowVersion);
+	void renderImGui(Camera& camera);
+	void renderScene(bool shadowVersion, Camera& camera);
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
-
-	void finalize();
 };
