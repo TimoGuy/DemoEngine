@@ -69,6 +69,7 @@ private:
 	void initialize();
 	void setupViewPort();
 	void setupImGui();
+	void setupPhysx();
 	void createWindow(const char* windowName);
 	void createProgram();
     void createRect();
