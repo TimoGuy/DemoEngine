@@ -1,13 +1,11 @@
-#include "RenderEngine/RenderEngine.h"
+#include "MainLoop/MainLoop.h"
 
-RenderManager* renderManager;
 
-int main();
-
-int main(void)
+int main()
 {
-	renderManager = new RenderManager();
-	int exitCode = renderManager->run();
-	delete renderManager;
+	MainLoop::initialize();
+	MainLoop::run();
+	MainLoop::cleanup();
+
 	return 0;
 }

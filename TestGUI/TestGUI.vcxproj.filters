@@ -75,6 +75,9 @@
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\MainLoop\MainLoop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag">
@@ -151,6 +154,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\SkinningTech.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MainLoop\MainLoop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BaseObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
