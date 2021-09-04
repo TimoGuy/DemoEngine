@@ -13,5 +13,5 @@ namespace GameLoop
 
 namespace GameLoopUtils
 {
-	glm::mat4 physxMat44ToGlmMat4(physx::PxMat44 mat4, glm::mat4 newMat4);
+	glm::mat4 physxMat44ToGlmMat4(physx::PxMat44 mat4);
 }

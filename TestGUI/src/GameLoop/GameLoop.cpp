@@ -327,6 +327,8 @@ namespace GameLoop
 		setupImGui();
 		configureGraphics();
 
+		setupPhysx();
+
 		renderManager = new RenderManager();
 	}
 
@@ -365,7 +367,7 @@ namespace GameLoop
 				camera.Inputs(window);
 
 			// Update Animation
-			if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+			/*if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 				animator.playAnimation(0, 12.0f);
 			if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
 				animator.playAnimation(1, 12.0f);
@@ -376,12 +378,12 @@ namespace GameLoop
 			if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
 				animator.playAnimation(4, 12.0f);
 			if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
-				animator.playAnimation(5, 12.0f);
+				animator.playAnimation(5, 12.0f);*/
 
 			float currentFrame = glfwGetTime();
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
-			animator.updateAnimation(deltaTime * deltaTimeMultiplier);
+			//animator.updateAnimation(deltaTime * deltaTimeMultiplier);
 
 			//
 			// ImGui Render Pass
@@ -427,8 +429,9 @@ namespace GameLoop
 
 namespace GameLoopUtils
 {
-	glm::mat4 physxMat44ToGlmMat4(physx::PxMat44 mat4, glm::mat4 newMat4)
+	glm::mat4 physxMat44ToGlmMat4(physx::PxMat44 mat4)
 	{
+		glm::mat4 newMat4;
 		newMat4[0][0] = mat4[0][0];
 		newMat4[0][1] = mat4[0][1];
 		newMat4[0][2] = mat4[0][2];

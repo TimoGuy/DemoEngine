@@ -10,6 +10,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#include "../../GameLoop/GameLoop.h"
 #include "../Camera.h"
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/imgui_impl_glfw.h"
@@ -50,11 +51,11 @@ RenderManager::RenderManager()
 
 RenderManager::~RenderManager()
 {
-	glDeleteTextures(1, &texture);
+	/*glDeleteTextures(1, &texture);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteBuffers(1, &vbo);
 	glDeleteBuffers(1, &ebo);
-	glDeleteProgram(program_id);
+	glDeleteProgram(program_id);*/
 }
 
 void RenderManager::renderImGuiPass(Camera& camera)
@@ -943,7 +944,7 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 	glActiveTexture(GL_TEXTURE0);
 
 	// Convert the physx object to model matrix
-	glm::mat4 modelMatrix;
+	/*glm::mat4 modelMatrix = GameLoopUtils::physxMat44ToGlmMat4(body->getGlobalPose());
 	physx::PxTransform t = body->getGlobalPose();
 	{
 		physx::PxMat44 mat4 = physx::PxMat44(t);
@@ -969,11 +970,11 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 		newMat[3][3] = mat4[3][3];
 
 		modelMatrix = newMat;
-	}
+	}*/
 
-	/*glm::mat4 modelMatrix =
+	glm::mat4 modelMatrix =
 		glm::translate(pbrModelPosition)
-		* glm::scale(glm::mat4(1.0f), pbrModelScale);*/
+		* glm::scale(glm::mat4(1.0f), pbrModelScale);
 	glUniformMatrix4fv(
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
