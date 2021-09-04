@@ -826,7 +826,7 @@ void RenderManager::createFonts()
 	glBindVertexArray(0);
 }
 
-void RenderManager::render(GLFWwindow* window, Camera& camera)
+void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<LightObject*>& lightObjects, std::vector<RenderObject*>& renderObjects)
 {
 	//
 	// ImGui Render Pass

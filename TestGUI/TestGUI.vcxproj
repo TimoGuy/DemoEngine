@@ -131,6 +131,7 @@
   <ItemGroup>
     <ClInclude Include="src\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
+    <ClInclude Include="src\RenderEngine\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.h" />
@@ -145,7 +146,6 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.model\Model.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\Mesh.h" />
     <ClInclude Include="src\RenderEngine\Camera.h" />
-    <ClInclude Include="src\RenderEngine\RenderEngine.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
   </ItemGroup>

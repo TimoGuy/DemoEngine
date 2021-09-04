@@ -10,6 +10,7 @@
 #include <map>
 
 #include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
+#include "../../BaseObject.h"
 
 
 #include "../Camera.h"
@@ -30,7 +31,7 @@ public:
 	RenderManager(Camera& camera);
 	~RenderManager();
 
-	void render(GLFWwindow* window, Camera& camera, std::vector<BaseObject*> lightObjects);
+	void render(GLFWwindow* window, Camera& camera, std::vector<LightObject*>& lightObjects, std::vector<RenderObject*>& renderObjects);
 
 private:
 
