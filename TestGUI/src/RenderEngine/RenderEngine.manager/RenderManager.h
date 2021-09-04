@@ -10,10 +10,10 @@
 #include <map>
 
 #include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
-#include "../../BaseObject.h"
+#include "../../Objects/BaseObject.h"
 
 
-#include "../Camera.h"
+#include "../RenderEngine.camera/Camera.h"
 
 
 struct Character

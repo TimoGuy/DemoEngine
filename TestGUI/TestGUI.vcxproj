@@ -103,7 +103,7 @@
     <ClCompile Include="src\RenderEngine\RenderEngine.model\Mesh.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\RenderEngine\Camera.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.camera\Camera.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.manager\RenderManager.cpp" />
     <ClCompile Include="src\stb.cpp" />
   </ItemGroup>
@@ -129,9 +129,9 @@
     <None Include="vertex.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\BaseObject.h" />
+    <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
-    <ClInclude Include="src\RenderEngine\Light.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.h" />
@@ -145,7 +145,7 @@
     <ClInclude Include="src\ImGui\imstb_truetype.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\Model.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\Mesh.h" />
-    <ClInclude Include="src\RenderEngine\Camera.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.camera\Camera.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
   </ItemGroup>

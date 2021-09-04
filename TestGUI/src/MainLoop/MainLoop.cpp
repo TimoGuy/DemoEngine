@@ -3,9 +3,9 @@
 #include <vector>
 #include <thread>
 #include <PxPhysicsAPI.h>
-#include "../BaseObject.h"
+#include "../Objects/BaseObject.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
-#include "../RenderEngine/Camera.h"
+#include "../RenderEngine/RenderEngine.camera/Camera.h"
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_impl_glfw.h"
 #include "../ImGui/imgui_impl_opengl3.h"
