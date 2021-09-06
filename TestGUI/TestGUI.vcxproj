@@ -89,6 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
+    <ClCompile Include="src\Objects\Character.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.cpp" />
@@ -105,6 +106,8 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.camera\Camera.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.manager\RenderManager.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.resources\ShaderResources.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.resources\TextureResources.cpp" />
     <ClCompile Include="src\stb.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +134,7 @@
   <ItemGroup>
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
+    <ClInclude Include="src\Objects\Character.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h" />
@@ -147,6 +151,8 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.model\Mesh.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.camera\Camera.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.resources\ShaderResources.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.resources\TextureResources.h" />
     <ClInclude Include="src\SkinningTech.h" />
   </ItemGroup>
   <ItemGroup>

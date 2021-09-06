@@ -8,15 +8,15 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <vector>
 
-#include "../RenderEngine.model/RenderEngine.model.animation/Animator.h"
 #include "../../Objects/BaseObject.h"
 
 
 #include "../RenderEngine.camera/Camera.h"
 
 
-struct Character
+struct TextCharacter
 {
 	unsigned int textureId;
 	glm::ivec2 size;
@@ -35,9 +35,8 @@ public:
 
 private:
 
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, shadow_skinned_program_id, pbr_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
 	GLuint vbo, vao, ebo;
-	GLuint skyboxVAO, skyboxVBO;
 
 	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
 
@@ -48,11 +47,7 @@ private:
 	float modelScale = 1.0f;
 	float deltaTimeMultiplier = 42.0f;
 
-	Model tryModel;
-	Animator animator;
-
-	Model pbrModel;
-	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+	//Model pbrModel;
 	glm::vec3 pbrModelPosition, pbrModelScale;
 
 	GLuint hdrTexture;
@@ -72,16 +67,16 @@ private:
 	void createProgram();
     void createRect();
 	void createShadowMap();
-	int createShader(GLenum type, const char* fname);
 	const GLchar* readFile(const char* filename);
 
-	std::map<char, Character> characters;
+	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
 	void createFonts();
 
 	void updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView);
 
-	void renderImGui(Camera& camera);
+	void renderImGuiPass(Camera& camera);
+	void renderImGuiContents(Camera& camera);
 	void renderScene(bool shadowVersion, Camera& camera);
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 

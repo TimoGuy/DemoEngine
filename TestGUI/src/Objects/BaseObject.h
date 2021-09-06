@@ -52,5 +52,5 @@ public:
 class RenderObject : BaseObject
 {
 public:
-	virtual void render() = 0;			// TODO: figure out what they need and implement it!
+	virtual void render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture) = 0;			// TODO: figure out what they need and implement it!
 };

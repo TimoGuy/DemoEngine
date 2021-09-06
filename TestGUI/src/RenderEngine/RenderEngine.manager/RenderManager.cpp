@@ -1,7 +1,6 @@
 #include "RenderManager.h"
 
-#include <stb/stb_image.h>
-#include <vector>
+
 #include <string>
 #include <cmath>
 #include <glm/gtx/scalar_multiplication.hpp>
@@ -14,10 +13,15 @@
 #include "../../ImGui/imgui_impl_glfw.h"
 #include "../../ImGui/imgui_impl_opengl3.h"
 
+#include "../RenderEngine.resources/ShaderResources.h"
+#include "../RenderEngine.resources/TextureResources.h"
+
 
 #include <assimp/matrix4x4.h>
 
 #include "PxPhysicsAPI.h"
+
+#include "../../Objects/Character.h"
 
 
 void renderCube();
@@ -25,6 +29,8 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
+
+Character* characterjjjj;
 RenderManager::RenderManager(Camera& camera)
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
@@ -40,44 +46,18 @@ RenderManager::RenderManager(Camera& camera)
 	createFonts();
 
 
-	//
-	// Model and animation loading
-	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
-	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
-	//
-	std::vector<Animation> tryModelAnimations;
-	tryModel = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
-	animator = Animator(&tryModelAnimations);
 
-	pbrModel = Model("res/uv_sphere.glb");
+	//pbrModel = Model("res/uv_sphere.glb");
+	characterjjjj = new Character();
 }
 
 RenderManager::~RenderManager()
 {
 	this->finalize();
+	delete characterjjjj;
 }
 
-const GLchar* RenderManager::readFile(const char* filename)
-{
-	FILE* infile;
 
-	fopen_s(&infile, filename, "rb");
-	if (!infile) {
-		printf("Unable to open file %s\n", filename);
-		return NULL;
-	}
-
-	fseek(infile, 0, SEEK_END);
-	int len = ftell(infile);
-	fseek(infile, 0, SEEK_SET);
-
-	GLchar* source = (GLchar*)malloc(sizeof(GLchar) * (len + 1));
-	fread(source, 1, len, infile);
-	fclose(infile);
-	source[len] = 0;
-
-	return (GLchar*)(source);
-}
 
 
 GLuint texture, cubemapTexture;
@@ -130,85 +110,37 @@ void RenderManager::createRect()
 	//
 	// Create Texture
 	//
-	{
-		int imgWidth, imgHeight, numColorChannels;
-		stbi_set_flip_vertically_on_load(true);
-		unsigned char* bytes = stbi_load("res/cool_img.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-
-		//std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
-
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
-
-		glGenTextures(1, &texture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		glUniform1i(
-			glGetUniformLocation(this->program_id, "tex0"),
-			0
-		);
-	}
-
-	////
-	//// Create Cubemap for Skybox
-	////
+	texture = TextureResources::getInstance().loadTexture2D("light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	//{
-	//	/*std::vector<std::string> textureFaces = {
-	//		std::string("res/skybox/bluecloud_rt.jpg"),
-	//		std::string("res/skybox/bluecloud_lf.jpg"),
-	//		std::string("res/skybox/bluecloud_up.jpg"),
-	//		std::string("res/skybox/bluecloud_dn.jpg"),
-	//		std::string("res/skybox/bluecloud_ft.jpg"),
-	//		std::string("res/skybox/bluecloud_bk.jpg")
-	//	};*/
+	//	int imgWidth, imgHeight, numColorChannels;
+	//	
+	//	unsigned char* bytes = stbi_load("res/cool_img.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-	//	std::vector<std::string> textureFaces = {
-	//		std::string("res/skybox/good_town/px.png"),
-	//		std::string("res/skybox/good_town/nx.png"),
-	//		std::string("res/skybox/good_town/py.png"),
-	//		std::string("res/skybox/good_town/ny.png"),
-	//		std::string("res/skybox/good_town/pz.png"),
-	//		std::string("res/skybox/good_town/nz.png")
-	//	};
+	//	//std::cout << imgWidth << "x" << imgHeight << " (" << numColorChannels << std::endl;
 
-	//	glGenTextures(1, &cubemapTexture);
-	//	glActiveTexture(GL_TEXTURE0);
-	//	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-
-	//	int width, height, nrChannels;
-	//	unsigned char* data;
-	//	for (unsigned int i = 0; i < textureFaces.size(); i++)
+	//	if (bytes == NULL)
 	//	{
-	//		data = stbi_load(textureFaces[i].c_str(), &width, &height, &nrChannels, STBI_default);
-	//		glTexImage2D(
-	//			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-	//			0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data
-	//		);
+	//		std::cout << stbi_failure_reason() << std::endl;
 	//	}
 
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	//	glGenTextures(1, &texture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, texture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	//	//glUniform1i(		// OPTIONAL
-	//	//	glGetUniformLocation(this->skybox_program_id, "skyboxTex"),
-	//	//	0
-	//	//);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+
+	//	glUniform1i(
+	//		glGetUniformLocation(this->program_id, "tex0"),
+	//		0
+	//	);
 	//}
 
 	//
@@ -220,27 +152,28 @@ void RenderManager::createRect()
 		//
 		// Load in the hdr file
 		//
-		stbi_set_flip_vertically_on_load(true);
-		int width, height, nrComponents;
-		float* data = stbi_loadf("res/skybox/environment.hdr", &width, &height, &nrComponents, STBI_default);
-		//unsigned int hdrTexture;
-		if (data)
-		{
-			glGenTextures(1, &hdrTexture);
-			glBindTexture(GL_TEXTURE_2D, hdrTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
+		hdrTexture = TextureResources::getInstance().loadHDRTexture2D("hdrEnvironmentMap", "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+		//stbi_set_flip_vertically_on_load(true);
+		//int width, height, nrComponents;
+		//float* data = stbi_loadf("res/skybox/environment.hdr", &width, &height, &nrComponents, STBI_default);
+		////unsigned int hdrTexture;
+		//if (data)
+		//{
+		//	glGenTextures(1, &hdrTexture);
+		//	glBindTexture(GL_TEXTURE_2D, hdrTexture);
+		//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, data);
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			stbi_image_free(data);
-		}
-		else
-		{
-			std::cout << "Failed to load HDR image." << std::endl;
-		}
+		//	stbi_image_free(data);
+		//}
+		//else
+		//{
+		//	std::cout << "Failed to load HDR image." << std::endl;
+		//}
 
 		//
 		// Create the framebuffer and renderbuffer to capture the hdr skybox
@@ -429,170 +362,106 @@ void RenderManager::createRect()
 	}
 
 	//
-	// Create VAO, VBO for Skybox
-	//
-	{
-		float skyboxVertices[] = {
-			// positions          
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f
-		};
-
-		glGenVertexArrays(1, &skyboxVAO);
-		glGenBuffers(1, &skyboxVBO);
-
-		glBindVertexArray(skyboxVAO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-
-	//
 	// Create PBR Materials
 	//
-	{
-		// Albedo
-		int imgWidth, imgHeight, numColorChannels;
-		//stbi_set_flip_vertically_on_load(true);
-		unsigned char* bytes = stbi_load("res/rusted_iron/rustediron2_basecolor.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		//unsigned char* bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-albedo.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//{
+	//	// Albedo
+	//	int imgWidth, imgHeight, numColorChannels;
+	//	//stbi_set_flip_vertically_on_load(true);
+	//	unsigned char* bytes = stbi_load("res/rusted_iron/rustediron2_basecolor.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	//unsigned char* bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-albedo.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
+	//	if (bytes == NULL)
+	//	{
+	//		std::cout << stbi_failure_reason() << std::endl;
+	//	}
 
-		glGenTextures(1, &pbrAlbedoTexture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//	glGenTextures(1, &pbrAlbedoTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-		glGenerateMipmap(GL_TEXTURE_2D);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imgWidth, imgHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
 
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-
-		// Normal
-		bytes = stbi_load("res/rusted_iron/rustediron2_normal.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-normal-ogl.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
-
-		glGenTextures(1, &pbrNormalTexture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
 
 
-		// Metalness
-		bytes = stbi_load("res/rusted_iron/rustediron2_metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	// Normal
+	//	bytes = stbi_load("res/rusted_iron/rustediron2_normal.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-normal-ogl.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
+	//	if (bytes == NULL)
+	//	{
+	//		std::cout << stbi_failure_reason() << std::endl;
+	//	}
 
-		glGenTextures(1, &pbrMetalnessTexture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//	glGenTextures(1, &pbrNormalTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-		glGenerateMipmap(GL_TEXTURE_2D);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgWidth, imgHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
 
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
 
 
-		// Roughness
-		bytes = stbi_load("res/rusted_iron/rustediron2_roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-		//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	// Metalness
+	//	bytes = stbi_load("res/rusted_iron/rustediron2_metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-metallic.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
 
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
+	//	if (bytes == NULL)
+	//	{
+	//		std::cout << stbi_failure_reason() << std::endl;
+	//	}
 
-		glGenTextures(1, &pbrRoughnessTexture);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//	glGenTextures(1, &pbrMetalnessTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
-		glGenerateMipmap(GL_TEXTURE_2D);
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
 
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+
+
+	//	// Roughness
+	//	bytes = stbi_load("res/rusted_iron/rustediron2_roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+	//	//bytes = stbi_load("res/hardwood-floorboards1-bl/hardwood-floorboards1-roughness.png", &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+	//	if (bytes == NULL)
+	//	{
+	//		std::cout << stbi_failure_reason() << std::endl;
+	//	}
+
+	//	glGenTextures(1, &pbrRoughnessTexture);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imgWidth, imgHeight, 0, GL_RED, GL_UNSIGNED_BYTE, bytes);			// TODO: Figure out a way to have imports be SRGB or SRGB_ALPHA and then the output format for this function be set to RGB or RGBA (NOTE: for everywhere that's using this glTexImage2D function.) ALSO NOTE: textures like spec maps and normal maps should not have gamma de-correction applied bc they will not be in sRGB format like normal diffuse textures!
+	//	glGenerateMipmap(GL_TEXTURE_2D);
+
+	//	stbi_image_free(bytes);
+	//	glBindTexture(GL_TEXTURE_2D, 0);
+	//}
 }
 
 void RenderManager::createShadowMap()
@@ -622,8 +491,8 @@ void RenderManager::createProgram()
 	int vShader, fShader;
 
 	this->program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "vertex.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "fragment.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "vertex.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "fragment.frag");
 	glAttachShader(this->program_id, vShader);
 	glAttachShader(this->program_id, fShader);
 	glLinkProgram(this->program_id);
@@ -631,8 +500,8 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	this->model_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "model.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "model.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "model.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "model.frag");
 	glAttachShader(this->model_program_id, vShader);
 	glAttachShader(this->model_program_id, fShader);
 	glLinkProgram(this->model_program_id);
@@ -640,8 +509,8 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	skybox_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "skybox.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "skybox.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "skybox.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "skybox.frag");
 	glAttachShader(skybox_program_id, vShader);
 	glAttachShader(skybox_program_id, fShader);
 	glLinkProgram(skybox_program_id);
@@ -649,35 +518,17 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	shadow_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "shadow.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "shadow.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
 	glAttachShader(shadow_program_id, vShader);
 	glAttachShader(shadow_program_id, fShader);
 	glLinkProgram(shadow_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 
-	shadow_skinned_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "shadow_skinned.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
-	glAttachShader(shadow_skinned_program_id, vShader);
-	glAttachShader(shadow_skinned_program_id, fShader);
-	glLinkProgram(shadow_skinned_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	pbr_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "pbr.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "pbr.frag");
-	glAttachShader(pbr_program_id, vShader);
-	glAttachShader(pbr_program_id, fShader);
-	glLinkProgram(pbr_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
 	text_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "text.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "text.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "text.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "text.frag");
 	glAttachShader(text_program_id, vShader);
 	glAttachShader(text_program_id, fShader);
 	glLinkProgram(text_program_id);
@@ -685,8 +536,8 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	hdri_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "hdri_equirectangular.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "hdri_equirectangular.frag");
 	glAttachShader(hdri_program_id, vShader);
 	glAttachShader(hdri_program_id, fShader);
 	glLinkProgram(hdri_program_id);
@@ -694,8 +545,8 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	irradiance_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "irradiance_convolution.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "irradiance_convolution.frag");
 	glAttachShader(irradiance_program_id, vShader);
 	glAttachShader(irradiance_program_id, fShader);
 	glLinkProgram(irradiance_program_id);
@@ -703,8 +554,8 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	prefilter_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "prefilter.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "prefilter.frag");
 	glAttachShader(prefilter_program_id, vShader);
 	glAttachShader(prefilter_program_id, fShader);
 	glLinkProgram(prefilter_program_id);
@@ -712,36 +563,13 @@ void RenderManager::createProgram()
 	glDeleteShader(fShader);
 
 	brdf_program_id = glCreateProgram();
-	vShader = createShader(GL_VERTEX_SHADER, "brdf.vert");
-	fShader = createShader(GL_FRAGMENT_SHADER, "brdf.frag");
+	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "brdf.vert");
+	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "brdf.frag");
 	glAttachShader(brdf_program_id, vShader);
 	glAttachShader(brdf_program_id, fShader);
 	glLinkProgram(brdf_program_id);
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
-}
-
-int RenderManager::createShader(GLenum type, const char* fname)
-{
-	GLuint shader_id = glCreateShader(type);
-	const char* filedata = readFile(fname);
-
-	glShaderSource(shader_id, 1, &filedata, NULL);
-	glCompileShader(shader_id);
-
-	GLint compiled;
-	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
-	if (!compiled) {
-		GLsizei len;
-		glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &len);
-
-		GLchar* log = (GLchar*)malloc(sizeof(GLchar) * (len + 1));
-		glGetShaderInfoLog(shader_id, len, &len, log);
-		printf("[%s]\nShader compilation failed:\n%s\n", fname, log);
-		free((GLchar*)log);
-	}
-
-	return shader_id;
 }
 
 void RenderManager::createFonts()
@@ -796,13 +624,13 @@ void RenderManager::createFonts()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		// Store character
-		Character newChar = {
+		TextCharacter newChar = {
 			texture,
 			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
 			face->glyph->advance.x
 		};
-		characters.insert(std::pair<char, Character>(c, newChar));
+		characters.insert(std::pair<char, TextCharacter>(c, newChar));
 	}
 
 	FT_Done_Face(face);
@@ -826,69 +654,53 @@ void RenderManager::createFonts()
 	glBindVertexArray(0);
 }
 
+
 void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<LightObject*>& lightObjects, std::vector<RenderObject*>& renderObjects)
 {
-	//
-	// ImGui Render Pass
-	//
-	{
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		renderImGui(camera);
-
-		// Render
-		ImGui::Render();
-	}
+	renderImGuiPass(camera);
 
 	//
-	// Render
+	// Setup projection matrix for rendering
 	//
 	{
-		//
-		// Setup projection matrix for rendering
-		//
-		{
-			glm::mat4 lightProjection = glm::ortho(
-				-lightOrthoExtent,
-				lightOrthoExtent,
-				-lightOrthoExtent,
-				lightOrthoExtent,
-				lightOrthoZNearFar.x,
-				lightOrthoZNearFar.y
-			);
+		glm::mat4 lightProjection = glm::ortho(
+			-lightOrthoExtent,
+			lightOrthoExtent,
+			-lightOrthoExtent,
+			lightOrthoExtent,
+			lightOrthoZNearFar.x,
+			lightOrthoZNearFar.y
+		);
 
-			glm::mat4 lightView = glm::lookAt(lightPosition,
-											glm::vec3(0.0f, 0.0f, 0.0f),
-											glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 cameraProjection = camera.calculateProjectionMatrix();
-			glm::mat4 cameraView = camera.calculateViewMatrix();
-			updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
-		}
-
-		// -----------------------------------------------------------------------------------------------------------------------------
-		// Render shadow map to depth framebuffer
-		// -----------------------------------------------------------------------------------------------------------------------------
-		glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		renderScene(true, camera);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-		// -----------------------------------------------------------------------------------------------------------------------------
-		// Render scene normally
-		// -----------------------------------------------------------------------------------------------------------------------------
-		glViewport(0, 0, camera.width, camera.height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		renderScene(false, camera);
+		glm::mat4 lightView = glm::lookAt(lightPosition,
+										glm::vec3(0.0f, 0.0f, 0.0f),
+										glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 cameraProjection = camera.calculateProjectionMatrix();
+		glm::mat4 cameraView = camera.calculateViewMatrix();
+		updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------------
+	// Render shadow map to depth framebuffer
+	// -----------------------------------------------------------------------------------------------------------------------------
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	renderScene(true, camera);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+	// -----------------------------------------------------------------------------------------------------------------------------
+	// Render scene normally
+	// -----------------------------------------------------------------------------------------------------------------------------
+	glViewport(0, 0, camera.width, camera.height);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderScene(false, camera);
 
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
 }
+
 
 void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView)
 {
@@ -897,6 +709,7 @@ void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightVie
 	RenderManager::cameraProjection = cameraProjection;
 	RenderManager::cameraView = cameraView;
 }
+
 
 void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 {
@@ -918,7 +731,7 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 	//
 	// Draw PBR sphere!!!!
 	//
-	int programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
+	/*int programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
 	glUseProgram(programId);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
@@ -979,21 +792,21 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 	glUniform3f(glGetUniformLocation(programId, "lightColors[0]"), 150.0f, 150.0f, 150.0f);
 	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
 
-	pbrModel.render(programId);
+	pbrModel.render(programId);*/
 
 	// Draw the model!!!!
 	// 
 	//programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
 	//glUseProgram(programId);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+	/*glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));*/
 
 	/*glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
 	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
 	glActiveTexture(GL_TEXTURE0);*/
 
-	modelMatrix =
+	/*modelMatrix =
 		glm::translate(modelPosition)
 		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
 		* glm::scale(
@@ -1025,7 +838,7 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 			glm::value_ptr(transforms[i])
 		);
 
-	tryModel.render(programId);
+	tryModel.render(programId);*/
 
 	// Draw quad
 	//programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
@@ -1041,24 +854,24 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 	//glUniform3fv(glGetUniformLocation(programId, "diffuseTint"), 1, &tint[0]);
 	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	//glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));		// Uniforms must be set after the shader program is set
-	modelMatrix = glm::translate(planePosition);
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(modelMatrix)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(programId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-	);
-	/*glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
-	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);*/
-	glBindVertexArray(this->vao);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//modelMatrix = glm::translate(planePosition);
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(programId, "modelMatrix"),
+	//	1,
+	//	GL_FALSE,
+	//	glm::value_ptr(modelMatrix)
+	//);
+	//glUniformMatrix3fv(
+	//	glGetUniformLocation(programId, "normalsModelMatrix"),
+	//	1,
+	//	GL_FALSE,
+	//	glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+	//);
+	///*glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
+	//glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+	//glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);*/
+	//glBindVertexArray(this->vao);
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
 	//
@@ -1066,14 +879,30 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 	//
 	if (!shadowVersion)
 	{
-		programId = text_program_id;
-		modelMatrix =
+		unsigned int programId = text_program_id;
+		glm::mat4 modelMatrix =
 			glm::translate(textPosition);
 		renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	}
+
+	characterjjjj->render(shadowVersion, camera, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
 }
 
-void RenderManager::renderImGui(Camera& camera)
+
+void RenderManager::renderImGuiPass(Camera& camera)
+{
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	renderImGuiContents(camera);
+
+	// Render
+	ImGui::Render();
+}
+
+
+void RenderManager::renderImGuiContents(Camera& camera)
 {
 	static bool showAnalyticsOverlay = true;
 	static bool showScenePropterties = true;
@@ -1308,7 +1137,7 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		Character ch = characters[*c];
+		TextCharacter ch = characters[*c];
 
 		float xpos = x + ch.bearing.x;
 		float ypos = y - (ch.size.y - ch.bearing.y);
