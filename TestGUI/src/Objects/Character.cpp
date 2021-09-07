@@ -7,7 +7,7 @@
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 
-Character::Character()
+PlayerCharacter::PlayerCharacter()
 {
 	pbrShaderProgramId = ShaderResources::getInstance().setupShaderProgramVF("pbr", "pbr.vert", "pbr.frag");
 	shadowPassSkinnedProgramId = ShaderResources::getInstance().setupShaderProgramVF("shadowPassSkinned", "shadow_skinned.vert", "do_nothing.frag");
@@ -27,22 +27,22 @@ Character::Character()
 	pbrRoughnessTexture = TextureResources::getInstance().loadTexture2D("pbrAlbedo", "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 }
 
-Character::~Character()
+PlayerCharacter::~PlayerCharacter()
 {
 }
 
 
-void Character::physicsUpdate(float deltaTime)
+void PlayerCharacter::physicsUpdate(float deltaTime)
 {
 }
 
-void Character::render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
+void PlayerCharacter::render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
 {
 	if (shadowPass) return;		// FOR NOW
 	unsigned int programId = shadowPass ? shadowPassSkinnedProgramId : pbrShaderProgramId;
 	glUseProgram(programId);
 	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(camera.calculateProjectionMatrix()* camera.calculateViewMatrix()));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(camera.calculateProjectionMatrix() * camera.calculateViewMatrix()));
 
 
 	glActiveTexture(GL_TEXTURE0);

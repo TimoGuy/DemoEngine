@@ -3,9 +3,9 @@
 
 int main()
 {
-	MainLoop::initialize();
-	MainLoop::run();
-	MainLoop::cleanup();
+	MainLoop::getInstance().initialize();
+	MainLoop::getInstance().run();
+	MainLoop::getInstance().cleanup();
 
 	return 0;
 }

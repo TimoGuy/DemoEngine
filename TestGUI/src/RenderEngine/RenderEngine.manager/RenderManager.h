@@ -77,7 +77,7 @@ private:
 
 	void renderImGuiPass(Camera& camera);
 	void renderImGuiContents(Camera& camera);
-	void renderScene(bool shadowVersion, Camera& camera);
+	void renderScene(bool shadowVersion, Camera& camera, std::vector<RenderObject*>& renderObjects);
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
 	void finalize();

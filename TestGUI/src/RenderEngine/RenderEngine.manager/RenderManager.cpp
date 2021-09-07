@@ -1,5 +1,6 @@
 #include "RenderManager.h"
 
+#include "../../MainLoop/MainLoop.h"
 
 #include <string>
 #include <cmath>
@@ -21,8 +22,6 @@
 
 #include "PxPhysicsAPI.h"
 
-#include "../../Objects/Character.h"
-
 
 void renderCube();
 void renderQuad();
@@ -30,7 +29,6 @@ void renderQuad();
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
 
-Character* characterjjjj;
 RenderManager::RenderManager(Camera& camera)
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
@@ -48,13 +46,11 @@ RenderManager::RenderManager(Camera& camera)
 
 
 	//pbrModel = Model("res/uv_sphere.glb");
-	characterjjjj = new Character();
 }
 
 RenderManager::~RenderManager()
 {
 	this->finalize();
-	delete characterjjjj;
 }
 
 
@@ -686,7 +682,7 @@ void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<Light
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	renderScene(true, camera);
+	renderScene(true, camera, renderObjects);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -695,7 +691,7 @@ void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<Light
 	// -----------------------------------------------------------------------------------------------------------------------------
 	glViewport(0, 0, camera.width, camera.height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(false, camera);
+	renderScene(false, camera, renderObjects);
 
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
@@ -711,7 +707,7 @@ void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightVie
 }
 
 
-void RenderManager::renderScene(bool shadowVersion, Camera& camera)
+void RenderManager::renderScene(bool shadowVersion, Camera& camera, std::vector<RenderObject*>& renderObjects)
 {
 	if (!shadowVersion)
 	{
@@ -885,7 +881,10 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera)
 		renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	}
 
-	characterjjjj->render(shadowVersion, camera, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
+	for (unsigned int i = 0; i < renderObjects.size(); i++)
+	{
+		renderObjects[i]->render(shadowVersion, camera, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
+	}
 }
 
 
@@ -906,8 +905,6 @@ void RenderManager::renderImGuiContents(Camera& camera)
 {
 	static bool showAnalyticsOverlay = true;
 	static bool showScenePropterties = true;
-	static float gizmoSize1to1 = 30.0f;
-	static float clipZ;
 
 	static bool renderWireframeMode = false;
 
@@ -1036,9 +1033,6 @@ void RenderManager::renderImGuiContents(Camera& camera)
 			lightPosition.x = lightPosVec[0];
 			lightPosition.y = lightPosVec[1];
 			lightPosition.z = lightPosVec[2];
-			ImGui::DragFloat("Gizmo Size one to one", &gizmoSize1to1);
-			ImGui::Text("ClipZ: %.2f", clipZ);
-			ImGui::Separator();
 
 			ImGui::DragFloat3("Model Position", &modelPosition.x);
 			ImGui::DragFloat3("Model Euler Angles", &modelEulerAngles.x);
@@ -1085,34 +1079,14 @@ void RenderManager::renderImGuiContents(Camera& camera)
 		ImGui::End();
 	}
 
+	
+
 	//
-	// Draw Light position
+	// Everything else
 	//
-	glm::vec3 lightPosOnScreen = camera.PositionToClipSpace(lightPosition);
-	clipZ = lightPosOnScreen.z;
-
-
-	float gizmoRadius = gizmoSize1to1;
+	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
 	{
-		float a = 0.0f;
-		float b = gizmoSize1to1;
-
-		float defaultHeight = std::tanf(glm::radians(45.0f)) * clipZ;
-		float t = gizmoSize1to1 / defaultHeight;
-		//std::cout << t << std::endl;
-		gizmoRadius = t * (b - a) + a;
-	}
-
-	if (clipZ > 0.0f)
-	{
-		lightPosOnScreen /= clipZ;
-		lightPosOnScreen.x = lightPosOnScreen.x * camera.width / 2 + camera.width / 2;
-		lightPosOnScreen.y = -lightPosOnScreen.y * camera.height / 2 + camera.height / 2;
-		//std::cout << lightPosOnScreen.x << ", " << lightPosOnScreen.y << ", " << lightPosOnScreen.z << std::endl;
-		ImVec2 p_min = ImVec2(lightPosOnScreen.x - gizmoRadius, lightPosOnScreen.y + gizmoRadius);
-		ImVec2 p_max = ImVec2(lightPosOnScreen.x + gizmoRadius, lightPosOnScreen.y - gizmoRadius);
-
-		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)texture, p_min, p_max);
+		MainLoop::getInstance().imguiObjects[i]->renderImGui(camera);
 	}
 }
 

@@ -5,14 +5,15 @@
 #include <glad/glad.h>
 
 
-class Character : PhysicsObject, RenderObject
+class PlayerCharacter : public ImGuiObject, public PhysicsObject, public RenderObject
 {
 public:
-	Character();
-	~Character();
+	PlayerCharacter();
+	~PlayerCharacter();
 
 	void physicsUpdate(float deltaTime);
 	void render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
+	void renderImGui(Camera& camera) {}		// TODO: implement the imguizmo interfaces so that we can have gizmos
 
 private:
 	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;

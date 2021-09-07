@@ -9,6 +9,8 @@
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_impl_glfw.h"
 #include "../ImGui/imgui_impl_opengl3.h"
+#include "../Objects/Character.h"
+#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
 
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
@@ -31,157 +33,158 @@ GLFWwindow* window;
 Camera camera;
 
 
-namespace MainLoop
+void MainLoop::initialize()
 {
-	std::vector<CameraObject*> cameraObjects;
-	std::vector<LightObject*> lightObjects;
-	std::vector<PhysicsObject*> physicsObjects;
-	std::vector<RenderObject*> renderObjects;
+	createWindow("Test Window");
+	setupViewPort();
+	setupImGui();
+	setupPhysx();
 
-	RenderManager* renderManager;
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-	void initialize()
+	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+
+	glDisable(GL_CULL_FACE);		// Turned off for the pre-processing part, then will be turned on for actual realtime rendering
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//
+	// NOTE: activated here so that
+	// during the pre-processing steps
+	// then culling doesn't hinder it
+	//
+	/*glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);*/										// NOTE: skybox doesn't render with this on... needs some work.
+
+	renderManager = new RenderManager(camera);
+
+	//
+	// Create objects
+	//
+	PlayerCharacter* player = new PlayerCharacter();
+	imguiObjects.push_back(player);
+	physicsObjects.push_back(player);
+	renderObjects.push_back(player);
+
+	DirectionalLight* light = new DirectionalLight(glm::vec3(0.0f, 90.0f, 0.0f));
+	imguiObjects.push_back(light);
+	lightObjects.push_back(light);
+}
+
+void MainLoop::run()
+{
+	loopRunning = true;
+
+	std::thread physicsThread(physicsUpdate);			// NOTE: the reason for dispatching a thread to handle the pre-physics handling is to have frame-rate independence. This way, there can be a deltatime calculation happening.
+	physicsThread.detach();
+
+	/*// Convert the physx object to model matrix
+	glm::mat4 modelMatrix;
+	physx::PxTransform t = body->getGlobalPose();
 	{
-		createWindow("Test Window");
-		setupViewPort();
-		setupImGui();
-		setupPhysx();
+		physx::PxMat44 mat4 = physx::PxMat44(t);
+		glm::mat4 newMat;
+		newMat[0][0] = mat4[0][0];
+		newMat[0][1] = mat4[0][1];
+		newMat[0][2] = mat4[0][2];
+		newMat[0][3] = mat4[0][3];
 
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
+		newMat[1][0] = mat4[1][0];
+		newMat[1][1] = mat4[1][1];
+		newMat[1][2] = mat4[1][2];
+		newMat[1][3] = mat4[1][3];
 
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		newMat[2][0] = mat4[2][0];
+		newMat[2][1] = mat4[2][1];
+		newMat[2][2] = mat4[2][2];
+		newMat[2][3] = mat4[2][3];
 
-		glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+		newMat[3][0] = mat4[3][0];
+		newMat[3][1] = mat4[3][1];
+		newMat[3][2] = mat4[3][2];
+		newMat[3][3] = mat4[3][3];
 
-		glDisable(GL_CULL_FACE);		// Turned off for the pre-processing part, then will be turned on for actual realtime rendering
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		//
-		// NOTE: activated here so that
-		// during the pre-processing steps
-		// then culling doesn't hinder it
-		//
-		/*glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glFrontFace(GL_CCW);*/										// NOTE: skybox doesn't render with this on... needs some work.
-
-		renderManager = new RenderManager(camera);
-	}
-
-	void run()
-	{
-		loopRunning = true;
-
-		std::thread physicsThread(physicsUpdate);			// NOTE: the reason for dispatching a thread to handle the pre-physics handling is to have frame-rate independence. This way, there can be a deltatime calculation happening.
-		physicsThread.detach();
-
-		/*// Convert the physx object to model matrix
-		glm::mat4 modelMatrix;
-		physx::PxTransform t = body->getGlobalPose();
-		{
-			physx::PxMat44 mat4 = physx::PxMat44(t);
-			glm::mat4 newMat;
-			newMat[0][0] = mat4[0][0];
-			newMat[0][1] = mat4[0][1];
-			newMat[0][2] = mat4[0][2];
-			newMat[0][3] = mat4[0][3];
-
-			newMat[1][0] = mat4[1][0];
-			newMat[1][1] = mat4[1][1];
-			newMat[1][2] = mat4[1][2];
-			newMat[1][3] = mat4[1][3];
-
-			newMat[2][0] = mat4[2][0];
-			newMat[2][1] = mat4[2][1];
-			newMat[2][2] = mat4[2][2];
-			newMat[2][3] = mat4[2][3];
-
-			newMat[3][0] = mat4[3][0];
-			newMat[3][1] = mat4[3][1];
-			newMat[3][2] = mat4[3][2];
-			newMat[3][3] = mat4[3][3];
-
-			modelMatrix = newMat;
-		}*/
+		modelMatrix = newMat;
+	}*/
 
 
 
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 #if SINGLE_BUFFERED_MODE
-		const float desiredFrameTime = 1000.0f / 80.0f;
-		float startFrameTime = 0;
+	const float desiredFrameTime = 1000.0f / 80.0f;
+	float startFrameTime = 0;
 #endif
 
-		float deltaTime;
-		float lastFrame = glfwGetTime();
+	float deltaTime;
+	float lastFrame = glfwGetTime();
 
-		while (!glfwWindowShouldClose(window))
-		{
+	while (!glfwWindowShouldClose(window))
+	{
 #if SINGLE_BUFFERED_MODE
-			startFrameTime = glfwGetTime();
+		startFrameTime = glfwGetTime();
 #endif
 
-			glfwPollEvents();
+		glfwPollEvents();
 
-			if (!io.WantCaptureMouse || ImGui::GetMouseCursor() == ImGuiMouseCursor_None)
-				camera.Inputs(window);
+		if (!io.WantCaptureMouse || ImGui::GetMouseCursor() == ImGuiMouseCursor_None)
+			camera.Inputs(window);
 
-			//// Update Animation
-			//if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-			//	animator.playAnimation(0, 12.0f);
-			//if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-			//	animator.playAnimation(1, 12.0f);
-			//if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-			//	animator.playAnimation(2, 12.0f);
-			//if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-			//	animator.playAnimation(3, 12.0f);
-			//if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-			//	animator.playAnimation(4, 12.0f);
-			//if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
-			//	animator.playAnimation(5, 12.0f);
+		//// Update Animation
+		//if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		//	animator.playAnimation(0, 12.0f);
+		//if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		//	animator.playAnimation(1, 12.0f);
+		//if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		//	animator.playAnimation(2, 12.0f);
+		//if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		//	animator.playAnimation(3, 12.0f);
+		//if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		//	animator.playAnimation(4, 12.0f);
+		//if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+		//	animator.playAnimation(5, 12.0f);
 
-			//float currentFrame = glfwGetTime();
-			//deltaTime = currentFrame - lastFrame;
-			//lastFrame = currentFrame;
-			//animator.updateAnimation(deltaTime * deltaTimeMultiplier);
+		//float currentFrame = glfwGetTime();
+		//deltaTime = currentFrame - lastFrame;
+		//lastFrame = currentFrame;
+		//animator.updateAnimation(deltaTime * deltaTimeMultiplier);
 			
-			render();
+		render();
 
 #if SINGLE_BUFFERED_MODE
-			glFlush();
-			std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
+		glFlush();
+		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
 #else
-			glfwSwapBuffers(window);
+		glfwSwapBuffers(window);
 #endif
-		}
-
-		// Signal to physics engine that loop has ended
-		loopRunning = false;
 	}
 
-	void cleanup()
-	{
-		delete renderManager;
+	// Signal to physics engine that loop has ended
+	loopRunning = false;
+}
 
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+void MainLoop::cleanup()
+{
+	delete renderManager;
 
-		/*glDeleteTextures(1, &texture);
-		glDeleteVertexArrays(1, &vao);
-		glDeleteBuffers(1, &vbo);
-		glDeleteBuffers(1, &ebo);
-		glDeleteProgram(program_id);*/
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
-		glfwDestroyWindow(window);
-		glfwTerminate();
-	}
+	/*glDeleteTextures(1, &texture);
+	glDeleteVertexArrays(1, &vao);
+	glDeleteBuffers(1, &vbo);
+	glDeleteBuffers(1, &ebo);
+	glDeleteProgram(program_id);*/
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
 
 
@@ -438,9 +441,9 @@ void physicsUpdate()
 	{
 		float deltaTime = 1.0f / 50.0f;
 
-		for (unsigned int i = 0; i < MainLoop::physicsObjects.size(); i++)
+		for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 		{
-			MainLoop::physicsObjects[i]->physicsUpdate(deltaTime);
+			MainLoop::getInstance().physicsObjects[i]->physicsUpdate(deltaTime);
 		}
 
 		gScene->simulate(deltaTime);
@@ -454,5 +457,5 @@ void render()
 	//
 	// Render out the rendermanager
 	//
-	MainLoop::renderManager->render(window, camera, MainLoop::lightObjects, MainLoop::renderObjects);
+	MainLoop::getInstance().renderManager->render(window, camera, MainLoop::getInstance().lightObjects, MainLoop::getInstance().renderObjects);
 }
