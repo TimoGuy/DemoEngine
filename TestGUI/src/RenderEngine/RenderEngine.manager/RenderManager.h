@@ -28,10 +28,10 @@ struct TextCharacter
 class RenderManager
 {
 public:
-	RenderManager(Camera& camera);
+	RenderManager();
 	~RenderManager();
 
-	void render(GLFWwindow* window, Camera& camera, std::vector<LightObject*>& lightObjects, std::vector<RenderObject*>& renderObjects);
+	void render();
 
 private:
 
@@ -67,7 +67,6 @@ private:
 	void createProgram();
     void createRect();
 	void createShadowMap();
-	const GLchar* readFile(const char* filename);
 
 	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
@@ -75,9 +74,9 @@ private:
 
 	void updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView);
 
-	void renderImGuiPass(Camera& camera);
-	void renderImGuiContents(Camera& camera);
-	void renderScene(bool shadowVersion, Camera& camera, std::vector<RenderObject*>& renderObjects);
+	void renderImGuiPass();
+	void renderImGuiContents();
+	void renderScene(bool shadowVersion);
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
 	void finalize();

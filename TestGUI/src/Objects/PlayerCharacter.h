@@ -12,8 +12,9 @@ public:
 	~PlayerCharacter();
 
 	void physicsUpdate(float deltaTime);
-	void render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
-	void renderImGui(Camera& camera) {}		// TODO: implement the imguizmo interfaces so that we can have gizmos
+	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
+	void propertyPanelImGui();
+	void renderImGui() {}		// TODO: implement the imguizmo interfaces so that we can have gizmos
 
 private:
 	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;

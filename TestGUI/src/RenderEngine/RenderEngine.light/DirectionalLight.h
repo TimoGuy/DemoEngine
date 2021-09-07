@@ -13,9 +13,12 @@ public:
 	void setLookDirection(glm::vec3 eulerAngles);
 
 	Light& getLight() { return light; }
-	void renderImGui(Camera& camera);
+	void propertyPanelImGui();
+	void renderImGui();
 
 private:
 	Light light;
 	unsigned int lightGizmoTextureId;
+
+	glm::vec3 eulerAnglesCache;
 };

@@ -1,10 +1,13 @@
-#include "Character.h"
+#include "PlayerCharacter.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/ShaderResources.h"
 #include "../RenderEngine/RenderEngine.resources/TextureResources.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
+
+#include "../ImGui/imgui.h"
 
 
 PlayerCharacter::PlayerCharacter()
@@ -36,13 +39,13 @@ void PlayerCharacter::physicsUpdate(float deltaTime)
 {
 }
 
-void PlayerCharacter::render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
+void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
 {
 	if (shadowPass) return;		// FOR NOW
 	unsigned int programId = shadowPass ? shadowPassSkinnedProgramId : pbrShaderProgramId;
 	glUseProgram(programId);
 	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(camera.calculateProjectionMatrix() * camera.calculateViewMatrix()));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 
 
 	glActiveTexture(GL_TEXTURE0);
@@ -98,7 +101,12 @@ void PlayerCharacter::render(bool shadowPass, Camera& camera, unsigned int irrad
 	glm::vec3 lightPosition = glm::vec3(5.0f, 5.0f, 5.0f);
 	glUniform3fv(glGetUniformLocation(programId, "lightPositions[0]"), 1, &lightPosition[0]);
 	glUniform3f(glGetUniformLocation(programId, "lightColors[0]"), 150.0f, 150.0f, 150.0f);
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
 	model.render(programId);
+}
+
+void PlayerCharacter::propertyPanelImGui()
+{
+	ImGui::DragFloat3("Player Position", )				// TODO: implement position here by first making a physx object for this to go off!
 }

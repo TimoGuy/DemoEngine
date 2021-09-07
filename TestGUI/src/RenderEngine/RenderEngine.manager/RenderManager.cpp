@@ -29,7 +29,7 @@ void renderQuad();
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 
 
-RenderManager::RenderManager(Camera& camera)
+RenderManager::RenderManager()
 {
 	modelPosition = glm::vec3(5.0f, 0.0f, 0.0f);
 	pbrModelPosition = glm::vec3(0.0f, 0.5f, 0.0f);
@@ -651,9 +651,9 @@ void RenderManager::createFonts()
 }
 
 
-void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<LightObject*>& lightObjects, std::vector<RenderObject*>& renderObjects)
+void RenderManager::render()
 {
-	renderImGuiPass(camera);
+	renderImGuiPass();
 
 	//
 	// Setup projection matrix for rendering
@@ -671,8 +671,8 @@ void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<Light
 		glm::mat4 lightView = glm::lookAt(lightPosition,
 										glm::vec3(0.0f, 0.0f, 0.0f),
 										glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 cameraProjection = camera.calculateProjectionMatrix();
-		glm::mat4 cameraView = camera.calculateViewMatrix();
+		glm::mat4 cameraProjection = MainLoop::getInstance().camera.calculateProjectionMatrix();
+		glm::mat4 cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
 		updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
 	}
 
@@ -682,16 +682,16 @@ void RenderManager::render(GLFWwindow* window, Camera& camera, std::vector<Light
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	renderScene(true, camera, renderObjects);
+	renderScene(true);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// Render scene normally
 	// -----------------------------------------------------------------------------------------------------------------------------
-	glViewport(0, 0, camera.width, camera.height);
+	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(false, camera, renderObjects);
+	renderScene(false);
 
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
@@ -707,7 +707,7 @@ void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightVie
 }
 
 
-void RenderManager::renderScene(bool shadowVersion, Camera& camera, std::vector<RenderObject*>& renderObjects)
+void RenderManager::renderScene(bool shadowVersion)
 {
 	if (!shadowVersion)
 	{
@@ -881,27 +881,27 @@ void RenderManager::renderScene(bool shadowVersion, Camera& camera, std::vector<
 		renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	}
 
-	for (unsigned int i = 0; i < renderObjects.size(); i++)
+	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
-		renderObjects[i]->render(shadowVersion, camera, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
+		MainLoop::getInstance().renderObjects[i]->render(shadowVersion, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
 	}
 }
 
 
-void RenderManager::renderImGuiPass(Camera& camera)
+void RenderManager::renderImGuiPass()
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	renderImGuiContents(camera);
+	renderImGuiContents();
 
 	// Render
 	ImGui::Render();
 }
 
 
-void RenderManager::renderImGuiContents(Camera& camera)
+void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
 	static bool showScenePropterties = true;
@@ -1027,7 +1027,7 @@ void RenderManager::renderImGuiContents(Camera& camera)
 	{
 		if (ImGui::Begin("Scene Properties", &showScenePropterties, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			static float lightPosVec[3] = { lightPosition.x, lightPosition.y, lightPosition.z };
+			/*static float lightPosVec[3] = { lightPosition.x, lightPosition.y, lightPosition.z };
 			ImGui::DragFloat3("Light Position", lightPosVec);
 
 			lightPosition.x = lightPosVec[0];
@@ -1058,22 +1058,31 @@ void RenderManager::renderImGuiContents(Camera& camera)
 				ImGui::Image((void*)(intptr_t)depthMapTexture, ImVec2(512, 512));
 			}
 
-			ImGui::Separator();
+			ImGui::Separator();*/
 
 			ImGui::DragFloat3("Text Position", &textPosition.x);
 
 			ImGui::Separator();
 
-			ImGui::DragFloat3("PBR Position", &pbrModelPosition.x);
+			/*ImGui::DragFloat3("PBR Position", &pbrModelPosition.x);
 			ImGui::DragFloat3("PBR Scale", &pbrModelScale.x);
 
-			ImGui::Separator();
+			ImGui::Separator();*/
 
 			static bool showEnvironmentMap = false;
 			ImGui::Checkbox("Display Environ skybox map hdri", &showEnvironmentMap);
 			if (showEnvironmentMap)
 			{
 				ImGui::Image((void*)(intptr_t)hdrTexture, ImVec2(512, 288));
+			}
+
+			//
+			// Render out the properties panels of everything!!! (in the future have it be a selection process like the unity hierarchy)
+			//
+			for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+			{
+				ImGui::Separator();
+				MainLoop::getInstance().imguiObjects[i]->propertyPanelImGui();
 			}
 		}
 		ImGui::End();
@@ -1086,7 +1095,7 @@ void RenderManager::renderImGuiContents(Camera& camera)
 	//
 	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
 	{
-		MainLoop::getInstance().imguiObjects[i]->renderImGui(camera);
+		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 }
 

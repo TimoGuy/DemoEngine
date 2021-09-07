@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "../Objects/BaseObject.h"
+#include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 class RenderManager;
 
@@ -20,8 +21,9 @@ public:
 	void run();
 	void cleanup();
 
+	GLFWwindow* window;
+	Camera camera;
 	std::vector<ImGuiObject*> imguiObjects;		// NOTE: This is only for debug... imgui renders from here.
-	std::vector<CameraObject*> cameraObjects;
 	std::vector<LightObject*> lightObjects;
 	std::vector<PhysicsObject*> physicsObjects;
 	std::vector<RenderObject*> renderObjects;

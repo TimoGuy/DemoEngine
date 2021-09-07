@@ -9,7 +9,7 @@
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_impl_glfw.h"
 #include "../ImGui/imgui_impl_opengl3.h"
-#include "../Objects/Character.h"
+#include "../Objects/PlayerCharacter.h"
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
 
 #define SINGLE_BUFFERED_MODE 0
@@ -28,9 +28,6 @@ void render();
 
 
 bool loopRunning = false;
-
-GLFWwindow* window;
-Camera camera;
 
 
 void MainLoop::initialize()
@@ -61,7 +58,7 @@ void MainLoop::initialize()
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);*/										// NOTE: skybox doesn't render with this on... needs some work.
 
-	renderManager = new RenderManager(camera);
+	renderManager = new RenderManager();
 
 	//
 	// Create objects
@@ -197,32 +194,32 @@ void createWindow(const char* windowName)
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 	window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #else
-	window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 	glfwSwapInterval(1);
 #endif
 
-	if (!window)
+	if (!MainLoop::getInstance().window)
 	{
 		glfwTerminate();
 	}
 
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(MainLoop::getInstance().window);
 	gladLoadGL();
 }
 
 
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
-	camera.width = width;
-	camera.height = height;
+	MainLoop::getInstance().camera.width = width;
+	MainLoop::getInstance().camera.height = height;
 }
 
 
 void setupViewPort()
 {
 	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-	glfwSetFramebufferSizeCallback(window, frameBufferSizeChangedCallback);
+	glfwGetFramebufferSize(MainLoop::getInstance().window, &width, &height);
+	glfwSetFramebufferSizeCallback(MainLoop::getInstance().window, frameBufferSizeChangedCallback);
 	frameBufferSizeChangedCallback(nullptr, width, height);
 }
 
@@ -240,7 +237,7 @@ void setupImGui()
 	style.WindowMenuButtonPosition = 1;		// Right side of menu
 	style.WindowRounding = 8;
 
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -457,5 +454,5 @@ void render()
 	//
 	// Render out the rendermanager
 	//
-	MainLoop::getInstance().renderManager->render(window, camera, MainLoop::getInstance().lightObjects, MainLoop::getInstance().renderObjects);
+	MainLoop::getInstance().renderManager->render();
 }

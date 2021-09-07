@@ -4,11 +4,11 @@
 //
 // This indicates that imgui stuff will be drawn from this.
 //
-class Camera;
 class ImGuiObject
 {
 public:
-	virtual void renderImGui(Camera& camera) = 0;
+	virtual void propertyPanelImGui() {}
+	virtual void renderImGui() = 0;
 };
 
 
@@ -17,6 +17,7 @@ public:
 // from this object. Will be placed in the cameraObjects
 // queue (ideally, you're gonna have to do that manually, bud).
 //
+class Camera;
 class CameraObject
 {
 public:
@@ -54,5 +55,5 @@ public:
 class RenderObject
 {
 public:
-	virtual void render(bool shadowPass, Camera& camera, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture) = 0;			// TODO: figure out what they need and implement it!
+	virtual void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture) = 0;			// TODO: figure out what they need and implement it!
 };

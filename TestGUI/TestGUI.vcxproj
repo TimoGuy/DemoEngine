@@ -89,7 +89,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
-    <ClCompile Include="src\Objects\Character.cpp" />
+    <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.light\DirectionalLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp" />
@@ -135,7 +135,7 @@
   <ItemGroup>
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
-    <ClInclude Include="src\Objects\Character.h" />
+    <ClInclude Include="src\Objects\PlayerCharacter.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\DirectionalLight.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />

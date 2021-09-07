@@ -81,7 +81,7 @@
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\ShaderResources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Objects\Character.cpp">
+    <ClCompile Include="src\Objects\PlayerCharacter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\TextureResources.cpp">
@@ -177,7 +177,7 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\ShaderResources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Objects\Character.h">
+    <ClInclude Include="src\Objects\PlayerCharacter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\TextureResources.h">
