@@ -15,6 +15,8 @@ DirectionalLight::DirectionalLight(glm::vec3 eulerAngles)
 		TextureResources::getInstance().loadTexture2D(
 			"light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT
 		);
+
+	light.position = glm::vec3(0.0f);
 }
 
 void DirectionalLight::setLookDirection(glm::vec3 eulerAngles)
@@ -35,6 +37,7 @@ void DirectionalLight::renderImGui(Camera& camera)
 	glm::vec3 lightPosOnScreen = camera.PositionToClipSpace(light.position);
 	glm::vec3 lightPointingDirection = camera.PositionToClipSpace(light.position + light.facingDirection);
 	float clipZ = lightPosOnScreen.z;
+	float clipZ2 = lightPointingDirection.z;
 
 
 	float gizmoRadius = gizmoSize1to1;
@@ -53,6 +56,10 @@ void DirectionalLight::renderImGui(Camera& camera)
 		lightPosOnScreen /= clipZ;
 		lightPosOnScreen.x = lightPosOnScreen.x * camera.width / 2 + camera.width / 2;
 		lightPosOnScreen.y = -lightPosOnScreen.y * camera.height / 2 + camera.height / 2;
+
+		lightPointingDirection /= clipZ2;
+		lightPointingDirection.x = lightPointingDirection.x * camera.width / 2 + camera.width / 2;
+		lightPointingDirection.y = -lightPointingDirection.y * camera.height / 2 + camera.height / 2;
 		//std::cout << lightPosOnScreen.x << ", " << lightPosOnScreen.y << ", " << lightPosOnScreen.z << std::endl;
 		ImVec2 p_min = ImVec2(lightPosOnScreen.x - gizmoRadius, lightPosOnScreen.y + gizmoRadius);
 		ImVec2 p_max = ImVec2(lightPosOnScreen.x + gizmoRadius, lightPosOnScreen.y - gizmoRadius);
