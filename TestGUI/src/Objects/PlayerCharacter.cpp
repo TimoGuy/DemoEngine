@@ -6,6 +6,7 @@
 #include "../RenderEngine/RenderEngine.resources/ShaderResources.h"
 #include "../RenderEngine/RenderEngine.resources/TextureResources.h"
 #include "../Physics/PhysicsUtils.h"
+#include "../RenderEngine/RenderEngine.light/Light.h"
 
 
 PlayerCharacter::PlayerCharacter()
@@ -155,9 +156,18 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
 	);
 
-	glm::vec3 lightPosition = glm::vec3(5.0f, 5.0f, 5.0f);
-	glUniform3fv(glGetUniformLocation(programId, "lightPositions[0]"), 1, &lightPosition[0]);
-	glUniform3f(glGetUniformLocation(programId, "lightColors[0]"), 150.0f, 150.0f, 150.0f);
+	const size_t MAX_LIGHTS = 4;
+	for (unsigned int i = 0; i < std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size()); i++)
+	{
+		const Light& light = MainLoop::getInstance().lightObjects[i]->getLight();
+		glm::vec3 lightDirection = glm::normalize(light.facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light. Check this first in the shader
+		glm::vec4 lightPosition = glm::vec4(light.position, light.lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec3 lightColorWithIntensity = light.color * light.colorIntensity;
+		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
+		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
+		glUniform3fv(glGetUniformLocation(programId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
+	}
+
 	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
 	model.render(programId);

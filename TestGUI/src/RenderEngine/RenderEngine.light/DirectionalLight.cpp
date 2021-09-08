@@ -18,6 +18,10 @@ DirectionalLight::DirectionalLight(glm::vec3 eulerAngles)
 		);
 
 	light.position = glm::vec3(0.0f);
+	light.lightType = LightType::DIRECTIONAL;
+
+	light.color = glm::vec3(1.0f);
+	light.colorIntensity = 150.0f;
 }
 
 void DirectionalLight::setLookDirection(glm::vec3 eulerAngles)
@@ -40,7 +44,8 @@ void DirectionalLight::propertyPanelImGui()
 	if (eulerAnglesCopy != eulerAnglesCache)
 		setLookDirection(eulerAnglesCopy);
 	
-
+	ImGui::ColorEdit3("Light base color", &light.color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::DragFloat("Light color multiplier", &light.colorIntensity);
 }
 
 void DirectionalLight::renderImGui()

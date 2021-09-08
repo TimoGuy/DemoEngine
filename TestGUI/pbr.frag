@@ -22,8 +22,10 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 // lights
-uniform vec3 lightPositions[1];
-uniform vec3 lightColors[1];
+const int MAX_LIGHTS = 4;
+uniform vec4 lightPositions[MAX_LIGHTS];
+uniform vec3 lightDirections[MAX_LIGHTS];
+uniform vec3 lightColors[MAX_LIGHTS];
 
 uniform vec3 viewPosition;
 
@@ -141,14 +143,40 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < 1; ++i)      // NOTE: Change this depending on the number of lights being looped over
+    for(int i = 0; i < MAX_LIGHTS; ++i)      // NOTE: Change this depending on the number of lights being looped over
     {
+        //vec3 L = normalize(lightPositions[i].xyz - fragPosition);
+        //vec3 H = normalize(V + L);
+        //float distance = length(lightPositions[i].xyz - fragPosition);
+        //float attenuation = 1.0 / (distance * distance);
+        //vec3 radiance = lightColors[i] * attenuation;
+
+        
         // calculate per-light radiance
-        vec3 L = normalize(lightPositions[i] - fragPosition);
-        vec3 H = normalize(V + L);
-        float distance = length(lightPositions[i] - fragPosition);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = lightColors[i] * attenuation;
+        vec3 L, H, radiance;
+        float attenuation;
+
+        if (length(lightDirections[i]) == 0.0f)
+        {
+            // Point light
+            L = normalize(lightPositions[i].xyz - fragPosition);
+            H = normalize(V + L);
+            float distance = length(lightPositions[i].xyz - fragPosition);
+            attenuation = 1.0 / (distance * distance);
+            radiance = lightColors[i] * attenuation;
+        }
+        else if (lightPositions[i].w == 0.0f)
+        {
+            // Directional light
+            L = -lightDirections[i];                    // NOTE: this SHOULD be put into the uniform already normalized so no need to do this step here
+            H = normalize(V + L);
+            attenuation = 1.0f;
+            radiance = lightColors[i] * attenuation;
+        }
+        else
+        {
+            // Spot light (TODO)
+        }
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
@@ -198,7 +226,7 @@ void main()
     //
 	// Calculate Shadow
 	//
-	vec3 lightDir = normalize(lightPositions[0] - fragPosition);        // @Hardcode
+	vec3 lightDir = normalize(lightPositions[0].xyz - fragPosition);        // @Hardcode
 	float shadow = shadowCalculation(lightDir);
 
     //
