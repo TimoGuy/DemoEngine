@@ -186,6 +186,9 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.light\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\skybox\bluecloud_bk.jpg">
