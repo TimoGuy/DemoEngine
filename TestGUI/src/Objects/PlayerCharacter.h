@@ -25,7 +25,10 @@ private:
 	physx::PxBoxGeometry boxCollider;
 	physx::PxSphereGeometry sphereCollider;
 	physx::PxCapsuleGeometry capsuleCollider;
+	physx::PxCapsuleController* controller;
 	bool reapplyTransform;
+
+	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
 
 	Model model;
 	Animator animator;

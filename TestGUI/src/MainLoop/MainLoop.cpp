@@ -341,9 +341,6 @@ void setupPhysx()
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
 	sceneDesc.ccdMaxPasses = 4;
-
-
-
 	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	/*physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
 	if (pvdClient)
@@ -361,6 +358,11 @@ void setupPhysx()
 		pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 		pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
 	}
+
+	//
+	// Create controller manager
+	//
+	MainLoop::getInstance().physicsControllerManager = PxCreateControllerManager(*MainLoop::getInstance().physicsScene);
 
 
 	//

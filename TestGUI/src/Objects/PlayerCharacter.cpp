@@ -5,28 +5,39 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/ShaderResources.h"
 #include "../RenderEngine/RenderEngine.resources/TextureResources.h"
-#include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 #include "../ImGui/imgui.h"
 
-void imguiRenderBoxCollider(physx::PxBoxGeometry& boxGeometry);
-void imguiRenderSphereCollider(physx::PxSphereGeometry& sphereGeometry);
-void imguiRenderCapsuleCollider(physx::PxCapsuleGeometry& capsuleGeometry);
-void imguiRenderCircle(float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices);
-void imguiRenderSausage(float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
+void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry);
+void imguiRenderSphereCollider(glm::mat4 modelMatrix, physx::PxSphereGeometry& sphereGeometry);
+void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, physx::PxCapsuleGeometry& capsuleGeometry);
+void imguiRenderCharacterController(glm::mat4 modelMatrix, physx::PxCapsuleController& controller);
+void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices);
+void imguiRenderSausage(glm::mat4 modelMatrix, float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
 
 PlayerCharacter::PlayerCharacter()
 {
-	transform = physx::PxTransform(physx::PxVec3(physx::PxReal(0), physx::PxReal(100), 0));
-	body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(transform);
-	boxCollider = physx::PxBoxGeometry(3.0f, 3.0f, 3.0f);
-	//physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(boxCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
-	capsuleCollider = physx::PxCapsuleGeometry(5.0f, 5.0f);
-	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(capsuleCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
-	body->attachShape(*shape);
-	physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-	MainLoop::getInstance().physicsScene->addActor(*body);
-	shape->release();
+	//transform = physx::PxTransform(physx::PxVec3(physx::PxReal(0), physx::PxReal(100), 0));
+	//body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(transform);
+	//boxCollider = physx::PxBoxGeometry(3.0f, 3.0f, 3.0f);
+	////physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(boxCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
+	//capsuleCollider = physx::PxCapsuleGeometry(5.0f, 5.0f);
+	//physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(capsuleCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
+	//body->attachShape(*shape);
+	//physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+	//MainLoop::getInstance().physicsScene->addActor(*body);
+	//shape->release();
+
+	physx::PxCapsuleControllerDesc desc;
+	desc.upDirection = tempUp;
+	desc.material = MainLoop::getInstance().defaultPhysicsMaterial;
+	desc.position = physx::PxExtendedVec3(0.0f, 100.0f, 0.0f);
+	desc.radius = 5.0f;
+	desc.height = 5.0f;
+	desc.slopeLimit = 0.70710678118f;												// cosine of 45 degrees
+	desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;
+	desc.isValid();
+	controller = (physx::PxCapsuleController*)MainLoop::getInstance().physicsControllerManager->createController(desc);
 
 
 	pbrShaderProgramId = ShaderResources::getInstance().setupShaderProgramVF("pbr", "pbr.vert", "pbr.frag");
@@ -55,39 +66,43 @@ PlayerCharacter::~PlayerCharacter()
 glm::mat4 modelMatrix;
 void PlayerCharacter::physicsUpdate(float deltaTime)
 {
-	if (reapplyTransform)
-	{
-		reapplyTransform = false;
-		body->setGlobalPose(transform);
-	}
+	//if (reapplyTransform)
+	//{
+	//	reapplyTransform = false;
+	//	body->setGlobalPose(transform);
+	//}
 
-	// Convert the physx object to model matrix
-	transform = body->getGlobalPose();
-	{
-		physx::PxMat44 mat4 = physx::PxMat44(transform);
-		glm::mat4 newMat;
-		newMat[0][0] = mat4[0][0];
-		newMat[0][1] = mat4[0][1];
-		newMat[0][2] = mat4[0][2];
-		newMat[0][3] = mat4[0][3];
+	//// Convert the physx object to model matrix
+	//transform = body->getGlobalPose();
+	//{
+	//	physx::PxMat44 mat4 = physx::PxMat44(transform);
+	//	glm::mat4 newMat;
+	//	newMat[0][0] = mat4[0][0];
+	//	newMat[0][1] = mat4[0][1];
+	//	newMat[0][2] = mat4[0][2];
+	//	newMat[0][3] = mat4[0][3];
 
-		newMat[1][0] = mat4[1][0];
-		newMat[1][1] = mat4[1][1];
-		newMat[1][2] = mat4[1][2];
-		newMat[1][3] = mat4[1][3];
+	//	newMat[1][0] = mat4[1][0];
+	//	newMat[1][1] = mat4[1][1];
+	//	newMat[1][2] = mat4[1][2];
+	//	newMat[1][3] = mat4[1][3];
 
-		newMat[2][0] = mat4[2][0];
-		newMat[2][1] = mat4[2][1];
-		newMat[2][2] = mat4[2][2];
-		newMat[2][3] = mat4[2][3];
+	//	newMat[2][0] = mat4[2][0];
+	//	newMat[2][1] = mat4[2][1];
+	//	newMat[2][2] = mat4[2][2];
+	//	newMat[2][3] = mat4[2][3];
 
-		newMat[3][0] = mat4[3][0];
-		newMat[3][1] = mat4[3][1];
-		newMat[3][2] = mat4[3][2];
-		newMat[3][3] = mat4[3][3];
+	//	newMat[3][0] = mat4[3][0];
+	//	newMat[3][1] = mat4[3][1];
+	//	newMat[3][2] = mat4[3][2];
+	//	newMat[3][3] = mat4[3][3];
 
-		modelMatrix = newMat;
-	}
+	//	modelMatrix = newMat;
+	//}
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -98.0f, 0.0f), 0.01f, deltaTime, NULL, NULL);
+
+	physx::PxExtendedVec3 pos = controller->getPosition();
+	modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
 void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
@@ -168,15 +183,19 @@ void PlayerCharacter::propertyPanelImGui()
 	}
 
 	ImGui::DragFloat3("Box Collider Half Extents", &boxCollider.halfExtents[0]);
+
+	ImGui::DragFloat3("Controller up direction", &tempUp[0]);
+	controller->setUpDirection(tempUp.getNormalized());
 }
 
 void PlayerCharacter::renderImGui()
 {
-	//imguiRenderBoxCollider(boxCollider);
-	imguiRenderCapsuleCollider(capsuleCollider);
+	//imguiRenderBoxCollider(modelMatrix, boxCollider);
+	//imguiRenderCapsuleCollider(modelMatrix, capsuleCollider);
+	imguiRenderCharacterController(modelMatrix, *controller);
 }
 
-void imguiRenderBoxCollider(physx::PxBoxGeometry& boxGeometry)
+void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry)
 {
 	physx::PxVec3 halfExtents = boxGeometry.halfExtents;
 	std::vector<glm::vec4> points = {
@@ -235,22 +254,35 @@ void imguiRenderBoxCollider(physx::PxBoxGeometry& boxGeometry)
 	}
 }
 
-void imguiRenderSphereCollider(physx::PxSphereGeometry& sphereGeometry)
+void imguiRenderSphereCollider(glm::mat4 modelMatrix, physx::PxSphereGeometry& sphereGeometry)
 {
-	imguiRenderCircle(sphereGeometry.radius, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 16);
-	imguiRenderCircle(sphereGeometry.radius, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f), 16);
-	imguiRenderCircle(sphereGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(0.0f), 16);
+	imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 16);
+	imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f), 16);
+	imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(0.0f), 16);
 }
 
-void imguiRenderCapsuleCollider(physx::PxCapsuleGeometry& capsuleGeometry)
+void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, physx::PxCapsuleGeometry& capsuleGeometry)
 {
-	imguiRenderSausage(capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(0.0f, 0.0f, 0.0f), 16);
-	imguiRenderSausage(capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), 16);
-	imguiRenderCircle(capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(-capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
-	imguiRenderCircle(capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
+	// Capsules by default extend along the x axis
+	imguiRenderSausage(modelMatrix, capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(0.0f, 0.0f, 0.0f), 16);
+	imguiRenderSausage(modelMatrix, capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), 16);
+	imguiRenderCircle(modelMatrix, capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(-capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
+	imguiRenderCircle(modelMatrix, capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
 }
 
-void imguiRenderCircle(float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices)
+void imguiRenderCharacterController(glm::mat4 modelMatrix, physx::PxCapsuleController& controller)
+{
+	// Like a vertical capsule (default extends along the y axis... or whichever direction is up)
+	float halfHeight = controller.getHeight() / 2.0f;
+	physx::PxVec3 upDirection = controller.getUpDirection();
+	modelMatrix *= glm::toMat4(glm::quat(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(upDirection.x, upDirection.y, upDirection.z)));
+	imguiRenderSausage(modelMatrix, controller.getRadius(), halfHeight, glm::vec3(0.0f, 0.0f, glm::radians(90.0f)), 16);
+	imguiRenderSausage(modelMatrix, controller.getRadius(), halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, glm::radians(90.0f)), 16);
+	imguiRenderCircle(modelMatrix, controller.getRadius(), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f, halfHeight, 0.0f), 16);
+	imguiRenderCircle(modelMatrix, controller.getRadius(), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f, -halfHeight, 0.0f), 16);
+}
+
+void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices)
 {
 	std::vector<glm::vec4> ringVertices;
 	float angle = 0;
@@ -290,7 +322,7 @@ void imguiRenderCircle(float radius, glm::vec3 eulerAngles, glm::vec3 offset, un
 	);
 }
 
-void imguiRenderSausage(float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices)					// NOTE: this is very similar to the function imguiRenderCircle
+void imguiRenderSausage(glm::mat4 modelMatrix, float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices)					// NOTE: this is very similar to the function imguiRenderCircle
 {
 	assert(numVertices % 2 == 0);		// Needs to be even number of vertices to work
 

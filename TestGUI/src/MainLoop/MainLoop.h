@@ -33,5 +33,6 @@ public:
 
 	physx::PxScene* physicsScene;
 	physx::PxPhysics* physicsPhysics;
+	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
 };
