@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <thread>
-#include <PxPhysicsAPI.h>
 #include "../Objects/BaseObject.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
@@ -79,38 +78,6 @@ void MainLoop::run()
 
 	std::thread physicsThread(physicsUpdate);			// NOTE: the reason for dispatching a thread to handle the pre-physics handling is to have frame-rate independence. This way, there can be a deltatime calculation happening.
 	physicsThread.detach();
-
-	/*// Convert the physx object to model matrix
-	glm::mat4 modelMatrix;
-	physx::PxTransform t = body->getGlobalPose();
-	{
-		physx::PxMat44 mat4 = physx::PxMat44(t);
-		glm::mat4 newMat;
-		newMat[0][0] = mat4[0][0];
-		newMat[0][1] = mat4[0][1];
-		newMat[0][2] = mat4[0][2];
-		newMat[0][3] = mat4[0][3];
-
-		newMat[1][0] = mat4[1][0];
-		newMat[1][1] = mat4[1][1];
-		newMat[1][2] = mat4[1][2];
-		newMat[1][3] = mat4[1][3];
-
-		newMat[2][0] = mat4[2][0];
-		newMat[2][1] = mat4[2][1];
-		newMat[2][2] = mat4[2][2];
-		newMat[2][3] = mat4[2][3];
-
-		newMat[3][0] = mat4[3][0];
-		newMat[3][1] = mat4[3][1];
-		newMat[3][2] = mat4[3][2];
-		newMat[3][3] = mat4[3][3];
-
-		modelMatrix = newMat;
-	}*/
-
-
-
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
@@ -335,17 +302,14 @@ class ContactReportCallback : public physx::PxSimulationEventCallback
 };
 
 ContactReportCallback gContactReportCallback;
-physx::PxScene* gScene = NULL;
 physx::PxDefaultErrorCallback gErrorCallback;
 physx::PxDefaultAllocator gAllocator;
 physx::PxDefaultCpuDispatcher* gDispatcher = NULL;
 physx::PxTolerancesScale tolerancesScale;
 
 physx::PxFoundation* gFoundation = NULL;
-physx::PxPhysics* gPhysics = NULL;
 physx::PxCooking* gCooking = NULL;
 
-physx::PxMaterial* gMaterial = NULL;
 physx::PxRigidStatic* gTriangleMeshActor = NULL;
 physx::PxRigidDynamic* gSphereActor = NULL;
 physx::PxPvd* gPvd = NULL;
@@ -366,13 +330,13 @@ void setupPhysx()
 	tolerancesScale.length = 100;
 	tolerancesScale.speed = 981;
 
-	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, tolerancesScale, true, gPvd);
+	MainLoop::getInstance().physicsPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, tolerancesScale, true, gPvd);
 
 	const int numCores = 4;
 	gDispatcher = physx::PxDefaultCpuDispatcherCreate(numCores == 0 ? 0 : numCores - 1);
-	physx::PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
+	physx::PxSceneDesc sceneDesc(MainLoop::getInstance().physicsPhysics->getTolerancesScale());
 	sceneDesc.cpuDispatcher = gDispatcher;
-	sceneDesc.gravity = physx::PxVec3(0, -9.81f, 0);
+	sceneDesc.gravity = physx::PxVec3(0, -98.1f, 0);
 	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader; // contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
@@ -380,17 +344,17 @@ void setupPhysx()
 
 
 
-	gScene = gPhysics->createScene(sceneDesc);
+	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	/*physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
 	if (pvdClient)
 	{
 		pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 	}*/
-	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 1.0f);
+	MainLoop::getInstance().defaultPhysicsMaterial = MainLoop::getInstance().physicsPhysics->createMaterial(0.5f, 0.5f, 1.0f);
 
 
 
-	physx::PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
+	physx::PxPvdSceneClient* pvdClient = MainLoop::getInstance().physicsScene->getScenePvdClient();
 	if (pvdClient)
 	{
 		pvdClient->setScenePvdFlag(physx::PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
@@ -402,13 +366,13 @@ void setupPhysx()
 	//
 	// Init scene
 	//
-	physx::PxRigidStatic* groundPlane = physx::PxCreatePlane(*gPhysics, physx::PxPlane(0, 1, 0, 3.6f), *gMaterial);
-	gScene->addActor(*groundPlane);
+	physx::PxRigidStatic* groundPlane = physx::PxCreatePlane(*MainLoop::getInstance().physicsPhysics, physx::PxPlane(0, 1, 0, 3.6f), *MainLoop::getInstance().defaultPhysicsMaterial);
+	MainLoop::getInstance().physicsScene->addActor(*groundPlane);
 
 	float halfExtent = 1.0f;
 	const int size = 50;
-	physx::PxTransform t;
-	physx::PxShape* shape = gPhysics->createShape(physx::PxBoxGeometry(halfExtent, halfExtent, halfExtent), *gMaterial);
+	//physx::PxTransform t;
+	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(halfExtent, halfExtent, halfExtent), *MainLoop::getInstance().defaultPhysicsMaterial);
 	/*for (physx::PxU32 i = 0; i < size; i++)
 	{
 		for (physx::PxU32 j = 0; j < size - i; j++)
@@ -423,28 +387,33 @@ void setupPhysx()
 	}*/
 
 	physx::PxTransform localTm(physx::PxVec3(physx::PxReal(0), physx::PxReal(200), 0) * halfExtent);
-	body = gPhysics->createRigidDynamic(localTm);
+	body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(localTm);
 	body->attachShape(*shape);
 
 	physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-	gScene->addActor(*body);
+	MainLoop::getInstance().physicsScene->addActor(*body);
 	shape->release();
 }
 
 
 void physicsUpdate()
 {
+	float deltaTime = 1.0f / 50.0f;
+	float deltaTime1000 = deltaTime * 1000.0f;
+
 	while (loopRunning)
 	{
-		float deltaTime = 1.0f / 50.0f;
+		float startFrameTime = glfwGetTime();
 
 		for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 		{
 			MainLoop::getInstance().physicsObjects[i]->physicsUpdate(deltaTime);
 		}
 
-		gScene->simulate(deltaTime);
-		gScene->fetchResults(true);
+		MainLoop::getInstance().physicsScene->simulate(deltaTime);
+		MainLoop::getInstance().physicsScene->fetchResults(true);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));
 	}
 }
 

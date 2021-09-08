@@ -1,8 +1,9 @@
 #pragma once
 
+#include <glad/glad.h>
+#include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
-#include <glad/glad.h>
 
 
 class PlayerCharacter : public ImGuiObject, public PhysicsObject, public RenderObject
@@ -14,10 +15,17 @@ public:
 	void physicsUpdate(float deltaTime);
 	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
 	void propertyPanelImGui();
-	void renderImGui() {}		// TODO: implement the imguizmo interfaces so that we can have gizmos
+	void renderImGui();
 
 private:
 	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
+
+	physx::PxRigidDynamic* body;
+	physx::PxTransform transform;
+	physx::PxBoxGeometry boxCollider;
+	physx::PxSphereGeometry sphereCollider;
+	physx::PxCapsuleGeometry capsuleCollider;
+	bool reapplyTransform;
 
 	Model model;
 	Animator animator;

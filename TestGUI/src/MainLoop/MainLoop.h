@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <PxPhysicsAPI.h>
 
 #include "../Objects/BaseObject.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
@@ -29,4 +30,8 @@ public:
 	std::vector<RenderObject*> renderObjects;
 
 	RenderManager* renderManager;
+
+	physx::PxScene* physicsScene;
+	physx::PxPhysics* physicsPhysics;
+	physx::PxMaterial* defaultPhysicsMaterial;
 };

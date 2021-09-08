@@ -20,8 +20,6 @@
 
 #include <assimp/matrix4x4.h>
 
-#include "PxPhysicsAPI.h"
-
 
 void renderCube();
 void renderQuad();

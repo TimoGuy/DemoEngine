@@ -9,9 +9,26 @@
 
 #include "../ImGui/imgui.h"
 
+void imguiRenderBoxCollider(physx::PxBoxGeometry& boxGeometry);
+void imguiRenderSphereCollider(physx::PxSphereGeometry& sphereGeometry);
+void imguiRenderCapsuleCollider(physx::PxCapsuleGeometry& capsuleGeometry);
+void imguiRenderCircle(float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices);
+void imguiRenderSausage(float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
 
 PlayerCharacter::PlayerCharacter()
 {
+	transform = physx::PxTransform(physx::PxVec3(physx::PxReal(0), physx::PxReal(100), 0));
+	body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(transform);
+	boxCollider = physx::PxBoxGeometry(3.0f, 3.0f, 3.0f);
+	//physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(boxCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
+	capsuleCollider = physx::PxCapsuleGeometry(5.0f, 5.0f);
+	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(capsuleCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
+	body->attachShape(*shape);
+	physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+	MainLoop::getInstance().physicsScene->addActor(*body);
+	shape->release();
+
+
 	pbrShaderProgramId = ShaderResources::getInstance().setupShaderProgramVF("pbr", "pbr.vert", "pbr.frag");
 	shadowPassSkinnedProgramId = ShaderResources::getInstance().setupShaderProgramVF("shadowPassSkinned", "shadow_skinned.vert", "do_nothing.frag");
 
@@ -35,8 +52,42 @@ PlayerCharacter::~PlayerCharacter()
 }
 
 
+glm::mat4 modelMatrix;
 void PlayerCharacter::physicsUpdate(float deltaTime)
 {
+	if (reapplyTransform)
+	{
+		reapplyTransform = false;
+		body->setGlobalPose(transform);
+	}
+
+	// Convert the physx object to model matrix
+	transform = body->getGlobalPose();
+	{
+		physx::PxMat44 mat4 = physx::PxMat44(transform);
+		glm::mat4 newMat;
+		newMat[0][0] = mat4[0][0];
+		newMat[0][1] = mat4[0][1];
+		newMat[0][2] = mat4[0][2];
+		newMat[0][3] = mat4[0][3];
+
+		newMat[1][0] = mat4[1][0];
+		newMat[1][1] = mat4[1][1];
+		newMat[1][2] = mat4[1][2];
+		newMat[1][3] = mat4[1][3];
+
+		newMat[2][0] = mat4[2][0];
+		newMat[2][1] = mat4[2][1];
+		newMat[2][2] = mat4[2][2];
+		newMat[2][3] = mat4[2][3];
+
+		newMat[3][0] = mat4[3][0];
+		newMat[3][1] = mat4[3][1];
+		newMat[3][2] = mat4[3][2];
+		newMat[3][3] = mat4[3][3];
+
+		modelMatrix = newMat;
+	}
 }
 
 void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
@@ -82,7 +133,8 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 
 	glActiveTexture(GL_TEXTURE0);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	
+	//glm::mat4 modelMatrix = glm::mat4(1.0f);
 		/*glm::translate(pbrModelPosition)
 		* glm::scale(glm::mat4(1.0f), pbrModelScale);*/
 	glUniformMatrix4fv(
@@ -108,5 +160,186 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 
 void PlayerCharacter::propertyPanelImGui()
 {
-	ImGui::DragFloat3("Player Position", )				// TODO: implement position here by first making a physx object for this to go off!
+	physx::PxTransform transformCopy = transform;
+	ImGui::DragFloat3("Player Position", &transform.p[0]);
+	if (transformCopy.p != transform.p || !(transformCopy.q == transform.q))
+	{
+		reapplyTransform = true;
+	}
+
+	ImGui::DragFloat3("Box Collider Half Extents", &boxCollider.halfExtents[0]);
+}
+
+void PlayerCharacter::renderImGui()
+{
+	//imguiRenderBoxCollider(boxCollider);
+	imguiRenderCapsuleCollider(capsuleCollider);
+}
+
+void imguiRenderBoxCollider(physx::PxBoxGeometry& boxGeometry)
+{
+	physx::PxVec3 halfExtents = boxGeometry.halfExtents;
+	std::vector<glm::vec4> points = {
+		modelMatrix * glm::vec4(halfExtents.x, halfExtents.y, halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(-halfExtents.x, halfExtents.y, halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(halfExtents.x, -halfExtents.y, halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(-halfExtents.x, -halfExtents.y, halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(halfExtents.x, halfExtents.y, -halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(-halfExtents.x, halfExtents.y, -halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(halfExtents.x, -halfExtents.y, -halfExtents.z, 1.0f),
+		modelMatrix * glm::vec4(-halfExtents.x, -halfExtents.y, -halfExtents.z, 1.0f),
+	};
+	std::vector<glm::vec3> screenSpacePoints;
+	unsigned int indices[4][4] = {
+		{0, 1, 2, 3},
+		{4, 5, 6, 7},
+		{0, 4, 2, 6},
+		{1, 5, 3, 7}
+	};
+	for (unsigned int i = 0; i < points.size(); i++)
+	{
+		//
+		// Convert to screen space
+		//
+		glm::vec3 point = glm::vec3(points[i]);
+		glm::vec3 pointOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(point);
+		float clipZ = pointOnScreen.z;
+		pointOnScreen /= clipZ;
+		pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+		pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		pointOnScreen.z = clipZ;		// Reassign for test later
+		screenSpacePoints.push_back(pointOnScreen);
+	}
+
+	for (unsigned int i = 0; i < 4; i++)
+	{
+		//
+		// Draw quads if in the screen
+		//
+		glm::vec3 ssPoints[] = {
+			screenSpacePoints[indices[i][0]],
+			screenSpacePoints[indices[i][1]],
+			screenSpacePoints[indices[i][2]],
+			screenSpacePoints[indices[i][3]]
+		};
+		if (ssPoints[0].z < 0.0f || ssPoints[1].z < 0.0f || ssPoints[2].z < 0.0f || ssPoints[3].z < 0.0f) continue;
+
+		ImGui::GetBackgroundDrawList()->AddQuad(
+			ImVec2(ssPoints[0].x, ssPoints[0].y),
+			ImVec2(ssPoints[1].x, ssPoints[1].y),
+			ImVec2(ssPoints[3].x, ssPoints[3].y),
+			ImVec2(ssPoints[2].x, ssPoints[2].y),
+			ImColor::HSV(0.39f, 0.88f, 0.92f),
+			3.0f
+		);
+	}
+}
+
+void imguiRenderSphereCollider(physx::PxSphereGeometry& sphereGeometry)
+{
+	imguiRenderCircle(sphereGeometry.radius, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 16);
+	imguiRenderCircle(sphereGeometry.radius, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f), 16);
+	imguiRenderCircle(sphereGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(0.0f), 16);
+}
+
+void imguiRenderCapsuleCollider(physx::PxCapsuleGeometry& capsuleGeometry)
+{
+	imguiRenderSausage(capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(0.0f, 0.0f, 0.0f), 16);
+	imguiRenderSausage(capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), 16);
+	imguiRenderCircle(capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(-capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
+	imguiRenderCircle(capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
+}
+
+void imguiRenderCircle(float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices)
+{
+	std::vector<glm::vec4> ringVertices;
+	float angle = 0;
+	for (unsigned int i = 0; i < numVertices; i++)
+	{
+		// Set point
+		glm::vec4 point = glm::vec4(std::cosf(angle) * radius, std::sinf(angle) * radius, 0.0f, 1.0f);
+		ringVertices.push_back(modelMatrix * (glm::toMat4(glm::quat(eulerAngles)) * point + glm::vec4(offset, 0.0f)));
+
+		// Increment angle
+		angle += physx::PxTwoPi / (float)numVertices;
+	}
+
+	//
+	// Convert to screen space
+	//
+	std::vector<ImVec2> screenSpacePoints;
+	for (unsigned int i = 0; i < ringVertices.size(); i++)
+	{
+		glm::vec3 point = glm::vec3(ringVertices[i]);
+		glm::vec3 pointOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(point);
+		float clipZ = pointOnScreen.z;
+		if (clipZ < 0.0f) return;							// NOTE: this is to break away from any rings that are intersecting with the near space
+
+		pointOnScreen /= clipZ;
+		pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+		pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		screenSpacePoints.push_back(ImVec2(pointOnScreen.x, pointOnScreen.y));
+	}
+
+	ImGui::GetBackgroundDrawList()->AddPolyline(
+		&screenSpacePoints[0],
+		screenSpacePoints.size(),
+		ImColor::HSV(0.39f, 0.88f, 0.92f),
+		ImDrawFlags_Closed,
+		3.0f
+	);
+}
+
+void imguiRenderSausage(float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices)					// NOTE: this is very similar to the function imguiRenderCircle
+{
+	assert(numVertices % 2 == 0);		// Needs to be even number of vertices to work
+
+	std::vector<glm::vec4> ringVertices;
+	float angle = glm::radians(90.0f);
+	for (unsigned int i = 0; i <= numVertices / 2; i++)
+	{
+		// Set point
+		glm::vec4 point = glm::vec4(std::cosf(angle) * radius - halfHeight, std::sinf(angle) * radius, 0.0f, 1.0f);
+		ringVertices.push_back(modelMatrix * glm::toMat4(glm::quat(eulerAngles)) * point);
+
+		// Increment angle
+		if (i < numVertices / 2)
+			angle += physx::PxTwoPi / (float)numVertices;
+	}
+
+	for (unsigned int i = 0; i <= numVertices / 2; i++)
+	{
+		// Set point
+		glm::vec4 point = glm::vec4(std::cosf(angle) * radius + halfHeight, std::sinf(angle) * radius, 0.0f, 1.0f);
+		ringVertices.push_back(modelMatrix * glm::toMat4(glm::quat(eulerAngles)) * point);
+
+		// Increment angle
+		if (i < numVertices / 2)
+			angle += physx::PxTwoPi / (float)numVertices;
+	}
+
+	//
+	// Convert to screen space
+	//
+	std::vector<ImVec2> screenSpacePoints;
+	for (unsigned int i = 0; i < ringVertices.size(); i++)
+	{
+		glm::vec3 point = glm::vec3(ringVertices[i]);
+		glm::vec3 pointOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(point);
+		float clipZ = pointOnScreen.z;
+		if (clipZ < 0.0f) return;							// NOTE: this is to break away from any rings that are intersecting with the near space
+
+		pointOnScreen /= clipZ;
+		pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+		pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		screenSpacePoints.push_back(ImVec2(pointOnScreen.x, pointOnScreen.y));
+	}
+
+	ImGui::GetBackgroundDrawList()->AddPolyline(
+		&screenSpacePoints[0],
+		screenSpacePoints.size(),
+		ImColor::HSV(0.39f, 0.88f, 0.92f),
+		ImDrawFlags_Closed,
+		3.0f
+	);
 }
