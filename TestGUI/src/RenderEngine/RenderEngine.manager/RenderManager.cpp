@@ -948,6 +948,12 @@ void RenderManager::renderImGuiContents()
 				}
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Physics"))
+			{
+				ImGui::MenuItem("Simulate Physics", NULL, &MainLoop::getInstance().simulatePhysics);
+				
+				ImGui::EndMenu();
+			}
 			ImGui::EndMainMenuBar();
 		}
 	}
@@ -1079,18 +1085,13 @@ void RenderManager::renderImGuiContents()
 			}
 
 			//
-			// Render out the properties panels of everything!!! (in the future have it be a selection process like the unity hierarchy)
+			// Render out the properties panels of selected object (default: 0)
 			//
-			for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
-			{
-				ImGui::Separator();
-				MainLoop::getInstance().imguiObjects[i]->propertyPanelImGui();
-			}
+			ImGui::Separator();
+			MainLoop::getInstance().imguiObjects[0]->propertyPanelImGui();
 		}
 		ImGui::End();
 	}
-
-	
 
 	//
 	// Everything else
@@ -1112,8 +1113,7 @@ void RenderManager::renderImGuiContents()
 	/*glm::mat4 identityMatrix(1.0f);																								// I don't really like this grid... it draws over all of the other objects... maybe if I were able to incorporate the depth buffer then I might consider but not really lol
 	ImGuizmo::DrawGrid(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), glm::value_ptr(identityMatrix), 10000.f);*/
 
-	glm::mat4 matrixTransform = MainLoop::getInstance().renderObjects[0]->getTransformAsMatrix();
-	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(matrixTransform));
+	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[0]->transform));
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);				// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }

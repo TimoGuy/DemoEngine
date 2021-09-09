@@ -407,13 +407,16 @@ void physicsUpdate()
 	{
 		float startFrameTime = glfwGetTime();
 
-		for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
+		if (MainLoop::getInstance().simulatePhysics)
 		{
-			MainLoop::getInstance().physicsObjects[i]->physicsUpdate(deltaTime);
-		}
+			for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
+			{
+				MainLoop::getInstance().physicsObjects[i]->physicsUpdate(deltaTime);
+			}
 
-		MainLoop::getInstance().physicsScene->simulate(deltaTime);
-		MainLoop::getInstance().physicsScene->fetchResults(true);
+			MainLoop::getInstance().physicsScene->simulate(deltaTime);
+			MainLoop::getInstance().physicsScene->fetchResults(true);
+		}
 
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));
 	}

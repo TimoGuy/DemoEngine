@@ -1,8 +1,6 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <glm/gtx/scalar_multiplication.hpp>
-#include <glm/gtx/euler_angles.hpp>
 
 
 //
@@ -11,20 +9,7 @@
 class BaseObject
 {
 public:
-	glm::vec3 position = glm::vec3(0.0f),
-		rotationEulerAngles = glm::vec3(0.0f),
-		scale = glm::vec3(1.0f);
-
-	glm::mat4 getTransformAsMatrix()
-	{
-		glm::vec3 radiansRotationEulerAngles = glm::radians(rotationEulerAngles);
-		return glm::translate(glm::mat4(1.0f), position)
-			* glm::eulerAngleXYZ(
-				radiansRotationEulerAngles.x,
-				radiansRotationEulerAngles.y,
-				radiansRotationEulerAngles.z)
-			* glm::scale(glm::mat4(1.0f), scale);
-	}
+	glm::mat4 transform = glm::mat4(1.0f);
 };
 
 //

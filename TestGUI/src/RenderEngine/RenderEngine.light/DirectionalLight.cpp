@@ -6,43 +6,38 @@
 #include "../../MainLoop/MainLoop.h"
 
 #include "../../ImGui/imgui.h"
+#include "../../ImGui/ImGuizmo.h"
+#include "../../Physics/PhysicsUtils.h"
 
 
 DirectionalLight::DirectionalLight(glm::vec3 eulerAngles)
 {
-	setLookDirection(eulerAngles);
+	setLookDirection(glm::quat(glm::radians(eulerAngles)));
 
 	lightGizmoTextureId =
 		TextureResources::getInstance().loadTexture2D(
 			"light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT
 		);
 
-	LightObject::position = glm::vec3(0.0f);
 	light.lightType = LightType::DIRECTIONAL;
 
 	light.color = glm::vec3(1.0f);
 	light.colorIntensity = 150.0f;
 }
 
-void DirectionalLight::setLookDirection(glm::vec3 eulerAngles)
+void DirectionalLight::setLookDirection(glm::quat rotation)
 {
 	glm::vec3 lookDirection(0.0f, 0.0f, 1.0f);
-	lookDirection = glm::quat(glm::vec3(glm::radians(eulerAngles.x), glm::radians(eulerAngles.y), glm::radians(eulerAngles.z))) * lookDirection;
+	lookDirection = rotation * lookDirection;
 	lookDirection = glm::normalize(lookDirection);
 
 	light.facingDirection = lookDirection;
-
-	eulerAnglesCache = eulerAngles;
 }
 
 void DirectionalLight::propertyPanelImGui()
 {
-	ImGui::DragFloat3("Light Position", &LightObject::position[0]);
-
-	glm::vec3 eulerAnglesCopy = eulerAnglesCache;
-	ImGui::DragFloat3("Light Euler Angles", &eulerAnglesCopy[0]);
-	if (eulerAnglesCopy != eulerAnglesCache)
-		setLookDirection(eulerAnglesCopy);
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(LightObject::transform));
+	setLookDirection(PhysicsUtils::getRotation(LightObject::transform));
 	
 	ImGui::ColorEdit3("Light base color", &light.color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &light.colorIntensity);
@@ -54,8 +49,8 @@ void DirectionalLight::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(LightObject::position);
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(LightObject::position + light.facingDirection);
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(LightObject::transform));
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(LightObject::transform) + light.facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 

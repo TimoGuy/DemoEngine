@@ -7,6 +7,7 @@
 #include "../RenderEngine/RenderEngine.resources/TextureResources.h"
 #include "../Physics/PhysicsUtils.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
+#include "../ImGui/imgui.h"
 
 
 PlayerCharacter::PlayerCharacter()
@@ -53,8 +54,6 @@ PlayerCharacter::~PlayerCharacter()
 {
 }
 
-
-glm::mat4 modelMatrix;
 void PlayerCharacter::physicsUpdate(float deltaTime)
 {
 	//if (reapplyTransform)
@@ -90,10 +89,18 @@ void PlayerCharacter::physicsUpdate(float deltaTime)
 
 	//	modelMatrix = newMat;
 	//}
+	physx::PxExtendedVec3 pos = controller->getPosition();
+	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+	if (!(newTransform == PhysicsObject::transform))
+	{
+		glm::vec3 newPosition = PhysicsUtils::getPosition(PhysicsObject::transform);
+		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
+	}
+
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -9.8f, 0.0f), 0.01f, deltaTime, NULL, NULL);
 
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+	pos = controller->getPosition();
+	PhysicsObject::transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
 void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
@@ -147,13 +154,13 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(modelMatrix)
+		glm::value_ptr(PhysicsObject::transform)
 	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(programId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(PhysicsObject::transform))))
 	);
 
 	const size_t MAX_LIGHTS = 4;
@@ -161,7 +168,7 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 	{
 		LightObject* light = MainLoop::getInstance().lightObjects[i];
 		glm::vec3 lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
-		glm::vec4 lightPosition = glm::vec4(light->position, light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
 		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
@@ -175,15 +182,9 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 
 void PlayerCharacter::propertyPanelImGui()
 {
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	RenderObject::position = glm::vec3(pos.x, pos.y, pos.z);
-	ImGui::DragFloat3("Player Position", &RenderObject::position[0]);
-	if (RenderObject::position.x != pos.x ||
-		RenderObject::position.y != pos.y ||
-		RenderObject::position.z != pos.z)
-	{
-		controller->setPosition(physx::PxExtendedVec3(RenderObject::position.x, RenderObject::position.y, RenderObject::position.z));
-	}
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(PhysicsObject::transform));
+	glm::vec3 newPos = PhysicsUtils::getPosition(PhysicsObject::transform);
+	controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
 	ImGui::DragFloat3("Controller up direction", &tempUp[0]);
 	controller->setUpDirection(tempUp.getNormalized());
@@ -191,7 +192,7 @@ void PlayerCharacter::propertyPanelImGui()
 
 void PlayerCharacter::renderImGui()
 {
-	//imguiRenderBoxCollider(modelMatrix, boxCollider);
-	//imguiRenderCapsuleCollider(modelMatrix, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(modelMatrix, *controller);
+	//imguiRenderBoxCollider(PhysicsObject::transform, boxCollider);
+	//imguiRenderCapsuleCollider(PhysicsObject::transform, capsuleCollider);
+	PhysicsUtils::imguiRenderCharacterController(PhysicsObject::transform, *controller);
 }

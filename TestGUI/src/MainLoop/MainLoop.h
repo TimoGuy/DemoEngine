@@ -35,4 +35,9 @@ public:
 	physx::PxPhysics* physicsPhysics;
 	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
+
+	//
+	// Debug mode flags
+	//
+	bool simulatePhysics = false;
 };
