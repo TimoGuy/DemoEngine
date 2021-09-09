@@ -1088,7 +1088,7 @@ void RenderManager::renderImGuiContents()
 			// Render out the properties panels of selected object (default: 0)
 			//
 			ImGui::Separator();
-			MainLoop::getInstance().imguiObjects[0]->propertyPanelImGui();
+			MainLoop::getInstance().imguiObjects[1]->propertyPanelImGui();
 		}
 		ImGui::End();
 	}
@@ -1113,7 +1113,18 @@ void RenderManager::renderImGuiContents()
 	/*glm::mat4 identityMatrix(1.0f);																								// I don't really like this grid... it draws over all of the other objects... maybe if I were able to incorporate the depth buffer then I might consider but not really lol
 	ImGuizmo::DrawGrid(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), glm::value_ptr(identityMatrix), 10000.f);*/
 
-	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[0]->transform));
+	//
+	// BIG NOTE: I think that maybe c++ polymorphism is a little dumb.
+	//	BaseObject::transform, LightObject::transform, and ImGuiObject::transform
+	//	are considered separate matrices, so when using the transform matrix inside the objects,
+	//	I have to make sure to use the correct one that imgui is editing. SMH.
+	// 	   
+	//		This Should Get fixed (my design patterns-wise)
+	// 
+	// 	   -- Timo
+	//
+
+	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[1]->transform));
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);				// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }

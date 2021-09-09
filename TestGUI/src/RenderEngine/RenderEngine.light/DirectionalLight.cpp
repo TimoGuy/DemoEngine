@@ -36,8 +36,8 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 void DirectionalLight::propertyPanelImGui()
 {
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(LightObject::transform));
-	setLookDirection(PhysicsUtils::getRotation(LightObject::transform));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(ImGuiObject::transform));
+	setLookDirection(PhysicsUtils::getRotation(ImGuiObject::transform));
 	
 	ImGui::ColorEdit3("Light base color", &light.color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &light.colorIntensity);
@@ -49,8 +49,8 @@ void DirectionalLight::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(LightObject::transform));
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(LightObject::transform) + light.facingDirection);
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(ImGuiObject::transform));
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(ImGuiObject::transform) + light.facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 
