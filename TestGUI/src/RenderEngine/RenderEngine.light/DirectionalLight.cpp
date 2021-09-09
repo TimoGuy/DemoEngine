@@ -17,7 +17,7 @@ DirectionalLight::DirectionalLight(glm::vec3 eulerAngles)
 			"light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT
 		);
 
-	light.position = glm::vec3(0.0f);
+	LightObject::position = glm::vec3(0.0f);
 	light.lightType = LightType::DIRECTIONAL;
 
 	light.color = glm::vec3(1.0f);
@@ -37,7 +37,7 @@ void DirectionalLight::setLookDirection(glm::vec3 eulerAngles)
 
 void DirectionalLight::propertyPanelImGui()
 {
-	ImGui::DragFloat3("Light Position", &light.position[0]);
+	ImGui::DragFloat3("Light Position", &LightObject::position[0]);
 
 	glm::vec3 eulerAnglesCopy = eulerAnglesCache;
 	ImGui::DragFloat3("Light Euler Angles", &eulerAnglesCopy[0]);
@@ -54,8 +54,8 @@ void DirectionalLight::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(light.position);
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(light.position + light.facingDirection);
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(LightObject::position);
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(LightObject::position + light.facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 

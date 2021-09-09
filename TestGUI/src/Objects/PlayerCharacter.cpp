@@ -159,10 +159,10 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 	const size_t MAX_LIGHTS = 4;
 	for (unsigned int i = 0; i < std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size()); i++)
 	{
-		const Light& light = MainLoop::getInstance().lightObjects[i]->getLight();
-		glm::vec3 lightDirection = glm::normalize(light.facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light. Check this first in the shader
-		glm::vec4 lightPosition = glm::vec4(light.position, light.lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
-		glm::vec3 lightColorWithIntensity = light.color * light.colorIntensity;
+		LightObject* light = MainLoop::getInstance().lightObjects[i];
+		glm::vec3 lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
+		glm::vec4 lightPosition = glm::vec4(light->position, light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
 		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
 		glUniform3fv(glGetUniformLocation(programId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
@@ -175,14 +175,14 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 
 void PlayerCharacter::propertyPanelImGui()
 {
-	physx::PxExtendedVec3 controllerPosition = controller->getPosition();
-	float pos[3] = { controllerPosition.x, controllerPosition.y, controllerPosition.z };
-	ImGui::DragFloat3("Player Position", pos);
-	if (pos[0] != controllerPosition.x ||
-		pos[1] != controllerPosition.y || 
-		pos[2] != controllerPosition.z)
+	physx::PxExtendedVec3 pos = controller->getPosition();
+	RenderObject::position = glm::vec3(pos.x, pos.y, pos.z);
+	ImGui::DragFloat3("Player Position", &RenderObject::position[0]);
+	if (RenderObject::position.x != pos.x ||
+		RenderObject::position.y != pos.y ||
+		RenderObject::position.z != pos.z)
 	{
-		controller->setPosition(physx::PxExtendedVec3(pos[0], pos[1], pos[2]));
+		controller->setPosition(physx::PxExtendedVec3(RenderObject::position.x, RenderObject::position.y, RenderObject::position.z));
 	}
 
 	ImGui::DragFloat3("Controller up direction", &tempUp[0]);

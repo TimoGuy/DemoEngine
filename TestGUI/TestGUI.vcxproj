@@ -88,6 +88,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\ImGui\GraphEditor.cpp" />
+    <ClCompile Include="src\ImGui\ImCurveEdit.cpp" />
+    <ClCompile Include="src\ImGui\ImGradient.cpp" />
+    <ClCompile Include="src\ImGui\ImGuizmo.cpp" />
+    <ClCompile Include="src\ImGui\ImSequencer.cpp" />
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.light\DirectionalLight.cpp" />
@@ -133,6 +138,12 @@
     <None Include="vertex.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\ImGui\GraphEditor.h" />
+    <ClInclude Include="src\ImGui\ImCurveEdit.h" />
+    <ClInclude Include="src\ImGui\ImGradient.h" />
+    <ClInclude Include="src\ImGui\ImGuizmo.h" />
+    <ClInclude Include="src\ImGui\ImSequencer.h" />
+    <ClInclude Include="src\ImGui\ImZoomSlider.h" />
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
     <ClInclude Include="src\Objects\PlayerCharacter.h" />

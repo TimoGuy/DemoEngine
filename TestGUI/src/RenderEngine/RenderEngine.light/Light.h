@@ -8,7 +8,6 @@ struct Light
 {
 	LightType lightType;
 
-	glm::vec3 position;
 	glm::vec3 facingDirection;
 	glm::vec3 color;
 	float colorIntensity;
