@@ -8,6 +8,7 @@
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_impl_glfw.h"
 #include "../ImGui/imgui_impl_opengl3.h"
+#include "../ImGui/ImGuizmo.h"
 #include "../Objects/PlayerCharacter.h"
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
 
@@ -97,8 +98,20 @@ void MainLoop::run()
 
 		glfwPollEvents();
 
-		if (!io.WantCaptureMouse || ImGui::GetMouseCursor() == ImGuiMouseCursor_None)
+		//
+		// ImGui render pass
+		//
+		int prevImGuiMouseCursor = ImGui::GetMouseCursor();
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::BeginFrame();
+
+		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
 			camera.Inputs(window);
+
 
 		//// Update Animation
 		//if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)

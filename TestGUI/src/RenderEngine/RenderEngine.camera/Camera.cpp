@@ -75,6 +75,7 @@ void Camera::Inputs(GLFWwindow* window)
 
 		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		int jojo = ImGui::GetMouseCursor();
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
