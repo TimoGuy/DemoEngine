@@ -907,6 +907,7 @@ void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
 	static bool showScenePropterties = true;
+	static bool showObjectSelectionWindow = true;
 
 	static bool renderWireframeMode = false;
 
@@ -1029,6 +1030,35 @@ void RenderManager::renderImGuiContents()
 		ImGui::ShowDemoWindow(&show);
 
 	//
+	// Object Selection Window
+	//
+	static int currentSelectedObjectIndex = -1;
+	if (showObjectSelectionWindow)
+	{
+		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (ImGui::BeginListBox("##listbox Scene Objects", ImVec2(250, 5 * ImGui::GetTextLineHeightWithSpacing())))
+			{
+				//
+				// Display all of the objects in the scene
+				//
+				for (int n = 0; n < MainLoop::getInstance().imguiObjects.size(); n++)
+				{
+					const bool isSelected = (currentSelectedObjectIndex == n);
+					if (ImGui::Selectable(MainLoop::getInstance().imguiObjects[n]->name, isSelected))
+						currentSelectedObjectIndex = n;
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndListBox();
+			}
+		}
+		ImGui::End();
+	}
+
+	//
 	// Scene Properties window
 	//
 	if (showScenePropterties)
@@ -1088,17 +1118,12 @@ void RenderManager::renderImGuiContents()
 			// Render out the properties panels of selected object (default: 0)
 			//
 			ImGui::Separator();
-			MainLoop::getInstance().imguiObjects[1]->propertyPanelImGui();
+			if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size())
+				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->propertyPanelImGui();
+			else
+				ImGui::Text("No object is currently selected");
 		}
 		ImGui::End();
-	}
-
-	//
-	// Everything else
-	//
-	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
-	{
-		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 
 	//
@@ -1124,9 +1149,20 @@ void RenderManager::renderImGuiContents()
 	// 	   -- Timo
 	//
 
-	ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[1]->transform));
+	if (currentSelectedObjectIndex >= 0 &&
+		currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
+		ImGui::GetMouseCursor() != ImGuiMouseCursor_None)								// TODO: there's a bit of a bug... this line returns that the cursor is the arrow cursor (0) instead of none (-1) which is what it is when right clicking
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->transform));
 
-	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);				// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
+	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
+
+	//
+	// Everything else
+	//
+	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+	{
+		MainLoop::getInstance().imguiObjects[i]->renderImGui();
+	}
 }
 
 void RenderManager::renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color)

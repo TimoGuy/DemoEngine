@@ -17,6 +17,8 @@ public:
 	void propertyPanelImGui();
 	void renderImGui();
 
+	glm::mat4 transform;
+
 private:
 	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
 

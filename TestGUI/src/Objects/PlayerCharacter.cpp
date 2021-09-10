@@ -10,8 +10,10 @@
 #include "../ImGui/imgui.h"
 
 
-PlayerCharacter::PlayerCharacter()
+PlayerCharacter::PlayerCharacter() : ImGuiObject((char*)"PlayerChar", transform), PhysicsObject(transform), RenderObject(transform)
 {
+	transform = glm::mat4(1.0f);
+
 	//transform = physx::PxTransform(physx::PxVec3(physx::PxReal(0), physx::PxReal(100), 0));
 	//body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(transform);
 	//boxCollider = physx::PxBoxGeometry(3.0f, 3.0f, 3.0f);
@@ -91,16 +93,16 @@ void PlayerCharacter::physicsUpdate(float deltaTime)
 	//}
 	physx::PxExtendedVec3 pos = controller->getPosition();
 	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-	if (!(newTransform == PhysicsObject::transform))
+	if (!(newTransform == transform))
 	{
-		glm::vec3 newPosition = PhysicsUtils::getPosition(PhysicsObject::transform);
+		glm::vec3 newPosition = PhysicsUtils::getPosition(transform);
 		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
 	}
 
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -9.8f, 0.0f), 0.01f, deltaTime, NULL, NULL);
 
 	pos = controller->getPosition();
-	PhysicsObject::transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+	transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
 void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
@@ -154,13 +156,13 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(PhysicsObject::transform)
+		glm::value_ptr(transform)
 	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(programId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(PhysicsObject::transform))))
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(transform))))
 	);
 
 	const size_t MAX_LIGHTS = 4;
@@ -182,8 +184,8 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 
 void PlayerCharacter::propertyPanelImGui()
 {
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(PhysicsObject::transform));
-	glm::vec3 newPos = PhysicsUtils::getPosition(PhysicsObject::transform);
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(transform));
+	glm::vec3 newPos = PhysicsUtils::getPosition(transform);
 	controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
 	ImGui::DragFloat3("Controller up direction", &tempUp[0]);
@@ -192,7 +194,7 @@ void PlayerCharacter::propertyPanelImGui()
 
 void PlayerCharacter::renderImGui()
 {
-	//imguiRenderBoxCollider(PhysicsObject::transform, boxCollider);
-	//imguiRenderCapsuleCollider(PhysicsObject::transform, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(PhysicsObject::transform, *controller);
+	//imguiRenderBoxCollider(transform, boxCollider);
+	//imguiRenderCapsuleCollider(transform, capsuleCollider);
+	PhysicsUtils::imguiRenderCharacterController(transform, *controller);
 }
