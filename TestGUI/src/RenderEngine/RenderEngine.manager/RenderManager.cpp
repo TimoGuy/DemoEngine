@@ -1051,7 +1051,15 @@ void RenderManager::renderImGuiContents()
 	}
 
 	//
-	// ImGuizmo
+	// Everything else
+	//
+	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+	{
+		MainLoop::getInstance().imguiObjects[i]->renderImGui();
+	}
+
+	//
+	// ImGuizmo (NOTE: keep this at the very end so that imguizmo stuff can be rendered after everything else in the background draw list has been rendered)
 	//
 	const ImGuiViewport* viewport = ImGui::GetMainViewport();
 	ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
@@ -1079,14 +1087,6 @@ void RenderManager::renderImGuiContents()
 	}
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
-
-	//
-	// Everything else
-	//
-	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
-	{
-		MainLoop::getInstance().imguiObjects[i]->renderImGui();
-	}
 }
 
 void RenderManager::renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color)
