@@ -105,7 +105,10 @@
     <ClCompile Include="src\ImGui\GraphEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Physics\PhysicsUtils.cpp">
+    <ClCompile Include="src\Utils\PhysicsUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\BaseObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -204,7 +207,7 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.light\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Physics\PhysicsUtils.h">
+    <ClInclude Include="src\Utils\PhysicsUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ImGui\ImSequencer.h">

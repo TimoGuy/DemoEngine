@@ -5,12 +5,12 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/ShaderResources.h"
 #include "../RenderEngine/RenderEngine.resources/TextureResources.h"
-#include "../Physics/PhysicsUtils.h"
+#include "../Utils/PhysicsUtils.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
 
 
-PlayerCharacter::PlayerCharacter() : ImGuiObject((char*)"PlayerChar", transform), PhysicsObject(transform), RenderObject(transform)
+PlayerCharacter::PlayerCharacter() : ImGuiComponent((char*)"PlayerChar", transform), PhysicsComponent(transform), RenderComponent(transform)
 {
 	transform = glm::mat4(1.0f);
 
@@ -168,7 +168,7 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 	const size_t MAX_LIGHTS = 4;
 	for (unsigned int i = 0; i < std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size()); i++)
 	{
-		LightObject* light = MainLoop::getInstance().lightObjects[i];
+		LightComponent* light = MainLoop::getInstance().lightObjects[i];
 		glm::vec3 lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
 		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
@@ -197,4 +197,9 @@ void PlayerCharacter::renderImGui()
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
 	PhysicsUtils::imguiRenderCharacterController(transform, *controller);
+}
+
+void PlayerCharacter::cloneMe()
+{
+	// TODO: figure this out...
 }

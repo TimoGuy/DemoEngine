@@ -63,14 +63,8 @@ void MainLoop::initialize()
 	//
 	// Create objects
 	//
-	PlayerCharacter* player = new PlayerCharacter();
-	imguiObjects.push_back(player);
-	physicsObjects.push_back(player);
-	renderObjects.push_back(player);
-
-	DirectionalLight* light = new DirectionalLight(glm::vec3(0.0f, 90.0f, 0.0f));
-	imguiObjects.push_back(light);
-	lightObjects.push_back(light);
+	new PlayerCharacter();
+	new DirectionalLight(glm::vec3(0.0f, 90.0f, 0.0f));
 }
 
 void MainLoop::run()

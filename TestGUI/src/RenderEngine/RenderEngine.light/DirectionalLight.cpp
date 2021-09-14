@@ -7,10 +7,10 @@
 
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/ImGuizmo.h"
-#include "../../Physics/PhysicsUtils.h"
+#include "../../Utils/PhysicsUtils.h"
 
 
-DirectionalLight::DirectionalLight(glm::vec3 eulerAngles) : LightObject(transform), ImGuiObject((char*)"DirectionalLight", transform)
+DirectionalLight::DirectionalLight(glm::vec3 eulerAngles) : LightComponent(transform), ImGuiComponent((char*)"DirectionalLight", transform)
 {
 	transform = glm::mat4(1.0f);
 
@@ -25,6 +25,10 @@ DirectionalLight::DirectionalLight(glm::vec3 eulerAngles) : LightObject(transfor
 
 	light.color = glm::vec3(1.0f);
 	light.colorIntensity = 150.0f;
+}
+
+DirectionalLight::~DirectionalLight()
+{
 }
 
 void DirectionalLight::setLookDirection(glm::quat rotation)
@@ -89,4 +93,9 @@ void DirectionalLight::renderImGui()
 
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
+}
+
+void DirectionalLight::cloneMe()
+{
+	// TODO: figure this out
 }

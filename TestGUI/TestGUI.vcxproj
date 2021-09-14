@@ -94,8 +94,9 @@
     <ClCompile Include="src\ImGui\ImGuizmo.cpp" />
     <ClCompile Include="src\ImGui\ImSequencer.cpp" />
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
+    <ClCompile Include="src\Objects\BaseObject.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
-    <ClCompile Include="src\Physics\PhysicsUtils.cpp" />
+    <ClCompile Include="src\Utils\PhysicsUtils.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.light\DirectionalLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.cpp" />
@@ -148,7 +149,7 @@
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
     <ClInclude Include="src\Objects\PlayerCharacter.h" />
-    <ClInclude Include="src\Physics\PhysicsUtils.h" />
+    <ClInclude Include="src\Utils\PhysicsUtils.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\DirectionalLight.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />

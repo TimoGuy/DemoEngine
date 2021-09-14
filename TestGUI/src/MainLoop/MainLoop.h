@@ -24,10 +24,10 @@ public:
 
 	GLFWwindow* window;
 	Camera camera;
-	std::vector<ImGuiObject*> imguiObjects;		// NOTE: This is only for debug... imgui renders from here.
-	std::vector<LightObject*> lightObjects;
-	std::vector<PhysicsObject*> physicsObjects;
-	std::vector<RenderObject*> renderObjects;
+	std::vector<ImGuiComponent*> imguiObjects;		// NOTE: This is only for debug... imgui renders from here.
+	std::vector<LightComponent*> lightObjects;
+	std::vector<PhysicsComponent*> physicsObjects;
+	std::vector<RenderComponent*> renderObjects;
 
 	RenderManager* renderManager;
 

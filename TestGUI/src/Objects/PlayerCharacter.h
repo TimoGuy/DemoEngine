@@ -6,7 +6,7 @@
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
-class PlayerCharacter : public ImGuiObject, public PhysicsObject, public RenderObject
+class PlayerCharacter : public ImGuiComponent, public PhysicsComponent, public RenderComponent
 {
 public:
 	PlayerCharacter();
@@ -16,6 +16,7 @@ public:
 	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
 	void propertyPanelImGui();
 	void renderImGui();
+	void cloneMe();
 
 	glm::mat4 transform;
 

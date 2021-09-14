@@ -26,6 +26,7 @@ void renderCube();
 void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
+static int currentSelectedObjectIndex = -1;
 
 
 RenderManager::RenderManager()
@@ -926,6 +927,16 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+				ImGui::Separator();
+				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0))
+				{
+					MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->cloneMe();
+				}
+				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
+				{
+					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex];
+					currentSelectedObjectIndex = -1;
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Window"))
@@ -953,7 +964,7 @@ void RenderManager::renderImGuiContents()
 	}
 
 	//
-	// Easy Analytics Overlay
+	// Analytics Overlay
 	//
 	if (showAnalyticsOverlay)
 	{
@@ -1025,7 +1036,6 @@ void RenderManager::renderImGuiContents()
 	//
 	// Object Selection Window
 	//
-	static int currentSelectedObjectIndex = -1;
 	if (showObjectSelectionWindow)
 	{
 		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow, ImGuiWindowFlags_AlwaysAutoResize))
