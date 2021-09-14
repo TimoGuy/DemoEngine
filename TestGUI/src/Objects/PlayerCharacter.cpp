@@ -40,9 +40,11 @@ PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
-	std::vector<Animation> tryModelAnimations;
+	/*std::vector<Animation> tryModelAnimations;
 	model = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
-	animator = Animator(&tryModelAnimations);
+	animator = Animator(&tryModelAnimations);*/
+	model = *(Model*)Resources::getResource("model;slimeGirl");
+	animator = Animator(&model.getAnimations());
 
 	pbrAlbedoTexture = *(GLuint*)Resources::getResource("texture;pbrAlbedo");
 	pbrNormalTexture = *(GLuint*)Resources::getResource("texture;pbrNormal");

@@ -10,17 +10,18 @@
 #include "RenderEngine.model.animation/Animation.h"
 
 
+Model::Model() { scene = nullptr; }
+
 Model::Model(const char* path)
 {
-	std::vector<Animation> garbage;
 	std::vector<int> garbage2;
-	loadModel(path, garbage, garbage2);
+	loadModel(path, garbage2);
 }
 
 
-Model::Model(const char* path, std::vector<Animation>& animations, std::vector<int> animationIndices)
+Model::Model(const char* path, std::vector<int> animationIndices)
 {
-	loadModel(path, animations, animationIndices);
+	loadModel(path, animationIndices);
 }
 
 
@@ -33,7 +34,7 @@ void Model::render(unsigned int shaderId)
 }
 
 
-void Model::loadModel(std::string path, std::vector<Animation>& animations, std::vector<int> animationIndices)
+void Model::loadModel(std::string path, std::vector<int> animationIndices)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);

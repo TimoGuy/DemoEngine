@@ -2,7 +2,10 @@
 
 #include <iostream>
 #include <map>
+#include <vector>
 #include <stb/stb_image.h>
+
+#include "../RenderEngine.model/RenderEngine.model.animation/Animation.h"
 
 
 void* findResource(const std::string& resourceName);
@@ -12,24 +15,11 @@ const GLchar* readFile(const char* filename);
 GLuint compileShader(GLenum type, const char* fname);
 void* loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname);
 
-void* loadTexture2D(
-	const std::string& textureName,
-	const std::string& fname,
-	GLuint fromTexture,
-	GLuint toTexture,
-	GLuint minFilter,
-	GLuint magFilter,
-	GLuint wrapS,
-	GLuint wrapT);
-void* loadHDRTexture2D(
-	const std::string& textureName,
-	const std::string& fname,
-	GLuint fromTexture,
-	GLuint toTexture,
-	GLuint minFilter,
-	GLuint magFilter,
-	GLuint wrapS,
-	GLuint wrapT);
+void* loadTexture2D(const std::string& textureName, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
+void* loadHDRTexture2D(const std::string& textureName, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
+
+void* loadModel(const std::string& modelName, const char* path);
+void* loadModel(const std::string& modelName, const char* path, std::vector<Animation>& animations, std::vector<int> animationIndices);
 
 void* loadResource(const std::string& resourceName);
 
@@ -226,6 +216,25 @@ void* loadHDRTexture2D(
 #pragma endregion
 
 
+#pragma region Model And Animation Loading Utils
+
+void* loadModel(const std::string& modelName, const char* path)
+{
+	Model* model = new Model(path);
+	registerResource(modelName, model);
+	return model;
+}
+
+void* loadModel(const std::string& modelName, const char* path, std::vector<int> animationIndices)
+{
+	Model* model = new Model(path, animationIndices);
+	registerResource(modelName, model);
+	return model;
+}
+
+#pragma endregion
+
+
 void* loadResource(const std::string& resourceName)
 {
 	//
@@ -249,4 +258,6 @@ void* loadResource(const std::string& resourceName)
 	if (resourceName == "texture;pbrRoughness")					return loadTexture2D(resourceName, "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;lightIcon")					return loadTexture2D(resourceName, "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;hdrEnvironmentMap")			return loadHDRTexture2D(resourceName, "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, "res/slime_glb.glb", { 0, 1, 2, 3, 4, 5 });
 }
