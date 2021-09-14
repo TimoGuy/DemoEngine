@@ -8,6 +8,7 @@
 #include "../Utils/PhysicsUtils.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
+#include "../ImGui/imgui_stdlib.h"
 
 
 PlayerCharacter::PlayerCharacter()
@@ -170,7 +171,9 @@ void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned 
 	for (unsigned int i = 0; i < std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size()); i++)
 	{
 		LightComponent* light = MainLoop::getInstance().lightObjects[i];
-		glm::vec3 lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
+		glm::vec3 lightDirection = glm::vec3(0.0f);
+		if (light->getLight().lightType != LightType::POINT)
+			lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
 		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
@@ -185,6 +188,8 @@ void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned 
 
 void PlayerImGui::propertyPanelImGui()
 {
+	ImGui::InputText("Name", &name);
+	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
 	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->transform);
 	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));

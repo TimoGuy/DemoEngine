@@ -1,4 +1,4 @@
-#include "DirectionalLight.h"
+#include "PointLight.h"
 
 #include <glad/glad.h>
 #include "../RenderEngine.resources/TextureResources.h"
@@ -11,23 +11,23 @@
 #include "../../Utils/PhysicsUtils.h"
 
 
-DirectionalLight::DirectionalLight(glm::vec3 eulerAngles)
+PointLight::PointLight()
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new DirectionalLightImGui(this);
-	lightComponent = new DirectionalLightLight(this);
+	imguiComponent = new PointLightImGui(this);
+	lightComponent = new PointLightLight(this);
 
-	setLookDirection(PhysicsUtils::getRotation(transform));
+	lightComponent->getLight().facingDirection = glm::vec3(0.0f);		// 0'd out facingdirection shows it's a point light
 }
 
-DirectionalLight::~DirectionalLight()
+PointLight::~PointLight()
 {
 	delete lightComponent;
 	delete imguiComponent;
 }
 
-DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Directional Light")
+PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Point Light")
 {
 	lightGizmoTextureId =
 		TextureResources::getInstance().loadTexture2D(
@@ -35,44 +35,32 @@ DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo
 		);
 }
 
-DirectionalLightLight::DirectionalLightLight(BaseObject* bo) : LightComponent(bo)
+PointLightLight::PointLightLight(BaseObject* bo) : LightComponent(bo)
 {
-	light.lightType = LightType::DIRECTIONAL;
+	light.lightType = LightType::POINT;
 
 	light.color = glm::vec3(1.0f);
 	light.colorIntensity = 150.0f;
 }
 
-void DirectionalLight::setLookDirection(glm::quat rotation)
-{
-	glm::vec3 lookDirection(0.0f, 0.0f, 1.0f);
-	lookDirection = rotation * lookDirection;
-	lookDirection = glm::normalize(lookDirection);
-
-	lightComponent->getLight().facingDirection = lookDirection;
-}
-
-void DirectionalLightImGui::propertyPanelImGui()
+void PointLightImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
-	((DirectionalLight*)baseObject)->setLookDirection(PhysicsUtils::getRotation(baseObject->transform));
 	
-	ImGui::ColorEdit3("Light base color", &((DirectionalLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
-	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->getLight().colorIntensity);
+	ImGui::ColorEdit3("Light base color", &((PointLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::DragFloat("Light color multiplier", &((PointLight*)baseObject)->lightComponent->getLight().colorIntensity);
 }
 
-void DirectionalLightImGui::renderImGui()
+void PointLightImGui::renderImGui()
 {
 	//
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
 	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->transform));
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->transform) + ((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection);
 	float clipZ = lightPosOnScreen.z;
-	float clipZ2 = lightPointingDirection.z;
 
 
 	float gizmoRadius = gizmoSize1to1;
@@ -99,19 +87,10 @@ void DirectionalLightImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)lightGizmoTextureId, p_min, p_max);
 	}
 
-	if (clipZ2 > 0.0f)
-	{
-		lightPointingDirection /= clipZ2;
-		lightPointingDirection.x = lightPointingDirection.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-		lightPointingDirection.y = -lightPointingDirection.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
-
-		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
-	}
-
 	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }
 
-void DirectionalLightImGui::cloneMe()
+void PointLightImGui::cloneMe()
 {
 	// TODO: figure this out
 }

@@ -22,6 +22,11 @@
 #include <assimp/matrix4x4.h>
 
 
+#include "../../Objects/PlayerCharacter.h"
+#include "../../RenderEngine/RenderEngine.light/DirectionalLight.h"
+#include "../../RenderEngine/RenderEngine.light/PointLight.h"
+
+
 void renderCube();
 void renderQuad();
 
@@ -1053,7 +1058,10 @@ void RenderManager::renderImGuiContents()
 				for (int n = 0; n < MainLoop::getInstance().imguiObjects.size(); n++)
 				{
 					const bool isSelected = (currentSelectedObjectIndex == n);
-					if (ImGui::Selectable(MainLoop::getInstance().imguiObjects[n]->name, isSelected))
+					if (ImGui::Selectable(
+						(MainLoop::getInstance().imguiObjects[n]->name + "##" + MainLoop::getInstance().imguiObjects[n]->guid).c_str(),
+						isSelected
+					))
 						currentSelectedObjectIndex = n;
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -1061,6 +1069,25 @@ void RenderManager::renderImGuiContents()
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndListBox();
+			}
+
+			//
+			// Popup for creating objects
+			//
+			if (ImGui::Button("Add Object.."))
+				ImGui::OpenPopup("add_object_popup");
+			if (ImGui::BeginPopup("add_object_popup"))
+			{
+				/*ImGui::Text("Aquarium");
+				ImGui::Separator();*/
+				if (ImGui::Selectable("Player Character"))
+					new PlayerCharacter();
+				if (ImGui::Selectable("Directional Light"))
+					new DirectionalLight(glm::vec3(0.0f));
+				if (ImGui::Selectable("Point Light"))
+					new PointLight();
+
+				ImGui::EndPopup();
 			}
 		}
 		ImGui::End();

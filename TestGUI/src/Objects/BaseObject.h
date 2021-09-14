@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <glm/glm.hpp>
+#include <string>
 
 
 class BaseObject
@@ -24,9 +25,10 @@ class ImGuiComponent
 {
 public:
 	BaseObject* baseObject;
-	char* name;
+	std::string name;
+	std::string guid;
 
-	ImGuiComponent(BaseObject* baseObject, char* name);
+	ImGuiComponent(BaseObject* baseObject, std::string name);
 	~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui() = 0;

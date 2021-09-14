@@ -1,6 +1,5 @@
 #include "PhysicsUtils.h"
 
-#include "../ImGui/imgui.h"
 #include "../ImGui/ImGuizmo.h"
 #include "../MainLoop/MainLoop.h"
 
@@ -90,9 +89,9 @@ namespace PhysicsUtils
 	{
 		float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 		ImGuizmo::DecomposeMatrixToComponents(matrixPtr, matrixTranslation, matrixRotation, matrixScale);
-		ImGui::DragFloat3("Tr", matrixTranslation);
-		ImGui::DragFloat3("Rt", matrixRotation);
-		ImGui::DragFloat3("Sc", matrixScale);
+		ImGui::DragFloat3("Position", matrixTranslation);
+		ImGui::DragFloat3("Rotation", matrixRotation);
+		ImGui::DragFloat3("Scale", matrixScale);
 		ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrixPtr);
 	}
 
@@ -187,7 +186,7 @@ namespace PhysicsUtils
 		imguiRenderCircle(modelMatrix, controller.getRadius(), glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f, -halfHeight, 0.0f), 16);
 	}
 
-	void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices)
+	void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices, ImU32 color)
 	{
 		std::vector<glm::vec4> ringVertices;
 		float angle = 0;
@@ -221,7 +220,7 @@ namespace PhysicsUtils
 		ImGui::GetBackgroundDrawList()->AddPolyline(
 			&screenSpacePoints[0],
 			screenSpacePoints.size(),
-			ImColor::HSV(0.39f, 0.88f, 0.92f),
+			color,
 			ImDrawFlags_Closed,
 			3.0f
 		);

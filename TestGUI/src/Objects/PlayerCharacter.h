@@ -9,7 +9,7 @@
 class PlayerImGui : public ImGuiComponent
 {
 public:
-	PlayerImGui(BaseObject* bo) : ImGuiComponent(bo, (char*)"Player Controller") {}
+	PlayerImGui(BaseObject* bo) : ImGuiComponent(bo, "Player Controller") {}
 
 	void propertyPanelImGui();
 	void renderImGui();

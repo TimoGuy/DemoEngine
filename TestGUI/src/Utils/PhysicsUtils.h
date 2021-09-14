@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <PxPhysicsAPI.h>
 
+#include "../ImGui/imgui.h"
+
 
 namespace PhysicsUtils
 {
@@ -54,7 +56,7 @@ namespace PhysicsUtils
 
 	void imguiRenderCharacterController(glm::mat4 modelMatrix, physx::PxCapsuleController& controller);
 
-	void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices);
+	void imguiRenderCircle(glm::mat4 modelMatrix, float radius, glm::vec3 eulerAngles, glm::vec3 offset, unsigned int numVertices, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));
 
 	void imguiRenderSausage(glm::mat4 modelMatrix, float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
 
