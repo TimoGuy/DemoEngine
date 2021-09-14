@@ -6,29 +6,49 @@
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
-class PlayerCharacter : public ImGuiComponent, public PhysicsComponent, public RenderComponent
+class PlayerImGui : public ImGuiComponent
+{
+public:
+	PlayerImGui(BaseObject* bo) : ImGuiComponent(bo, (char*)"Player Controller") {}
+
+	void propertyPanelImGui();
+	void renderImGui();
+	void cloneMe();
+};
+
+class PlayerPhysics : public PhysicsComponent
+{
+public:
+	PlayerPhysics(BaseObject* bo);
+
+	void physicsUpdate(float deltaTime);
+
+	physx::PxCapsuleController* controller;
+	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
+};
+
+class PlayerRender : public RenderComponent
+{
+public:
+	PlayerRender(BaseObject* bo);
+
+	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
+
+	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
+
+	Model model;
+	Animator animator;
+	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+};
+
+class PlayerCharacter : public BaseObject
 {
 public:
 	PlayerCharacter();
 	~PlayerCharacter();
 
-	void physicsUpdate(float deltaTime);
-	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
-	void propertyPanelImGui();
-	void renderImGui();
-	void cloneMe();
-
-	glm::mat4 transform;
-
-private:
-	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
-
-	physx::PxCapsuleController* controller;
-
-	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
-
-	Model model;
-	Animator animator;
-	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+	ImGuiComponent* imguiComponent;
+	PhysicsComponent* physicsComponent;
+	RenderComponent* renderComponent;
 };
 

@@ -3,7 +3,7 @@
 #include "../MainLoop/MainLoop.h"
 
 
-ImGuiComponent::ImGuiComponent(char* name, glm::mat4& transform) : name(name), transform(transform)
+ImGuiComponent::ImGuiComponent(BaseObject* baseObject, char* name) : baseObject(baseObject), name(name)
 {
 	MainLoop::getInstance().imguiObjects.push_back(this);
 }
@@ -20,7 +20,7 @@ ImGuiComponent::~ImGuiComponent()
 	);
 }
 
-CameraComponent::CameraComponent(glm::mat4& transform) : transform(transform)
+CameraComponent::CameraComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	//MainLoop::getInstance().cameraObjects.push_back(this);
 }
@@ -37,7 +37,7 @@ CameraComponent::~CameraComponent()
 	);*/
 }
 
-LightComponent::LightComponent(glm::mat4& transform) : transform(transform)
+LightComponent::LightComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	MainLoop::getInstance().lightObjects.push_back(this);
 }
@@ -54,7 +54,7 @@ LightComponent::~LightComponent()
 	);
 }
 
-PhysicsComponent::PhysicsComponent(glm::mat4& transform) : transform(transform)
+PhysicsComponent::PhysicsComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	MainLoop::getInstance().physicsObjects.push_back(this);
 }
@@ -71,7 +71,7 @@ PhysicsComponent::~PhysicsComponent()
 	);
 }
 
-RenderComponent::RenderComponent(glm::mat4& transform) : transform(transform)
+RenderComponent::RenderComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	MainLoop::getInstance().renderObjects.push_back(this);
 }

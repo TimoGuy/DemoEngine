@@ -1,6 +1,20 @@
 #pragma once
 
+#include <iostream>
 #include <glm/glm.hpp>
+
+
+class BaseObject
+{
+public:
+	virtual ~BaseObject()
+	{
+		// NOTE: this note is lying, so i commented it out
+		//std::cout << "WARNING: BaseObject Destructor not overridden. Undefined behavior may occur" << std::endl;
+	}
+
+	glm::mat4 transform;
+};
 
 
 //
@@ -9,10 +23,10 @@
 class ImGuiComponent
 {
 public:
+	BaseObject* baseObject;
 	char* name;
-	glm::mat4& transform;
 
-	ImGuiComponent(char* name, glm::mat4& transform);
+	ImGuiComponent(BaseObject* baseObject, char* name);
 	~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui() = 0;
@@ -29,9 +43,9 @@ class Camera;
 class CameraComponent
 {
 public:
-	glm::mat4& transform;
+	BaseObject* baseObject;
 
-	CameraComponent(glm::mat4& transform);
+	CameraComponent(BaseObject* baseObject);
 	~CameraComponent();
 	virtual Camera& getCamera() = 0;
 };
@@ -45,9 +59,9 @@ struct Light;
 class LightComponent
 {
 public:
-	glm::mat4& transform;
+	BaseObject* baseObject;
 
-	LightComponent(glm::mat4& transform);
+	LightComponent(BaseObject* baseObject);
 	~LightComponent();
 	virtual Light& getLight() = 0;
 };
@@ -60,9 +74,9 @@ public:
 class PhysicsComponent
 {
 public:
-	glm::mat4& transform;
+	BaseObject* baseObject;
 
-	PhysicsComponent(glm::mat4& transform);
+	PhysicsComponent(BaseObject* baseObject);
 	~PhysicsComponent();
 	virtual void physicsUpdate(float deltaTime) = 0;
 };
@@ -75,9 +89,9 @@ public:
 class RenderComponent
 {
 public:
-	glm::mat4& transform;
+	BaseObject* baseObject;
 
-	RenderComponent(glm::mat4& transform);
+	RenderComponent(BaseObject* baseObject);
 	~RenderComponent();
 	virtual void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture) = 0;			// TODO: figure out what they need and implement it!
 };

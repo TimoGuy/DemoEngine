@@ -934,7 +934,7 @@ void RenderManager::renderImGuiContents()
 				}
 				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
 				{
-					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex];
+					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
 					currentSelectedObjectIndex = -1;
 				}
 				ImGui::EndMenu();
@@ -1036,10 +1036,15 @@ void RenderManager::renderImGuiContents()
 	//
 	// Object Selection Window
 	//
+	static int imGuizmoTransformOperation = 0;
+	static int imGuizmoTransformMode = 0;
 	if (showObjectSelectionWindow)
 	{
 		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow, ImGuiWindowFlags_AlwaysAutoResize))
 		{
+			ImGui::Combo("##Transform operation combo", &imGuizmoTransformOperation, "Translate\0Rotate\0Scale\0Bounds");
+			ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
+
 			if (ImGui::BeginListBox("##listbox Scene Objects", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
 			{
 				//
@@ -1104,7 +1109,19 @@ void RenderManager::renderImGuiContents()
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
 		ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
 
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->transform));
+		ImGuizmo::OPERATION transOperation = ImGuizmo::OPERATION::TRANSLATE;
+		if (imGuizmoTransformOperation == 1)
+			transOperation = ImGuizmo::OPERATION::ROTATE;
+		if (imGuizmoTransformOperation == 2)
+			transOperation = ImGuizmo::OPERATION::SCALE;
+		if (imGuizmoTransformOperation == 3)
+			transOperation = ImGuizmo::OPERATION::BOUNDS;
+
+		ImGuizmo::MODE transMode = ImGuizmo::MODE::LOCAL;
+		if (imGuizmoTransformMode == 1)
+			transMode = ImGuizmo::MODE::WORLD;
+
+		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), transOperation, transMode, glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->transform));
 	}
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.

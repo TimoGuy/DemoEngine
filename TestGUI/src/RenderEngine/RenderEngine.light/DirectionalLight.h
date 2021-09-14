@@ -5,7 +5,31 @@
 #include "../RenderEngine.camera/Camera.h"
 
 
-class DirectionalLight : public LightComponent, public ImGuiComponent
+class DirectionalLightImGui : public ImGuiComponent
+{
+public:
+	DirectionalLightImGui(BaseObject* bo);
+
+	void propertyPanelImGui();
+	void renderImGui();
+	void cloneMe();
+
+private:
+	unsigned int lightGizmoTextureId;
+};
+
+class DirectionalLightLight : public LightComponent
+{
+public:
+	DirectionalLightLight(BaseObject* bo);
+
+	Light& getLight() { return light; }
+
+private:
+	Light light;
+};
+
+class DirectionalLight : public BaseObject
 {
 public:
 	DirectionalLight(glm::vec3 eulerAngles);
@@ -13,14 +37,6 @@ public:
 
 	void setLookDirection(glm::quat rotation);
 
-	Light& getLight() { return light; }
-	void propertyPanelImGui();
-	void renderImGui();
-	void cloneMe();
-
-	glm::mat4 transform;
-
-private:
-	Light light;
-	unsigned int lightGizmoTextureId;
+	ImGuiComponent* imguiComponent;
+	LightComponent* lightComponent;
 };

@@ -10,21 +10,17 @@
 #include "../ImGui/imgui.h"
 
 
-PlayerCharacter::PlayerCharacter() : ImGuiComponent((char*)"PlayerChar", transform), PhysicsComponent(transform), RenderComponent(transform)
+PlayerCharacter::PlayerCharacter()
 {
 	transform = glm::mat4(1.0f);
 
-	//transform = physx::PxTransform(physx::PxVec3(physx::PxReal(0), physx::PxReal(100), 0));
-	//body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(transform);
-	//boxCollider = physx::PxBoxGeometry(3.0f, 3.0f, 3.0f);
-	////physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(boxCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
-	//capsuleCollider = physx::PxCapsuleGeometry(5.0f, 5.0f);
-	//physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(capsuleCollider, *MainLoop::getInstance().defaultPhysicsMaterial);
-	//body->attachShape(*shape);
-	//physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-	//MainLoop::getInstance().physicsScene->addActor(*body);
-	//shape->release();
+	imguiComponent = new PlayerImGui(this);
+	physicsComponent = new PlayerPhysics(this);
+	renderComponent = new PlayerRender(this);
+}
 
+PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
+{
 	controller =
 		PhysicsUtils::createCapsuleController(
 			MainLoop::getInstance().physicsControllerManager,
@@ -32,8 +28,10 @@ PlayerCharacter::PlayerCharacter() : ImGuiComponent((char*)"PlayerChar", transfo
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
 			5.0f,
 			5.0f);
+}
 
-
+PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
+{
 	pbrShaderProgramId = ShaderResources::getInstance().setupShaderProgramVF("pbr", "pbr.vert", "pbr.frag");
 	shadowPassSkinnedProgramId = ShaderResources::getInstance().setupShaderProgramVF("shadowPassSkinned", "shadow_skinned.vert", "do_nothing.frag");
 
@@ -54,9 +52,12 @@ PlayerCharacter::PlayerCharacter() : ImGuiComponent((char*)"PlayerChar", transfo
 
 PlayerCharacter::~PlayerCharacter()
 {
+	delete renderComponent;
+	delete physicsComponent;
+	delete imguiComponent;
 }
 
-void PlayerCharacter::physicsUpdate(float deltaTime)
+void PlayerPhysics::physicsUpdate(float deltaTime)
 {
 	//if (reapplyTransform)
 	//{
@@ -93,19 +94,19 @@ void PlayerCharacter::physicsUpdate(float deltaTime)
 	//}
 	physx::PxExtendedVec3 pos = controller->getPosition();
 	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-	if (!(newTransform == transform))
+	if (!(newTransform == baseObject->transform))
 	{
-		glm::vec3 newPosition = PhysicsUtils::getPosition(transform);
+		glm::vec3 newPosition = PhysicsUtils::getPosition(baseObject->transform);
 		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
 	}
 
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -9.8f, 0.0f), 0.01f, deltaTime, NULL, NULL);
 
 	pos = controller->getPosition();
-	transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
-void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
+void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
 {
 	if (shadowPass) return;		// FOR NOW
 	unsigned int programId = shadowPass ? shadowPassSkinnedProgramId : pbrShaderProgramId;
@@ -156,13 +157,13 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(transform)
+		glm::value_ptr(baseObject->transform)
 	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(programId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(transform))))
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
 	);
 
 	const size_t MAX_LIGHTS = 4;
@@ -170,7 +171,7 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 	{
 		LightComponent* light = MainLoop::getInstance().lightObjects[i];
 		glm::vec3 lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
-		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
 		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
@@ -182,24 +183,25 @@ void PlayerCharacter::render(bool shadowPass, unsigned int irradianceMap, unsign
 	model.render(programId);
 }
 
-void PlayerCharacter::propertyPanelImGui()
+void PlayerImGui::propertyPanelImGui()
 {
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(transform));
-	glm::vec3 newPos = PhysicsUtils::getPosition(transform);
-	controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
+	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->transform);
+	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
-	ImGui::DragFloat3("Controller up direction", &tempUp[0]);
-	controller->setUpDirection(tempUp.getNormalized());
+	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp[0]);
+	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setUpDirection(((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp.getNormalized());
 }
 
-void PlayerCharacter::renderImGui()
+void PlayerImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(transform, *controller);
+	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller);
 }
 
-void PlayerCharacter::cloneMe()
+void PlayerImGui::cloneMe()
 {
 	// TODO: figure this out...
+	new PlayerCharacter();
 }
