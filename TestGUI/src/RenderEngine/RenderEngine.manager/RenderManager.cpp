@@ -15,9 +15,7 @@
 #include "../../ImGui/imgui_impl_opengl3.h"
 #include "../../ImGui/ImGuizmo.h"
 
-#include "../RenderEngine.resources/ShaderResources.h"
-#include "../RenderEngine.resources/TextureResources.h"
-
+#include "../RenderEngine.resources/Resources.h"
 
 #include <assimp/matrix4x4.h>
 
@@ -111,7 +109,7 @@ void RenderManager::createRect()
 	//
 	// Create Texture
 	//
-	texture = TextureResources::getInstance().loadTexture2D("light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	texture = Resources::getResource("texture;lightIcon");
 	//{
 	//	int imgWidth, imgHeight, numColorChannels;
 	//	
@@ -153,7 +151,7 @@ void RenderManager::createRect()
 		//
 		// Load in the hdr file
 		//
-		hdrTexture = TextureResources::getInstance().loadHDRTexture2D("hdrEnvironmentMap", "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+		hdrTexture = Resources::getResource("texture;hdrEnvironmentMap");
 		//stbi_set_flip_vertically_on_load(true);
 		//int width, height, nrComponents;
 		//float* data = stbi_loadf("res/skybox/environment.hdr", &width, &height, &nrComponents, STBI_default);
@@ -491,86 +489,15 @@ void RenderManager::createProgram()
 {
 	int vShader, fShader;
 
-	this->program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "vertex.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "fragment.frag");
-	glAttachShader(this->program_id, vShader);
-	glAttachShader(this->program_id, fShader);
-	glLinkProgram(this->program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	this->model_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "model.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "model.frag");
-	glAttachShader(this->model_program_id, vShader);
-	glAttachShader(this->model_program_id, fShader);
-	glLinkProgram(this->model_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	skybox_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "skybox.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "skybox.frag");
-	glAttachShader(skybox_program_id, vShader);
-	glAttachShader(skybox_program_id, fShader);
-	glLinkProgram(skybox_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	shadow_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "shadow.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "do_nothing.frag");
-	glAttachShader(shadow_program_id, vShader);
-	glAttachShader(shadow_program_id, fShader);
-	glLinkProgram(shadow_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	text_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "text.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "text.frag");
-	glAttachShader(text_program_id, vShader);
-	glAttachShader(text_program_id, fShader);
-	glLinkProgram(text_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	hdri_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "hdri_equirectangular.frag");
-	glAttachShader(hdri_program_id, vShader);
-	glAttachShader(hdri_program_id, fShader);
-	glLinkProgram(hdri_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	irradiance_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "irradiance_convolution.frag");
-	glAttachShader(irradiance_program_id, vShader);
-	glAttachShader(irradiance_program_id, fShader);
-	glLinkProgram(irradiance_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	prefilter_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "cubemap.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "prefilter.frag");
-	glAttachShader(prefilter_program_id, vShader);
-	glAttachShader(prefilter_program_id, fShader);
-	glLinkProgram(prefilter_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
-
-	brdf_program_id = glCreateProgram();
-	vShader = ShaderResources::compileShader(GL_VERTEX_SHADER, "brdf.vert");
-	fShader = ShaderResources::compileShader(GL_FRAGMENT_SHADER, "brdf.frag");
-	glAttachShader(brdf_program_id, vShader);
-	glAttachShader(brdf_program_id, fShader);
-	glLinkProgram(brdf_program_id);
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
+	this->program_id = Resources::getResource("shader;blinnPhong");
+	this->model_program_id = Resources::getResource("shader;blinnPhongSkinned");
+	skybox_program_id = Resources::getResource("shader;skybox");
+	shadow_program_id = Resources::getResource("shader;shadowPass");
+	text_program_id = Resources::getResource("shader;text");
+	hdri_program_id = Resources::getResource("shader;hdriGeneration");
+	irradiance_program_id = Resources::getResource("shader;irradianceGeneration");
+	prefilter_program_id = Resources::getResource("shader;pbrPrefilterGeneration");
+	brdf_program_id = Resources::getResource("shader;brdfGeneration");
 }
 
 void RenderManager::createFonts()

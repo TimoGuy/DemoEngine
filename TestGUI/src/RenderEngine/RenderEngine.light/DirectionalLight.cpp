@@ -1,7 +1,7 @@
 #include "DirectionalLight.h"
 
 #include <glad/glad.h>
-#include "../RenderEngine.resources/TextureResources.h"
+#include "../RenderEngine.resources/Resources.h"
 #include <glm/gtx/quaternion.hpp>
 #include "../../MainLoop/MainLoop.h"
 
@@ -29,10 +29,7 @@ DirectionalLight::~DirectionalLight()
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Directional Light")
 {
-	lightGizmoTextureId =
-		TextureResources::getInstance().loadTexture2D(
-			"light_icon", "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT
-		);
+	lightGizmoTextureId = Resources::getResource("texture;lightIcon");
 }
 
 DirectionalLightLight::DirectionalLightLight(BaseObject* bo) : LightComponent(bo)

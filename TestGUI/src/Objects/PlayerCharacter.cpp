@@ -3,8 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "../MainLoop/MainLoop.h"
-#include "../RenderEngine/RenderEngine.resources/ShaderResources.h"
-#include "../RenderEngine/RenderEngine.resources/TextureResources.h"
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
@@ -33,8 +32,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 
 PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 {
-	pbrShaderProgramId = ShaderResources::getInstance().setupShaderProgramVF("pbr", "pbr.vert", "pbr.frag");
-	shadowPassSkinnedProgramId = ShaderResources::getInstance().setupShaderProgramVF("shadowPassSkinned", "shadow_skinned.vert", "do_nothing.frag");
+	pbrShaderProgramId = Resources::getResource("shader;pbr");
+	shadowPassSkinnedProgramId = Resources::getResource("shader;shadowPassSkinned");
 
 	//
 	// Model and animation loading
@@ -45,10 +44,10 @@ PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 	model = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
 	animator = Animator(&tryModelAnimations);
 
-	pbrAlbedoTexture = TextureResources::getInstance().loadTexture2D("pbrAlbedo", "res/rusted_iron/rustediron2_basecolor.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	pbrNormalTexture = TextureResources::getInstance().loadTexture2D("pbrNormal", "res/rusted_iron/rustediron2_normal.png", GL_RGB, GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	pbrMetalnessTexture = TextureResources::getInstance().loadTexture2D("pbrMetalness", "res/rusted_iron/rustediron2_metallic.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	pbrRoughnessTexture = TextureResources::getInstance().loadTexture2D("pbrAlbedo", "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	pbrAlbedoTexture = Resources::getResource("texture;pbrAlbedo");
+	pbrNormalTexture = Resources::getResource("texture;pbrNormal");
+	pbrMetalnessTexture = Resources::getResource("texture;pbrMetalness");
+	pbrRoughnessTexture = Resources::getResource("texture;pbrRoughness");
 }
 
 PlayerCharacter::~PlayerCharacter()
