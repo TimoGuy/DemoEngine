@@ -32,8 +32,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 
 PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 {
-	pbrShaderProgramId = Resources::getResource("shader;pbr");
-	shadowPassSkinnedProgramId = Resources::getResource("shader;shadowPassSkinned");
+	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
+	shadowPassSkinnedProgramId = *(GLuint*)Resources::getResource("shader;shadowPassSkinned");
 
 	//
 	// Model and animation loading
@@ -44,10 +44,10 @@ PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 	model = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
 	animator = Animator(&tryModelAnimations);
 
-	pbrAlbedoTexture = Resources::getResource("texture;pbrAlbedo");
-	pbrNormalTexture = Resources::getResource("texture;pbrNormal");
-	pbrMetalnessTexture = Resources::getResource("texture;pbrMetalness");
-	pbrRoughnessTexture = Resources::getResource("texture;pbrRoughness");
+	pbrAlbedoTexture = *(GLuint*)Resources::getResource("texture;pbrAlbedo");
+	pbrNormalTexture = *(GLuint*)Resources::getResource("texture;pbrNormal");
+	pbrMetalnessTexture = *(GLuint*)Resources::getResource("texture;pbrMetalness");
+	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
 }
 
 PlayerCharacter::~PlayerCharacter()

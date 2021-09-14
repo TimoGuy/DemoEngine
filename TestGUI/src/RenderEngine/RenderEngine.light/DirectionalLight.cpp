@@ -29,7 +29,7 @@ DirectionalLight::~DirectionalLight()
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Directional Light")
 {
-	lightGizmoTextureId = Resources::getResource("texture;lightIcon");
+	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
 
 DirectionalLightLight::DirectionalLightLight(BaseObject* bo) : LightComponent(bo)

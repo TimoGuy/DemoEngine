@@ -109,7 +109,7 @@ void RenderManager::createRect()
 	//
 	// Create Texture
 	//
-	texture = Resources::getResource("texture;lightIcon");
+	texture = *(GLuint*)Resources::getResource("texture;lightIcon");
 	//{
 	//	int imgWidth, imgHeight, numColorChannels;
 	//	
@@ -151,7 +151,7 @@ void RenderManager::createRect()
 		//
 		// Load in the hdr file
 		//
-		hdrTexture = Resources::getResource("texture;hdrEnvironmentMap");
+		hdrTexture = *(GLuint*)Resources::getResource("texture;hdrEnvironmentMap");
 		//stbi_set_flip_vertically_on_load(true);
 		//int width, height, nrComponents;
 		//float* data = stbi_loadf("res/skybox/environment.hdr", &width, &height, &nrComponents, STBI_default);
@@ -489,15 +489,15 @@ void RenderManager::createProgram()
 {
 	int vShader, fShader;
 
-	this->program_id = Resources::getResource("shader;blinnPhong");
-	this->model_program_id = Resources::getResource("shader;blinnPhongSkinned");
-	skybox_program_id = Resources::getResource("shader;skybox");
-	shadow_program_id = Resources::getResource("shader;shadowPass");
-	text_program_id = Resources::getResource("shader;text");
-	hdri_program_id = Resources::getResource("shader;hdriGeneration");
-	irradiance_program_id = Resources::getResource("shader;irradianceGeneration");
-	prefilter_program_id = Resources::getResource("shader;pbrPrefilterGeneration");
-	brdf_program_id = Resources::getResource("shader;brdfGeneration");
+	this->program_id = *(GLuint*)Resources::getResource("shader;blinnPhong");
+	this->model_program_id = *(GLuint*)Resources::getResource("shader;blinnPhongSkinned");
+	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
+	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
+	text_program_id = *(GLuint*)Resources::getResource("shader;text");
+	hdri_program_id = *(GLuint*)Resources::getResource("shader;hdriGeneration");
+	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
+	prefilter_program_id = *(GLuint*)Resources::getResource("shader;pbrPrefilterGeneration");
+	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
 }
 
 void RenderManager::createFonts()

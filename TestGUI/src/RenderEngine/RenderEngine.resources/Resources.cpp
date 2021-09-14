@@ -5,14 +5,14 @@
 #include <stb/stb_image.h>
 
 
-GLuint findResource(const std::string& resourceName);
-void registerResource(const std::string& resourceName, GLuint resource);
+void* findResource(const std::string& resourceName);
+void registerResource(const std::string& resourceName, void* resource);
 
 const GLchar* readFile(const char* filename);
 GLuint compileShader(GLenum type, const char* fname);
-GLuint loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname);
+void* loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname);
 
-GLuint loadTexture2D(
+void* loadTexture2D(
 	const std::string& textureName,
 	const std::string& fname,
 	GLuint fromTexture,
@@ -21,7 +21,7 @@ GLuint loadTexture2D(
 	GLuint magFilter,
 	GLuint wrapS,
 	GLuint wrapT);
-GLuint loadHDRTexture2D(
+void* loadHDRTexture2D(
 	const std::string& textureName,
 	const std::string& fname,
 	GLuint fromTexture,
@@ -31,19 +31,19 @@ GLuint loadHDRTexture2D(
 	GLuint wrapS,
 	GLuint wrapT);
 
-GLuint loadResource(const std::string& resourceName);
+void* loadResource(const std::string& resourceName);
 
 
 namespace Resources
 {
-	std::map<std::string, GLuint> resourceMap;
+	std::map<std::string, void*> resourceMap;
 
 	// ---------------------------------------
 	//   The almighty getResource() Function
 	// ---------------------------------------
-	GLuint getResource(const std::string& resourceName)
+	void* getResource(const std::string& resourceName)
 	{
-		GLuint resource = findResource(resourceName);
+		void* resource = findResource(resourceName);
 		if (resource != NULL)
 			return resource;
 
@@ -54,7 +54,7 @@ namespace Resources
 }
 
 
-GLuint findResource(const std::string& resourceName)
+void* findResource(const std::string& resourceName)
 {
 	if (Resources::resourceMap.find(resourceName) != Resources::resourceMap.end())
 	{
@@ -65,7 +65,7 @@ GLuint findResource(const std::string& resourceName)
 }
 
 
-void registerResource(const std::string& resourceName, GLuint resource)
+void registerResource(const std::string& resourceName, void* resource)
 {
 	Resources::resourceMap[resourceName] = resource;
 }
@@ -120,7 +120,7 @@ GLuint compileShader(GLenum type, const char* fname)
 }
 
 
-GLuint loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname)
+void* loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname)
 {
 	GLuint programId = glCreateProgram();
 	GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
@@ -131,8 +131,10 @@ GLuint loadShaderProgramVF(const std::string& programName, const std::string& ve
 	glDeleteShader(vShader);
 	glDeleteShader(fShader);
 
-	registerResource(programName, programId);
-	return programId;
+	GLuint* payload = new GLuint();
+	*payload = programId;
+	registerResource(programName, payload);
+	return payload;
 }
 
 #pragma endregion
@@ -140,7 +142,7 @@ GLuint loadShaderProgramVF(const std::string& programName, const std::string& ve
 
 #pragma region Texture Resources Utils
 
-GLuint loadTexture2D(
+void* loadTexture2D(
 	const std::string& textureName,
 	const std::string& fname,
 	GLuint fromTexture = GL_RGB,
@@ -174,12 +176,14 @@ GLuint loadTexture2D(
 	stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	registerResource(textureName, textureId);
-	return textureId;
+	GLuint* payload = new GLuint();
+	*payload = textureId;
+	registerResource(textureName, payload);
+	return payload;
 }
 
 
-GLuint loadHDRTexture2D(
+void* loadHDRTexture2D(
 	const std::string& textureName,
 	const std::string& fname,
 	GLuint fromTexture = GL_RGB16F,
@@ -213,14 +217,16 @@ GLuint loadHDRTexture2D(
 	stbi_image_free(bytes);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	registerResource(textureName, textureId);
-	return textureId;
+	GLuint* payload = new GLuint();
+	*payload = textureId;
+	registerResource(textureName, payload);
+	return payload;
 }
 
 #pragma endregion
 
 
-GLuint loadResource(const std::string& resourceName)
+void* loadResource(const std::string& resourceName)
 {
 	//
 	// NOTE: this is gonna be a huge function btw

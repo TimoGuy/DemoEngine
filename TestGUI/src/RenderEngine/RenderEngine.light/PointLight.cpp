@@ -29,7 +29,7 @@ PointLight::~PointLight()
 
 PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Point Light")
 {
-	lightGizmoTextureId = Resources::getResource("texture;lightIcon");
+	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
 
 PointLightLight::PointLightLight(BaseObject* bo) : LightComponent(bo)
