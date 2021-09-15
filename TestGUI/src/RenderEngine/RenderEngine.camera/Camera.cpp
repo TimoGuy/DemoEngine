@@ -18,7 +18,7 @@ glm::mat4 Camera::calculateProjectionMatrix()
 	if (width == 0.0f || height == 0.0f)
 		return glm::mat4(1.0f);
 
-	return glm::perspective(glm::radians(fov), (float)(width / height), 0.1f, 2000.0f);
+	return glm::perspective(glm::radians(fov), (float)(width / height), 0.1f, 5000.0f);
 }
 
 glm::mat4 Camera::calculateViewMatrix()
@@ -43,30 +43,35 @@ glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
 
 void Camera::Inputs(GLFWwindow* window)
 {
-	//std::cout << "Pos:\tx:\t" << position.x << "\ty:\t" << position.y << "\tz:\t" << position.z << std::endl;
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		position += speed * orientation;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		position += speed * -glm::cross(orientation, up);
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		position += speed * -orientation;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		position += speed * glm::cross(orientation, up);
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		position += speed * -up;
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		position += speed * up;
-
-	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-		speed = 0.4f;
-	else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-		speed = 0.1f;
-
 	//
 	// Look around
 	//
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
 	{
+		//
+		// Move around in the scene (only when right button pressed)
+		//
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			position += speed * orientation;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			position += speed * -glm::cross(orientation, up);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			position += speed * -orientation;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			position += speed * glm::cross(orientation, up);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+			position += speed * -up;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+			position += speed * up;
+
+		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+			speed = 0.4f;
+		else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+			speed = 0.1f;
+
+		//
+		// Look around functionality
+		//
 		if (firstClicked)
 		{
 			firstClicked = false;

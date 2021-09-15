@@ -22,8 +22,9 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 // lights
+uniform int numLights;
 const int MAX_LIGHTS = 4;
-uniform vec4 lightPositions[MAX_LIGHTS];
+uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
 uniform vec3 lightDirections[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
 
@@ -143,7 +144,7 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    for(int i = 0; i < MAX_LIGHTS; ++i)      // NOTE: Change this depending on the number of lights being looped over
+    for(int i = 0; i < numLights; ++i)      // NOTE: Change this depending on the number of lights being looped over
     {
         //vec3 L = normalize(lightPositions[i].xyz - fragPosition);
         //vec3 H = normalize(V + L);

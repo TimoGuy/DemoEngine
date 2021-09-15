@@ -21,6 +21,7 @@
 
 
 #include "../../Objects/PlayerCharacter.h"
+#include "../../Objects/YosemiteTerrain.h"
 #include "../../RenderEngine/RenderEngine.light/DirectionalLight.h"
 #include "../../RenderEngine/RenderEngine.light/PointLight.h"
 
@@ -862,10 +863,12 @@ void RenderManager::renderImGuiContents()
 				ImGui::Separator();
 				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0))
 				{
+					// NOTE: copypasta
 					MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->cloneMe();
 				}
 				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
 				{
+					// NOTE: This is copypasta
 					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
 					currentSelectedObjectIndex = -1;
 				}
@@ -977,6 +980,35 @@ void RenderManager::renderImGuiContents()
 			ImGui::Combo("##Transform operation combo", &imGuizmoTransformOperation, "Translate\0Rotate\0Scale\0Bounds");
 			ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
 
+			GLFWwindow* windowRef = MainLoop::getInstance().window;
+			if (currentSelectedObjectIndex >= 0 &&
+				!ImGuizmo::IsUsing() &&
+				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+			{
+				if (glfwGetKey(windowRef, GLFW_KEY_Q))
+					currentSelectedObjectIndex = -1;
+				if (glfwGetKey(windowRef, GLFW_KEY_W))
+					imGuizmoTransformOperation = 0;
+				if (glfwGetKey(windowRef, GLFW_KEY_E))
+					imGuizmoTransformOperation = 1;
+				if (glfwGetKey(windowRef, GLFW_KEY_R))
+					imGuizmoTransformOperation = 2;
+				if (glfwGetKey(windowRef, GLFW_KEY_T))
+					imGuizmoTransformOperation = 3;
+				if (glfwGetKey(windowRef, GLFW_KEY_DELETE))
+				{
+					// NOTE: This is copypasta
+					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
+					currentSelectedObjectIndex = -1;
+				}
+				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
+				{
+					// NOTE: copypasta
+					MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->cloneMe();
+					currentSelectedObjectIndex = -1;			// TODO: make it so that you can duplicate but not keep duplicating as you hold the ctrl+d combo
+				}
+			}
+
 			if (ImGui::BeginListBox("##listbox Scene Objects", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
 			{
 				//
@@ -1005,14 +1037,14 @@ void RenderManager::renderImGuiContents()
 				ImGui::OpenPopup("add_object_popup");
 			if (ImGui::BeginPopup("add_object_popup"))
 			{
-				/*ImGui::Text("Aquarium");
-				ImGui::Separator();*/
 				if (ImGui::Selectable("Player Character"))
 					new PlayerCharacter();
 				if (ImGui::Selectable("Directional Light"))
 					new DirectionalLight(glm::vec3(0.0f));
 				if (ImGui::Selectable("Point Light"))
 					new PointLight();
+				if (ImGui::Selectable("Yosemite Terrain"))
+					new YosemiteTerrain();
 
 				ImGui::EndPopup();
 			}

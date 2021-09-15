@@ -97,6 +97,7 @@
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
     <ClCompile Include="src\Objects\BaseObject.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
+    <ClCompile Include="src\Objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.light\PointLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\Resources.cpp" />
     <ClCompile Include="src\Utils\PhysicsUtils.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
     <ClInclude Include="src\Objects\PlayerCharacter.h" />
+    <ClInclude Include="src\Objects\YosemiteTerrain.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\PointLight.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\Resources.h" />
     <ClInclude Include="src\Utils\PhysicsUtils.h" />

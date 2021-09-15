@@ -114,6 +114,9 @@
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\Resources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Objects\YosemiteTerrain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag">
@@ -232,6 +235,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\Resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Objects\YosemiteTerrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

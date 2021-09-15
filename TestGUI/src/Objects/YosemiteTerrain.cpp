@@ -1,4 +1,4 @@
-#include "PlayerCharacter.h"
+#include "YosemiteTerrain.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
@@ -10,41 +10,20 @@
 #include "../ImGui/imgui_stdlib.h"
 
 
-PlayerCharacter::PlayerCharacter()
+YosemiteTerrain::YosemiteTerrain()
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new PlayerImGui(this);
-	physicsComponent = new PlayerPhysics(this);
-	renderComponent = new PlayerRender(this);
+	imguiComponent = new YosemiteTerrainImGui(this);
+	renderComponent = new YosemiteTerrainRender(this);
 }
 
-PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
-{
-	controller =
-		PhysicsUtils::createCapsuleController(
-			MainLoop::getInstance().physicsControllerManager,
-			MainLoop::getInstance().defaultPhysicsMaterial,
-			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
-			5.0f,
-			5.0f);
-}
-
-PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
+YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo) : RenderComponent(bo)
 {
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
-	shadowPassSkinnedProgramId = *(GLuint*)Resources::getResource("shader;shadowPassSkinned");
+	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 
-	//
-	// Model and animation loading
-	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
-	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
-	//
-	/*std::vector<Animation> tryModelAnimations;
-	model = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
-	animator = Animator(&tryModelAnimations);*/
-	model = *(Model*)Resources::getResource("model;slimeGirl");
-	animator = Animator(&model.getAnimations());
+	model = *(Model*)Resources::getResource("model;yosemiteTerrain");
 
 	pbrAlbedoTexture = *(GLuint*)Resources::getResource("texture;pbrAlbedo");
 	pbrNormalTexture = *(GLuint*)Resources::getResource("texture;pbrNormal");
@@ -52,66 +31,16 @@ PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
 	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
 }
 
-PlayerCharacter::~PlayerCharacter()
+YosemiteTerrain::~YosemiteTerrain()
 {
 	delete renderComponent;
-	delete physicsComponent;
 	delete imguiComponent;
 }
 
-void PlayerPhysics::physicsUpdate(float deltaTime)
-{
-	//if (reapplyTransform)
-	//{
-	//	reapplyTransform = false;
-	//	body->setGlobalPose(transform);
-	//}
-
-	//// Convert the physx object to model matrix
-	//transform = body->getGlobalPose();
-	//{
-	//	physx::PxMat44 mat4 = physx::PxMat44(transform);
-	//	glm::mat4 newMat;
-	//	newMat[0][0] = mat4[0][0];
-	//	newMat[0][1] = mat4[0][1];
-	//	newMat[0][2] = mat4[0][2];
-	//	newMat[0][3] = mat4[0][3];
-
-	//	newMat[1][0] = mat4[1][0];
-	//	newMat[1][1] = mat4[1][1];
-	//	newMat[1][2] = mat4[1][2];
-	//	newMat[1][3] = mat4[1][3];
-
-	//	newMat[2][0] = mat4[2][0];
-	//	newMat[2][1] = mat4[2][1];
-	//	newMat[2][2] = mat4[2][2];
-	//	newMat[2][3] = mat4[2][3];
-
-	//	newMat[3][0] = mat4[3][0];
-	//	newMat[3][1] = mat4[3][1];
-	//	newMat[3][2] = mat4[3][2];
-	//	newMat[3][3] = mat4[3][3];
-
-	//	modelMatrix = newMat;
-	//}
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-	if (!(newTransform == baseObject->transform))
-	{
-		glm::vec3 newPosition = PhysicsUtils::getPosition(baseObject->transform);
-		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
-	}
-
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -9.8f, 0.0f), 0.01f, deltaTime, NULL, NULL);
-
-	pos = controller->getPosition();
-	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-}
-
-void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
+void YosemiteTerrainRender::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
 {
 	if (shadowPass) return;		// FOR NOW
-	unsigned int programId = shadowPass ? shadowPassSkinnedProgramId : pbrShaderProgramId;
+	unsigned int programId = shadowPass ? shadowPassProgramId: pbrShaderProgramId;
 	glUseProgram(programId);
 	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
 	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
@@ -189,27 +118,21 @@ void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned 
 	model.render(programId);
 }
 
-void PlayerImGui::propertyPanelImGui()
+void YosemiteTerrainImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
-	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->transform);
-	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
-
-	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp[0]);
-	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setUpDirection(((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp.getNormalized());
 }
 
-void PlayerImGui::renderImGui()
+void YosemiteTerrainImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller);
 }
 
-void PlayerImGui::cloneMe()
+void YosemiteTerrainImGui::cloneMe()
 {
 	// TODO: figure this out...
-	new PlayerCharacter();
+	new YosemiteTerrain();
 }

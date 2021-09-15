@@ -19,7 +19,7 @@ void* loadTexture2D(const std::string& textureName, const std::string& fname, GL
 void* loadHDRTexture2D(const std::string& textureName, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
 
 void* loadModel(const std::string& modelName, const char* path);
-void* loadModel(const std::string& modelName, const char* path, std::vector<Animation>& animations, std::vector<int> animationIndices);
+void* loadModel(const std::string& modelName, const char* path, std::vector<int> animationIndices);
 
 void* loadResource(const std::string& resourceName);
 
@@ -260,4 +260,5 @@ void* loadResource(const std::string& resourceName)
 	if (resourceName == "texture;hdrEnvironmentMap")			return loadHDRTexture2D(resourceName, "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, "res/slime_glb.glb", { 0, 1, 2, 3, 4, 5 });
+	if (resourceName == "model;yosemiteTerrain")				return loadModel(resourceName, "res/cube.glb");
 }
