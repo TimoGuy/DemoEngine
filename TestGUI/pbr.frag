@@ -14,7 +14,7 @@ uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 
 // Shadow map
-uniform sampler2D shadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+uniform sampler2DArray shadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -28,36 +28,85 @@ uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate 
 uniform vec3 lightDirections[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
 
+// CSM
+layout (std140, binding = 0) uniform LightSpaceMatrices
+{
+    mat4 lightSpaceMatrices[16];
+};
+uniform float cascadePlaneDistances[16];
+uniform int cascadeCount;   // number of frusta - 1
+uniform mat4 view;
+uniform float farPlane;
+
+// OTHER
 uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
-float shadowCalculation(vec3 lightDir)
+float shadowCalculation(vec3 lightDir, vec3 fragPosition)
 {
-	vec3 projectionCoords = fragPositionLightSpace.xyz / fragPositionLightSpace.w;		// NOTE: this line is absolutely meaningless in an ortho projection (like directional light), bc W is 1.0, so omit this when able to
-	projectionCoords = projectionCoords * 0.5 + 0.5;		// Make into NDC coordinates for sampling the depth tex
+	// select cascade layer
+    vec4 fragPosViewSpace = view * vec4(fragPosition, 1.0);
+    float depthValue = abs(fragPosViewSpace.z);
 
-	float closestDepth = texture(shadowMap, projectionCoords.xy).r;
-	float currentDepth = projectionCoords.z;
-	float bias = max(0.05 * (1.0 - dot(normalVector, lightDir)), 0.005);
-	
-	// PCF
+    int layer = -1;
+    for (int i = 0; i < cascadeCount; ++i)
+    {
+        if (depthValue < cascadePlaneDistances[i])
+        {
+            layer = i;
+            break;
+        }
+    }
+    if (layer == -1)
+    {
+        layer = cascadeCount;
+    }
+
+    vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    if (currentDepth  > 1.0)
+    {
+        return 0.0;
+    }
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = normalize(normalVector);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    if (layer == cascadeCount)
+    {
+        bias *= 1 / (farPlane * 0.5f);
+    }
+    else
+    {
+        bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
+    }
+
+    // PCF
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, projectionCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+            float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r; 
+            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
         }    
     }
     shadow /= 9.0;
-
-	if(projectionCoords.z > 1.0)
+    
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+    {
         shadow = 0.0;
-
-	return shadow;
+    }
+        
+    return shadow;
 }
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
@@ -228,7 +277,7 @@ void main()
 	// Calculate Shadow
 	//
 	vec3 lightDir = normalize(lightPositions[0].xyz - fragPosition);        // @Hardcode
-	float shadow = shadowCalculation(lightDir);
+	float shadow = shadowCalculation(lightDir, fragPosition);
 
     //
     // Combine the colors with the shading

@@ -466,24 +466,24 @@ void RenderManager::createRect()
 
 void RenderManager::createShadowMap()
 {
-	glGenFramebuffers(1, &depthMapFBO);
+	//glGenFramebuffers(1, &depthMapFBO);
 
-	glGenTextures(1, &depthMapTexture);
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	//glGenTextures(1, &depthMapTexture);
+	//glBindTexture(GL_TEXTURE_2D, depthMapTexture);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	//float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
-	glDrawBuffer(GL_NONE);		// This prevents this framebuffer from having a "diffuse" layer, since we just need the depth
-	glReadBuffer(GL_NONE);
+	//glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMapTexture, 0);
+	//glDrawBuffer(GL_NONE);		// This prevents this framebuffer from having a "diffuse" layer, since we just need the depth
+	//glReadBuffer(GL_NONE);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderManager::createProgram()
@@ -494,6 +494,8 @@ void RenderManager::createProgram()
 	this->model_program_id = *(GLuint*)Resources::getResource("shader;blinnPhongSkinned");
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
 	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
+	cascaded_shadow_program_id = *(GLuint*)Resources::getResource("shader;csmShadowPass");
+	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
 	text_program_id = *(GLuint*)Resources::getResource("shader;text");
 	hdri_program_id = *(GLuint*)Resources::getResource("shader;hdriGeneration");
 	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
@@ -612,11 +614,12 @@ void RenderManager::render()
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// Render shadow map to depth framebuffer
 	// -----------------------------------------------------------------------------------------------------------------------------
-	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	renderScene(true);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
+	{
+		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
+			continue;
+		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
+	}
 
 
 	// -----------------------------------------------------------------------------------------------------------------------------
@@ -624,7 +627,7 @@ void RenderManager::render()
 	// -----------------------------------------------------------------------------------------------------------------------------
 	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderScene(false);
+	renderScene();
 
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
@@ -640,9 +643,9 @@ void RenderManager::updateMatrices(glm::mat4 lightProjection, glm::mat4 lightVie
 }
 
 
-void RenderManager::renderScene(bool shadowVersion)
+void RenderManager::renderScene()
 {
-	if (!shadowVersion)
+	//if (!shadowVersion)
 	{
 		// Draw skybox
 		glDepthMask(GL_FALSE);
@@ -657,166 +660,41 @@ void RenderManager::renderScene(bool shadowVersion)
 		glDepthMask(GL_TRUE);
 	}
 
-	//
-	// Draw PBR sphere!!!!
-	//
-	/*int programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
-	glUseProgram(programId);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
-
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
-	glUniform1i(glGetUniformLocation(programId, "albedoMap"), 0);
-	
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-	glUniform1i(glGetUniformLocation(programId, "normalMap"), 1);
-	
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
-	glUniform1i(glGetUniformLocation(programId, "metallicMap"), 2);
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
-	glUniform1i(glGetUniformLocation(programId, "roughnessMap"), 3);
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	glUniform1i(glGetUniformLocation(programId, "irradianceMap"), 4);
-
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	glUniform1i(glGetUniformLocation(programId, "prefilterMap"), 5);
-
-	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-	glUniform1i(glGetUniformLocation(programId, "brdfLUT"), 6);
-
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 7);
-
-	glActiveTexture(GL_TEXTURE0);
-
-	
-
-	glm::mat4 modelMatrix =
-		glm::translate(pbrModelPosition)
-		* glm::scale(glm::mat4(1.0f), pbrModelScale);
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(modelMatrix)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(programId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-	);
-	glUniform3fv(glGetUniformLocation(programId, "lightPositions[0]"), 1, &lightPosition[0]);
-	glUniform3f(glGetUniformLocation(programId, "lightColors[0]"), 150.0f, 150.0f, 150.0f);
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
-
-	pbrModel.render(programId);*/
-
-	// Draw the model!!!!
-	// 
-	//programId = shadowVersion ? this->shadow_skinned_program_id : this->model_program_id;
-	//glUseProgram(programId);
-	/*glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));*/
-
-	/*glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
-	glActiveTexture(GL_TEXTURE0);*/
-
-	/*modelMatrix =
-		glm::translate(modelPosition)
-		* glm::eulerAngleXYZ(glm::radians(modelEulerAngles.x), glm::radians(modelEulerAngles.y), glm::radians(modelEulerAngles.z))
-		* glm::scale(
-			glm::mat4(1.0f),
-			glm::vec3(modelScale)
-		);
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(modelMatrix)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(programId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-	);
-	glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
-	glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);
-
-	auto transforms = animator.getFinalBoneMatrices();
-	for (int i = 0; i < transforms.size(); i++)
-		glUniformMatrix4fv(
-			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-			1,
-			GL_FALSE,
-			glm::value_ptr(transforms[i])
-		);
-
-	tryModel.render(programId);*/
-
-	// Draw quad
-	//programId = shadowVersion ? this->shadow_program_id : this->pbr_program_id;
-	//glUseProgram(programId);
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, texture);
-	//glUniform1i(glGetUniformLocation(programId, "tex0"), 0);
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, depthMapTexture);
-	//glUniform1i(glGetUniformLocation(programId, "shadowMap"), 1);
-	//glActiveTexture(GL_TEXTURE0);
-	//glm::vec3 tint(0.3f, 0.3f, 0.3f);
-	//glUniform3fv(glGetUniformLocation(programId, "diffuseTint"), 1, &tint[0]);
-	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	//glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));		// Uniforms must be set after the shader program is set
-	//modelMatrix = glm::translate(planePosition);
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(programId, "modelMatrix"),
-	//	1,
-	//	GL_FALSE,
-	//	glm::value_ptr(modelMatrix)
-	//);
-	//glUniformMatrix3fv(
-	//	glGetUniformLocation(programId, "normalsModelMatrix"),
-	//	1,
-	//	GL_FALSE,
-	//	glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix))))
-	//);
-	///*glUniform3fv(glGetUniformLocation(programId, "lightPosition"), 1, &lightPosition[0]);
-	//glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &camera.position[0]);
-	//glUniform3f(glGetUniformLocation(programId, "lightColor"), 1.0f, 1.0f, 1.0f);*/
-	//glBindVertexArray(this->vao);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-	//
-	// Draw Text
-	//
-	if (!shadowVersion)
-	{
-		unsigned int programId = text_program_id;
-		glm::mat4 modelMatrix =
-			glm::translate(textPosition);
-		renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
-	}
+	////
+	//// Draw Text
+	////
+	//if (!shadowVersion)
+	//{
+	//	unsigned int programId = text_program_id;
+	//	glm::mat4 modelMatrix =
+	//		glm::translate(textPosition);
+	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
+	//}
 
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
-		MainLoop::getInstance().renderObjects[i]->render(shadowVersion, irradianceMap, prefilterMap, brdfLUTTexture, depthMapTexture);
+		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
+	}
+
+	//
+	// Draw the shadowmaps
+	//
+	glUseProgram(debug_csm_program_id);
+	glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugNum);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
+	renderQuad();
+}
+
+
+void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
+{
+	//
+	// Render everything
+	//
+	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+	{
+		MainLoop::getInstance().renderObjects[i]->renderShadow(shaderProgramId);
 	}
 }
 
@@ -1040,7 +918,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Player Character"))
 					new PlayerCharacter();
 				if (ImGui::Selectable("Directional Light"))
-					new DirectionalLight(glm::vec3(0.0f));
+					new DirectionalLight(true);
 				if (ImGui::Selectable("Point Light"))
 					new PointLight();
 				if (ImGui::Selectable("Yosemite Terrain"))

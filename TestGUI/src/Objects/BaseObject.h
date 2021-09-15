@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <glm/glm.hpp>
+#include <glad/glad.h>
 #include <string>
 
 
@@ -62,10 +63,13 @@ class LightComponent
 {
 public:
 	BaseObject* baseObject;
+	bool castsShadows;
+	GLuint shadowMapTexture;
 
-	LightComponent(BaseObject* baseObject);
+	LightComponent(BaseObject* baseObject, bool castsShadows = false);
 	~LightComponent();
 	virtual Light& getLight() = 0;
+	virtual void renderPassShadowMap();
 };
 
 
@@ -88,6 +92,8 @@ public:
 // This indicates that the object wants to be rendered.
 // Will be added into the renderobjects queue.
 //
+
+
 class RenderComponent
 {
 public:
@@ -95,5 +101,6 @@ public:
 
 	RenderComponent(BaseObject* baseObject);
 	~RenderComponent();
-	virtual void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture) = 0;			// TODO: figure out what they need and implement it!
+	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;
+	virtual void renderShadow(GLuint programId) = 0;
 };

@@ -11,8 +11,4 @@ struct Light
 	glm::vec3 facingDirection;
 	glm::vec3 color;
 	float colorIntensity;
-
-	bool castsShadows;								// The rendermanager will create the shadowmaps from their end, not the individual lights
-	glm::mat4 lightProjectionMatrix;
-	glm::mat4 lightViewMatrix;
 };

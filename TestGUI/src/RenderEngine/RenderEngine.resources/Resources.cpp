@@ -14,6 +14,7 @@ void registerResource(const std::string& resourceName, void* resource);
 const GLchar* readFile(const char* filename);
 GLuint compileShader(GLenum type, const char* fname);
 void* loadShaderProgramVF(const std::string& programName, const std::string& vertFname, const std::string& fragFname);
+void* loadShaderProgramVGF(const std::string& programName, const std::string& vertFname, const std::string& geomFname, const std::string& fragFname);
 
 void* loadTexture2D(const std::string& textureName, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
 void* loadHDRTexture2D(const std::string& textureName, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
@@ -119,6 +120,27 @@ void* loadShaderProgramVF(const std::string& programName, const std::string& ver
 	glAttachShader(programId, fShader);
 	glLinkProgram(programId);
 	glDeleteShader(vShader);
+	glDeleteShader(fShader);
+
+	GLuint* payload = new GLuint();
+	*payload = programId;
+	registerResource(programName, payload);
+	return payload;
+}
+
+
+void* loadShaderProgramVGF(const std::string& programName, const std::string& vertFname, const std::string& geomFname, const std::string& fragFname)
+{
+	GLuint programId = glCreateProgram();
+	GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
+	GLuint gShader = compileShader(GL_GEOMETRY_SHADER, geomFname.c_str());
+	GLuint fShader = compileShader(GL_FRAGMENT_SHADER, fragFname.c_str());
+	glAttachShader(programId, vShader);
+	glAttachShader(programId, gShader);
+	glAttachShader(programId, fShader);
+	glLinkProgram(programId);
+	glDeleteShader(vShader);
+	glDeleteShader(gShader);
 	glDeleteShader(fShader);
 
 	GLuint* payload = new GLuint();
@@ -241,11 +263,13 @@ void* loadResource(const std::string& resourceName)
 	// NOTE: this is gonna be a huge function btw
 	//
 	if (resourceName == "shader;pbr")							return loadShaderProgramVF(resourceName, "pbr.vert", "pbr.frag");
-	if (resourceName == "shader;shadowPassSkinned")				return loadShaderProgramVF(resourceName, "shadow_skinned.vert", "do_nothing.frag");
 	if (resourceName == "shader;blinnPhong")					return loadShaderProgramVF(resourceName, "vertex.vert", "fragment.frag");
 	if (resourceName == "shader;blinnPhongSkinned")				return loadShaderProgramVF(resourceName, "model.vert", "model.frag");
 	if (resourceName == "shader;skybox")						return loadShaderProgramVF(resourceName, "skybox.vert", "skybox.frag");
 	if (resourceName == "shader;shadowPass")					return loadShaderProgramVF(resourceName, "shadow.vert", "do_nothing.frag");
+	if (resourceName == "shader;csmShadowPass")					return loadShaderProgramVGF(resourceName, "csm_shadow.vert", "csm_shadow.geom", "do_nothing.frag");
+	if (resourceName == "shader;debugCSM")						return loadShaderProgramVF(resourceName, "debug_csm.vert", "debug_csm.frag");
+	if (resourceName == "shader;shadowPassSkinned")				return loadShaderProgramVF(resourceName, "shadow_skinned.vert", "do_nothing.frag");
 	if (resourceName == "shader;text")							return loadShaderProgramVF(resourceName, "text.vert", "text.frag");
 	if (resourceName == "shader;hdriGeneration")				return loadShaderProgramVF(resourceName, "cubemap.vert", "hdri_equirectangular.frag");
 	if (resourceName == "shader;irradianceGeneration")			return loadShaderProgramVF(resourceName, "cubemap.vert", "irradiance_convolution.frag");

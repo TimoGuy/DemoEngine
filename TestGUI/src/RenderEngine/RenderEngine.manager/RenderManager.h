@@ -32,16 +32,16 @@ public:
 	~RenderManager();
 
 	void render();
+	void renderScene();
+	void renderSceneShadowPass(GLuint shaderProgramId);
+
+	int debugNum = 0;
 
 private:
-
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
 	GLuint vbo, vao, ebo;
 
 	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
-
-	GLuint depthMapFBO;
-	GLuint depthMapTexture;
 	
 	int selectedBone = 0;
 	float modelScale = 1.0f;
@@ -76,7 +76,6 @@ private:
 
 	void renderImGuiPass();
 	void renderImGuiContents();
-	void renderScene(bool shadowVersion);
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
 	void finalize();

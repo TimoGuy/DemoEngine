@@ -18,7 +18,7 @@ glm::mat4 Camera::calculateProjectionMatrix()
 	if (width == 0.0f || height == 0.0f)
 		return glm::mat4(1.0f);
 
-	return glm::perspective(glm::radians(fov), (float)(width / height), 0.1f, 5000.0f);
+	return glm::perspective(glm::radians(fov), (float)(width / height), zNear, zFar);
 }
 
 glm::mat4 Camera::calculateViewMatrix()
@@ -36,7 +36,7 @@ glm::vec3 Camera::PositionToClipSpace(glm::vec3 pointInSpace)
 	glm::mat4 projection = glm::mat4(1.0f);
 
 	view = glm::lookAt(position, position + orientation, up);
-	projection = glm::perspective(glm::radians(fov), (float)(width / height), 0.1f, 2000.0f);
+	projection = glm::perspective(glm::radians(fov), (float)(width / height), zNear, zFar);
 
 	return glm::vec3(projection * view * glm::vec4(pointInSpace, 1.0f));
 }

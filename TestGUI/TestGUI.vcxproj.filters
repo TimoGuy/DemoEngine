@@ -142,6 +142,10 @@
     <None Include="prefilter.frag" />
     <None Include="brdf.vert" />
     <None Include="brdf.frag" />
+    <None Include="csm_shadow.geom" />
+    <None Include="csm_shadow.vert" />
+    <None Include="debug_csm.vert" />
+    <None Include="debug_csm.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

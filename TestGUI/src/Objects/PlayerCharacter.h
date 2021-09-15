@@ -32,7 +32,8 @@ class PlayerRender : public RenderComponent
 public:
 	PlayerRender(BaseObject* bo);
 
-	void render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture);
+	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
+	void renderShadow(GLuint programId);
 
 	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
 

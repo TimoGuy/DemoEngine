@@ -10,6 +10,10 @@
 #include "../ImGui/imgui_stdlib.h"
 
 
+
+#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+
+
 PlayerCharacter::PlayerCharacter()
 {
 	transform = glm::mat4(1.0f);
@@ -108,61 +112,73 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
-void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture, unsigned int shadowMapTexture)
+void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
 {
-	if (shadowPass) return;		// FOR NOW
-	unsigned int programId = shadowPass ? shadowPassSkinnedProgramId : pbrShaderProgramId;
-	glUseProgram(programId);
-	//glUniformMatrix4fv(glGetUniformLocation(programId, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightProjection * lightView));
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
-
+	glUseProgram(pbrShaderProgramId);
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
-	glUniform1i(glGetUniformLocation(programId, "albedoMap"), 0);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "albedoMap"), 0);
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-	glUniform1i(glGetUniformLocation(programId, "normalMap"), 1);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "normalMap"), 1);
 
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
-	glUniform1i(glGetUniformLocation(programId, "metallicMap"), 2);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "metallicMap"), 2);
 
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
-	glUniform1i(glGetUniformLocation(programId, "roughnessMap"), 3);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "roughnessMap"), 3);
 
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	glUniform1i(glGetUniformLocation(programId, "irradianceMap"), 4);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "irradianceMap"), 4);
 
 	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	glUniform1i(glGetUniformLocation(programId, "prefilterMap"), 5);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "prefilterMap"), 5);
 
 	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-	glUniform1i(glGetUniformLocation(programId, "brdfLUT"), 6);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "brdfLUT"), 6);
 
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_2D, shadowMapTexture);
-	glUniform1i(glGetUniformLocation(programId, "shadowMap"), 7);
+	//
+	// Try to find a shadow map
+	//
+	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
+	{
+		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
+			continue;
+		
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+		for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
+		{
+			glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
+		}
+
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "shadowMap"), 7);
+		break;
+	}
 
 	glActiveTexture(GL_TEXTURE0);
 
-	
+
 	//glm::mat4 modelMatrix = glm::mat4(1.0f);
 		/*glm::translate(pbrModelPosition)
 		* glm::scale(glm::mat4(1.0f), pbrModelScale);*/
 	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
+		glGetUniformLocation(pbrShaderProgramId, "modelMatrix"),
 		1,
 		GL_FALSE,
 		glm::value_ptr(baseObject->transform)
 	);
 	glUniformMatrix3fv(
-		glGetUniformLocation(programId, "normalsModelMatrix"),
+		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
 		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
@@ -178,14 +194,20 @@ void PlayerRender::render(bool shadowPass, unsigned int irradianceMap, unsigned 
 			lightDirection = glm::normalize(light->getLight().facingDirection);																// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
 		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
-		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
-		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
-		glUniform3fv(glGetUniformLocation(programId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
+		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
+		glUniform4fv(glGetUniformLocation(pbrShaderProgramId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
+		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
 	}
-	glUniform1i(glGetUniformLocation(programId, "numLights"), numLights);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), numLights);
 
-	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
+	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
+	model.render(pbrShaderProgramId);
+}
+
+void PlayerRender::renderShadow(GLuint programId)
+{
+	// TODO: add skeletal stuff too eh!
 	model.render(programId);
 }
 

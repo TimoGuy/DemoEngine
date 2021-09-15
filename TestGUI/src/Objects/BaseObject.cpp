@@ -66,7 +66,7 @@ CameraComponent::~CameraComponent()
 	);*/
 }
 
-LightComponent::LightComponent(BaseObject* baseObject) : baseObject(baseObject)
+LightComponent::LightComponent(BaseObject* baseObject, bool castsShadows) : baseObject(baseObject), castsShadows(castsShadows)
 {
 	MainLoop::getInstance().lightObjects.push_back(this);
 }
@@ -82,6 +82,8 @@ LightComponent::~LightComponent()
 		MainLoop::getInstance().lightObjects.end()
 	);
 }
+
+void LightComponent::renderPassShadowMap() {}
 
 PhysicsComponent::PhysicsComponent(BaseObject* baseObject) : baseObject(baseObject)
 {

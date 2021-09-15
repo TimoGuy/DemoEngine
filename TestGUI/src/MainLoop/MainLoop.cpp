@@ -65,7 +65,7 @@ void MainLoop::initialize()
 	// Create objects
 	//
 	new PlayerCharacter();
-	new DirectionalLight(glm::vec3(0.0f, 90.0f, 0.0f));
+	new DirectionalLight(true);
 }
 
 void MainLoop::run()
