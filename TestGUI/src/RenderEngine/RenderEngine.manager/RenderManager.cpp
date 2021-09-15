@@ -31,6 +31,7 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static int currentSelectedObjectIndex = -1;
+static bool showShadowMapView = false;
 
 
 RenderManager::RenderManager()
@@ -488,8 +489,6 @@ void RenderManager::createShadowMap()
 
 void RenderManager::createProgram()
 {
-	int vShader, fShader;
-
 	this->program_id = *(GLuint*)Resources::getResource("shader;blinnPhong");
 	this->model_program_id = *(GLuint*)Resources::getResource("shader;blinnPhongSkinned");
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
@@ -676,14 +675,18 @@ void RenderManager::renderScene()
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
 	}
 
-	//
-	// Draw the shadowmaps
-	//
-	glUseProgram(debug_csm_program_id);
-	glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugNum);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
-	renderQuad();
+	if (showShadowMapView)
+	{
+		//
+		// Draw the shadowmaps
+		//
+		glUseProgram(debug_csm_program_id);
+		glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugNum);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
+		glUniform1i(glGetUniformLocation(debug_csm_program_id, "depthMap"), 0);
+		renderQuad();
+	}
 }
 
 
@@ -947,6 +950,8 @@ void RenderManager::renderImGuiContents()
 			{
 				ImGui::Image((void*)(intptr_t)hdrTexture, ImVec2(512, 288));
 			}
+
+			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
 			//
 			// Render out the properties panels of selected object

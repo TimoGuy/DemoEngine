@@ -43,6 +43,46 @@ uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
+vec4 layerCalc(vec3 fragPosition)
+{
+    // select cascade layer
+    vec4 fragPosViewSpace = view * vec4(fragPosition, 1.0);
+    float depthValue = abs(fragPosViewSpace.z);
+
+    int layer = -1;
+    for (int i = 0; i < cascadeCount; ++i)
+    {
+        if (depthValue < cascadePlaneDistances[i])
+        {
+            layer = i;
+            break;
+        }
+    }
+    if (layer == -1)
+    {
+        layer = cascadeCount;
+    }
+
+    vec4 retColor = vec4(0);
+    const float bandSize = 0.25;
+    if ((layer == cascadeCount && depthValue - farPlane + bandSize > 0) || depthValue - cascadePlaneDistances[layer] + bandSize > 0)
+    {
+        if (layer == 0)
+            retColor = vec4(.5, 0, 0, 1);
+        else if (layer == 1)
+            retColor = vec4(0, .5, 0, 1);
+        else if (layer == 2)
+            retColor = vec4(0, 0, .5, 1);
+        else if (layer == 3)
+            retColor = vec4(0, .3, .3, 1);
+        else if (layer == 4)
+            retColor = vec4(.3, .3, 0, 1);
+    }
+
+    return retColor;
+}
+
+
 float shadowCalculation(vec3 lightDir, vec3 fragPosition)
 {
 	// select cascade layer
@@ -276,7 +316,7 @@ void main()
     //
 	// Calculate Shadow
 	//
-	vec3 lightDir = normalize(lightPositions[0].xyz - fragPosition);        // @Hardcode
+	vec3 lightDir = normalize(lightDirections[0]);        // @Hardcode
 	float shadow = shadowCalculation(lightDir, fragPosition);
 
     //
@@ -292,4 +332,6 @@ void main()
     color = pow(color, vec3(1.0/2.2)); 
 
     FragColor = vec4(color, 1.0);
+
+    FragColor += layerCalc(fragPosition);
 }

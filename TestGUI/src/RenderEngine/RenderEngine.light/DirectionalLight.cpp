@@ -10,8 +10,11 @@
 #include "../../ImGui/imgui_stdlib.h"
 #include "../../ImGui/ImGuizmo.h"
 #include "../../Utils/PhysicsUtils.h"
-#include <glm/glm.hpp>e
+#include <glm/glm.hpp>
 
+
+static float multiplier = 100.0f;
+static float shadowCoverageRadius = 15.0f;
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
@@ -107,8 +110,9 @@ void DirectionalLightLight::createCSMBuffers()
 
 void DirectionalLightLight::renderPassShadowMap()
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(cascadedShaderProgram);
-	glUniform1f(glGetUniformLocation(cascadedShaderProgram, "farPlane"), MainLoop::getInstance().camera.zFar);
 
 	// Setup UBOs
 	const auto lightMatrices = getLightSpaceMatrices();
@@ -124,11 +128,11 @@ void DirectionalLightLight::renderPassShadowMap()
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, shadowMapTexture, 0);
 	glViewport(0, 0, depthMapResolution, depthMapResolution);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glCullFace(GL_FRONT);  // peter panning
+	//glCullFace(GL_FRONT);  // peter panning
 
 	MainLoop::getInstance().renderManager->renderSceneShadowPass(cascadedShaderProgram);
 
-	glCullFace(GL_BACK);
+	//glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -158,7 +162,6 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
-
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
 	//
@@ -178,7 +181,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	const auto lightView =
 		glm::lookAt(
-			center + getLight().facingDirection,
+			center - getLight().facingDirection,
 			center,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
@@ -201,7 +204,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	}
 
 	// Tune this parameter according to the scene
-	constexpr float zMult = 10.0f;
+	float zMult = multiplier;
 	if (minZ < 0)
 	{
 		minZ *= zMult;
@@ -219,7 +222,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxZ *= zMult;
 	}
 
-	const glm::mat4 lpMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, minZ, maxZ);
+	const glm::mat4 lpMatrix = glm::ortho(-shadowCoverageRadius, shadowCoverageRadius, -shadowCoverageRadius, shadowCoverageRadius, minZ, maxZ);
 
 	const float scaleX = 2.0f / (maxX - minX);
 	const float scaleY = 2.0f / (maxY - minY);
@@ -265,6 +268,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	lightComponent->getLight().facingDirection = lookDirection;
 }
 
+
 void DirectionalLightImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
@@ -276,6 +280,10 @@ void DirectionalLightImGui::propertyPanelImGui()
 	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->getLight().colorIntensity);
 
 	ImGui::DragInt("Cascade Shadow Map Debug", &MainLoop::getInstance().renderManager->debugNum);
+
+	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection[0]);
+	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
+	ImGui::DragFloat("Shadow coverage radius", &shadowCoverageRadius, 0.1f, 0.0f, 100.0f);
 }
 
 void DirectionalLightImGui::renderImGui()

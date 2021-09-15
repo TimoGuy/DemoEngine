@@ -11,7 +11,10 @@
 #include "../ImGui/ImGuizmo.h"
 
 #include "../Objects/PlayerCharacter.h"
+#include "../Objects/YosemiteTerrain.h"
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+
+#include "../Utils/PhysicsUtils.h"
 
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
@@ -65,7 +68,13 @@ void MainLoop::initialize()
 	// Create objects
 	//
 	new PlayerCharacter();
-	new DirectionalLight(true);
+	DirectionalLight* dl = new DirectionalLight(true);
+	dl->transform = glm::toMat4(glm::quat(glm::radians(glm::vec3(26.975f, 41.029f, 0.0f)))) * glm::mat4(1.0f);
+	dl->setLookDirection(PhysicsUtils::getRotation(dl->transform));
+	dl->lightComponent->getLight().colorIntensity = 10.0f;
+
+	YosemiteTerrain* jj = new YosemiteTerrain();
+	jj->transform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -4.56f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 1, 100));
 }
 
 void MainLoop::run()

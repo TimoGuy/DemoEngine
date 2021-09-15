@@ -97,12 +97,19 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 		GL_FALSE,
 		glm::value_ptr(baseObject->transform)
 	);
+	glUniformMatrix4fv(
+		glGetUniformLocation(pbrShaderProgramId, "view"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(MainLoop::getInstance().camera.calculateViewMatrix())
+	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
 		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
 	);
+	glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().camera.zFar);
 
 	const size_t MAX_LIGHTS = 4;
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
@@ -127,6 +134,12 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 
 void YosemiteTerrainRender::renderShadow(GLuint programId)
 {
+	glUniformMatrix4fv(
+		glGetUniformLocation(programId, "modelMatrix"),
+		1,
+		GL_FALSE,
+		glm::value_ptr(baseObject->transform)
+	);
 	model.render(programId);
 }
 
