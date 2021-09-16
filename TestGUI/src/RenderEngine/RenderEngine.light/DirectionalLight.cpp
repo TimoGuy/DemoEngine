@@ -13,8 +13,9 @@
 #include <glm/glm.hpp>
 
 
-static float multiplier = 100.0f;
-static float shadowCoverageRadius = 15.0f;
+static float multiplier = 2.0f;
+static float shadowCoverageRadius = 1.0f;
+static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
@@ -154,7 +155,7 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 						2.0f * z - 1.0f,
 						1.0f
 					);
-				frustumCorners.push_back(corner);
+				frustumCorners.push_back(corner / corner.w);
 			}
 		}
 	}
@@ -162,14 +163,15 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
+bool doThis = false;
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
 	//
 	// Getting the light viewproj matrix
 	//
 	const auto proj = glm::perspective(
-		glm::radians(MainLoop::getInstance().camera.fov), MainLoop::getInstance().camera.width / MainLoop::getInstance().camera.height, nearPlane,
-		farPlane);
+		glm::radians(MainLoop::getInstance().camera.fov), MainLoop::getInstance().camera.width / MainLoop::getInstance().camera.height, nearPlane, farPlane
+	);
 	const auto corners = getFrustumCornersWorldSpace(proj, MainLoop::getInstance().camera.calculateViewMatrix());
 
 	glm::vec3 center = glm::vec3(0, 0, 0);
@@ -179,10 +181,11 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	}
 	center /= corners.size();
 
+
 	const auto lightView =
 		glm::lookAt(
-			center - getLight().facingDirection,
 			center,
+			center + getLight().facingDirection,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -222,10 +225,11 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxZ *= zMult;
 	}
 
-	const glm::mat4 lpMatrix = glm::ortho(-shadowCoverageRadius, shadowCoverageRadius, -shadowCoverageRadius, shadowCoverageRadius, minZ, maxZ);
+	//const glm::mat4 lpMatrix = glm::ortho(-shadowCoverageRadius, shadowCoverageRadius, -shadowCoverageRadius, shadowCoverageRadius, minZ, maxZ);
+	const glm::mat4 lpMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, minZ, maxZ);
 
-	const float scaleX = 2.0f / (maxX - minX);
-	const float scaleY = 2.0f / (maxY - minY);
+	const float scaleX = 2.0f / ((maxX - minX) * shadowCoverageRadius);
+	const float scaleY = 2.0f / ((maxY - minY) * shadowCoverageRadius);
 	const float offsetX = -0.5f * (minX + maxX) * scaleX;
 	const float offsetY = -0.5f * (minY + maxY) * scaleY;
 
@@ -235,6 +239,14 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	cropMatrix[3][0] = offsetX;
 	cropMatrix[3][1] = offsetY;
 
+	if (doThis)
+	{
+		doThis = false;
+		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->transform;
+		trans = glm::translate(trans, glm::vec3(/*cropMatrix * lpMatrix * lightView * proj * MainLoop::getInstance().camera.calculateViewMatrix() * */ glm::vec4(center, 1.0f)) - PhysicsUtils::getPosition(trans));
+		//center = MainLoop::getInstance().camera.calculateViewMatrix() * glm::vec4(center, 1.0f);
+	}
+
 	return cropMatrix * lpMatrix * lightView;
 }
 
@@ -243,6 +255,8 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 	{
+		if (followCascade == i)
+			doThis = true;
 		if (i == 0)
 		{
 			ret.push_back(getLightSpaceMatrix(MainLoop::getInstance().camera.zNear, shadowCascadeLevels[i]));
@@ -284,6 +298,7 @@ void DirectionalLightImGui::propertyPanelImGui()
 	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
 	ImGui::DragFloat("Shadow coverage radius", &shadowCoverageRadius, 0.1f, 0.0f, 100.0f);
+	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
 }
 
 void DirectionalLightImGui::renderImGui()

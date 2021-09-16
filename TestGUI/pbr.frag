@@ -63,9 +63,14 @@ vec4 layerCalc(vec3 fragPosition)
         layer = cascadeCount;
     }
 
+    vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
     vec4 retColor = vec4(0);
-    const float bandSize = 0.25;
-    if ((layer == cascadeCount && depthValue - farPlane + bandSize > 0) || depthValue - cascadePlaneDistances[layer] + bandSize > 0)
+    if (projCoords.x >= 0.0f && projCoords.x <= 1.0f && projCoords.y >= 0.0f && projCoords.y <= 1.0f)
     {
         if (layer == 0)
             retColor = vec4(.5, 0, 0, 1);
@@ -111,7 +116,7 @@ float shadowCalculation(vec3 lightDir, vec3 fragPosition)
 
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-    if (currentDepth  > 1.0)
+    if (currentDepth > 1.0)
     {
         return 0.0;
     }
