@@ -14,7 +14,6 @@
 
 
 static float multiplier = 2.0f;
-static float shadowCoverageRadius = 1.0f;
 static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)
@@ -55,8 +54,8 @@ void DirectionalLightLight::createCSMBuffers()
 {
 	cascadedShaderProgram = *(GLuint*)Resources::getResource("shader;csmShadowPass");
 
-	float cameraFarPlane = MainLoop::getInstance().camera.zFar;
-	shadowCascadeLevels = { cameraFarPlane / 50.0f, cameraFarPlane / 25.0f, cameraFarPlane / 10.0f, cameraFarPlane / 2.0f };
+	shadowFarPlane = 200.0f;		// NOTE: hardcoded
+	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
 
 	//
 	// Create light FBO
@@ -228,8 +227,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//const glm::mat4 lpMatrix = glm::ortho(-shadowCoverageRadius, shadowCoverageRadius, -shadowCoverageRadius, shadowCoverageRadius, minZ, maxZ);
 	const glm::mat4 lpMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, minZ, maxZ);
 
-	const float scaleX = 2.0f / ((maxX - minX) * shadowCoverageRadius);
-	const float scaleY = 2.0f / ((maxY - minY) * shadowCoverageRadius);
+	const float scaleX = 2.0f / ((maxX - minX));
+	const float scaleY = 2.0f / ((maxY - minY));
 	const float offsetX = -0.5f * (minX + maxX) * scaleX;
 	const float offsetY = -0.5f * (minY + maxY) * scaleY;
 
@@ -267,7 +266,7 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 		}
 		else
 		{
-			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], MainLoop::getInstance().camera.zFar));
+			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], shadowFarPlane));
 		}
 	}
 	return ret;
@@ -297,7 +296,6 @@ void DirectionalLightImGui::propertyPanelImGui()
 
 	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
-	ImGui::DragFloat("Shadow coverage radius", &shadowCoverageRadius, 0.1f, 0.0f, 100.0f);
 	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
 }
 

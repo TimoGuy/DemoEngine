@@ -36,6 +36,7 @@ layout (std140, binding = 0) uniform LightSpaceMatrices
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
 uniform mat4 view;
+uniform float nearPlane;
 uniform float farPlane;
 
 // OTHER
@@ -150,6 +151,17 @@ float shadowCalculation(vec3 lightDir, vec3 fragPosition)
     {
         shadow = 0.0;
     }
+
+    if (layer == cascadeCount)
+    {
+        //
+        // Create a fading edge in the far plane
+        //
+        float fadingEdge = 2f;
+        float subtractAmount = clamp((projCoords.z - 1.0) * (farPlane - nearPlane) + fadingEdge, 0.0, fadingEdge) / fadingEdge;
+        shadow -= subtractAmount;
+        shadow = clamp(shadow, 0.0, 1.0);
+    }
         
     return shadow;
 }
@@ -240,13 +252,6 @@ void main()
     vec3 Lo = vec3(0.0);
     for(int i = 0; i < numLights; ++i)      // NOTE: Change this depending on the number of lights being looped over
     {
-        //vec3 L = normalize(lightPositions[i].xyz - fragPosition);
-        //vec3 H = normalize(V + L);
-        //float distance = length(lightPositions[i].xyz - fragPosition);
-        //float attenuation = 1.0 / (distance * distance);
-        //vec3 radiance = lightColors[i] * attenuation;
-
-        
         // calculate per-light radiance
         vec3 L, H, radiance;
         float attenuation;
@@ -296,8 +301,14 @@ void main()
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
 
+        //
+	    // Calculate Shadow
+	    //
+	    vec3 lightDir = normalize(lightDirections[0]);        // @Hardcode
+	    float shadow = 1.0 - (shadowCalculation(lightDir, fragPosition) * 1.0);
+
         // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
     
     // ambient lighting (Using the IBL tex as the ambient)
@@ -319,17 +330,10 @@ void main()
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
     //
-	// Calculate Shadow
-	//
-	vec3 lightDir = normalize(lightDirections[0]);        // @Hardcode
-	float shadow = shadowCalculation(lightDir, fragPosition);
-
-    //
     // Combine the colors with the shading
     //
     vec3 ambient = (kD * diffuse + specular) * ao;
     vec3 color = ambient + Lo;
-    color *= 1.0 - (shadow * 0.5);                                     // NOTE: I do not know if this is the right implementation for shadows... but it looks pretty okay for now.
 
     // HDR tonemapping          TODO: Implement hdr and then have there be tonemapping at the end and bloom!
     color = color / (color + vec3(1.0));
@@ -338,5 +342,5 @@ void main()
 
     FragColor = vec4(color, 1.0);
 
-    FragColor += layerCalc(fragPosition);
+    //FragColor += layerCalc(fragPosition);                         // NOTE: for debugging purposes, this shows the individual cascades
 }

@@ -64,6 +64,7 @@ class LightComponent
 public:
 	BaseObject* baseObject;
 	bool castsShadows;
+	float shadowFarPlane;
 	GLuint shadowMapTexture;
 
 	LightComponent(BaseObject* baseObject, bool castsShadows = false);

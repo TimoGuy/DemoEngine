@@ -11,7 +11,7 @@
 
 
 
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"			// temp
 
 
 PlayerCharacter::PlayerCharacter()
@@ -189,7 +189,8 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 		GL_FALSE,
 		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
 	);
-	glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().camera.zFar);
+	glUniform1f(glGetUniformLocation(pbrShaderProgramId, "nearPlane"), MainLoop::getInstance().camera.zNear);
+	glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().lightObjects[0]->shadowFarPlane);
 
 	const size_t MAX_LIGHTS = 4;
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
