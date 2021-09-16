@@ -9,7 +9,7 @@
 class YosemiteTerrainImGui : public ImGuiComponent
 {
 public:
-	YosemiteTerrainImGui(BaseObject* bo) : ImGuiComponent(bo, "Yosemite Terrain") {}
+	YosemiteTerrainImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Yosemite Terrain") {}
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -19,8 +19,9 @@ public:
 class YosemiteTerrainRender : public RenderComponent
 {
 public:
-	YosemiteTerrainRender(BaseObject* bo);
+	YosemiteTerrainRender(BaseObject* bo, Bounds* bounds);
 
+	void preRenderUpdate();
 	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
 	void renderShadow(GLuint programId);
 
@@ -39,5 +40,7 @@ public:
 
 	ImGuiComponent* imguiComponent;
 	RenderComponent* renderComponent;
+
+	Bounds* bounds;
 };
 

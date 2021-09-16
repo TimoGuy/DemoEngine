@@ -1,3 +1,6 @@
+#include "../Objects/BaseObject.h"
+#include "../ImGui/imgui.h"
+
 #include "PhysicsUtils.h"
 
 #include "../ImGui/ImGuizmo.h"
@@ -99,7 +102,7 @@ namespace PhysicsUtils
 
 #pragma region imgui draw functions
 
-	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry)
+	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry, ImU32 color)
 	{
 		physx::PxVec3 halfExtents = boxGeometry.halfExtents;
 		std::vector<glm::vec4> points = {
@@ -152,7 +155,7 @@ namespace PhysicsUtils
 				ImVec2(ssPoints[1].x, ssPoints[1].y),
 				ImVec2(ssPoints[3].x, ssPoints[3].y),
 				ImVec2(ssPoints[2].x, ssPoints[2].y),
-				ImColor::HSV(0.39f, 0.88f, 0.92f),
+				color,
 				3.0f
 			);
 		}
@@ -281,4 +284,94 @@ namespace PhysicsUtils
 	}
 
 #pragma endregion
+
+	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix)
+	{
+		const glm::vec3 globalCenter{ modelMatrix * glm::vec4(bounds.center, 1.0f) };
+
+		// Scaled orientation (remove position part of the matrix)
+		const glm::vec3 right =		glm::vec3(glm::mat4(glm::mat3(modelMatrix)) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)) * bounds.extents.x;
+		const glm::vec3 up =		glm::vec3(glm::mat4(glm::mat3(modelMatrix)) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)) * bounds.extents.y;
+		const glm::vec3 forward =	glm::vec3(glm::mat4(glm::mat3(modelMatrix)) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)) * bounds.extents.z;
+
+		const float newIi =
+			std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, right)) +
+			std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, up)) +
+			std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, forward));
+
+		const float newIj =
+			std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, right)) +
+			std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, up)) +
+			std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, forward));
+
+		const float newIk =
+			std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, right)) +
+			std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, up)) +
+			std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, forward));
+
+		Bounds newConstructedAABB;
+		newConstructedAABB.center = globalCenter;
+		newConstructedAABB.extents = glm::vec3(newIi, newIj, newIk);
+		return newConstructedAABB;
+	}
+
+	bool raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds)
+	{
+		const glm::vec3 delta = end - start;
+		constexpr float paddingX = 0.0f;
+		constexpr float paddingY = 0.0f;
+		constexpr float paddingZ = 0.0f;
+
+		const float scaleX = 1.0 / delta.x;
+		const float scaleY = 1.0 / delta.y;
+		const float scaleZ = 1.0 / delta.z;
+		const float signX = std::copysignf(1.0f, scaleX);
+		const float signY = std::copysignf(1.0f, scaleY);
+		const float signZ = std::copysignf(1.0f, scaleZ);
+		const float nearTimeX = (bounds.center.x - signX * (bounds.extents.x + paddingX) - start.x) * scaleX;
+		const float nearTimeY = (bounds.center.y - signY * (bounds.extents.y + paddingY) - start.y) * scaleY;
+		const float nearTimeZ = (bounds.center.z - signZ * (bounds.extents.z + paddingZ) - start.z) * scaleZ;
+		const float farTimeX = (bounds.center.x + signX * (bounds.extents.x + paddingX) - start.x) * scaleX;
+		const float farTimeY = (bounds.center.y + signY * (bounds.extents.y + paddingY) - start.y) * scaleY;
+		const float farTimeZ = (bounds.center.z + signZ * (bounds.extents.z + paddingZ) - start.z) * scaleZ;
+
+		//
+		// If the closest time of collision on either axis is further than the far time on the opposite axis, we can’t be colliding
+		//
+		if (nearTimeX > farTimeY ||
+			nearTimeX > farTimeZ ||
+			nearTimeY > farTimeX ||
+			nearTimeY > farTimeZ ||
+			nearTimeZ > farTimeX ||
+			nearTimeZ > farTimeY)
+		{
+			return false;
+		}
+
+		//
+		// Find the largest of the nearTimes and smallest of the farTimes
+		//
+		float nearTime = nearTimeX;
+		if (nearTime < nearTimeY)
+			nearTime = nearTimeY;
+		if (nearTime < nearTimeZ)
+			nearTime = nearTimeZ;
+
+		float farTime = farTimeX;
+		if (farTime > farTimeY)
+			farTime = farTimeY;
+		if (farTime > farTimeZ)
+			farTime = farTimeZ;
+
+		if (nearTime >= 1 || farTime <= 0)
+		{
+			return false;
+		}
+
+		//
+		// A collision of sorts is happening, we know now...
+		// See more at https://noonat.github.io/intersect/#aabb-vs-segment
+		//
+		return true;
+	}
 }

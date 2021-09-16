@@ -9,7 +9,7 @@
 class PlayerImGui : public ImGuiComponent
 {
 public:
-	PlayerImGui(BaseObject* bo) : ImGuiComponent(bo, "Player Controller") {}
+	PlayerImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Player Controller") {}
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -19,7 +19,7 @@ public:
 class PlayerPhysics : public PhysicsComponent
 {
 public:
-	PlayerPhysics(BaseObject* bo);
+	PlayerPhysics(BaseObject* bo, Bounds* bounds);
 
 	void physicsUpdate(float deltaTime);
 
@@ -30,8 +30,9 @@ public:
 class PlayerRender : public RenderComponent
 {
 public:
-	PlayerRender(BaseObject* bo);
+	PlayerRender(BaseObject* bo, Bounds* bounds);
 
+	void preRenderUpdate();
 	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
 	void renderShadow(GLuint programId);
 
@@ -51,5 +52,7 @@ public:
 	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
+
+	Bounds* bounds;
 };
 

@@ -30,6 +30,7 @@ public:
 	glm::mat4 calculateProjectionMatrix();
 	glm::mat4 calculateViewMatrix();
 	glm::vec3 PositionToClipSpace(glm::vec3 positionInSpace);
+	glm::vec3 clipSpacePositionToWordSpace(glm::vec3 clipSpacePosition);
 	void Inputs(GLFWwindow* window);
 
 private:

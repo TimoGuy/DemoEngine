@@ -27,7 +27,7 @@ PointLight::~PointLight()
 	delete imguiComponent;
 }
 
-PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Point Light")
+PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Point Light")			// tODO: create bounds for here
 {
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }

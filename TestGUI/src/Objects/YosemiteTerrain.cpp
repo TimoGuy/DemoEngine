@@ -18,11 +18,15 @@ YosemiteTerrain::YosemiteTerrain()
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new YosemiteTerrainImGui(this);
-	renderComponent = new YosemiteTerrainRender(this);
+	bounds = new Bounds();
+	bounds->center = glm::vec3(0.0f);
+	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
+
+	imguiComponent = new YosemiteTerrainImGui(this, bounds);
+	renderComponent = new YosemiteTerrainRender(this, bounds);
 }
 
-YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo) : RenderComponent(bo)
+YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
@@ -40,6 +44,12 @@ YosemiteTerrain::~YosemiteTerrain()
 	delete renderComponent;
 	delete imguiComponent;
 }
+
+void YosemiteTerrainRender::preRenderUpdate()
+{
+	
+}
+
 
 void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
 {
@@ -159,6 +169,7 @@ void YosemiteTerrainImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
+	ImGuiComponent::renderImGui();
 }
 
 void YosemiteTerrainImGui::cloneMe()

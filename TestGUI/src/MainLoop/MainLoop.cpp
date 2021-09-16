@@ -136,6 +136,14 @@ void MainLoop::run()
 		//lastFrame = currentFrame;
 		//animator.updateAnimation(deltaTime * deltaTimeMultiplier);
 			
+		//
+		// Commit to render everything
+		//
+		for (size_t i = 0; i < renderObjects.size(); i++)
+		{
+			renderObjects[i]->preRenderUpdate();
+		}
+
 		render();
 
 #if SINGLE_BUFFERED_MODE

@@ -48,7 +48,7 @@ namespace PhysicsUtils
 
 #pragma region imgui draw functions
 
-	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry);
+	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));
 
 	void imguiRenderSphereCollider(glm::mat4 modelMatrix, physx::PxSphereGeometry& sphereGeometry);
 
@@ -61,4 +61,7 @@ namespace PhysicsUtils
 	void imguiRenderSausage(glm::mat4 modelMatrix, float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
 
 #pragma endregion
+
+	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix);
+	bool raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds);
 }

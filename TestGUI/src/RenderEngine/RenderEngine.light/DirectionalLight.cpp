@@ -32,7 +32,7 @@ DirectionalLight::~DirectionalLight()
 	delete imguiComponent;
 }
 
-DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, "Directional Light")
+DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
 {
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
@@ -297,6 +297,24 @@ void DirectionalLightImGui::propertyPanelImGui()
 	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
 	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
+
+	static bool plsFollow = false;
+	ImGui::Checkbox("Follow ndc mouse pos", &plsFollow);
+	if (plsFollow)
+	{
+		double xpos, ypos;
+		glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
+		xpos /= MainLoop::getInstance().camera.width;
+		ypos /= MainLoop::getInstance().camera.height;
+		ypos = 1.0 - ypos;
+		xpos = xpos * 2.0f - 1.0f;
+		ypos = ypos * 2.0f - 1.0f;
+		glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
+		glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
+
+		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->transform;
+		trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
+	}
 }
 
 void DirectionalLightImGui::renderImGui()

@@ -18,6 +18,14 @@ public:
 	glm::mat4 transform;
 };
 
+//
+// @Cleanup: Random util struct of an AABB that's useful for object selection for imgui and frustum culling
+//
+struct Bounds
+{
+	glm::vec3 center;		// NOTE: multiply the model matrix with this to get the world space
+	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
+};
 
 //
 // This indicates that imgui stuff will be drawn from this.
@@ -26,13 +34,14 @@ class ImGuiComponent
 {
 public:
 	BaseObject* baseObject;
+	Bounds* bounds;
 	std::string name;
 	std::string guid;
 
-	ImGuiComponent(BaseObject* baseObject, std::string name);
+	ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name);
 	~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
-	virtual void renderImGui() = 0;
+	virtual void renderImGui();
 	virtual void cloneMe() = 0;
 };
 
@@ -82,8 +91,9 @@ class PhysicsComponent
 {
 public:
 	BaseObject* baseObject;
+	Bounds* bounds = nullptr;
 
-	PhysicsComponent(BaseObject* baseObject);
+	PhysicsComponent(BaseObject* baseObject, Bounds* bounds);
 	~PhysicsComponent();
 	virtual void physicsUpdate(float deltaTime) = 0;
 };
@@ -93,15 +103,16 @@ public:
 // This indicates that the object wants to be rendered.
 // Will be added into the renderobjects queue.
 //
-
-
 class RenderComponent
 {
 public:
 	BaseObject* baseObject;
+	Bounds* bounds = nullptr;
 
-	RenderComponent(BaseObject* baseObject);
+	RenderComponent(BaseObject* baseObject, Bounds* bounds);
 	~RenderComponent();
+
+	virtual void preRenderUpdate() = 0;
 	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;
 	virtual void renderShadow(GLuint programId) = 0;
 };

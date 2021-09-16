@@ -18,12 +18,16 @@ PlayerCharacter::PlayerCharacter()
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new PlayerImGui(this);
-	physicsComponent = new PlayerPhysics(this);
-	renderComponent = new PlayerRender(this);
+	bounds = new Bounds();
+	bounds->center = glm::vec3(0.0f);
+	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
+
+	imguiComponent = new PlayerImGui(this, bounds);
+	physicsComponent = new PlayerPhysics(this, bounds);
+	renderComponent = new PlayerRender(this, bounds);
 }
 
-PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
+PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
 {
 	controller =
 		PhysicsUtils::createCapsuleController(
@@ -34,7 +38,7 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			5.0f);
 }
 
-PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo)
+PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassSkinnedProgramId = *(GLuint*)Resources::getResource("shader;shadowPassSkinned");
@@ -110,6 +114,11 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 
 	pos = controller->getPosition();
 	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+}
+
+void PlayerRender::preRenderUpdate()
+{
+
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
@@ -242,6 +251,7 @@ void PlayerImGui::renderImGui()
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
 	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller);
+	ImGuiComponent::renderImGui();
 }
 
 void PlayerImGui::cloneMe()
