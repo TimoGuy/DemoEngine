@@ -607,7 +607,7 @@ void RenderManager::render()
 										glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 cameraProjection = MainLoop::getInstance().camera.calculateProjectionMatrix();
 		glm::mat4 cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
-		updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
+updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------------
@@ -629,7 +629,7 @@ void RenderManager::render()
 	renderScene();
 
 	// ImGui buffer swap
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());	
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 
@@ -699,6 +699,24 @@ void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 	{
 		MainLoop::getInstance().renderObjects[i]->renderShadow(shaderProgramId);
 	}
+}
+
+void RenderManager::requestSelectObject(ImGuiComponent* imguiObject)
+{
+	if (ImGui::GetIO().WantCaptureMouse ||
+		ImGuizmo::IsOver() ||
+		ImGuizmo::IsUsing())
+		return;
+
+	// Check if same reference via mem addr
+	for (size_t i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+	{
+		if (MainLoop::getInstance().imguiObjects[i] == imguiObject)
+		{
+			currentSelectedObjectIndex = i;
+		}
+	}
+	// TODO: maybe make a check to see which collision point was closest with the raycast test (can't use the object's depth val btw, gotta grab the collision z from the raycast)
 }
 
 
@@ -850,6 +868,16 @@ void RenderManager::renderImGuiContents()
 		ImGui::ShowDemoWindow(&show);
 
 	//
+	// Everything else
+	//
+	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+	{
+		MainLoop::getInstance().imguiObjects[i]->renderImGui();
+	}
+
+	// TODO: implement the compare Z-index and see which is closest and select that one here
+
+	//
 	// Object Selection Window
 	//
 	static int imGuizmoTransformOperation = 0;
@@ -963,14 +991,6 @@ void RenderManager::renderImGuiContents()
 				ImGui::Text("No object is currently selected");
 		}
 		ImGui::End();
-	}
-
-	//
-	// Everything else
-	//
-	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
-	{
-		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 
 	//

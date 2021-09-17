@@ -5,6 +5,7 @@
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
+#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
 
 //
@@ -50,6 +51,7 @@ ImGuiComponent::~ImGuiComponent()
 	);
 }
 
+bool clickPressedPrevious = false;
 void ImGuiComponent::renderImGui()
 {
 	if (bounds != nullptr)
@@ -80,6 +82,19 @@ void ImGuiComponent::renderImGui()
 				ImColor(0.6392156863f, 0.4078431373f, 0.0470588235f) :
 				ImColor(0.9607843137f, 0.8666666667, 0.1529411765)
 		);			// @Cleanup: this seems inefficient... but I'm just a glm beginnner atm
+
+		//
+		// Check if wanting to click
+		//
+		if (!col) return;
+
+		const bool clickPressedCurrent =
+			(glfwGetMouseButton(MainLoop::getInstance().window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+		if (!clickPressedPrevious && clickPressedCurrent)
+		{
+			MainLoop::getInstance().renderManager->requestSelectObject(this);
+		}
+		clickPressedPrevious = clickPressedCurrent;
 	}
 }
 

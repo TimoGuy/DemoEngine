@@ -20,7 +20,11 @@ DirectionalLight::DirectionalLight(bool castsShadows)
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new DirectionalLightImGui(this);
+	bounds = new Bounds();
+	bounds->center = glm::vec3(0.0f);
+	bounds->extents = glm::vec3(0.5f);
+
+	imguiComponent = new DirectionalLightImGui(this, bounds);
 	lightComponent = new DirectionalLightLight(this, castsShadows);
 
 	setLookDirection(PhysicsUtils::getRotation(transform));
@@ -32,7 +36,7 @@ DirectionalLight::~DirectionalLight()
 	delete imguiComponent;
 }
 
-DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
+DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
 {
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
@@ -363,6 +367,8 @@ void DirectionalLightImGui::renderImGui()
 	}
 
 	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
+
+	ImGuiComponent::renderImGui();
 }
 
 void DirectionalLightImGui::cloneMe()

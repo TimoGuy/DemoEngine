@@ -281,7 +281,7 @@ void* loadResource(const std::string& resourceName)
 	if (resourceName == "texture;pbrMetalness")					return loadTexture2D(resourceName, "res/rusted_iron/rustediron2_metallic.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrRoughness")					return loadTexture2D(resourceName, "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;lightIcon")					return loadTexture2D(resourceName, "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;hdrEnvironmentMap")			return loadHDRTexture2D(resourceName, "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	if (resourceName == "texture;hdrEnvironmentMap")			return loadHDRTexture2D(resourceName, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, "res/slime_glb.glb", { 0, 1, 2, 3, 4, 5 });
 	if (resourceName == "model;yosemiteTerrain")				return loadModel(resourceName, "res/cube.glb");

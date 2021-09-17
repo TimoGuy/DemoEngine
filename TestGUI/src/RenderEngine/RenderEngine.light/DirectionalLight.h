@@ -10,7 +10,7 @@
 class DirectionalLightImGui : public ImGuiComponent
 {
 public:
-	DirectionalLightImGui(BaseObject* bo);
+	DirectionalLightImGui(BaseObject* bo, Bounds* bounds);
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -53,4 +53,6 @@ public:
 
 	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;
+
+	Bounds* bounds;
 };
