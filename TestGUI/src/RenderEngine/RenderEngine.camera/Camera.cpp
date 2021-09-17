@@ -1,14 +1,68 @@
 #include "Camera.h"
 
 #include "../../ImGui/imgui.h"
+#include "../../Objects/BaseObject.h"
+#include "../../Utils/PhysicsUtils.h"
 
 #include <iostream>
 
 
+bool ViewPlane::checkIfInViewPlane(const Bounds& cookedBounds)
+{
+	// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+	const float r =
+		cookedBounds.extents.x * std::abs(normal.x) +
+		cookedBounds.extents.y * std::abs(normal.y) +
+		cookedBounds.extents.z * std::abs(normal.z);
+
+	//std::cout << "\t\t\t" << -r << "\t<=\t" << getSignedDistance(cookedBounds.center) << std::endl;
+
+	return -r <= getSignedDistance(cookedBounds.center);
+}
+
+float ViewPlane::getSignedDistance(const glm::vec3& testPoint)
+{
+	// @Checked: this appears to be the dumb part
+
+	//std::cout << "\t\t\t" << glm::dot(normal, testPoint - position) << std::endl;
+	return glm::dot(normal, testPoint - position);
+}
+
+ViewFrustum ViewFrustum::createFrustumFromCamera(const Camera& camera)
+{
+	ViewFrustum frustum;
+	const float halfVSide = camera.zFar * tanf(glm::radians(camera.fov) * .5f);
+	const float halfHSide = halfVSide * camera.width / camera.height;
+	const glm::vec3 frontMultFar = camera.zFar * camera.orientation;
+	const glm::vec3 camRight = glm::normalize(glm::cross(camera.orientation, camera.up));
+	const glm::vec3 camUp = glm::normalize(glm::cross(camRight, camera.orientation));
+
+	// @Checked: this is correct
+	frustum.nearFace = { camera.orientation, camera.position + camera.zNear * camera.orientation };
+	frustum.farFace = { -camera.orientation, camera.position + frontMultFar };
+	frustum.rightFace = { glm::normalize(glm::cross(camUp, frontMultFar + camRight * halfHSide)), camera.position };
+	frustum.leftFace = { glm::normalize(glm::cross(frontMultFar - camRight * halfHSide, camUp)), camera.position };
+	frustum.topFace = { glm::normalize(glm::cross(frontMultFar + camUp * halfVSide, camRight)), camera.position };
+	frustum.bottomFace = { glm::normalize(glm::cross(camRight, frontMultFar - camUp * halfVSide)), camera.position };
+
+	return frustum;
+}
+
+bool ViewFrustum::checkIfInViewFrustum(const Bounds& bounds, const glm::mat4& modelMatrix)
+{
+	Bounds cookedBounds = PhysicsUtils::fitAABB(bounds, modelMatrix);
+	return topFace.checkIfInViewPlane(cookedBounds) &&
+		bottomFace.checkIfInViewPlane(cookedBounds) &&
+		rightFace.checkIfInViewPlane(cookedBounds) &&
+		leftFace.checkIfInViewPlane(cookedBounds) &&
+		farFace.checkIfInViewPlane(cookedBounds) &&
+		nearFace.checkIfInViewPlane(cookedBounds);
+}
+
 Camera::Camera() : savedMouseX(-1.0), savedMouseY(-1.0)
 {
-	position = glm::vec3(0.0f, 0.0f, 2.0f);
-	orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+	position = glm::vec3(0.0f, 0.0f, 0.0f);
+	orientation = glm::vec3(0.0f, 0.0f, 1.0f);
 	up = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 

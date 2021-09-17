@@ -8,11 +8,39 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
+
+struct Bounds;
+class Camera;
+
+struct ViewPlane
+{
+	glm::vec3 normal;
+	glm::vec3 position;
+
+	bool checkIfInViewPlane(const Bounds& cookedBounds);
+	float getSignedDistance(const glm::vec3& point);
+};
+
+struct ViewFrustum
+{
+	ViewPlane topFace;
+	ViewPlane bottomFace;
+
+	ViewPlane rightFace;
+	ViewPlane leftFace;
+
+	ViewPlane farFace;
+	ViewPlane nearFace;
+
+	static ViewFrustum createFrustumFromCamera(const Camera& camera);
+	bool checkIfInViewFrustum(const Bounds& bounds, const glm::mat4& modelMatrix);
+};
+
 class Camera
 {
 public:
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 2.0f);
-	glm::vec3 orientation = glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 orientation = glm::vec3(0.0f, 0.0f, 1.0f);
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 	float fov = 45.0f;
 
@@ -37,4 +65,3 @@ private:
 	bool firstClicked = true;
 	double savedMouseX, savedMouseY;
 };
-

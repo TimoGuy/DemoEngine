@@ -607,7 +607,7 @@ void RenderManager::render()
 										glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 cameraProjection = MainLoop::getInstance().camera.calculateProjectionMatrix();
 		glm::mat4 cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
-updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
+		updateMatrices(lightProjection, lightView, cameraProjection, cameraView);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------------
@@ -670,16 +670,31 @@ void RenderManager::renderScene()
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
 
+	//
+	// Draw objects but cull them
+	// (NOTE: the culling step doesn't happen in the shadowmaps)
+	//
+	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);
+	int succ = 0;
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
+		if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
+			!cookedViewFrustum.checkIfInViewFrustum(
+				*MainLoop::getInstance().renderObjects[i]->bounds,
+				MainLoop::getInstance().renderObjects[i]->baseObject->transform))
+			continue;
+		succ++;
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
 	}
 
+	//std::cout << "Successfully culled: \t" << succ << std::endl;
+
+	//
+	// Draw the shadowmaps
+	// (NOTE: this is for debugging purposes)
+	//
 	if (showShadowMapView)
 	{
-		//
-		// Draw the shadowmaps
-		//
 		glUseProgram(debug_csm_program_id);
 		glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugNum);
 		glActiveTexture(GL_TEXTURE0);
