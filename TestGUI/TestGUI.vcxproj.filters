@@ -146,6 +146,8 @@
     <None Include="csm_shadow.vert" />
     <None Include="debug_csm.vert" />
     <None Include="debug_csm.frag" />
+    <None Include="postprocessing.frag" />
+    <None Include="postprocessing.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

@@ -204,6 +204,9 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
 	MainLoop::getInstance().camera.width = width;
 	MainLoop::getInstance().camera.height = height;
+
+	if (MainLoop::getInstance().renderManager != nullptr)
+		MainLoop::getInstance().renderManager->recreateHDRBuffer();
 }
 
 

@@ -136,6 +136,8 @@
     <None Include="model.vert" />
     <None Include="pbr.frag" />
     <None Include="pbr.vert" />
+    <None Include="postprocessing.frag" />
+    <None Include="postprocessing.vert" />
     <None Include="prefilter.frag" />
     <None Include="shadow.vert" />
     <None Include="shadow_skinned.vert" />

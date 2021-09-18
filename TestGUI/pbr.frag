@@ -335,11 +335,6 @@ void main()
     vec3 ambient = (kD * diffuse + specular) * ao;
     vec3 color = ambient + Lo;
 
-    // HDR tonemapping          TODO: Implement hdr and then have there be tonemapping at the end and bloom!
-    color = color / (color + vec3(1.0));
-    // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
-
     FragColor = vec4(color, 1.0);
 
     //FragColor += layerCalc(fragPosition);                         // NOTE: for debugging purposes, this shows the individual cascades

@@ -42,20 +42,24 @@ public:
 	int debugNum = 0;
 	void requestSelectObject(ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation);
 
+	void recreateHDRBuffer();
+
 private:
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
-	//GLuint vbo, vao, ebo;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, postprocessing_program_id;
+
+	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer;
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
-	GLuint hdrTexture;				// NOTE: kept here for debug purposes in the "scene properties window"
+	GLuint hdriSkyboxTexture;				// NOTE: kept here for debug purposes in the "scene properties window"
 	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
 
 	glm::mat4 cameraProjection, cameraView;
 
-	void createProgram();
-    void createRect();
+	void createShaderPrograms();
+    void createHDRSkybox();
 	void createHDRBuffer();
+	void destroyHDRBuffer();
 
 	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
@@ -63,6 +67,7 @@ private:
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
+	// ImGui Debug stuff
 	void renderImGuiPass();
 	void renderImGuiContents();
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
