@@ -10,6 +10,7 @@
 bool ViewPlane::checkIfInViewPlane(const Bounds& cookedBounds)
 {
 	// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+	// (This ACTUALLY works if you think about it... it's pretty cool yo)
 	const float r =
 		cookedBounds.extents.x * std::abs(normal.x) +
 		cookedBounds.extents.y * std::abs(normal.y) +
@@ -22,22 +23,20 @@ bool ViewPlane::checkIfInViewPlane(const Bounds& cookedBounds)
 
 float ViewPlane::getSignedDistance(const glm::vec3& testPoint)
 {
-	// @Checked: this appears to be the dumb part
-
 	//std::cout << "\t\t\t" << glm::dot(normal, testPoint - position) << std::endl;
 	return glm::dot(normal, testPoint - position);
 }
 
 ViewFrustum ViewFrustum::createFrustumFromCamera(const Camera& camera)
 {
-	ViewFrustum frustum;
+	ViewFrustum frustum = ViewFrustum();
 	const float halfVSide = camera.zFar * tanf(glm::radians(camera.fov) * .5f);
 	const float halfHSide = halfVSide * camera.width / camera.height;
 	const glm::vec3 frontMultFar = camera.zFar * camera.orientation;
 	const glm::vec3 camRight = glm::normalize(glm::cross(camera.orientation, camera.up));
 	const glm::vec3 camUp = glm::normalize(glm::cross(camRight, camera.orientation));
 
-	// @Checked: this is correct
+	// Create the frustum
 	frustum.nearFace = { camera.orientation, camera.position + camera.zNear * camera.orientation };
 	frustum.farFace = { -camera.orientation, camera.position + frontMultFar };
 	frustum.rightFace = { glm::normalize(glm::cross(camUp, frontMultFar + camRight * halfHSide)), camera.position };
