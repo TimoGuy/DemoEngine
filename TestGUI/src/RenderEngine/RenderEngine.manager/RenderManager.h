@@ -40,44 +40,26 @@ public:
 
 private:
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;
-	GLuint vbo, vao, ebo;
+	//GLuint vbo, vao, ebo;
 
+	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
+
+	GLuint hdrTexture;				// NOTE: kept here for debug purposes in the "scene properties window"
 	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
-	
-	int selectedBone = 0;
-	float modelScale = 1.0f;
-	float deltaTimeMultiplier = 42.0f;
 
-	//Model pbrModel;
-	glm::vec3 pbrModelPosition, pbrModelScale;
-
-	GLuint hdrTexture;
-
-	glm::vec3 lightPosition;
-	glm::vec3 modelPosition;
-	glm::vec3 planePosition;
-	glm::vec3 modelEulerAngles;
-	glm::vec3 textPosition;
-
-	glm::mat4	lightProjection, lightView,
-				cameraProjection, cameraView;
-
-	float lightOrthoExtent = 10.0f;
-	glm::vec2 lightOrthoZNearFar = glm::vec2(1.0f, 20.0f);		// This is about the limit for a first cascade before things start to disappear
+	glm::mat4 cameraProjection, cameraView;
 
 	void createProgram();
     void createRect();
-	void createShadowMap();
+	void createHDRBuffer();
 
 	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
 	void createFonts();
 
-	void updateMatrices(glm::mat4 lightProjection, glm::mat4 lightView, glm::mat4 cameraProjection, glm::mat4 cameraView);
+	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
 	void renderImGuiPass();
 	void renderImGuiContents();
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
-
-	void finalize();
 };
