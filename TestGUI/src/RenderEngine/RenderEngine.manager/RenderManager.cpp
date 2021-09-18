@@ -16,6 +16,7 @@
 #include "../../ImGui/ImGuizmo.h"
 
 #include "../RenderEngine.resources/Resources.h"
+#include "../../Utils/PhysicsUtils.h"
 
 #include <assimp/matrix4x4.h>
 
@@ -408,20 +409,19 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 
 void RenderManager::renderScene()
 {
-	//if (!shadowVersion)
-	{
-		// Draw skybox
-		glDepthMask(GL_FALSE);
+	//
+	// Draw skybox
+	//
+	glDepthMask(GL_FALSE);
 
-		glUseProgram(skybox_program_id);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-		glUniform1i(glGetUniformLocation(this->skybox_program_id, "skyboxTex"), 0);
-		glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
-		renderCube();
+	glUseProgram(skybox_program_id);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glUniform1i(glGetUniformLocation(this->skybox_program_id, "skyboxTex"), 0);
+	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
+	renderCube();
 
-		glDepthMask(GL_TRUE);
-	}
+	glDepthMask(GL_TRUE);
 
 	////
 	//// @Remember: this is how to: Draw Text
@@ -450,8 +450,8 @@ void RenderManager::renderScene()
 		succ++;
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
 	}
+	//std::cout << "Successfully culled: \t" << succ << std::endl;				@Debug
 
-	//std::cout << "Successfully culled: \t" << succ << std::endl;
 
 	//
 	// Draw the shadowmaps
@@ -480,7 +480,9 @@ void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 	}
 }
 
-void RenderManager::requestSelectObject(ImGuiComponent* imguiObject)
+std::vector<size_t> requestedListObjectIndices;
+std::vector<PhysicsUtils::RaySegmentHit> requestedListHitInformations;
+void RenderManager::requestSelectObject(ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation)
 {
 	if (ImGui::GetIO().WantCaptureMouse ||
 		ImGuizmo::IsOver() ||
@@ -492,10 +494,11 @@ void RenderManager::requestSelectObject(ImGuiComponent* imguiObject)
 	{
 		if (MainLoop::getInstance().imguiObjects[i] == imguiObject)
 		{
-			currentSelectedObjectIndex = i;
+			requestedListObjectIndices.push_back(i);
+			requestedListHitInformations.push_back(hitInformation);
+			return;
 		}
 	}
-	// TODO: maybe make a check to see which collision point was closest with the raycast test (can't use the object's depth val btw, gotta grab the collision z from the raycast)
 }
 
 
@@ -655,6 +658,27 @@ void RenderManager::renderImGuiContents()
 	}
 
 	// TODO: implement the compare Z-index and see which is closest and select that one here
+	float_t closest = MainLoop::getInstance().camera.zFar;		// Set to max value of a raysegcast possible lol
+	size_t closestIndex = -1;
+	for (size_t i = 0; i < requestedListHitInformations.size(); i++)
+	{
+		if (!requestedListHitInformations[i].hit)
+			continue;
+
+		//std::cout << "HitDistance: " << requestedListHitInformations[i].distance << std::endl;
+
+		if (closest > requestedListHitInformations[i].distance)
+		{
+			closest = requestedListHitInformations[i].distance;
+			closestIndex = i;
+		}
+	}
+	if (closestIndex != -1)
+	{
+		currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
+		requestedListHitInformations.clear();
+		requestedListObjectIndices.clear();
+	}
 
 	//
 	// Object Selection Window

@@ -43,6 +43,9 @@ public:
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
+
+private:
+	bool clickPressedPrevious;
 };
 
 

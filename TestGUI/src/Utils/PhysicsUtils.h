@@ -62,6 +62,13 @@ namespace PhysicsUtils
 
 #pragma endregion
 
+	struct RaySegmentHit
+	{
+		bool hit;
+		glm::vec3 hitPositionWorldSpace;
+		float distance;
+	};
+
 	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix);
-	bool raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds);
+	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds);
 }

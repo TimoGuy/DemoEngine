@@ -15,6 +15,10 @@
 
 #include "../RenderEngine.camera/Camera.h"
 
+namespace PhysicsUtils
+{
+	struct RaySegmentHit;
+}
 
 struct TextCharacter
 {
@@ -36,7 +40,7 @@ public:
 	void renderSceneShadowPass(GLuint shaderProgramId);
 
 	int debugNum = 0;
-	void requestSelectObject(ImGuiComponent* imguiObject);
+	void requestSelectObject(ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation);
 
 private:
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id;

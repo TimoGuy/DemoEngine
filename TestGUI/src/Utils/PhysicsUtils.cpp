@@ -315,7 +315,7 @@ namespace PhysicsUtils
 		return newConstructedAABB;
 	}
 
-	bool raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds)
+	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds)
 	{
 		const glm::vec3 delta = end - start;
 		constexpr float paddingX = 0.0f;
@@ -345,7 +345,7 @@ namespace PhysicsUtils
 			nearTimeZ > farTimeX ||
 			nearTimeZ > farTimeY)
 		{
-			return false;
+			return { false };
 		}
 
 		//
@@ -365,13 +365,15 @@ namespace PhysicsUtils
 
 		if (nearTime >= 1 || farTime <= 0)
 		{
-			return false;
+			return { false };
 		}
 
 		//
 		// A collision of sorts is happening, we know now...
 		// See more at https://noonat.github.io/intersect/#aabb-vs-segment
 		//
-		return true;
+		nearTime = glm::clamp(nearTime, 0.0f, 1.0f);
+		glm::vec3 hitPosition = nearTime * delta + start;
+		return { true, hitPosition, nearTime };
 	}
 }

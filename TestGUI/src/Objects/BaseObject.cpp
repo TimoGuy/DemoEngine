@@ -51,7 +51,6 @@ ImGuiComponent::~ImGuiComponent()
 	);
 }
 
-bool clickPressedPrevious = false;
 void ImGuiComponent::renderImGui()
 {
 	if (bounds != nullptr)
@@ -68,7 +67,7 @@ void ImGuiComponent::renderImGui()
 		glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
 		glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
 
-		bool col = PhysicsUtils::raySegmentCollideWithAABB(
+		PhysicsUtils::RaySegmentHit col = PhysicsUtils::raySegmentCollideWithAABB(
 			MainLoop::getInstance().camera.position,
 			worldSpacePosition,
 			cookedBounds
@@ -78,7 +77,7 @@ void ImGuiComponent::renderImGui()
 		PhysicsUtils::imguiRenderBoxCollider(
 			glm::translate(glm::mat4(1.0f), cookedBounds.center),
 			boxGeometry,
-			col ?
+			col.hit ?
 				ImColor(0.6392156863f, 0.4078431373f, 0.0470588235f) :
 				ImColor(0.9607843137f, 0.8666666667, 0.1529411765)
 		);			// @Cleanup: this seems inefficient... but I'm just a glm beginnner atm
@@ -86,13 +85,14 @@ void ImGuiComponent::renderImGui()
 		//
 		// Check if wanting to click
 		//
-		if (!col) return;
+		if (!col.hit) return;
 
 		const bool clickPressedCurrent =
 			(glfwGetMouseButton(MainLoop::getInstance().window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 		if (!clickPressedPrevious && clickPressedCurrent)
 		{
-			MainLoop::getInstance().renderManager->requestSelectObject(this);
+			MainLoop::getInstance().renderManager->requestSelectObject(this, col);
+			//std::cout << "I did it..." << name << std::endl;
 		}
 		clickPressedPrevious = clickPressedCurrent;
 	}
