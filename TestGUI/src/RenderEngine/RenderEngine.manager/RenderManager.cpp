@@ -451,6 +451,7 @@ void RenderManager::render()
 			glUseProgram(bloom_postprocessing_program_id);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
+			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "hdrColorBuffer"), 0);
 			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "stage"), stageNumber);
 			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "firstcopy"), firstcopy);
 			glUniform1f(glGetUniformLocation(bloom_postprocessing_program_id, "downscaledFactor"), downscaledFactor);
@@ -484,7 +485,6 @@ void RenderManager::render()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[smallerColorBufferIndex]);
 		glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "smallerReconstructHDRColorBuffer"), 1);
-		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "stage"), 4);
 		glUniform1f(glGetUniformLocation(bloom_postprocessing_program_id, "downscaledFactor"), downscaledFactor);
 		renderQuad();
@@ -501,11 +501,11 @@ void RenderManager::render()
 	glUseProgram(postprocessing_program_id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
-	glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "hdrColorBuffer"), 0);
+	glUniform1i(glGetUniformLocation(postprocessing_program_id, "hdrColorBuffer"), 0);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom			TODO: for some reason it's not taking this as the right color buffer.... hmmmm
-	glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "bloomColorBuffer"), 1);
-	glActiveTexture(GL_TEXTURE0);
+	glUniform1i(glGetUniformLocation(postprocessing_program_id, "bloomColorBuffer"), 1);
+	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
 
 	// ImGui buffer swap
@@ -903,6 +903,8 @@ void RenderManager::renderImGuiContents()
 				ImGui::InputInt("Color Buffer Index", &colBufNum);
 				ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
 			}
+
+			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
 
 			//
 			// Render out the properties panels of selected object

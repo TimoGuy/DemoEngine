@@ -51,6 +51,7 @@ private:
 
 	static const uint32_t bloomBufferCount = 7 * 2;			// 7 passes with 2 pingpong buffers each
 	GLuint bloomFBOs[bloomBufferCount], bloomColorBuffers[bloomBufferCount];
+	float bloomIntensity = 0.005f;
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
