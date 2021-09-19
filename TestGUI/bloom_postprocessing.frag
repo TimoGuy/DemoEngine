@@ -4,6 +4,7 @@ out vec4 fragColor;
 in vec2 texCoord;
 
 uniform sampler2D hdrColorBuffer;
+uniform sampler2D smallerReconstructHDRColorBuffer;			// Reserved for only reconstruction
 
 uniform int stage;					// Stage1: copy over image. Stage2: horizontal blur. Stage3: vertical blur.
 uniform bool firstcopy;				// Only happens during an image copy.
@@ -27,6 +28,7 @@ void main()
 		if (firstcopy)
 		{
 			colorCopy -= vec3(1.0);
+			colorCopy = max(vec3(0.0), colorCopy);
 		}
 		
 		fragColor = vec4(colorCopy, 1.0);
@@ -64,5 +66,15 @@ void main()
         }
 
 		fragColor = vec4(result, 1.0);
+	}
+
+	//
+	// Stage 4
+	//
+	else if (stage == 4)
+	{
+		vec3 colorBigger = texture(hdrColorBuffer, moddedTexCoord).rgb;
+		vec3 colorSmaller = texture(smallerReconstructHDRColorBuffer, moddedTexCoord).rgb;
+		fragColor = vec4(colorBigger + colorSmaller, 1.0);
 	}
 }
