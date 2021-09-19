@@ -265,6 +265,32 @@ void RenderManager::createHDRBuffer()
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete!" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//
+	// Create bloom pingpong buffers
+	//
+	glm::vec2 bufferDimensions(MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glGenFramebuffers(bloomBufferCount, bloomFBOs);
+	glGenTextures(bloomBufferCount, bloomColorBuffers);
+	for (size_t i = 0; i < bloomBufferCount / 2; i++)
+	{
+		bufferDimensions /= 2.0f;
+		for (size_t j = 0; j < 2; j++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[i * 2 + j]);
+			glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[i * 2 + j]);
+			glTexImage2D(
+				GL_TEXTURE_2D, 0, GL_RGBA16F, (GLsizei)bufferDimensions.x, (GLsizei)bufferDimensions.y, 0, GL_RGBA, GL_FLOAT, NULL
+			);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glFramebufferTexture2D(
+				GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomColorBuffers[i * 2 + j], 0
+			);
+		}
+	}
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -287,6 +313,7 @@ void RenderManager::createShaderPrograms()
 	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
 	prefilter_program_id = *(GLuint*)Resources::getResource("shader;pbrPrefilterGeneration");
 	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
+	bloom_postprocessing_program_id = *(GLuint*)Resources::getResource("shader;bloom_postprocessing");
 	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
 }
 
@@ -342,7 +369,8 @@ void RenderManager::createFonts()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		// Store character
-		TextCharacter newChar = {
+		TextCharacter newChar =
+		{
 			texture,
 			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
@@ -406,6 +434,36 @@ void RenderManager::render()
 	renderScene();
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	//
+	// Do bloom: breakdown-preprocessing
+	//
+	bool firstcopy = true;
+	float downscaledFactor = 2.0f;
+	for (size_t i = 0; i < bloomBufferCount / 2; i++)
+	{
+		for (size_t j = 0; j < 3; j++)																		// There are three stages in each pass: 1: copy, 2: horiz gauss, 3: vert gauss
+		{
+			size_t bloomFBOIndex = i * 2 + j % 2;					// Needs to have a sequence of i(0):  0,1,0; i(1): 2,3,2; i(2): 4,5,4; i(3): 6,7,6; i(4): 8,9,8
+			size_t colorBufferIndex = i * 2 - 1 + j;				// Needs to have a sequence of i(0): -1,0,1; i(1): 1,2,3; i(2): 3,4,5; i(3): 5,6,7; i(4): 7,8,9
+			GLint stageNumber = j + 1;								// Needs to have a sequence of i(n):  1,2,3
+
+			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
+			glUseProgram(bloom_postprocessing_program_id);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
+			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "stage"), stageNumber);
+			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "firstcopy"), firstcopy);
+			glUniform1f(glGetUniformLocation(bloom_postprocessing_program_id, "downscaledFactor"), downscaledFactor);
+			renderQuad();
+
+			firstcopy = false;
+		}
+
+		downscaledFactor *= 2.0f;
+	}
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//
 	// Do tonemapping and post-processing
 	// with the fbo and render to a quad
@@ -677,7 +735,9 @@ void RenderManager::renderImGuiContents()
 		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 
-	// TODO: implement the compare Z-index and see which is closest and select that one here
+	//
+	// Compare Z-index and see which is closest and select that one here
+	//
 	float_t closest = MainLoop::getInstance().camera.zFar;		// Set to max value of a raysegcast possible lol
 	size_t closestIndex = -1;
 	for (size_t i = 0; i < requestedListHitInformations.size(); i++)
@@ -799,6 +859,11 @@ void RenderManager::renderImGuiContents()
 			}
 
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
+
+			static int colBufNum = 0;
+			ImGui::Separator();
+			ImGui::InputInt("Color Buffer Index", &colBufNum);
+			ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
 
 			//
 			// Render out the properties panels of selected object

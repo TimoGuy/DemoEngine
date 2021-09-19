@@ -148,6 +148,8 @@
     <None Include="debug_csm.frag" />
     <None Include="postprocessing.frag" />
     <None Include="postprocessing.vert" />
+    <None Include="bloom_postprocessing.vert" />
+    <None Include="bloom_postprocessing.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

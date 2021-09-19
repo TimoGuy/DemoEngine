@@ -45,9 +45,12 @@ public:
 	void recreateHDRBuffer();
 
 private:
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, postprocessing_program_id;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer;
+
+	static const uint32_t bloomBufferCount = 7 * 2;			// 7 passes with 2 pingpong buffers each
+	GLuint bloomFBOs[bloomBufferCount], bloomColorBuffers[bloomBufferCount];
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 

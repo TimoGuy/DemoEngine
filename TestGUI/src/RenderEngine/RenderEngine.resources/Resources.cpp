@@ -275,6 +275,7 @@ void* loadResource(const std::string& resourceName)
 	if (resourceName == "shader;irradianceGeneration")			return loadShaderProgramVF(resourceName, "cubemap.vert", "irradiance_convolution.frag");
 	if (resourceName == "shader;pbrPrefilterGeneration")		return loadShaderProgramVF(resourceName, "cubemap.vert", "prefilter.frag");
 	if (resourceName == "shader;brdfGeneration")				return loadShaderProgramVF(resourceName, "brdf.vert", "brdf.frag");
+	if (resourceName == "shader;bloom_postprocessing")			return loadShaderProgramVF(resourceName, "bloom_postprocessing.vert", "bloom_postprocessing.frag");
 	if (resourceName == "shader;postprocessing")				return loadShaderProgramVF(resourceName, "postprocessing.vert", "postprocessing.frag");
 
 	if (resourceName == "texture;pbrAlbedo")					return loadTexture2D(resourceName, "res/rusted_iron/rustediron2_basecolor.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
