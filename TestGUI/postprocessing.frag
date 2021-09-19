@@ -14,8 +14,20 @@ void main()
     //// gamma correct
     //hdrColor = pow(hdrColor, vec3(1.0/2.2));
 
+	float brightness = dot(hdrColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+
 	// UE4 Tonemapper
 	hdrColor = hdrColor / (hdrColor + 0.155) * 1.019;
 
 	fragColor = vec4(hdrColor, 1.0);
+
+	float brightness2 = dot(fragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+	/*if (brightness2 > 1.0)
+	{
+		fragColor = vec4(0, 1, 0, 1);
+	}
+	else if (brightness > 1.0)
+	{
+		fragColor = vec4(1, 0, 0, 1);
+	}*/
 }
