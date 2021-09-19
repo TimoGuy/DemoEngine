@@ -463,19 +463,18 @@ void RenderManager::render()
 	}
 
 	//
-	// Do bloom: additive color buffer reconstruction
+	// Do bloom: additive color buffer reconstruction		NOTE: the final reconstructed bloom buffer is on [1]
 	//
 	assert(bloomBufferCount >= 4);											// NOTE: for this algorithm to work, there must be at least 2 passes(aka 4 fbo's) so that there will be a copy into the needed texture for use in the tonemapping pass after this.
 	bool firstReconstruction = true;
-	downscaledFactor /= 2.0f;
 	downscaledFactor /= 2.0f;
 	for (int i = (int)(bloomBufferCount / 2 - 2) * 2; i >= 0; i -= 2)		// NOTE: must use signed int so that it goes negative
 	{
 		downscaledFactor /= 2.0f;
 
-		size_t bloomFBOIndex = i == 0 ? bloomBufferCount - 1 : i - 1;		// For final case, use the last framebuffer as the place to put the finished product of blooom!
+		size_t bloomFBOIndex = i + 1;
 		size_t colorBufferIndex = i;
-		size_t smallerColorBufferIndex = i + 1 + (firstReconstruction ? 1 : 0);
+		size_t smallerColorBufferIndex = i + 3 - (firstReconstruction ? 1 : 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
 		glUseProgram(bloom_postprocessing_program_id);
@@ -502,6 +501,11 @@ void RenderManager::render()
 	glUseProgram(postprocessing_program_id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+	glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "hdrColorBuffer"), 0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom			TODO: for some reason it's not taking this as the right color buffer.... hmmmm
+	glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "bloomColorBuffer"), 1);
+	glActiveTexture(GL_TEXTURE0);
 	renderQuad();
 
 	// ImGui buffer swap

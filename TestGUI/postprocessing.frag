@@ -4,10 +4,11 @@ out vec4 fragColor;
 in vec2 texCoord;
 
 uniform sampler2D hdrColorBuffer;
+uniform sampler2D bloomColorBuffer;
 
 void main()
 {
-	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb;
+	vec3 hdrColor = /*texture(hdrColorBuffer, texCoord).rgb + */texture(bloomColorBuffer, texCoord).rgb;
 	
 	//// HDR tonemapping          TODO: Implement hdr and then have there be tonemapping at the end and bloom!
     //hdrColor = hdrColor / (hdrColor + vec3(1.0));
