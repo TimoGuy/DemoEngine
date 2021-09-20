@@ -18,6 +18,8 @@ public:
 
 private:
 	unsigned int lightGizmoTextureId;
+
+	void refreshResources();
 };
 
 class DirectionalLightLight : public LightComponent
@@ -41,6 +43,8 @@ private:
 	std::vector<glm::mat4> getLightSpaceMatrices();
 
 	GLuint lightFBO, matricesUBO, cascadedShaderProgram;
+
+	void refreshResources();
 };
 
 class DirectionalLight : public BaseObject

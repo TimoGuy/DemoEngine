@@ -28,6 +28,11 @@ YosemiteTerrain::YosemiteTerrain()
 
 YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
+	refreshResources();
+}
+
+void YosemiteTerrainRender::refreshResources()
+{
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 

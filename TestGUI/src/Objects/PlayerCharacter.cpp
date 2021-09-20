@@ -40,6 +40,11 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
+	refreshResources();
+}
+
+void PlayerRender::refreshResources()
+{
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassSkinnedProgramId = *(GLuint*)Resources::getResource("shader;shadowPassSkinned");
 
@@ -123,6 +128,10 @@ void PlayerRender::preRenderUpdate()
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
 	glUseProgram(pbrShaderProgramId);
 	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 

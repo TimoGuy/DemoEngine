@@ -16,6 +16,8 @@ public:
 
 private:
 	unsigned int lightGizmoTextureId;
+
+	void refreshResources();
 };
 
 class PointLightLight : public LightComponent

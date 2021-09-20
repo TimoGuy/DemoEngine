@@ -29,6 +29,11 @@ PointLight::~PointLight()
 
 PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Point Light")			// tODO: create bounds for here
 {
+	refreshResources();
+}
+
+void PointLightImGui::refreshResources()
+{
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
 
@@ -52,6 +57,10 @@ void PointLightImGui::propertyPanelImGui()
 
 void PointLightImGui::renderImGui()
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
 	//
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//

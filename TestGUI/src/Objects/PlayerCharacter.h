@@ -41,6 +41,9 @@ public:
 	Model model;
 	Animator animator;
 	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+
+private:
+	void refreshResources();
 };
 
 class PlayerCharacter : public BaseObject

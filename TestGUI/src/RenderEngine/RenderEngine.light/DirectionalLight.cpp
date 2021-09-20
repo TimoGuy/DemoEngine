@@ -38,6 +38,11 @@ DirectionalLight::~DirectionalLight()
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
 {
+	refreshResources();
+}
+
+void DirectionalLightImGui::refreshResources()
+{
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
 
@@ -56,7 +61,7 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 constexpr unsigned int depthMapResolution = 4096;
 void DirectionalLightLight::createCSMBuffers()
 {
-	cascadedShaderProgram = *(GLuint*)Resources::getResource("shader;csmShadowPass");
+	refreshResources();
 
 	shadowFarPlane = 200.0f;		// NOTE: hardcoded
 	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
@@ -114,6 +119,10 @@ void DirectionalLightLight::createCSMBuffers()
 
 void DirectionalLightLight::renderPassShadowMap()
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(cascadedShaderProgram);
@@ -138,6 +147,11 @@ void DirectionalLightLight::renderPassShadowMap()
 
 	//glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void DirectionalLightLight::refreshResources()
+{
+	cascadedShaderProgram = *(GLuint*)Resources::getResource("shader;csmShadowPass");
 }
 
 std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)
@@ -323,6 +337,10 @@ void DirectionalLightImGui::propertyPanelImGui()
 
 void DirectionalLightImGui::renderImGui()
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
 	//
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
