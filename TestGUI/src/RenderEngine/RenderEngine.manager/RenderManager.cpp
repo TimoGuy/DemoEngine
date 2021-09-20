@@ -1007,7 +1007,27 @@ if (ImGui::BeginPopup("add_object_popup"))
 		if (imGuizmoTransformMode == 1)
 			transMode = ImGuizmo::MODE::WORLD;
 
-		ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), transOperation, transMode, glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->transform));
+		// Implement snapping if holding down control button(s)
+		float snapAmount = 0.0f;
+		if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+			glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+		{
+			if (transOperation == ImGuizmo::OPERATION::ROTATE)
+				snapAmount = 45.0f;
+			else
+				snapAmount = 0.5f;
+		}
+		glm::vec3 snapValues(snapAmount);
+
+		ImGuizmo::Manipulate(
+			glm::value_ptr(cameraView),
+			glm::value_ptr(cameraProjection),
+			transOperation,
+			transMode,
+			glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->transform),
+			NULL,
+			&snapValues.x
+		);
 	}
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.

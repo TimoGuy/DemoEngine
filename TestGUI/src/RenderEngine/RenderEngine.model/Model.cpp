@@ -14,8 +14,7 @@ Model::Model() { scene = nullptr; }
 
 Model::Model(const char* path)
 {
-	std::vector<int> garbage2;
-	loadModel(path, garbage2);
+	loadModel(path, {});
 }
 
 

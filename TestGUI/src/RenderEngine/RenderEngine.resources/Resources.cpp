@@ -151,29 +151,37 @@ void* loadShaderProgramVF(const std::string& programName, bool isUnloading, cons
 	else
 	{
 		glDeleteProgram(*(GLuint*)findResource(programName));
-		return (void*)0;
+		return nullptr;
 	}
 }
 
 
 void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, const std::string& vertFname, const std::string& geomFname, const std::string& fragFname)
 {
-	GLuint programId = glCreateProgram();
-	GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
-	GLuint gShader = compileShader(GL_GEOMETRY_SHADER, geomFname.c_str());
-	GLuint fShader = compileShader(GL_FRAGMENT_SHADER, fragFname.c_str());
-	glAttachShader(programId, vShader);
-	glAttachShader(programId, gShader);
-	glAttachShader(programId, fShader);
-	glLinkProgram(programId);
-	glDeleteShader(vShader);
-	glDeleteShader(gShader);
-	glDeleteShader(fShader);
+	if (!isUnloading)
+	{
+		GLuint programId = glCreateProgram();
+		GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
+		GLuint gShader = compileShader(GL_GEOMETRY_SHADER, geomFname.c_str());
+		GLuint fShader = compileShader(GL_FRAGMENT_SHADER, fragFname.c_str());
+		glAttachShader(programId, vShader);
+		glAttachShader(programId, gShader);
+		glAttachShader(programId, fShader);
+		glLinkProgram(programId);
+		glDeleteShader(vShader);
+		glDeleteShader(gShader);
+		glDeleteShader(fShader);
 
-	GLuint* payload = new GLuint();
-	*payload = programId;
-	registerResource(programName, payload);
-	return payload;
+		GLuint* payload = new GLuint();
+		*payload = programId;
+		registerResource(programName, payload);
+		return payload;
+	}
+	else
+	{
+		glDeleteProgram(*(GLuint*)findResource(programName));
+		return nullptr;
+	}
 }
 
 #pragma endregion
@@ -192,34 +200,42 @@ void* loadTexture2D(
 	GLuint wrapS = GL_REPEAT,
 	GLuint wrapT = GL_REPEAT)
 {
-	stbi_set_flip_vertically_on_load(true);
-	int imgWidth, imgHeight, numColorChannels;
-	unsigned char* bytes = stbi_load(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-
-	if (bytes == NULL)
+	if (!isUnloading)
 	{
-		std::cout << stbi_failure_reason() << std::endl;
+		stbi_set_flip_vertically_on_load(true);
+		int imgWidth, imgHeight, numColorChannels;
+		unsigned char* bytes = stbi_load(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		GLuint textureId;
+		glGenTextures(1, &textureId);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, imgWidth, imgHeight, 0, toTexture, GL_UNSIGNED_BYTE, bytes);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		GLuint* payload = new GLuint();
+		*payload = textureId;
+		registerResource(textureName, payload);
+		return payload;
 	}
-
-	GLuint textureId;
-	glGenTextures(1, &textureId);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, imgWidth, imgHeight, 0, toTexture, GL_UNSIGNED_BYTE, bytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(bytes);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	GLuint* payload = new GLuint();
-	*payload = textureId;
-	registerResource(textureName, payload);
-	return payload;
+	else
+	{
+		glDeleteTextures(1, (GLuint*)findResource(textureName));
+		return nullptr;
+	}
 }
 
 
@@ -234,34 +250,42 @@ void* loadHDRTexture2D(
 	GLuint wrapS = GL_REPEAT,
 	GLuint wrapT = GL_REPEAT)
 {
-	stbi_set_flip_vertically_on_load(true);
-	int imgWidth, imgHeight, numColorChannels;
-	float* bytes = stbi_loadf(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
-
-	if (bytes == NULL)
+	if (!isUnloading)
 	{
-		std::cout << stbi_failure_reason() << std::endl;
+		stbi_set_flip_vertically_on_load(true);
+		int imgWidth, imgHeight, numColorChannels;
+		float* bytes = stbi_loadf(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+		if (bytes == NULL)
+		{
+			std::cout << stbi_failure_reason() << std::endl;
+		}
+
+		GLuint textureId;
+		glGenTextures(1, &textureId);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, imgWidth, imgHeight, 0, toTexture, GL_FLOAT, bytes);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		stbi_image_free(bytes);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		GLuint* payload = new GLuint();
+		*payload = textureId;
+		registerResource(textureName, payload);
+		return payload;
 	}
-
-	GLuint textureId;
-	glGenTextures(1, &textureId);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, imgWidth, imgHeight, 0, toTexture, GL_FLOAT, bytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(bytes);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	GLuint* payload = new GLuint();
-	*payload = textureId;
-	registerResource(textureName, payload);
-	return payload;
+	else
+	{
+		glDeleteTextures(1, (GLuint*)findResource(textureName));
+		return nullptr;
+	}
 }
 
 #pragma endregion
@@ -271,16 +295,32 @@ void* loadHDRTexture2D(
 
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path)
 {
-	Model* model = new Model(path);
-	registerResource(modelName, model);
-	return model;
+	if (!isUnloading)
+	{
+		Model* model = new Model(path);
+		registerResource(modelName, model);
+		return model;
+	}
+	else
+	{
+		delete (Model*)findResource(modelName);
+		return nullptr;
+	}
 }
 
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<int> animationIndices)
 {
-	Model* model = new Model(path, animationIndices);
-	registerResource(modelName, model);
-	return model;
+	if (!isUnloading)
+	{
+		Model* model = new Model(path, animationIndices);
+		registerResource(modelName, model);
+		return model;
+	}
+	else
+	{
+		delete (Model*)findResource(modelName);
+		return nullptr;
+	}
 }
 
 #pragma endregion
