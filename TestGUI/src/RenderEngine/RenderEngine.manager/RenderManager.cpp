@@ -405,6 +405,13 @@ void RenderManager::render()
 {
 	renderImGuiPass();
 
+#ifdef _DEBUG
+	//
+	// @Debug: reload shaders
+	//
+	createShaderPrograms();
+#endif
+
 	//
 	// Setup projection matrix for rendering
 	//
@@ -629,6 +636,7 @@ void RenderManager::renderImGuiContents()
 	static bool showAnalyticsOverlay = true;
 	static bool showScenePropterties = true;
 	static bool showObjectSelectionWindow = true;
+	static bool showLoadedResourcesWindow = true;
 
 	static bool renderWireframeMode = false;
 
@@ -668,10 +676,12 @@ void RenderManager::renderImGuiContents()
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::BeginMenu("Window"))
+			if (ImGui::BeginMenu("Windows"))
 			{
 				if (ImGui::MenuItem("Analytics Overlay", NULL, &showAnalyticsOverlay)) {}
 				if (ImGui::MenuItem("Scene Properties", NULL, &showScenePropterties)) {}
+				if (ImGui::MenuItem("Object Selection", NULL, &showObjectSelectionWindow)) {}
+				if (ImGui::MenuItem("Loaded Resources", NULL, &showLoadedResourcesWindow)) {}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Rendering"))
@@ -859,22 +869,22 @@ void RenderManager::renderImGuiContents()
 
 			//
 			// Popup for creating objects
-			//
-			if (ImGui::Button("Add Object.."))
-				ImGui::OpenPopup("add_object_popup");
-			if (ImGui::BeginPopup("add_object_popup"))
-			{
-				if (ImGui::Selectable("Player Character"))
-					new PlayerCharacter();
-				if (ImGui::Selectable("Directional Light"))
-					new DirectionalLight(true);
-				if (ImGui::Selectable("Point Light"))
-					new PointLight();
-				if (ImGui::Selectable("Yosemite Terrain"))
-					new YosemiteTerrain();
+//
+if (ImGui::Button("Add Object.."))
+ImGui::OpenPopup("add_object_popup");
+if (ImGui::BeginPopup("add_object_popup"))
+{
+	if (ImGui::Selectable("Player Character"))
+		new PlayerCharacter();
+	if (ImGui::Selectable("Directional Light"))
+		new DirectionalLight(true);
+	if (ImGui::Selectable("Point Light"))
+		new PointLight();
+	if (ImGui::Selectable("Yosemite Terrain"))
+		new YosemiteTerrain();
 
-				ImGui::EndPopup();
-			}
+	ImGui::EndPopup();
+}
 		}
 		ImGui::End();
 	}
@@ -914,8 +924,62 @@ void RenderManager::renderImGuiContents()
 				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->propertyPanelImGui();
 			else
 				ImGui::Text("No object is currently selected");
+
+
+			ImGui::End();
 		}
-		ImGui::End();
+	}
+
+	//
+	// Loaded resources window
+	//
+	static int currentSelectLoadedResource = -1;
+	if (showLoadedResourcesWindow)
+	{
+		if (ImGui::Begin("Loaded Resources", &showLoadedResourcesWindow, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			std::map<std::string, void*>::iterator it;
+			static std::string selectedKey;
+			std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
+			if (ImGui::BeginListBox("##listbox Loaded Resources", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
+			{
+				//
+				// Display all of the objects in the scene
+				//
+				int index = 0;
+				for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
+				{
+					const bool isSelected = (currentSelectLoadedResource == index);
+					if (ImGui::Selectable(
+						(it->first).c_str(),
+						isSelected
+					))
+					{
+						selectedKey = it->first;
+						currentSelectLoadedResource = index;
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndListBox();
+			}
+
+			//
+			// Reload prompt
+			//
+			if (currentSelectLoadedResource != -1)
+			{
+				ImGui::Separator();
+				if (ImGui::Button("Reload Resource"))
+				{
+					Resources::reloadResource(selectedKey);
+				}
+			}
+
+			ImGui::End();
+		}
 	}
 
 	//
