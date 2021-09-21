@@ -34,6 +34,12 @@ void render();
 bool loopRunning = false;
 
 
+MainLoop& MainLoop::getInstance()
+{
+	static MainLoop instance;
+	return instance;
+}
+
 void MainLoop::initialize()
 {
 	createWindow("Test Window");

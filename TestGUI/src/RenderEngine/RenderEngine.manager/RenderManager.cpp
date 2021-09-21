@@ -16,6 +16,7 @@
 #include "../../ImGui/ImGuizmo.h"
 
 #include "../RenderEngine.resources/Resources.h"
+#include "../../Utils/FileLoading.h"
 #include "../../Utils/PhysicsUtils.h"
 
 #include <assimp/matrix4x4.h>
@@ -652,6 +653,13 @@ void RenderManager::renderImGuiContents()
 			if (ImGui::BeginMenu("File"))
 			{
 				//ShowExampleMenuFile();
+				if (ImGui::MenuItem("Open...", "CTRL+O"))
+				{
+					FileLoading::getInstance().loadFileWithPrompt();
+				}
+
+				if (ImGui::MenuItem("Save", "CTRL+S")) {}
+				if (ImGui::MenuItem("Save As...", "CTRL+SHIFT+S")) {}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Edit"))

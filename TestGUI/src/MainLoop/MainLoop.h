@@ -12,11 +12,7 @@ class RenderManager;
 class MainLoop
 {
 public:
-	static MainLoop& getInstance()
-	{
-		static MainLoop instance;
-		return instance;
-	}
+	static MainLoop& getInstance();
 
 	void initialize();
 	void run();
