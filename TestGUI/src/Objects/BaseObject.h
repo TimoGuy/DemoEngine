@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include <string>
+#include <vector>
 
 
 class BaseObject
@@ -13,6 +14,11 @@ public:
 	{
 		// NOTE: this note is lying, so i commented it out
 		//std::cout << "WARNING: BaseObject Destructor not overridden. Undefined behavior may occur" << std::endl;
+	}
+
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
+	{
+		// TODO: respond to tokens that take care of transform related stuff (pos,rot,scale)
 	}
 
 	glm::mat4 transform;
@@ -43,6 +49,11 @@ public:
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
+
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
+	{
+		// TODO: respond to tokens that take care of name, guid, bounds(very rare I'd say for bounds)
+	}
 
 private:
 	bool clickPressedPrevious;
@@ -83,6 +94,11 @@ public:
 	~LightComponent();
 	virtual Light& getLight() = 0;
 	virtual void renderPassShadowMap();
+
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
+	{
+		// TODO: respond to tokens that take care of castsshadows
+	}
 };
 
 
