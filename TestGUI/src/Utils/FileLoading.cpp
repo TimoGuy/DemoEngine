@@ -10,6 +10,8 @@
 #include "../Objects/PlayerCharacter.h"
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
 
+#include "../Utils/Utils.h"
+
 
 FileLoading& FileLoading::getInstance()
 {
@@ -59,18 +61,6 @@ void FileLoading::loadFileWithPrompt()
 	}
 }
 
-std::string trimString(std::string stringCopy)
-{
-	stringCopy.erase(stringCopy.begin(), std::find_if(stringCopy.begin(), stringCopy.end(), [](unsigned char ch) {
-		return !std::isspace(ch);
-		}));
-	stringCopy.erase(std::find_if(stringCopy.rbegin(), stringCopy.rend(), [](unsigned char ch) {
-		return !std::isspace(ch);
-		}).base(), stringCopy.end());
-
-	return stringCopy;
-}
-
 void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 {
 	std::cout << line << std::endl;
@@ -95,7 +85,7 @@ void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 	std::istringstream iss(line);
 	std::string token;
 	while (std::getline(iss, token, '\t'))   // Tab delimited
-		tokens.push_back(token);
+		tokens.push_back(trimString(token));
 
 	//
 	// THE ACTUAL LOADING HAPPENS HERE
@@ -103,7 +93,7 @@ void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 	if (buildingObject == nullptr)
 	{
 		// Check if starting a new object
-		if (trimString(tokens[0]) == "new")
+		if (tokens[0] == "new")
 		{
 			createAndProcessFirstTokenLineOfObject(tokens);
 			return;
@@ -112,7 +102,7 @@ void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 	else
 	{
 		// Check if end building object
-		if (trimString(tokens[0]) == "end")
+		if (tokens[0] == "end")
 		{
 			buildingObject = nullptr;
 			return;

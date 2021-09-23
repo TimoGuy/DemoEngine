@@ -13,11 +13,7 @@ public:
 	BaseObject();
 	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
-	{
-		// TODO: respond to tokens that take care of transform related stuff (pos,rot,scale), and guid
-		return false;
-	}
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
 
 	glm::mat4 transform;
 	std::string guid;
@@ -48,11 +44,7 @@ public:
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
-	{
-		// TODO: respond to tokens that take care of name
-		return false;
-	}
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
 
 private:
 	bool clickPressedPrevious;
@@ -94,11 +86,7 @@ public:
 	virtual Light& getLight() = 0;
 	virtual void renderPassShadowMap();
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
-	{
-		// TODO: respond to tokens that take care of castsshadows
-		return false;
-	}
+	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
 };
 
 

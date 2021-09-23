@@ -41,6 +41,8 @@ public:
 	YosemiteTerrain();
 	~YosemiteTerrain();
 
+	bool streamTokensForLoading(const std::vector<std::string>& tokens);
+
 	ImGuiComponent* imguiComponent;
 	RenderComponent* renderComponent;
 

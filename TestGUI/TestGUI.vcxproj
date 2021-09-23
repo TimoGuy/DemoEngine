@@ -121,6 +121,7 @@
     <ClCompile Include="src\RenderEngine\RenderEngine.camera\Camera.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.manager\RenderManager.cpp" />
     <ClCompile Include="src\stb.cpp" />
+    <ClCompile Include="src\Utils\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="bloom_postprocessing.frag" />
@@ -186,6 +187,7 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.camera\Camera.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
+    <ClInclude Include="src\Utils\Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\skybox\bluecloud_bk.jpg" />

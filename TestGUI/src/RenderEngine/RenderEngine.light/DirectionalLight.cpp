@@ -30,10 +30,26 @@ DirectionalLight::DirectionalLight(bool castsShadows)
 	setLookDirection(PhysicsUtils::getRotation(transform));
 }
 
-DirectionalLight::~DirectionalLight()
+DirectionalLight::~DirectionalLight()			// TODO: when there are shadow maps, delete them too! When deleting the light, there is garbage shadow maps
 {
 	delete lightComponent;
 	delete imguiComponent;
+}
+
+bool DirectionalLight::streamTokensForLoading(const std::vector<std::string>& tokens)
+{
+	bool complete = false;
+	if (BaseObject::streamTokensForLoading(tokens))			complete = true;
+	if (imguiComponent->streamTokensForLoading(tokens))		complete = true;
+	if (lightComponent->streamTokensForLoading(tokens))		complete = true;
+
+	//
+	// I'll take the leftover tokens then
+	//
+
+	setLookDirection(PhysicsUtils::getRotation(transform));
+
+	return complete;
 }
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???

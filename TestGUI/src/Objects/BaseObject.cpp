@@ -5,6 +5,7 @@
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
+#include "../Utils/Utils.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
 
@@ -43,6 +44,36 @@ BaseObject::~BaseObject()
 	// NOTE: I guess this needs to be created for linking errors that occur when this isn't, bc of how destructors work in c++ dang nabbit
 }
 
+bool BaseObject::streamTokensForLoading(const std::vector<std::string>& tokens)
+{
+	if (tokens[0] == "new")
+	{
+		// Pick up the guid
+		guid = tokens[3];
+		return true;
+	}
+	if (tokens[0] == "position" || tokens[0] == "rotation" || tokens[0] == "scale")
+	{
+		// Pick up transformation
+		std::vector<float> vector3;
+		std::istringstream iss(tokens[1]);
+		std::string value;
+		while (std::getline(iss, value, ','))
+			vector3.push_back(std::stof(trimString(value)));
+
+		if (tokens[0] == "position")
+			transform = glm::translate(transform, glm::vec3(vector3[0], vector3[1], vector3[2]));
+		if (tokens[0] == "rotation")
+			transform = transform * glm::toMat4(glm::quat(glm::vec3(vector3[0], vector3[1], vector3[2])));			// TODO: @Broken: Appears that lightrotation isn't updated so it looks weird
+		if (tokens[0] == "scale")
+			transform = glm::scale(transform, glm::vec3(vector3[0], vector3[1], vector3[2]));
+
+		return true;
+	}
+
+	return false;
+}
+
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
 {
 	MainLoop::getInstance().imguiObjects.push_back(this);
@@ -58,6 +89,17 @@ ImGuiComponent::~ImGuiComponent()
 		),
 		MainLoop::getInstance().imguiObjects.end()
 	);
+}
+
+bool ImGuiComponent::streamTokensForLoading(const std::vector<std::string>& tokens)
+{
+	if (tokens[0] == "new")
+	{
+		// Pick up the name
+		name = tokens[2];
+		return true;
+	}
+	return false;
 }
 
 void ImGuiComponent::renderImGui()
@@ -139,6 +181,17 @@ LightComponent::~LightComponent()
 		),
 		MainLoop::getInstance().lightObjects.end()
 	);
+}
+
+bool LightComponent::streamTokensForLoading(const std::vector<std::string>& tokens)
+{
+	if (tokens[0] == "casts_shadows")
+	{
+		// Grab the casting shadows
+		castsShadows = std::stoi(tokens[1]);
+		return true;
+	}
+	return false;
 }
 
 void LightComponent::renderPassShadowMap() {}

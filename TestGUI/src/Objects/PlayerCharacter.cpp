@@ -29,17 +29,16 @@ PlayerCharacter::PlayerCharacter()
 
 bool PlayerCharacter::streamTokensForLoading(const std::vector<std::string>& tokens)		// @Override
 {
-	if (imguiComponent->streamTokensForLoading(tokens))
-		return true;
-	/*if (physicsComponent->streamTokensForLoading(tokens))
-		return true;
-	if (renderComponent->streamTokensForLoading(tokens))
-		return true;*/
+	bool complete = false;
+	if (BaseObject::streamTokensForLoading(tokens))			complete = true;
+	if (imguiComponent->streamTokensForLoading(tokens))		complete = true;
+	/*if (physicsComponent->streamTokensForLoading(tokens))	complete = true;
+	if (renderComponent->streamTokensForLoading(tokens))	complete = true;*/
 
 	//
 	// I'll take the leftover tokens then
 	//
-	return false;
+	return complete;
 }
 
 PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)

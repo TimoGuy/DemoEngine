@@ -5,18 +5,19 @@
 
 
 # Ground
-new	ground	Yosemite Terrain Yo
+new	ground	Yosemite Terrain Yo	131313fff
 position	0,-4.56,0
 scale	100,1,100
 end
 
 # Directional Light
-new	dir_light	Directional Light Yo
+new	dir_light	Directional Light Yo	696969eeee
 rotation	26.975,41.029,0
-color	1,1,1
+color	1,1,1						# TODO: get color and color mult as props too
 color_multiplier	10
+casts_shadows	0
 end
 
 # Player
-new	player	Player Controller Yo
+new	player	Player Controller Yo	9001ggg
 end

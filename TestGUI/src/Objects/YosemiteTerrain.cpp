@@ -50,6 +50,20 @@ YosemiteTerrain::~YosemiteTerrain()
 	delete imguiComponent;
 }
 
+bool YosemiteTerrain::streamTokensForLoading(const std::vector<std::string>& tokens)		// @Override
+{
+	bool complete = false;
+	if (BaseObject::streamTokensForLoading(tokens))			complete = true;
+	if (imguiComponent->streamTokensForLoading(tokens))		complete = true;
+	/*if (physicsComponent->streamTokensForLoading(tokens))	complete = true;
+	if (renderComponent->streamTokensForLoading(tokens))	complete = true;*/
+
+	//
+	// I'll take the leftover tokens then
+	//
+	return complete;
+}
+
 void YosemiteTerrainRender::preRenderUpdate()
 {
 	

@@ -11,7 +11,7 @@
 #include "../../Utils/PhysicsUtils.h"
 
 
-PointLight::PointLight()
+PointLight::PointLight()			// TODO: make this in the palette as well, but first, figure out how to implement multiple lights!!!
 {
 	transform = glm::mat4(1.0f);
 
