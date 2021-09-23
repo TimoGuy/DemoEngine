@@ -10,18 +10,17 @@
 class BaseObject
 {
 public:
-	virtual ~BaseObject()
-	{
-		// NOTE: this note is lying, so i commented it out
-		//std::cout << "WARNING: BaseObject Destructor not overridden. Undefined behavior may occur" << std::endl;
-	}
+	BaseObject() {}		// TODO: Make baseobject add into a vector containing pointers of these in mainloop for scene cleanup!!!!!
+	virtual ~BaseObject() = 0;
 
 	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
 	{
-		// TODO: respond to tokens that take care of transform related stuff (pos,rot,scale)
+		// TODO: respond to tokens that take care of transform related stuff (pos,rot,scale), and guid
+		return false;
 	}
 
 	glm::mat4 transform;
+	std::string guid;
 };
 
 //
@@ -42,7 +41,6 @@ public:
 	BaseObject* baseObject;
 	Bounds* bounds;
 	std::string name;
-	std::string guid;
 
 	ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name);
 	~ImGuiComponent();
@@ -52,7 +50,8 @@ public:
 
 	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
 	{
-		// TODO: respond to tokens that take care of name, guid, bounds(very rare I'd say for bounds)
+		// TODO: respond to tokens that take care of name
+		return false;
 	}
 
 private:
@@ -98,6 +97,7 @@ public:
 	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
 	{
 		// TODO: respond to tokens that take care of castsshadows
+		return false;
 	}
 };
 

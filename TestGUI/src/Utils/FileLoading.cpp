@@ -5,6 +5,11 @@
 #include <fstream>
 #include <sstream>
 
+#include "../Objects/BaseObject.h"
+#include "../Objects/YosemiteTerrain.h"
+#include "../Objects/PlayerCharacter.h"
+#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+
 
 FileLoading& FileLoading::getInstance()
 {
@@ -54,6 +59,18 @@ void FileLoading::loadFileWithPrompt()
 	}
 }
 
+std::string trimString(std::string stringCopy)
+{
+	stringCopy.erase(stringCopy.begin(), std::find_if(stringCopy.begin(), stringCopy.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}));
+	stringCopy.erase(std::find_if(stringCopy.rbegin(), stringCopy.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}).base(), stringCopy.end());
+
+	return stringCopy;
+}
+
 void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 {
 	std::cout << line << std::endl;
@@ -65,15 +82,9 @@ void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 		line = line.substr(0, loc);
 	}
 
-	// Trim left and right
-	line.erase(line.begin(), std::find_if(line.begin(), line.end(), [](unsigned char ch) {
-		return !std::isspace(ch);
-	}));
-	line.erase(std::find_if(line.rbegin(), line.rend(), [](unsigned char ch) {
-		return !std::isspace(ch);
-	}).base(), line.end());
+	line = trimString(line);
 
-	if (!line.length())
+	if (!line.length())			// This should bump out empty lines and just comments as lines
 		return;
 	
 	//
@@ -87,7 +98,54 @@ void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
 		tokens.push_back(token);
 
 	//
-	// Things didn't work out.... say there's an error on line#
+	// THE ACTUAL LOADING HAPPENS HERE
+	//
+	if (buildingObject == nullptr)
+	{
+		// Check if starting a new object
+		if (trimString(tokens[0]) == "new")
+		{
+			createAndProcessFirstTokenLineOfObject(tokens);
+			return;
+		}
+	}
+	else
+	{
+		// Check if end building object
+		if (trimString(tokens[0]) == "end")
+		{
+			buildingObject = nullptr;
+			return;
+		}
+
+		if (buildingObject->streamTokensForLoading(tokens))			// Returning true means that the lexical analyzer found that the line made sense.
+			return;
+	}
+
+	//
+	// Things didn't work out.... say there's an error on line ###
 	//
 	std::cout << "ERROR (line " << lineNumber << "): could not figger out what the heck this is:" << std::endl << "\t" << line << std::endl;
+}
+
+void FileLoading::createAndProcessFirstTokenLineOfObject(std::vector<std::string>& tokens)			// @AddNewObjectsHere
+{
+	if (trimString(tokens[1]) == "ground")
+	{
+		buildingObject = new YosemiteTerrain();
+		buildingObject->streamTokensForLoading(tokens);
+		return;
+	}
+	if (trimString(tokens[1]) == "player")
+	{
+		buildingObject = new PlayerCharacter();
+		buildingObject->streamTokensForLoading(tokens);
+		return;
+	}
+	if (trimString(tokens[1]) == "dir_light")		// TODO: figure out the loading scheme for this here
+	{
+		buildingObject = new DirectionalLight(false);
+		buildingObject->streamTokensForLoading(tokens);
+		return;
+	}
 }

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+		// TODO: pull out this object and place in the objects folder
 
 class DirectionalLightImGui : public ImGuiComponent
 {

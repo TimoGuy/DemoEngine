@@ -27,6 +27,21 @@ PlayerCharacter::PlayerCharacter()
 	renderComponent = new PlayerRender(this, bounds);
 }
 
+bool PlayerCharacter::streamTokensForLoading(const std::vector<std::string>& tokens)		// @Override
+{
+	if (imguiComponent->streamTokensForLoading(tokens))
+		return true;
+	/*if (physicsComponent->streamTokensForLoading(tokens))
+		return true;
+	if (renderComponent->streamTokensForLoading(tokens))
+		return true;*/
+
+	//
+	// I'll take the leftover tokens then
+	//
+	return false;
+}
+
 PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
 {
 	controller =

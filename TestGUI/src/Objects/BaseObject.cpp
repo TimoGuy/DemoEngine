@@ -35,7 +35,7 @@ std::string generate_hex(const uint32_t len)
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
 {
-	guid = generate_hex(32);
+	baseObject->guid = generate_hex(32);
 	MainLoop::getInstance().imguiObjects.push_back(this);
 }
 

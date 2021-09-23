@@ -52,6 +52,8 @@ public:
 	PlayerCharacter();
 	~PlayerCharacter();
 
+	bool streamTokensForLoading(const std::vector<std::string>& tokens);
+
 	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;

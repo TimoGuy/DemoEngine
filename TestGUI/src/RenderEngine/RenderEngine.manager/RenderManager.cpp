@@ -863,7 +863,7 @@ void RenderManager::renderImGuiContents()
 				{
 					const bool isSelected = (currentSelectedObjectIndex == n);
 					if (ImGui::Selectable(
-						(MainLoop::getInstance().imguiObjects[n]->name + "##" + MainLoop::getInstance().imguiObjects[n]->guid).c_str(),
+						(MainLoop::getInstance().imguiObjects[n]->name + "##" + MainLoop::getInstance().imguiObjects[n]->baseObject->guid).c_str(),
 						isSelected
 					))
 						currentSelectedObjectIndex = n;
