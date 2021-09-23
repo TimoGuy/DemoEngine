@@ -10,8 +10,8 @@
 class BaseObject
 {
 public:
-	BaseObject() {}		// TODO: Make baseobject add into a vector containing pointers of these in mainloop for scene cleanup!!!!!
-	virtual ~BaseObject() = 0;
+	BaseObject();
+	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
 	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens)
 	{

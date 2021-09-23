@@ -33,9 +33,18 @@ std::string generate_hex(const uint32_t len)
 	return ss.str();
 }
 
+BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing pointers of these in mainloop for scene cleanup!!!!!
+{
+	guid = generate_hex(32);
+}
+
+BaseObject::~BaseObject()
+{
+	// NOTE: I guess this needs to be created for linking errors that occur when this isn't, bc of how destructors work in c++ dang nabbit
+}
+
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
 {
-	baseObject->guid = generate_hex(32);
 	MainLoop::getInstance().imguiObjects.push_back(this);
 }
 
