@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "../MainLoop/MainLoop.h"
+
 #include "../Objects/BaseObject.h"
 #include "../Objects/YosemiteTerrain.h"
 #include "../Objects/PlayerCharacter.h"
@@ -36,6 +38,14 @@ void FileLoading::loadFileWithPrompt()
 	{
 		std::cout << "ERROR: Adam Sandler" << std::endl;
 		return;
+	}
+
+	//
+	// Clear out the whole scene
+	//
+	for (int i = MainLoop::getInstance().imguiObjects.size() - 1; i >= 0; i--)
+	{
+		delete MainLoop::getInstance().imguiObjects[i]->baseObject;
 	}
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;
