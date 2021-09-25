@@ -31,12 +31,15 @@ public:
 
 	Light& getLight() { return light; }
 
-	void createCSMBuffers();
+	void refreshRenderBuffers();
 
 	std::vector<float_t> shadowCascadeLevels;
 private:
 	Light light;
 	bool shadowMapsCreated = false;
+
+	void createCSMBuffers();
+	void destroyCSMBuffers();
 
 	//
 	// If casting shadows

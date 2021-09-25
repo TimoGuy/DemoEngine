@@ -49,8 +49,7 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	lightComponent->getLight().colorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(transform));
-	if (lightComponent->castsShadows)
-		((DirectionalLightLight*)lightComponent)->createCSMBuffers();
+	((DirectionalLightLight*)lightComponent)->refreshRenderBuffers();
 }
 
 nlohmann::json DirectionalLight::savePropertiesToJson()
@@ -90,17 +89,20 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	shadowFarPlane = 200.0f;
 	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
 
-	if (castsShadows)
-		createCSMBuffers();
+	refreshRenderBuffers();
 }
 
 DirectionalLightLight::~DirectionalLightLight()
 {
-	if (!shadowMapsCreated) return;
+	destroyCSMBuffers();
+}
 
-	glDeleteBuffers(1, &matricesUBO);
-	glDeleteTextures(1, &shadowMapTexture);
-	glDeleteFramebuffers(1, &lightFBO);
+void DirectionalLightLight::refreshRenderBuffers()
+{
+	if (castsShadows)
+		createCSMBuffers();
+	else
+		destroyCSMBuffers();
 }
 
 constexpr unsigned int depthMapResolution = 4096;
@@ -162,6 +164,18 @@ void DirectionalLightLight::createCSMBuffers()
 
 	// Set flag
 	shadowMapsCreated = true;
+}
+
+void DirectionalLightLight::destroyCSMBuffers()
+{
+	if (!shadowMapsCreated) return;
+
+	glDeleteBuffers(1, &matricesUBO);
+	glDeleteTextures(1, &shadowMapTexture);
+	glDeleteFramebuffers(1, &lightFBO);
+
+	// Set flag
+	shadowMapsCreated = false;
 }
 
 void DirectionalLightLight::renderPassShadowMap()
