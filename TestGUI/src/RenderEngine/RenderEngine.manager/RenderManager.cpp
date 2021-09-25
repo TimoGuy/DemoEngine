@@ -664,7 +664,7 @@ void RenderManager::renderImGuiContents()
 				}
 
 				bool enableSave = FileLoading::getInstance().isCurrentPathValid();
-				if (ImGui::MenuItem("Save", "CTRL+S", enableSave, enableSave))
+				if (ImGui::MenuItem("Save", "CTRL+S", false, enableSave))
 				{
 					FileLoading::getInstance().saveFile(false);
 				}
