@@ -32,7 +32,6 @@ void renderCube();
 void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
-static int currentSelectedObjectIndex = -1;
 static bool showShadowMapView = false;
 
 
@@ -603,8 +602,14 @@ void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 
 std::vector<size_t> requestedListObjectIndices;
 std::vector<PhysicsUtils::RaySegmentHit> requestedListHitInformations;
-void RenderManager::requestSelectObject(ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation)
+int checkForRequestedObjects = 0;		// 0: false, 1: click event, 2: hover event
+void RenderManager::requestSelectObject(bool isHoverEvent, ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation)
 {
+	// Mark this as true just in case the user isn't clicking anything
+	checkForRequestedObjects = isHoverEvent ? 2 : 1;
+	if (!hitInformation.hit) return;
+	if (currentSelectedObjectIndex >= 0 && MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex] == imguiObject) return;
+
 	if (ImGui::GetIO().WantCaptureMouse ||
 		ImGuizmo::IsOver() ||
 		ImGuizmo::IsUsing())
@@ -711,7 +716,7 @@ void RenderManager::renderImGuiContents()
 			if (ImGui::BeginMenu("Physics"))
 			{
 				ImGui::MenuItem("Simulate Physics", NULL, &MainLoop::getInstance().simulatePhysics);
-				
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -796,33 +801,53 @@ void RenderManager::renderImGuiContents()
 		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 
-	//
-	// Compare Z-index and see which is closest and select that one here
-	//
-	float_t closest = MainLoop::getInstance().camera.zFar;		// Set to max value of a raysegcast possible lol
-	size_t closestIndex = -1;
-	for (size_t i = 0; i < requestedListHitInformations.size(); i++)
+	if (checkForRequestedObjects != 0)		// NOTE: 1=clickevent, 2=hoverevent
 	{
-		if (!requestedListHitInformations[i].hit)
-			continue;
-
-		//std::cout << "HitDistance: " << requestedListHitInformations[i].distance << std::endl;
-
-		if (closest > requestedListHitInformations[i].distance)
+		if (!ImGuizmo::IsOver() && !ImGuizmo::IsUsing())
 		{
-			closest = requestedListHitInformations[i].distance;
-			closestIndex = i;
+			//
+			// Compare Z-index and see which is closest and select that one here
+			//
+			float_t closest = MainLoop::getInstance().camera.zFar;		// Set to max value of a raysegcast possible lol
+			size_t closestIndex = -1;
+			for (size_t i = 0; i < requestedListHitInformations.size(); i++)
+			{
+				if (!requestedListHitInformations[i].hit)
+					continue;
+
+				//std::cout << "HitDistance: " << requestedListHitInformations[i].distance << std::endl;
+
+				if (closest > requestedListHitInformations[i].distance)
+				{
+					closest = requestedListHitInformations[i].distance;
+					closestIndex = i;
+				}
+			}
+			if (closestIndex != -1)
+			{
+				if (checkForRequestedObjects == 1)
+					// Click Event
+					currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
+				else if (checkForRequestedObjects == 2)
+					// Hover Event
+					currentHoveringObjectIndex = requestedListObjectIndices[closestIndex];
+
+				requestedListHitInformations.clear();
+				requestedListObjectIndices.clear();
+			}
+			else
+			{
+				if (checkForRequestedObjects == 1)
+					// (Click Event): Deselect if nothing was hit raycast-wise
+					currentSelectedObjectIndex = -1;
+				else if (checkForRequestedObjects == 2)
+					// (Hover Event): Unhover if nothing was hit raycast-wise
+					currentHoveringObjectIndex = -1;
+			}
 		}
-	}
-	if (closestIndex != -1)
-	{
-		// NOTE: if the user clicks on the object that's already selected, then the object will deselect
-		if (currentSelectedObjectIndex == requestedListObjectIndices[closestIndex])
-			currentSelectedObjectIndex = -1;
-		else
-			currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
-		requestedListHitInformations.clear();
-		requestedListObjectIndices.clear();
+
+		// Reset flag
+		checkForRequestedObjects = 0;
 	}
 
 	//

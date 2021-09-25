@@ -121,26 +121,38 @@ void ImGuiComponent::renderImGui()
 			cookedBounds
 		);
 
+		//
+		// Setup selection state color
+		//
+		ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667, 0.1529411765);			// Nothing color
+		if (MainLoop::getInstance().renderManager->currentSelectedObjectIndex >= 0 &&
+			MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentSelectedObjectIndex] == this)
+			selectionStateColor = ImColor(0.921568627f, 0.423529412f, 0.901960784f);			// Selected color
+		else if (MainLoop::getInstance().renderManager->currentHoveringObjectIndex >= 0 &&
+			MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentHoveringObjectIndex] == this)
+			selectionStateColor = ImColor(0.980392157f, 0.631372549f, 0.223529412f);			// Hover color
+
 		physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);
 		PhysicsUtils::imguiRenderBoxCollider(
 			glm::translate(glm::mat4(1.0f), cookedBounds.center),
 			boxGeometry,
-			col.hit ?
-				ImColor(0.6392156863f, 0.4078431373f, 0.0470588235f) :
-				ImColor(0.9607843137f, 0.8666666667, 0.1529411765)
+			selectionStateColor
 		);			// @Cleanup: this seems inefficient... but I'm just a glm beginnner atm
 
 		//
 		// Check if wanting to click
 		//
-		if (!col.hit) return;
-
 		const bool clickPressedCurrent =
 			(glfwGetMouseButton(MainLoop::getInstance().window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
 		if (!clickPressedPrevious && clickPressedCurrent)
 		{
-			MainLoop::getInstance().renderManager->requestSelectObject(this, col);
-			//std::cout << "I did it..." << name << std::endl;
+			// Request a click process
+			MainLoop::getInstance().renderManager->requestSelectObject(false, this, col);
+		}
+		else
+		{
+			// Request a hover process
+			MainLoop::getInstance().renderManager->requestSelectObject(true, this, col);
 		}
 		clickPressedPrevious = clickPressedCurrent;
 	}
