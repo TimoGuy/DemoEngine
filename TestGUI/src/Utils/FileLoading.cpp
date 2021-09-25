@@ -11,6 +11,7 @@
 #include "../Objects/YosemiteTerrain.h"
 #include "../Objects/PlayerCharacter.h"
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+#include "../RenderEngine/RenderEngine.light/PointLight.h"
 
 #include "../Utils/Utils.h"
 
@@ -50,102 +51,35 @@ void FileLoading::loadFileWithPrompt()
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;
 
+	// Load all info of the level
+	std::ifstream i(fname);
+	nlohmann::json j;
+	i >> j;
+
+	/*std::ofstream o("pretty.json");				// TODO: implement this json writer as save function
+	o << std::setw(4) << j << std::endl;*/
+
 	//
 	// Start working with the retrieved filename
 	//
-	std::ifstream sceneFile(fname);
-	if (sceneFile.is_open())
+	nlohmann::json& objects = j["objects"];
+	for (auto& object : objects)
 	{
-		std::string line;
-		size_t lineNum = 1;
-		while (std::getline(sceneFile, line))
-		{
-			processLoadSceneLine(line, lineNum);
-			lineNum++;
-		}
-		sceneFile.close();
-	}
-	else
-	{
-		std::cout << "ERROR: unable to open file" << std::endl;
+		loadObjectWithJson(object);
 	}
 }
 
-void FileLoading::processLoadSceneLine(std::string& line, size_t lineNumber)
+void FileLoading::loadObjectWithJson(nlohmann::json& object)
 {
-	std::cout << line << std::endl;
+	BaseObject* buildingObject = nullptr;
 
-	// Remove comments from the line
-	size_t loc = line.find('#');
-	if (loc != std::string::npos)
-	{
-		line = line.substr(0, loc);
-	}
+	// @Palette: This is where you add objects to be loaded into the scene
+	if (object["type"] == "ground")			buildingObject = new YosemiteTerrain();
+	if (object["type"] == "dir_light")		buildingObject = new DirectionalLight(false);
+	if (object["type"] == "player")			buildingObject = new PlayerCharacter();
+	if (object["type"] == "pt_light")		buildingObject = new PointLight();
 
-	line = trimString(line);
+	buildingObject->streamTokensForLoading(object);
 
-	if (!line.length())			// This should bump out empty lines and just comments as lines
-		return;
-	
-	//
-	// Parse out all the information
-	//
-	std::vector<std::string> tokens;
-
-	std::istringstream iss(line);
-	std::string token;
-	while (std::getline(iss, token, '\t'))   // Tab delimited
-		tokens.push_back(trimString(token));
-
-	//
-	// THE ACTUAL LOADING HAPPENS HERE
-	//
-	if (buildingObject == nullptr)
-	{
-		// Check if starting a new object
-		if (tokens[0] == "new")
-		{
-			createAndProcessFirstTokenLineOfObject(tokens);
-			return;
-		}
-	}
-	else
-	{
-		// Check if end building object
-		if (tokens[0] == "end")
-		{
-			buildingObject = nullptr;
-			return;
-		}
-
-		if (buildingObject->streamTokensForLoading(tokens))			// Returning true means that the lexical analyzer found that the line made sense.
-			return;
-	}
-
-	//
-	// Things didn't work out.... say there's an error on line ###
-	//
-	std::cout << "ERROR (line " << lineNumber << "): could not figger out what the heck this is:" << std::endl << "\t" << line << std::endl;
-}
-
-void FileLoading::createAndProcessFirstTokenLineOfObject(std::vector<std::string>& tokens)			// @AddNewObjectsHere
-{
-	if (trimString(tokens[1]) == "ground")
-	{
-		buildingObject = new YosemiteTerrain();
-		buildingObject->streamTokensForLoading(tokens);
-		return;
-	}
-	if (trimString(tokens[1]) == "player")
-	{
-		buildingObject = new PlayerCharacter();
-		buildingObject->streamTokensForLoading(tokens);
-		return;
-	}
-	if (trimString(tokens[1]) == "dir_light")		// TODO: figure out the loading scheme for this here
-	{
-		buildingObject = new DirectionalLight(false);
-		buildingObject->streamTokensForLoading(tokens);
-		return;
-	}
+	assert(buildingObject != nullptr);
 }

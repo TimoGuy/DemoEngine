@@ -36,20 +36,19 @@ DirectionalLight::~DirectionalLight()			// TODO: when there are shadow maps, del
 	delete imguiComponent;
 }
 
-bool DirectionalLight::streamTokensForLoading(const std::vector<std::string>& tokens)
+void DirectionalLight::streamTokensForLoading(nlohmann::json& object)
 {
-	bool complete = false;
-	if (BaseObject::streamTokensForLoading(tokens))			complete = true;
-	if (imguiComponent->streamTokensForLoading(tokens))		complete = true;
-	if (lightComponent->streamTokensForLoading(tokens))		complete = true;
+	BaseObject::streamTokensForLoading(object);
+	imguiComponent->streamTokensForLoading(object);
+	lightComponent->streamTokensForLoading(object);
 
 	//
 	// I'll take the leftover tokens then
 	//
+	lightComponent->getLight().color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
+	lightComponent->getLight().colorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(transform));
-
-	return complete;
 }
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???

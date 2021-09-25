@@ -808,7 +808,11 @@ void RenderManager::renderImGuiContents()
 	}
 	if (closestIndex != -1)
 	{
-		currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
+		// NOTE: if the user clicks on the object that's already selected, then the object will deselect
+		if (currentSelectedObjectIndex == requestedListObjectIndices[closestIndex])
+			currentSelectedObjectIndex = -1;
+		else
+			currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
 		requestedListHitInformations.clear();
 		requestedListObjectIndices.clear();
 	}
@@ -830,8 +834,8 @@ void RenderManager::renderImGuiContents()
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
-				if (glfwGetKey(windowRef, GLFW_KEY_Q))
-					currentSelectedObjectIndex = -1;
+				/*if (glfwGetKey(windowRef, GLFW_KEY_Q))		TODO: find what you wanna do with key Q
+					currentSelectedObjectIndex = -1;*/
 				if (glfwGetKey(windowRef, GLFW_KEY_W))
 					imGuizmoTransformOperation = 0;
 				if (glfwGetKey(windowRef, GLFW_KEY_E))

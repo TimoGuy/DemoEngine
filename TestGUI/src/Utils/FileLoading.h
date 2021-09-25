@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include "../Utils/json.hpp"
 
 
 class BaseObject;
@@ -16,7 +17,5 @@ public:
 private:
 	FileLoading() {}
 
-	BaseObject* buildingObject = nullptr;			// This object will get built up and then set to nullptr again, since its reference will be contained in the mainloop's list of objects (TODO)
-	void processLoadSceneLine(std::string& line, size_t lineNumber);
-	void createAndProcessFirstTokenLineOfObject(std::vector<std::string>& tokens);
+	void loadObjectWithJson(nlohmann::json& object);
 };

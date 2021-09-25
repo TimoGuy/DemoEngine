@@ -1,23 +1,31 @@
-# NOTES:
-# 	New objects are started with a block that says "new"
-#	They're ended with "end"
-#	Everything between is optional properties related to that object
-
-
-# Ground
-new	ground	Yosemite Terrain Yo	131313fff
-position	0,-4.56,0
-scale	100,1,100
-end
-
-# Directional Light
-new	dir_light	Directional Light Yo	696969eeee
-rotation	26.975,41.029,0
-color	1,1,1						# TODO: get color and color mult as props too
-color_multiplier	10
-casts_shadows	0
-end
-
-# Player
-new	player	Player Controller Yo	9001ggg
-end
+{
+	"objects": {
+		"0": {
+			"guid": "131313fff",
+			"type": "ground",
+			"name": "Yosemite Terrain Yo",
+			"position": [0,-4.56,0],
+			"rotation": [0,0,0],
+			"scale": [100,1,100]
+		},
+		"1": {
+			"guid": "696969eeee",
+			"type": "dir_light",
+			"name": "Yosemite DirLight Yo",
+			"position": [0,5,0],
+			"rotation": [26.975,41.029,0],
+			"scale": [1,1,1],
+			"color": [1,1,1],
+			"color_multiplier": 10,
+			"casts_shadows": false
+		},
+		"2": {
+			"guid": "9001ggg",
+			"type": "player",
+			"name": "Player Yo",
+			"position": [0,0,0],
+			"rotation": [0,0,0],
+			"scale": [1,1,1]
+		}
+	}
+}

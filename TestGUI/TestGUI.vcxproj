@@ -160,6 +160,7 @@
     <ClInclude Include="src\ImGui\imgui_stdlib.h" />
     <ClInclude Include="src\ImGui\ImSequencer.h" />
     <ClInclude Include="src\ImGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Utils\json.hpp" />
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
     <ClInclude Include="src\Objects\PlayerCharacter.h" />

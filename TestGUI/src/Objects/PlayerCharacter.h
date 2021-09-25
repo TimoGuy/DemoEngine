@@ -52,7 +52,7 @@ public:
 	PlayerCharacter();
 	~PlayerCharacter();
 
-	bool streamTokensForLoading(const std::vector<std::string>& tokens);
+	void streamTokensForLoading(nlohmann::json& object);
 
 	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
@@ -60,4 +60,3 @@ public:
 
 	Bounds* bounds;
 };
-

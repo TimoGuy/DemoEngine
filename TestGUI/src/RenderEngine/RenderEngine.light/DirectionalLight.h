@@ -54,7 +54,7 @@ public:
 	DirectionalLight(bool castsShadows);
 	~DirectionalLight();
 
-	bool streamTokensForLoading(const std::vector<std::string>& tokens);
+	void streamTokensForLoading(nlohmann::json& object);
 	void setLookDirection(glm::quat rotation);
 
 	ImGuiComponent* imguiComponent;

@@ -27,18 +27,16 @@ PlayerCharacter::PlayerCharacter()
 	renderComponent = new PlayerRender(this, bounds);
 }
 
-bool PlayerCharacter::streamTokensForLoading(const std::vector<std::string>& tokens)		// @Override
+void PlayerCharacter::streamTokensForLoading(nlohmann::json& object)		// @Override
 {
-	bool complete = false;
-	if (BaseObject::streamTokensForLoading(tokens))			complete = true;
-	if (imguiComponent->streamTokensForLoading(tokens))		complete = true;
-	/*if (physicsComponent->streamTokensForLoading(tokens))	complete = true;
-	if (renderComponent->streamTokensForLoading(tokens))	complete = true;*/
+	BaseObject::streamTokensForLoading(object);
+	imguiComponent->streamTokensForLoading(object);
+	/*physicsComponent->streamTokensForLoading(object);
+	renderComponent->streamTokensForLoading(object);*/
 
 	//
 	// I'll take the leftover tokens then
 	//
-	return complete;
 }
 
 PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
@@ -48,8 +46,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 			MainLoop::getInstance().physicsControllerManager,
 			MainLoop::getInstance().defaultPhysicsMaterial,
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
-			5.0f,
-			5.0f);
+			1.0f,
+			2.0f);
 }
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)

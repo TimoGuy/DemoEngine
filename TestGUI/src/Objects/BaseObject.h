@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
+#include "../Utils/json.hpp"
 
 
 class BaseObject
@@ -13,7 +14,7 @@ public:
 	BaseObject();
 	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
+	virtual void streamTokensForLoading(nlohmann::json& object);
 
 	glm::mat4 transform;
 	std::string guid;
@@ -44,7 +45,7 @@ public:
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
+	virtual void streamTokensForLoading(nlohmann::json& object);
 
 private:
 	bool clickPressedPrevious;
@@ -86,7 +87,7 @@ public:
 	virtual Light& getLight() = 0;
 	virtual void renderPassShadowMap();
 
-	virtual bool streamTokensForLoading(const std::vector<std::string>& tokens);
+	virtual void streamTokensForLoading(nlohmann::json& object);
 };
 
 

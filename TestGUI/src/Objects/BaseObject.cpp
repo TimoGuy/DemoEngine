@@ -44,34 +44,15 @@ BaseObject::~BaseObject()
 	// NOTE: I guess this needs to be created for linking errors that occur when this isn't, bc of how destructors work in c++ dang nabbit
 }
 
-bool BaseObject::streamTokensForLoading(const std::vector<std::string>& tokens)
+void BaseObject::streamTokensForLoading(nlohmann::json& object)
 {
-	if (tokens[0] == "new")
-	{
-		// Pick up the guid
-		guid = tokens[3];
-		return true;
-	}
-	if (tokens[0] == "position" || tokens[0] == "rotation" || tokens[0] == "scale")
-	{
-		// Pick up transformation
-		std::vector<float> vector3;
-		std::istringstream iss(tokens[1]);
-		std::string value;
-		while (std::getline(iss, value, ','))
-			vector3.push_back(std::stof(trimString(value)));
+	// Pick up the guid
+	guid = object["guid"];
+	glm::vec3 position = glm::vec3(object["position"][0], object["position"][1], object["position"][2]);
+	glm::vec3 eulerAngles = glm::vec3(object["rotation"][0], object["rotation"][1], object["rotation"][2]);
+	glm::vec3 scale = glm::vec3(object["scale"][0], object["scale"][1], object["scale"][2]);
 
-		if (tokens[0] == "position")
-			transform = glm::translate(transform, glm::vec3(vector3[0], vector3[1], vector3[2]));
-		if (tokens[0] == "rotation")
-			transform = transform * glm::toMat4(glm::quat(glm::vec3(vector3[0], vector3[1], vector3[2])));			// TODO: @Broken: Appears that lightrotation isn't updated so it looks weird
-		if (tokens[0] == "scale")
-			transform = glm::scale(transform, glm::vec3(vector3[0], vector3[1], vector3[2]));
-
-		return true;
-	}
-
-	return false;
+	transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(eulerAngles))) * glm::scale(glm::mat4(1.0f), scale);
 }
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
@@ -91,15 +72,10 @@ ImGuiComponent::~ImGuiComponent()
 	);
 }
 
-bool ImGuiComponent::streamTokensForLoading(const std::vector<std::string>& tokens)
+void ImGuiComponent::streamTokensForLoading(nlohmann::json& object)
 {
-	if (tokens[0] == "new")
-	{
-		// Pick up the name
-		name = tokens[2];
-		return true;
-	}
-	return false;
+	// Pick up the name
+	name = object["name"];
 }
 
 void ImGuiComponent::renderImGui()
@@ -183,15 +159,9 @@ LightComponent::~LightComponent()
 	);
 }
 
-bool LightComponent::streamTokensForLoading(const std::vector<std::string>& tokens)
+void LightComponent::streamTokensForLoading(nlohmann::json& object)
 {
-	if (tokens[0] == "casts_shadows")
-	{
-		// Grab the casting shadows
-		castsShadows = std::stoi(tokens[1]);
-		return true;
-	}
-	return false;
+	castsShadows = object["casts_shadows"];
 }
 
 void LightComponent::renderPassShadowMap() {}
