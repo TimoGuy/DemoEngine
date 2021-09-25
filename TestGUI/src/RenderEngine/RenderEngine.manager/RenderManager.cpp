@@ -694,6 +694,7 @@ void RenderManager::renderImGuiContents()
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
 					currentSelectedObjectIndex = -1;
+					currentHoveringObjectIndex = -1;
 				}
 				ImGui::EndMenu();
 			}
@@ -882,6 +883,7 @@ void RenderManager::renderImGuiContents()
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
 					currentSelectedObjectIndex = -1;
+					currentHoveringObjectIndex = -1;
 				}
 				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
 				{
