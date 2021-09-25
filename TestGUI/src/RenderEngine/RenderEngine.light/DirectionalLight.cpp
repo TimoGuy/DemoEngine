@@ -49,6 +49,8 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	lightComponent->getLight().colorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(transform));
+	if (lightComponent->castsShadows)
+		((DirectionalLightLight*)lightComponent)->createCSMBuffers();
 }
 
 nlohmann::json DirectionalLight::savePropertiesToJson()
@@ -92,9 +94,20 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 		createCSMBuffers();
 }
 
+DirectionalLightLight::~DirectionalLightLight()
+{
+	if (!shadowMapsCreated) return;
+
+	glDeleteBuffers(1, &matricesUBO);
+	glDeleteTextures(1, &shadowMapTexture);
+	glDeleteFramebuffers(1, &lightFBO);
+}
+
 constexpr unsigned int depthMapResolution = 4096;
 void DirectionalLightLight::createCSMBuffers()
 {
+	if (shadowMapsCreated) return;
+
 	refreshResources();
 
 	//
@@ -146,6 +159,9 @@ void DirectionalLightLight::createCSMBuffers()
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 16, nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, matricesUBO);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	// Set flag
+	shadowMapsCreated = true;
 }
 
 void DirectionalLightLight::renderPassShadowMap()

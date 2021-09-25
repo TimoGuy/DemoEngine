@@ -41,7 +41,7 @@ public:
 	std::string name;
 
 	ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name);
-	~ImGuiComponent();
+	virtual ~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
@@ -68,7 +68,7 @@ public:
 	GLuint shadowMapTexture;
 
 	LightComponent(BaseObject* baseObject, bool castsShadows = false);
-	~LightComponent();
+	virtual ~LightComponent();
 	virtual Light& getLight() = 0;			// TODO: Refactor this so that instead of a getLight function it is actually just a light object;
 	virtual void renderPassShadowMap();
 
@@ -88,7 +88,7 @@ public:
 	Bounds* bounds = nullptr;
 
 	PhysicsComponent(BaseObject* baseObject, Bounds* bounds);
-	~PhysicsComponent();
+	virtual ~PhysicsComponent();
 	virtual void physicsUpdate(float deltaTime) = 0;
 };
 
@@ -104,7 +104,7 @@ public:
 	Bounds* bounds = nullptr;
 
 	RenderComponent(BaseObject* baseObject, Bounds* bounds);
-	~RenderComponent();
+	virtual ~RenderComponent();
 
 	virtual void preRenderUpdate() = 0;
 	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;

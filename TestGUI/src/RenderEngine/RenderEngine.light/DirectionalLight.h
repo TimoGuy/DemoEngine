@@ -27,18 +27,21 @@ class DirectionalLightLight : public LightComponent
 {
 public:
 	DirectionalLightLight(BaseObject* bo, bool castsShadows);
+	~DirectionalLightLight();
 
 	Light& getLight() { return light; }
+
+	void createCSMBuffers();
 
 	std::vector<float_t> shadowCascadeLevels;
 private:
 	Light light;
+	bool shadowMapsCreated = false;
 
 	//
 	// If casting shadows
 	//
 	void renderPassShadowMap();				// NOTE: here, we'll be using cascaded shadow maps
-	void createCSMBuffers();
 	std::vector<glm::vec4> getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view);
 	glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane);
 	std::vector<glm::mat4> getLightSpaceMatrices();
