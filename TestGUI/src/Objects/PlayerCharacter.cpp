@@ -12,6 +12,7 @@
 
 
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"			// temp
+#include "../RenderEngine/RenderEngine.light/PointLight.h"					// temp
 
 
 PlayerCharacter::PlayerCharacter()
@@ -151,7 +152,22 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 #ifdef _DEBUG
 	refreshResources();
 #endif
+	// @Copypasta
 
+	//
+	// Reset shadow maps
+	//
+	const size_t MAX_LIGHTS = 4;
+	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	{
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+	}
+
+	//
+	// Load in textures
+	//
 	glUseProgram(pbrShaderProgramId);
 	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 
@@ -186,7 +202,6 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 	//
 	// Try to find a shadow map
 	//
-	const size_t MAX_LIGHTS = 4;
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
 	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), numLights);
 	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
@@ -235,6 +250,7 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
 				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
 			}
 
 			shadowMapTextureIndex++;
@@ -248,10 +264,10 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 
 		if (light->getLight().lightType != LightType::POINT)
 			lightDirection = glm::normalize(light->getLight().facingDirection);																									// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
-		
+
 		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
-		
+
 		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
 		glUniform4fv(glGetUniformLocation(pbrShaderProgramId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
 		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);

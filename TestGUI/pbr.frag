@@ -11,13 +11,7 @@ uniform sampler2D albedoMap;
 uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
-uniform sampler2D aoMap;
-
-// Shadow map                   NOTE: these all have MAX_LIGHTS as the setting, however, not every 'slot' will be filled, due to each array being accessible identical to the light index
-const int MAX_LIGHTS = 4;
-uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
-uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
-uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
+//uniform sampler2D aoMap;
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -25,10 +19,17 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 // lights
+const int MAX_LIGHTS = 4;
 uniform int numLights;
 uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
 uniform vec3 lightDirections[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
+
+// Shadow map
+uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
+uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
+uniform float pointLightShadowFarPlanes[MAX_LIGHTS];
 
 // CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
@@ -43,7 +44,7 @@ uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
-vec4 layerCalc(vec3 fragPosition)
+vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which csm layer is being used
 {
     // select cascade layer
     vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
@@ -164,6 +165,64 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         
     return shadow;
 }
+
+
+// Array of offset direction for sampling for point light shadows
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
+{
+
+
+    vec3 fragToLight = fragPosition - lightPositions[lightIndex].xyz;
+    float closestDepth = texture(pointLightShadowMaps[lightIndex], fragToLight).r;
+    closestDepth *= pointLightShadowFarPlanes[lightIndex];
+
+    float currentDepth = length(fragToLight);
+    float bias = 0.05f;
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+
+
+
+
+/*
+    vec3 fragToLight = fragPosition - lightPositions[lightIndex].xyz;
+    float currentDepth = length(fragToLight);
+
+    // PCF modded edition
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float viewDistance = length(viewPosition - fragPosition);
+    float diskRadius = (1.0 + (viewDistance / farPlane)) / 25.0;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(pointLightShadowMaps[lightIndex], fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= farPlane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+        
+    // display closestDepth as debug (to visualize depth cubemap)
+    // FragColor = vec4(vec3(closestDepth / farPlane), 1.0);    
+        
+    return shadow;
+
+
+    */
+}
+
+
 // ----------------------------------------------------------------------------
 // Easy trick to get tangent-normals to world-space to keep PBR code simplified.
 // Don't worry if you don't get what's going on; you generally want to do normal 
@@ -236,7 +295,7 @@ void main()
     vec3 albedo     = pow(texture(albedoMap, texCoord).rgb, vec3(2.2));
     float metallic  = texture(metallicMap, texCoord).r;
     float roughness = texture(roughnessMap, texCoord).r;
-    float ao        = texture(aoMap, texCoord).r;
+    //float ao        = texture(aoMap, texCoord).r;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition - fragPosition);
@@ -264,7 +323,7 @@ void main()
             attenuation = 1.0 / (distance * distance);
             radiance = lightColors[i] * attenuation;
 
-            shadow = 0.0f;
+            shadow = shadowCalculationPoint(i, fragPosition);
         }
         else if (lightPositions[i].w == 0.0f)
         {
@@ -329,7 +388,7 @@ void main()
     //
     // Combine the colors with the shading
     //
-    vec3 ambient = (kD * diffuse + specular) * ao;
+    vec3 ambient = (kD * diffuse + specular);// * ao;
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, 1.0);

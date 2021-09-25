@@ -928,7 +928,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Directional Light"))
 					new DirectionalLight(true);
 				if (ImGui::Selectable("Point Light"))
-					new PointLight();
+					new PointLight(true);
 				if (ImGui::Selectable("Yosemite Terrain"))
 					new YosemiteTerrain();
 

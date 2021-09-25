@@ -13,6 +13,7 @@
 
 
 #include "../RenderEngine/RenderEngine.light/DirectionalLight.h"			// tEMP
+#include "../RenderEngine/RenderEngine.light/PointLight.h"					// temp
 
 YosemiteTerrain::YosemiteTerrain()
 {
@@ -81,7 +82,22 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 #ifdef _DEBUG
 	refreshResources();
 #endif
+	// @Copypasta
 
+	//
+	// Reset shadow maps
+	//
+	const size_t MAX_LIGHTS = 4;
+	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	{
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+	}
+
+	//
+	// Load in textures
+	//
 	glUseProgram(pbrShaderProgramId);
 	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 
@@ -116,7 +132,6 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 	//
 	// Try to find a shadow map
 	//
-	const size_t MAX_LIGHTS = 4;
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
 	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), numLights);
 	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
@@ -165,6 +180,7 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
 				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
 			}
 
 			shadowMapTextureIndex++;

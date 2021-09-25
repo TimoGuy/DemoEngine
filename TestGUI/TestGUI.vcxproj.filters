@@ -162,6 +162,9 @@
     <None Include="postprocessing.vert" />
     <None Include="bloom_postprocessing.vert" />
     <None Include="bloom_postprocessing.frag" />
+    <None Include="point_shadow.frag" />
+    <None Include="point_shadow.geom" />
+    <None Include="point_shadow.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

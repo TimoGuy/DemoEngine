@@ -77,7 +77,7 @@ void FileLoading::loadObjectWithJson(nlohmann::json& object)
 	if (object["type"] == PlayerCharacter::TYPE_NAME)	buildingObject = new PlayerCharacter();
 	if (object["type"] == YosemiteTerrain::TYPE_NAME)	buildingObject = new YosemiteTerrain();
 	if (object["type"] == DirectionalLight::TYPE_NAME)	buildingObject = new DirectionalLight(false);
-	if (object["type"] == PointLight::TYPE_NAME)		buildingObject = new PointLight();
+	if (object["type"] == PointLight::TYPE_NAME)		buildingObject = new PointLight(false);
 
 	buildingObject->loadPropertiesFromJson(object);
 

@@ -108,6 +108,7 @@ const GLchar* readFile(const char* filename)
 
 GLuint compileShader(GLenum type, const char* fname)
 {
+	std::cout << "[" << fname << "]\tCompiling Shader...\t";
 	GLuint shader_id = glCreateShader(type);
 	const char* filedata = readFile(fname);
 
@@ -116,14 +117,19 @@ GLuint compileShader(GLenum type, const char* fname)
 
 	GLint compiled;
 	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &compiled);
-	if (!compiled) {
+	if (!compiled)
+	{
 		GLsizei len;
 		glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &len);
 
 		GLchar* log = (GLchar*)malloc(sizeof(GLchar) * (len + 1));
 		glGetShaderInfoLog(shader_id, len, &len, log);
-		printf("[%s]\nShader compilation failed:\n%s\n", fname, log);
+		printf("FAIL\n%s\n", log);
 		free((GLchar*)log);
+	}
+	else
+	{
+		std::cout << "SUCCESS" << std::endl;
 	}
 
 	return shader_id;
@@ -337,6 +343,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;skybox")						return loadShaderProgramVF(resourceName, isUnloading, "skybox.vert", "skybox.frag");
 	if (resourceName == "shader;shadowPass")					return loadShaderProgramVF(resourceName, isUnloading, "shadow.vert", "do_nothing.frag");
 	if (resourceName == "shader;csmShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "csm_shadow.vert", "csm_shadow.geom", "do_nothing.frag");
+	if (resourceName == "shader;pointLightShadowPass")			return loadShaderProgramVGF(resourceName, isUnloading, "point_shadow.vert", "point_shadow.geom", "point_shadow.frag");
 	if (resourceName == "shader;debugCSM")						return loadShaderProgramVF(resourceName, isUnloading, "debug_csm.vert", "debug_csm.frag");
 	if (resourceName == "shader;shadowPassSkinned")				return loadShaderProgramVF(resourceName, isUnloading, "shadow_skinned.vert", "do_nothing.frag");
 	if (resourceName == "shader;text")							return loadShaderProgramVF(resourceName, isUnloading, "text.vert", "text.frag");

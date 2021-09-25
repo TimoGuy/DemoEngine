@@ -129,8 +129,8 @@ void DirectionalLightLight::createCSMBuffers()
 		0,
 		GL_DEPTH_COMPONENT,
 		GL_FLOAT,
-		nullptr);
-
+		nullptr
+	);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
