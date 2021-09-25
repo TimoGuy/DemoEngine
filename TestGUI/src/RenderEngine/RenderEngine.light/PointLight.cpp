@@ -27,6 +27,33 @@ PointLight::~PointLight()
 	delete imguiComponent;
 }
 
+void PointLight::loadPropertiesFromJson(nlohmann::json& object)
+{
+	BaseObject::loadPropertiesFromJson(object["baseObject"]);
+	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
+	lightComponent->loadPropertiesFromJson(object["lightComponent"]);
+
+	//
+	// I'll take the leftover tokens then
+	//
+	lightComponent->getLight().color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
+	lightComponent->getLight().colorIntensity = object["color_multiplier"];
+}
+
+nlohmann::json PointLight::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["type"] = TYPE_NAME;
+	j["baseObject"] = BaseObject::savePropertiesToJson();
+	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
+	j["lightComponent"] = lightComponent->savePropertiesToJson();
+
+	j["color"] = { lightComponent->getLight().color.r, lightComponent->getLight().color.g, lightComponent->getLight().color.b };
+	j["color_multiplier"] = lightComponent->getLight().colorIntensity;
+
+	return j;
+}
+
 PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Point Light")			// tODO: create bounds for here
 {
 	refreshResources();

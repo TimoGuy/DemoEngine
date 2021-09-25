@@ -12,10 +12,14 @@ class FileLoading
 public:
 	static FileLoading& getInstance();
 
+	bool isCurrentPathValid() { return !currentWorkingPath.empty(); }
 	void loadFileWithPrompt();
+	void saveFile(bool withPrompt);
 
 private:
 	FileLoading() {}
 
 	void loadObjectWithJson(nlohmann::json& object);
+
+	std::string currentWorkingPath;
 };

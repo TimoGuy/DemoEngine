@@ -50,14 +50,12 @@ void FileLoading::loadFileWithPrompt()
 	}
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;
+	currentWorkingPath = fname;
 
 	// Load all info of the level
-	std::ifstream i(fname);
+	std::ifstream i(currentWorkingPath);
 	nlohmann::json j;
 	i >> j;
-
-	/*std::ofstream o("pretty.json");				// TODO: implement this json writer as save function
-	o << std::setw(4) << j << std::endl;*/
 
 	//
 	// Start working with the retrieved filename
@@ -67,6 +65,8 @@ void FileLoading::loadFileWithPrompt()
 	{
 		loadObjectWithJson(object);
 	}
+
+	std::cout << "::Opening:: DONE!" << std::endl;
 }
 
 void FileLoading::loadObjectWithJson(nlohmann::json& object)
@@ -74,12 +74,56 @@ void FileLoading::loadObjectWithJson(nlohmann::json& object)
 	BaseObject* buildingObject = nullptr;
 
 	// @Palette: This is where you add objects to be loaded into the scene
-	if (object["type"] == "ground")			buildingObject = new YosemiteTerrain();
-	if (object["type"] == "dir_light")		buildingObject = new DirectionalLight(false);
-	if (object["type"] == "player")			buildingObject = new PlayerCharacter();
-	if (object["type"] == "pt_light")		buildingObject = new PointLight();
+	if (object["type"] == PlayerCharacter::TYPE_NAME)	buildingObject = new PlayerCharacter();
+	if (object["type"] == YosemiteTerrain::TYPE_NAME)	buildingObject = new YosemiteTerrain();
+	if (object["type"] == DirectionalLight::TYPE_NAME)	buildingObject = new DirectionalLight(false);
+	if (object["type"] == PointLight::TYPE_NAME)		buildingObject = new PointLight();
 
-	buildingObject->streamTokensForLoading(object);
+	buildingObject->loadPropertiesFromJson(object);
 
 	assert(buildingObject != nullptr);
+}
+
+void FileLoading::saveFile(bool withPrompt)
+{
+	if (withPrompt)
+	{
+		const char* filters[] = { "*.hsfs" };
+		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\" };
+		char* fname = tinyfd_saveFileDialog(
+			"Save Scene File As...",
+			currentPath.c_str(),
+			1,
+			filters,
+			"Game Scene Files (*.hsfs)"
+		);
+
+		if (!fname)
+		{
+			std::cout << "ERROR: Adam Sandler Saves the Day" << std::endl;
+			return;
+		}
+
+		// Apply the fname
+		currentWorkingPath = fname;
+	}
+
+	//
+	// Do the saving now!
+	//
+	std::cout << "::Saving:: \"" << currentWorkingPath << "\" ..." << std::endl;
+
+	std::vector<nlohmann::json> objects;
+	for (ImGuiComponent* component : MainLoop::getInstance().imguiObjects)
+	{
+		objects.push_back(component->baseObject->savePropertiesToJson());
+	}
+
+	nlohmann::json fullObject;
+	fullObject["objects"] = objects;
+
+	std::ofstream o(currentWorkingPath);
+	o << std::setw(4) << fullObject << std::endl;
+
+	std::cout << "::Saving:: DONE!" << std::endl;
 }

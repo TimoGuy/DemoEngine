@@ -34,8 +34,13 @@ private:
 class PointLight : public BaseObject
 {
 public:
+	static const std::string TYPE_NAME;
+
 	PointLight();
 	~PointLight();
+
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;

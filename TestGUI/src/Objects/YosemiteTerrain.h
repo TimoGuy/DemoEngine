@@ -38,10 +38,13 @@ private:
 class YosemiteTerrain : public BaseObject
 {
 public:
+	static const std::string TYPE_NAME;
+
 	YosemiteTerrain();
 	~YosemiteTerrain();
 
-	void streamTokensForLoading(nlohmann::json& object);
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
 	RenderComponent* renderComponent;

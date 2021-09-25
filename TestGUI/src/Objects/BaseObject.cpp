@@ -44,7 +44,7 @@ BaseObject::~BaseObject()
 	// NOTE: I guess this needs to be created for linking errors that occur when this isn't, bc of how destructors work in c++ dang nabbit
 }
 
-void BaseObject::streamTokensForLoading(nlohmann::json& object)
+void BaseObject::loadPropertiesFromJson(nlohmann::json& object)
 {
 	// Pick up the guid
 	guid = object["guid"];
@@ -53,6 +53,20 @@ void BaseObject::streamTokensForLoading(nlohmann::json& object)
 	glm::vec3 scale = glm::vec3(object["scale"][0], object["scale"][1], object["scale"][2]);
 
 	transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(eulerAngles))) * glm::scale(glm::mat4(1.0f), scale);
+}
+
+nlohmann::json BaseObject::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["guid"] = guid;
+
+	glm::vec3 position = PhysicsUtils::getPosition(transform);
+	glm::vec3 eulerAngles = glm::degrees(glm::eulerAngles(PhysicsUtils::getRotation(transform)));
+	glm::vec3 scale = PhysicsUtils::getScale(transform);
+	j["position"] = { position.x, position.y, position.z };
+	j["rotation"] = { eulerAngles.x, eulerAngles.y, eulerAngles.z };
+	j["scale"] = { scale.x, scale.y, scale.z };
+	return j;
 }
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
@@ -72,10 +86,17 @@ ImGuiComponent::~ImGuiComponent()
 	);
 }
 
-void ImGuiComponent::streamTokensForLoading(nlohmann::json& object)
+void ImGuiComponent::loadPropertiesFromJson(nlohmann::json& object)
 {
 	// Pick up the name
 	name = object["name"];
+}
+
+nlohmann::json ImGuiComponent::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["name"] = name;
+	return j;
 }
 
 void ImGuiComponent::renderImGui()
@@ -125,23 +146,6 @@ void ImGuiComponent::renderImGui()
 	}
 }
 
-CameraComponent::CameraComponent(BaseObject* baseObject) : baseObject(baseObject)
-{
-	//MainLoop::getInstance().cameraObjects.push_back(this);
-}
-
-CameraComponent::~CameraComponent()
-{
-	/*MainLoop::getInstance().cameraObjects.erase(
-		std::remove(
-			MainLoop::getInstance().cameraObjects.begin(),
-			MainLoop::getInstance().cameraObjects.end(),
-			this
-		),
-		MainLoop::getInstance().cameraObjects.end()
-	);*/
-}
-
 LightComponent::LightComponent(BaseObject* baseObject, bool castsShadows) : baseObject(baseObject), castsShadows(castsShadows)
 {
 	MainLoop::getInstance().lightObjects.push_back(this);
@@ -159,9 +163,16 @@ LightComponent::~LightComponent()
 	);
 }
 
-void LightComponent::streamTokensForLoading(nlohmann::json& object)
+void LightComponent::loadPropertiesFromJson(nlohmann::json& object)
 {
 	castsShadows = object["casts_shadows"];
+}
+
+nlohmann::json LightComponent::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["casts_shadows"] = castsShadows;
+	return j;
 }
 
 void LightComponent::renderPassShadowMap() {}

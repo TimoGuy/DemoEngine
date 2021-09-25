@@ -50,16 +50,24 @@ YosemiteTerrain::~YosemiteTerrain()
 	delete imguiComponent;
 }
 
-void YosemiteTerrain::streamTokensForLoading(nlohmann::json& object)		// @Override
+void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
 {
-	BaseObject::streamTokensForLoading(object);
-	imguiComponent->streamTokensForLoading(object);
-	/*physicsComponent->streamTokensForLoading(object);
-	renderComponent->streamTokensForLoading(object);*/
+	BaseObject::loadPropertiesFromJson(object["baseObject"]);
+	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
 	// I'll take the leftover tokens then
 	//
+}
+
+nlohmann::json YosemiteTerrain::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["type"] = TYPE_NAME;
+	j["baseObject"] = BaseObject::savePropertiesToJson();
+	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
+
+	return j;
 }
 
 void YosemiteTerrainRender::preRenderUpdate()

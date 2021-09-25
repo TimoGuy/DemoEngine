@@ -658,8 +658,16 @@ void RenderManager::renderImGuiContents()
 					FileLoading::getInstance().loadFileWithPrompt();
 				}
 
-				if (ImGui::MenuItem("Save", "CTRL+S")) {}
-				if (ImGui::MenuItem("Save As...", "CTRL+SHIFT+S")) {}
+				bool enableSave = FileLoading::getInstance().isCurrentPathValid();
+				if (ImGui::MenuItem("Save", "CTRL+S", enableSave, enableSave))
+				{
+					FileLoading::getInstance().saveFile(false);
+				}
+
+				if (ImGui::MenuItem("Save As...", "CTRL+SHIFT+S"))
+				{
+					FileLoading::getInstance().saveFile(true);
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Edit"))

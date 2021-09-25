@@ -96,6 +96,7 @@
     <ClCompile Include="src\ImGui\ImSequencer.cpp" />
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
     <ClCompile Include="src\Objects\BaseObject.cpp" />
+    <ClCompile Include="src\Objects\ObjectTypes.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
     <ClCompile Include="src\Objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.light\PointLight.cpp" />

@@ -51,11 +51,15 @@ private:
 class DirectionalLight : public BaseObject
 {
 public:
+	static const std::string TYPE_NAME;
+
 	DirectionalLight(bool castsShadows);
 	~DirectionalLight();
 
-	void streamTokensForLoading(nlohmann::json& object);
 	void setLookDirection(glm::quat rotation);
+
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;

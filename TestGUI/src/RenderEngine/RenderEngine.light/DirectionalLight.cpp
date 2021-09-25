@@ -36,11 +36,11 @@ DirectionalLight::~DirectionalLight()			// TODO: when there are shadow maps, del
 	delete imguiComponent;
 }
 
-void DirectionalLight::streamTokensForLoading(nlohmann::json& object)
+void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 {
-	BaseObject::streamTokensForLoading(object);
-	imguiComponent->streamTokensForLoading(object);
-	lightComponent->streamTokensForLoading(object);
+	BaseObject::loadPropertiesFromJson(object["baseObject"]);
+	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
+	lightComponent->loadPropertiesFromJson(object["lightComponent"]);
 
 	//
 	// I'll take the leftover tokens then
@@ -49,6 +49,20 @@ void DirectionalLight::streamTokensForLoading(nlohmann::json& object)
 	lightComponent->getLight().colorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(transform));
+}
+
+nlohmann::json DirectionalLight::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["type"] = TYPE_NAME;
+	j["baseObject"] = BaseObject::savePropertiesToJson();
+	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
+	j["lightComponent"] = lightComponent->savePropertiesToJson();
+
+	j["color"] = { lightComponent->getLight().color.r, lightComponent->getLight().color.g, lightComponent->getLight().color.b };
+	j["color_multiplier"] = lightComponent->getLight().colorIntensity;
+
+	return j;
 }
 
 DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
@@ -64,22 +78,24 @@ void DirectionalLightImGui::refreshResources()
 DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) : LightComponent(bo)
 {
 	LightComponent::castsShadows = castsShadows;
-	if (castsShadows)
-		createCSMBuffers();
 
 	light.lightType = LightType::DIRECTIONAL;
 
 	light.color = glm::vec3(1.0f);
 	light.colorIntensity = 150.0f;
+
+	// @Hardcode
+	shadowFarPlane = 200.0f;
+	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
+
+	if (castsShadows)
+		createCSMBuffers();
 }
 
 constexpr unsigned int depthMapResolution = 4096;
 void DirectionalLightLight::createCSMBuffers()
 {
 	refreshResources();
-
-	shadowFarPlane = 200.0f;		// NOTE: hardcoded
-	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
 
 	//
 	// Create light FBO

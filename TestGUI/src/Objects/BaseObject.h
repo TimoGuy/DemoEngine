@@ -14,7 +14,8 @@ public:
 	BaseObject();
 	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
-	virtual void streamTokensForLoading(nlohmann::json& object);
+	virtual void loadPropertiesFromJson(nlohmann::json& object);
+	virtual nlohmann::json savePropertiesToJson();
 
 	glm::mat4 transform;
 	std::string guid;
@@ -45,27 +46,11 @@ public:
 	virtual void renderImGui();
 	virtual void cloneMe() = 0;
 
-	virtual void streamTokensForLoading(nlohmann::json& object);
+	virtual void loadPropertiesFromJson(nlohmann::json& object);
+	virtual nlohmann::json savePropertiesToJson();
 
 private:
 	bool clickPressedPrevious;
-};
-
-
-//
-// This indicates that a camera is extractable
-// from this object. Will be placed in the cameraObjects
-// queue (ideally, you're gonna have to do that manually, bud).
-//
-class Camera;
-class CameraComponent
-{
-public:
-	BaseObject* baseObject;
-
-	CameraComponent(BaseObject* baseObject);
-	~CameraComponent();
-	virtual Camera& getCamera() = 0;
 };
 
 
@@ -84,10 +69,11 @@ public:
 
 	LightComponent(BaseObject* baseObject, bool castsShadows = false);
 	~LightComponent();
-	virtual Light& getLight() = 0;
+	virtual Light& getLight() = 0;			// TODO: Refactor this so that instead of a getLight function it is actually just a light object;
 	virtual void renderPassShadowMap();
 
-	virtual void streamTokensForLoading(nlohmann::json& object);
+	virtual void loadPropertiesFromJson(nlohmann::json& object);
+	virtual nlohmann::json savePropertiesToJson();
 };
 
 

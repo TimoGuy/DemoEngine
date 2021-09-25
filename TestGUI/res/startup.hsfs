@@ -1,31 +1,85 @@
 {
-	"objects": {
-		"0": {
-			"guid": "131313fff",
-			"type": "ground",
-			"name": "Yosemite Terrain Yo",
-			"position": [0,-4.56,0],
-			"rotation": [0,0,0],
-			"scale": [100,1,100]
-		},
-		"1": {
-			"guid": "696969eeee",
-			"type": "dir_light",
-			"name": "Yosemite DirLight Yo",
-			"position": [0,5,0],
-			"rotation": [26.975,41.029,0],
-			"scale": [1,1,1],
-			"color": [1,1,1],
-			"color_multiplier": 10,
-			"casts_shadows": false
-		},
-		"2": {
-			"guid": "9001ggg",
-			"type": "player",
-			"name": "Player Yo",
-			"position": [0,0,0],
-			"rotation": [0,0,0],
-			"scale": [1,1,1]
-		}
-	}
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "3e0641fb701bfc7640db7b563018b0eb9ec19b0504ee17e16d9878f780833382",
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Player Controller"
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "6e8b12d0239d73c8bde43a41c10ed8cf26a88d4d30559a167e25e5e194555b5d",
+                "position": [
+                    0.0,
+                    5.0,
+                    0.0
+                ],
+                "rotation": [
+                    26.97498321533203,
+                    41.02898025512695,
+                    -2.2635183540842263e-06
+                ],
+                "scale": [
+                    0.9999998807907104,
+                    1.0,
+                    0.9999998807907104
+                ]
+            },
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "color_multiplier": 10.0,
+            "imguiComponent": {
+                "name": "Directional Light"
+            },
+            "lightComponent": {
+                "casts_shadows": false
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "52f31480e6db5c6f364dbcf44a197124a11c9b41820e2c1ec6b4cd97482184b6",
+                "position": [
+                    0.0,
+                    -4.559999942779541,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    100.0,
+                    1.0,
+                    100.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Yosemite Terrain"
+            },
+            "type": "ground"
+        }
+    ]
 }

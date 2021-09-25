@@ -84,6 +84,14 @@ namespace PhysicsUtils
 		return glm::quat_cast(transform);
 	}
 
+	glm::vec3 getScale(glm::mat4 transform)
+	{
+		glm::vec3 scale;
+		for (int i = 0; i < 3; i++)
+			scale[i] = glm::length(glm::vec3(transform[i]));
+		return scale;
+	}
+
 #pragma endregion
 
 #pragma region imgui property panel functions

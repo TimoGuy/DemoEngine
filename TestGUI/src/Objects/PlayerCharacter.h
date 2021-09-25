@@ -49,10 +49,13 @@ private:
 class PlayerCharacter : public BaseObject
 {
 public:
+	static const std::string TYPE_NAME;
+
 	PlayerCharacter();
 	~PlayerCharacter();
 
-	void streamTokensForLoading(nlohmann::json& object);
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;

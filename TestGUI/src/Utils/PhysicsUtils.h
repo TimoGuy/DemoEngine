@@ -38,6 +38,8 @@ namespace PhysicsUtils
 
 	glm::quat getRotation(glm::mat4 transform);
 
+	glm::vec3 getScale(glm::mat4 transform);
+
 #pragma endregion
 
 #pragma region imgui property panel functions
