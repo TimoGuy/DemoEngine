@@ -804,7 +804,7 @@ void RenderManager::renderImGuiContents()
 
 	if (checkForRequestedObjects != 0)		// NOTE: 1=clickevent, 2=hoverevent
 	{
-		if (!ImGuizmo::IsOver() && !ImGuizmo::IsUsing())
+		if (!ImGuizmo::IsOver() && !ImGuizmo::IsUsing() && !ImGui::GetIO().WantCaptureMouse)
 		{
 			//
 			// Compare Z-index and see which is closest and select that one here
@@ -832,9 +832,6 @@ void RenderManager::renderImGuiContents()
 				else if (checkForRequestedObjects == 2)
 					// Hover Event
 					currentHoveringObjectIndex = requestedListObjectIndices[closestIndex];
-
-				requestedListHitInformations.clear();
-				requestedListObjectIndices.clear();
 			}
 			else
 			{
@@ -849,6 +846,8 @@ void RenderManager::renderImGuiContents()
 
 		// Reset flag
 		checkForRequestedObjects = 0;
+		requestedListHitInformations.clear();
+		requestedListObjectIndices.clear();
 	}
 
 	//
