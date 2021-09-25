@@ -8,7 +8,7 @@
 class PointLightImGui : public ImGuiComponent
 {
 public:
-	PointLightImGui(BaseObject* bo);
+	PointLightImGui(BaseObject* bo, Bounds* bounds);
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -44,4 +44,6 @@ public:
 
 	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;
+
+	Bounds* bounds;
 };

@@ -13,8 +13,11 @@ uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
 
-// Shadow map
-uniform sampler2DArray shadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+// Shadow map                   NOTE: these all have MAX_LIGHTS as the setting, however, not every 'slot' will be filled, due to each array being accessible identical to the light index
+const int MAX_LIGHTS = 4;
+uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
+uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -23,19 +26,15 @@ uniform sampler2D brdfLUT;
 
 // lights
 uniform int numLights;
-const int MAX_LIGHTS = 4;
 uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
 uniform vec3 lightDirections[MAX_LIGHTS];
 uniform vec3 lightColors[MAX_LIGHTS];
 
-// CSM
-layout (std140, binding = 0) uniform LightSpaceMatrices
-{
-    mat4 lightSpaceMatrices[16];
-};
+// CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
+layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 view;
+uniform mat4 cameraView;
 uniform float nearPlane;
 uniform float farPlane;
 
@@ -47,7 +46,7 @@ const float PI = 3.14159265359;
 vec4 layerCalc(vec3 fragPosition)
 {
     // select cascade layer
-    vec4 fragPosViewSpace = view * vec4(fragPosition, 1.0);
+    vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
 
     int layer = -1;
@@ -89,10 +88,10 @@ vec4 layerCalc(vec3 fragPosition)
 }
 
 
-float shadowCalculation(vec3 lightDir, vec3 fragPosition)
+float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 {
 	// select cascade layer
-    vec4 fragPosViewSpace = view * vec4(fragPosition, 1.0);
+    vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
     float depthValue = abs(fragPosViewSpace.z);
 
     int layer = -1;
@@ -135,12 +134,12 @@ float shadowCalculation(vec3 lightDir, vec3 fragPosition)
 
     // PCF
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(csmShadowMap, 0));
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r; 
+            float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r; 
             shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
         }    
     }
@@ -254,7 +253,7 @@ void main()
     {
         // calculate per-light radiance
         vec3 L, H, radiance;
-        float attenuation;
+        float attenuation, shadow;
 
         if (length(lightDirections[i]) == 0.0f)
         {
@@ -264,6 +263,8 @@ void main()
             float distance = length(lightPositions[i].xyz - fragPosition);
             attenuation = 1.0 / (distance * distance);
             radiance = lightColors[i] * attenuation;
+
+            shadow = 0.0f;
         }
         else if (lightPositions[i].w == 0.0f)
         {
@@ -272,6 +273,8 @@ void main()
             H = normalize(V + L);
             attenuation = 1.0f;
             radiance = lightColors[i] * attenuation;
+
+	        shadow = shadowCalculationCSM(-L, fragPosition);         // TODO: check if should be -L
         }
         else
         {
@@ -301,14 +304,8 @@ void main()
         // scale light by NdotL
         float NdotL = max(dot(N, L), 0.0);
 
-        //
-	    // Calculate Shadow
-	    //
-	    vec3 lightDir = normalize(lightDirections[0]);        // @Hardcode
-	    float shadow = 1.0 - (shadowCalculation(lightDir, fragPosition) * 1.0);
-
         // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL * shadow;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL * (1.0 - shadow);  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
     
     // ambient lighting (Using the IBL tex as the ambient)

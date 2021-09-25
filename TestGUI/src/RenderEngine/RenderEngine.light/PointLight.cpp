@@ -15,7 +15,11 @@ PointLight::PointLight()			// TODO: make this in the palette as well, but first,
 {
 	transform = glm::mat4(1.0f);
 
-	imguiComponent = new PointLightImGui(this);
+	bounds = new Bounds();
+	bounds->center = glm::vec3(0.0f);
+	bounds->extents = glm::vec3(0.5f);
+
+	imguiComponent = new PointLightImGui(this, bounds);
 	lightComponent = new PointLightLight(this);
 
 	lightComponent->getLight().facingDirection = glm::vec3(0.0f);		// 0'd out facingdirection shows it's a point light
@@ -54,7 +58,7 @@ nlohmann::json PointLight::savePropertiesToJson()
 	return j;
 }
 
-PointLightImGui::PointLightImGui(BaseObject* bo) : ImGuiComponent(bo, nullptr, "Point Light")			// tODO: create bounds for here
+PointLightImGui::PointLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Point Light")			// tODO: create bounds for here
 {
 	refreshResources();
 }
@@ -121,6 +125,8 @@ void PointLightImGui::renderImGui()
 	}
 
 	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
+
+	ImGuiComponent::renderImGui();
 }
 
 void PointLightImGui::cloneMe()
