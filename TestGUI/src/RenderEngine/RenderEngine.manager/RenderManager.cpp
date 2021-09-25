@@ -916,22 +916,25 @@ void RenderManager::renderImGuiContents()
 
 			//
 			// Popup for creating objects
-//
-if (ImGui::Button("Add Object.."))
-ImGui::OpenPopup("add_object_popup");
-if (ImGui::BeginPopup("add_object_popup"))
-{
-	if (ImGui::Selectable("Player Character"))
-		new PlayerCharacter();
-	if (ImGui::Selectable("Directional Light"))
-		new DirectionalLight(true);
-	if (ImGui::Selectable("Point Light"))
-		new PointLight();
-	if (ImGui::Selectable("Yosemite Terrain"))
-		new YosemiteTerrain();
+			//
+			if (ImGui::Button("Add Object.."))
+				ImGui::OpenPopup("add_object_popup");
+			if (ImGui::BeginPopup("add_object_popup"))
+			{
+				//
+				// @Palette: where to add objects to add in imgui
+				//
+				if (ImGui::Selectable("Player Character"))
+					new PlayerCharacter();
+				if (ImGui::Selectable("Directional Light"))
+					new DirectionalLight(true);
+				if (ImGui::Selectable("Point Light"))
+					new PointLight();
+				if (ImGui::Selectable("Yosemite Terrain"))
+					new YosemiteTerrain();
 
-	ImGui::EndPopup();
-}
+				ImGui::EndPopup();
+			}
 		}
 		ImGui::End();
 	}
