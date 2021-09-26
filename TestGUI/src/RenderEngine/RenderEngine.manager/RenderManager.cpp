@@ -944,14 +944,14 @@ void RenderManager::renderImGuiContents()
 				//
 				// @Palette: where to add objects to add in imgui
 				//
-				if (ImGui::Selectable("Player Character"))
-					new PlayerCharacter();
-				if (ImGui::Selectable("Directional Light"))
-					new DirectionalLight(true);
-				if (ImGui::Selectable("Point Light"))
-					new PointLight(true);
-				if (ImGui::Selectable("Yosemite Terrain"))
-					new YosemiteTerrain();
+				BaseObject* newObject = nullptr;
+				if (ImGui::Selectable("Player Character"))			newObject = new PlayerCharacter();
+				if (ImGui::Selectable("Directional Light"))			newObject = new DirectionalLight(true);
+				if (ImGui::Selectable("Point Light"))				newObject = new PointLight(true);
+				if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
+
+				if (newObject != nullptr)
+					currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
 
 				ImGui::EndPopup();
 			}
