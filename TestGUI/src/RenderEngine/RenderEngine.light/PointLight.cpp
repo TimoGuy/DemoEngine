@@ -112,12 +112,12 @@ void PointLightLight::createShadowBuffers()
 			0,
 			GL_DEPTH_COMPONENT,
 			depthMapResolution,
-			depthMapResolution,
-			0,
-			GL_DEPTH_COMPONENT,
-			GL_FLOAT,
-			nullptr
-		);
+depthMapResolution,
+0,
+GL_DEPTH_COMPONENT,
+GL_FLOAT,
+nullptr
+);
 	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -206,9 +206,19 @@ void PointLightImGui::propertyPanelImGui()
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
-	
+
 	ImGui::ColorEdit3("Light base color", &((PointLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &((PointLight*)baseObject)->lightComponent->getLight().colorIntensity);
+
+	//
+	// Toggle shadows
+	//
+	std::string toggleShadowsLabel = "Turn " + std::string(((PointLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
+	if (ImGui::Button(toggleShadowsLabel.c_str()))
+	{
+		((PointLight*)baseObject)->lightComponent->castsShadows = !((PointLight*)baseObject)->lightComponent->castsShadows;
+		((PointLightLight*)((PointLight*)baseObject)->lightComponent)->refreshShadowBuffers();
+	}
 }
 
 void PointLightImGui::renderImGui()

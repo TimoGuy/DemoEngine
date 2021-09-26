@@ -143,6 +143,7 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 		//
 		// Figures out casting shadows
 		//
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
 		if (MainLoop::getInstance().lightObjects[i]->castsShadows)
 		{
 			const GLuint baseOffset = 7;

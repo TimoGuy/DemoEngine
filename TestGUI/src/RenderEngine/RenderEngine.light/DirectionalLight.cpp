@@ -394,6 +394,16 @@ void DirectionalLightImGui::propertyPanelImGui()
 		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->transform;
 		trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
 	}
+
+	//
+	// Toggle shadows
+	//
+	std::string toggleShadowsLabel = "Turn " + std::string(((DirectionalLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
+	if (ImGui::Button(toggleShadowsLabel.c_str()))
+	{
+		((DirectionalLight*)baseObject)->lightComponent->castsShadows = !((DirectionalLight*)baseObject)->lightComponent->castsShadows;
+		((DirectionalLightLight*)((DirectionalLight*)baseObject)->lightComponent)->refreshRenderBuffers();
+	}
 }
 
 void DirectionalLightImGui::renderImGui()

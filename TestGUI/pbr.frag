@@ -30,6 +30,7 @@ uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the sha
 uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
 uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
 uniform float pointLightShadowFarPlanes[MAX_LIGHTS];
+uniform bool hasShadow[MAX_LIGHTS];
 
 // CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
@@ -168,7 +169,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 
 
 // Array of offset direction for sampling for point light shadows
-vec3 gridSamplingDisk[20] = vec3[]
+vec3 gridSamplingDisk[20] = vec3[]          // TODO: optimize this sampling disk... for sure 1,1,1 and -1,-1,-1 don't have to be there
 (
    vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
    vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
@@ -179,22 +180,6 @@ vec3 gridSamplingDisk[20] = vec3[]
 
 float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
 {
-
-
-    vec3 fragToLight = fragPosition - lightPositions[lightIndex].xyz;
-    float closestDepth = texture(pointLightShadowMaps[lightIndex], fragToLight).r;
-    closestDepth *= pointLightShadowFarPlanes[lightIndex];
-
-    float currentDepth = length(fragToLight);
-    float bias = 0.05f;
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
-
-    return shadow;
-
-
-
-
-/*
     vec3 fragToLight = fragPosition - lightPositions[lightIndex].xyz;
     float currentDepth = length(fragToLight);
 
@@ -203,23 +188,20 @@ float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
     float bias = 0.15;
     int samples = 20;
     float viewDistance = length(viewPosition - fragPosition);
-    float diskRadius = (1.0 + (viewDistance / farPlane)) / 25.0;
-    for(int i = 0; i < samples; ++i)
+    float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[lightIndex])) / 25.0;
+    for (int i = 0; i < samples; ++i)
     {
         float closestDepth = texture(pointLightShadowMaps[lightIndex], fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= farPlane;   // undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
+        closestDepth *= pointLightShadowFarPlanes[lightIndex];   // undo mapping [0;1]
+        if (currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
         
     // display closestDepth as debug (to visualize depth cubemap)
-    // FragColor = vec4(vec3(closestDepth / farPlane), 1.0);    
+    // FragColor = vec4(vec3(closestDepth / pointLightShadowFarPlanes[lightIndex]), 1.0);    
         
     return shadow;
-
-
-    */
 }
 
 
@@ -312,7 +294,7 @@ void main()
     {
         // calculate per-light radiance
         vec3 L, H, radiance;
-        float attenuation, shadow;
+        float attenuation, shadow = 0.0;
 
         if (length(lightDirections[i]) == 0.0f)
         {
@@ -323,7 +305,8 @@ void main()
             attenuation = 1.0 / (distance * distance);
             radiance = lightColors[i] * attenuation;
 
-            shadow = shadowCalculationPoint(i, fragPosition);
+            if (hasShadow[i])
+                shadow = shadowCalculationPoint(i, fragPosition);
         }
         else if (lightPositions[i].w == 0.0f)
         {
@@ -333,7 +316,8 @@ void main()
             attenuation = 1.0f;
             radiance = lightColors[i] * attenuation;
 
-	        shadow = shadowCalculationCSM(-L, fragPosition);         // TODO: check if should be -L
+	        if (hasShadow[i])
+                shadow = shadowCalculationCSM(-L, fragPosition);
         }
         else
         {
