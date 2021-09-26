@@ -63,13 +63,13 @@ void FileLoading::loadFileWithPrompt()
 	nlohmann::json& objects = j["objects"];
 	for (auto& object : objects)
 	{
-		loadObjectWithJson(object);
+		createObjectWithJson(object);
 	}
 
 	std::cout << "::Opening:: DONE!" << std::endl;
 }
 
-void FileLoading::loadObjectWithJson(nlohmann::json& object)
+void FileLoading::createObjectWithJson(nlohmann::json& object)
 {
 	BaseObject* buildingObject = nullptr;
 

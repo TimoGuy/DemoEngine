@@ -15,7 +15,6 @@ public:
 
 	void propertyPanelImGui();
 	void renderImGui();
-	void cloneMe();
 
 private:
 	unsigned int lightGizmoTextureId;

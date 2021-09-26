@@ -16,10 +16,10 @@ public:
 	void loadFileWithPrompt();
 	void saveFile(bool withPrompt);
 
+	void createObjectWithJson(nlohmann::json& object);
+
 private:
 	FileLoading() {}
-
-	void loadObjectWithJson(nlohmann::json& object);
 
 	std::string currentWorkingPath;
 };

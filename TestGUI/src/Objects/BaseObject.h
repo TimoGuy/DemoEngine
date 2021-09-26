@@ -44,7 +44,6 @@ public:
 	virtual ~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui();
-	virtual void cloneMe() = 0;
 
 	virtual void loadPropertiesFromJson(nlohmann::json& object);
 	virtual nlohmann::json savePropertiesToJson();

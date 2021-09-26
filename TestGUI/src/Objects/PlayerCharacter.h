@@ -13,7 +13,6 @@ public:
 
 	void propertyPanelImGui();
 	void renderImGui();
-	void cloneMe();
 };
 
 class PlayerPhysics : public PhysicsComponent

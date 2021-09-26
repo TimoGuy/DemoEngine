@@ -249,9 +249,3 @@ void YosemiteTerrainImGui::renderImGui()
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
 	ImGuiComponent::renderImGui();
 }
-
-void YosemiteTerrainImGui::cloneMe()
-{
-	// TODO: figure this out...
-	new YosemiteTerrain();
-}

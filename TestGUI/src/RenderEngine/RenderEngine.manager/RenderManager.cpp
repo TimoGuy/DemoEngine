@@ -687,7 +687,9 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0))
 				{
 					// NOTE: copypasta
-					MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->cloneMe();
+					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
+					j["baseObject"].erase("guid");
+					FileLoading::getInstance().createObjectWithJson(j);
 				}
 				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
 				{
@@ -887,7 +889,9 @@ void RenderManager::renderImGuiContents()
 				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
 				{
 					// NOTE: copypasta
-					MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->cloneMe();
+					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
+					j["baseObject"].erase("guid");
+					FileLoading::getInstance().createObjectWithJson(j);
 					currentSelectedObjectIndex = -1;			// TODO: make it so that you can duplicate but not keep duplicating as you hold the ctrl+d combo
 				}
 			}

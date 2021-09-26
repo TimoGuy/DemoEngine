@@ -263,8 +263,3 @@ void PointLightImGui::renderImGui()
 
 	ImGuiComponent::renderImGui();
 }
-
-void PointLightImGui::cloneMe()
-{
-	// TODO: figure this out
-}

@@ -326,9 +326,3 @@ void PlayerImGui::renderImGui()
 	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller);
 	ImGuiComponent::renderImGui();
 }
-
-void PlayerImGui::cloneMe()
-{
-	// TODO: figure this out...
-	new PlayerCharacter();
-}

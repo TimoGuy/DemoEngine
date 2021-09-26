@@ -47,7 +47,8 @@ BaseObject::~BaseObject()
 void BaseObject::loadPropertiesFromJson(nlohmann::json& object)
 {
 	// Pick up the guid
-	guid = object["guid"];
+	if (object.contains("guid"))
+		guid = object["guid"];
 	glm::vec3 position = glm::vec3(object["position"][0], object["position"][1], object["position"][2]);
 	glm::vec3 eulerAngles = glm::vec3(object["rotation"][0], object["rotation"][1], object["rotation"][2]);
 	glm::vec3 scale = glm::vec3(object["scale"][0], object["scale"][1], object["scale"][2]);

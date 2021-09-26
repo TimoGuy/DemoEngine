@@ -459,8 +459,3 @@ void DirectionalLightImGui::renderImGui()
 
 	ImGuiComponent::renderImGui();
 }
-
-void DirectionalLightImGui::cloneMe()
-{
-	// TODO: figure this out
-}
