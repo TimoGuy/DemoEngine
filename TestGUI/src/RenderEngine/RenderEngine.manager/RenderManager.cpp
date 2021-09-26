@@ -712,6 +712,7 @@ void RenderManager::renderImGuiContents()
 			}
 			if (ImGui::BeginMenu("Rendering"))
 			{
+				// @Broken: Lol this is pretty funny actually; so we're rendering everything to an fbo and then render it onto a 1x1 ndc quad. Wireframe mode just shows the quad, so lol.
 				if (ImGui::MenuItem("Wireframe Mode", NULL, &renderWireframeMode))
 				{
 					glPolygonMode(GL_FRONT_AND_BACK, renderWireframeMode ? GL_LINE : GL_FILL);

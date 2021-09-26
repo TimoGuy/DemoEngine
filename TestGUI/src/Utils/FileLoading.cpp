@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "../MainLoop/MainLoop.h"
+#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
 #include "../Objects/BaseObject.h"
 #include "../Objects/YosemiteTerrain.h"
@@ -48,6 +49,8 @@ void FileLoading::loadFileWithPrompt()
 	{
 		delete MainLoop::getInstance().imguiObjects[i]->baseObject;
 	}
+	MainLoop::getInstance().renderManager->currentSelectedObjectIndex = -1;
+	MainLoop::getInstance().renderManager->currentHoveringObjectIndex = -1;
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;
 	currentWorkingPath = fname;
