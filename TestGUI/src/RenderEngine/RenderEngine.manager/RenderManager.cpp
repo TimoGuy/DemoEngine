@@ -690,6 +690,8 @@ void RenderManager::renderImGuiContents()
 					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
 					j["baseObject"].erase("guid");
 					FileLoading::getInstance().createObjectWithJson(j);
+
+					currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
 				}
 				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
 				{
@@ -884,15 +886,30 @@ void RenderManager::renderImGuiContents()
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
 					currentSelectedObjectIndex = -1;
-					currentHoveringObjectIndex = -1;
+					currentHoveringObjectIndex = -1;			// NOTE: there is a bug where an array index exception is thrown once something is deleted but the hovering object index isn't reset
 				}
-				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
+
+				//
+				// Press ctrl+d to copy a selected object
+				//
 				{
-					// NOTE: copypasta
-					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
-					j["baseObject"].erase("guid");
-					FileLoading::getInstance().createObjectWithJson(j);
-					currentSelectedObjectIndex = -1;			// TODO: make it so that you can duplicate but not keep duplicating as you hold the ctrl+d combo
+					static bool objectDupeKeyboardShortcutLock = false;
+					if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
+					{
+						if (!objectDupeKeyboardShortcutLock)
+						{
+							objectDupeKeyboardShortcutLock = true;
+
+							// NOTE: copypasta
+							nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
+							j["baseObject"].erase("guid");
+							FileLoading::getInstance().createObjectWithJson(j);
+
+							currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
+						}
+					}
+					else
+						objectDupeKeyboardShortcutLock = false;
 				}
 			}
 
