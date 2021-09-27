@@ -67,16 +67,12 @@ PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo,
 void PlayerRender::refreshResources()
 {
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
-	shadowPassSkinnedProgramId = *(GLuint*)Resources::getResource("shader;shadowPassSkinned");
 
 	//
 	// Model and animation loading
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
-	/*std::vector<Animation> tryModelAnimations;
-	model = Model("res/slime_glb.glb", tryModelAnimations, { 0, 1, 2, 3, 4, 5 });
-	animator = Animator(&tryModelAnimations);*/
 	model = *(Model*)Resources::getResource("model;slimeGirl");
 	animator = Animator(&model.getAnimations());
 
@@ -144,13 +140,13 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 
 void PlayerRender::preRenderUpdate()
 {
-
+	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
 {
 #ifdef _DEBUG
-	refreshResources();
+	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
 #endif
 
 	// @Copypasta
@@ -187,6 +183,16 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 
 	glActiveTexture(GL_TEXTURE0);
 
+
+	auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
+	for (size_t i = 0; i < transforms.size(); i++)
+		glUniformMatrix4fv(
+			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+			1,
+			GL_FALSE,
+			glm::value_ptr(transforms[i])
+		);
+
 	//
 	// Setup the transformation matrices and lights
 	//
@@ -208,6 +214,15 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 
 void PlayerRender::renderShadow(GLuint programId)
 {
+	auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
+	for (size_t i = 0; i < transforms.size(); i++)
+		glUniformMatrix4fv(
+			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+			1,
+			GL_FALSE,
+			glm::value_ptr(transforms[i])
+		);
+
 	glUniformMatrix4fv(
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,

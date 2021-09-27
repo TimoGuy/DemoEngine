@@ -28,7 +28,6 @@ void setupImGui();
 void setupPhysx();
 
 void physicsUpdate();
-void render();
 
 
 bool loopRunning = false;
@@ -97,7 +96,6 @@ void MainLoop::run()
 	float startFrameTime = 0;
 #endif
 
-	float deltaTime;
 	float lastFrame = glfwGetTime();
 
 	while (!glfwWindowShouldClose(window))
@@ -137,10 +135,10 @@ void MainLoop::run()
 		//if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
 		//	animator.playAnimation(5, 12.0f);
 
-		//float currentFrame = glfwGetTime();
-		//deltaTime = currentFrame - lastFrame;
-		//lastFrame = currentFrame;
-		//animator.updateAnimation(deltaTime * deltaTimeMultiplier);
+		// Update deltatime (NOTE: render thread only!!!)
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 			
 		//
 		// Commit to render everything
@@ -150,7 +148,10 @@ void MainLoop::run()
 			renderObjects[i]->preRenderUpdate();
 		}
 
-		render();
+		//
+		// Render out the rendermanager
+		//
+		renderManager->render();
 
 #if SINGLE_BUFFERED_MODE
 		glFlush();
@@ -454,13 +455,4 @@ void physicsUpdate()
 
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));
 	}
-}
-
-
-void render()
-{
-	//
-	// Render out the rendermanager
-	//
-	MainLoop::getInstance().renderManager->render();
 }

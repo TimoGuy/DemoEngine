@@ -35,7 +35,7 @@ public:
 	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
 	void renderShadow(GLuint programId);
 
-	unsigned int pbrShaderProgramId, shadowPassSkinnedProgramId;
+	unsigned int pbrShaderProgramId;
 
 	Model model;
 	Animator animator;

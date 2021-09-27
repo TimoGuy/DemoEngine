@@ -32,6 +32,8 @@ public:
 	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
 
+	float deltaTime;		// NOTE: to only be used on the rendering thread
+
 	//
 	// Debug mode flags
 	//
