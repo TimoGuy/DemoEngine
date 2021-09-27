@@ -140,6 +140,7 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 
 void PlayerRender::preRenderUpdate()
 {
+	// @Optimize: This line, if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);
 }
 
