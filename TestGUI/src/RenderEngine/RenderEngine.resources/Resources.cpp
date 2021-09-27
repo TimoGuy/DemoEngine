@@ -1,6 +1,7 @@
 #include "Resources.h"
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <stb/stb_image.h>
 
@@ -108,7 +109,7 @@ const GLchar* readFile(const char* filename)
 
 GLuint compileShader(GLenum type, const char* fname)
 {
-	std::cout << "[" << fname << "]\tCompiling Shader...\t";
+	std::cout << std::left << std::setw(30) << ("[" + std::string(fname) + "]") << "Compiling Shader...\t";
 	GLuint shader_id = glCreateShader(type);
 	const char* filedata = readFile(fname);
 

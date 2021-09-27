@@ -45,7 +45,7 @@ uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
-vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which csm layer is being used
+/*vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which csm layer is being used
 {
     // select cascade layer
     vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
@@ -87,7 +87,7 @@ vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which 
     }
 
     return retColor;
-}
+}*/
 
 
 float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
