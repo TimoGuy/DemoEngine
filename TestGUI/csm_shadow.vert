@@ -17,8 +17,8 @@ void main()
 	//
 	// Do Bone Transformations
 	//
-	mat4 boneTransform = mat4(1.0f);
-	bool first = true;
+	mat4 boneTransform = mat4(0.0f);
+	mat3 normTransform = mat3(0.0f);
 	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (boneIds[i] == -1)
@@ -30,16 +30,9 @@ void main()
 		}
 		int selectedBone = boneIds[i];
 
-		if (!first)
-		{
-			// Apply bone transformation since valid bone!
-			boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
-		}
-		else
-		{
-			first = false;
-			boneTransform = finalBoneMatrices[selectedBone] * boneWeights[i];
-		}
+		// Apply bone transformation since valid bone!
+		boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
+		normTransform += mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
 	}
 
 	gl_Position = modelMatrix * boneTransform * vec4(vertexPosition, 1.0);

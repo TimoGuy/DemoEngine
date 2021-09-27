@@ -16,7 +16,7 @@
 
 #include "../Utils/PhysicsUtils.h"
 
-#define SINGLE_BUFFERED_MODE 0
+#define SINGLE_BUFFERED_MODE 1
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
 #endif
@@ -155,7 +155,7 @@ void MainLoop::run()
 
 #if SINGLE_BUFFERED_MODE
 		glFlush();
-		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
+		//std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
 #else
 		glfwSwapBuffers(window);
 #endif
@@ -191,7 +191,7 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 	glfwSwapInterval(1);
