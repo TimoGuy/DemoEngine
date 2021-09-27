@@ -315,6 +315,7 @@ void RenderManager::createShaderPrograms()
 	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
 	bloom_postprocessing_program_id = *(GLuint*)Resources::getResource("shader;bloom_postprocessing");
 	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
+	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 }
 
 void RenderManager::createFonts()
@@ -554,11 +555,14 @@ void RenderManager::renderScene()
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
 
+	// Pre-real rendering setup
+	setupSceneLights();
+
 	//
 	// Draw objects but cull them
 	// (NOTE: the culling step doesn't happen in the shadowmaps)
 	//
-	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);
+	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	int succ = 0;
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
@@ -570,7 +574,7 @@ void RenderManager::renderScene()
 		succ++;
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
 	}
-	//std::cout << "Successfully culled: \t" << succ << std::endl;				@Debug
+	//std::cout << "Successfully culled: \t" << succ << std::endl;				@Debug: How many objects are culled
 
 
 	//
@@ -586,6 +590,101 @@ void RenderManager::renderScene()
 		glUniform1i(glGetUniformLocation(debug_csm_program_id, "depthMap"), 0);
 		renderQuad();
 	}
+}
+
+
+const size_t MAX_LIGHTS = 8;			// @Hardcode: hopefully this limit goes away in the future if we wanna do forward+ rendering
+void RenderManager::setupSceneLights()
+{
+	glUseProgram(pbrShaderProgramId);
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
+
+	//
+	// Reset shadow maps
+	//
+	for (size_t i = 0; i < MAX_LIGHTS; i++)
+	{
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+	}
+
+	//
+	// Setup lights and shadows
+	//
+	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), numLights);
+	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
+
+	const GLuint baseOffset = 7;											// @Hardcode: Bc GL_TEXTURE6 is the highest being used rn
+	GLuint shadowMapTextureIndex = 0;
+	bool setupCSM = false;					// NOTE: unfortunately, I can't figure out a way to have multiple directional light csm's, so here's to just one!
+	for (size_t i = 0; i < numLights; i++)
+	{
+		//
+		// Figures out casting shadows
+		//
+		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
+		if (MainLoop::getInstance().lightObjects[i]->castsShadows)
+		{
+			glActiveTexture(GL_TEXTURE0 + baseOffset + shadowMapTextureIndex);
+
+			if (!setupCSM && MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
+			{
+				glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
+				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
+
+				// DirectionalLight: Setup for csm rendering
+				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+				for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
+				{
+					glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
+				}
+				glUniformMatrix4fv(
+					glGetUniformLocation(pbrShaderProgramId, "cameraView"),
+					1,
+					GL_FALSE,
+					glm::value_ptr(MainLoop::getInstance().camera.calculateViewMatrix())
+				);
+				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "nearPlane"), MainLoop::getInstance().camera.zNear);
+				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
+
+				// Set flag
+				setupCSM = true;
+			}
+			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::SPOT)
+			{
+				glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
+				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+			}
+			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::POINT)
+			{
+				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
+				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
+			}
+
+			shadowMapTextureIndex++;
+		}
+
+		//
+		// Setting up lights
+		//
+		LightComponent* light = MainLoop::getInstance().lightObjects[i];
+		glm::vec3 lightDirection = glm::vec3(0.0f);
+
+		if (light->getLight().lightType != LightType::POINT)
+			lightDirection = glm::normalize(light->getLight().facingDirection);																									// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
+
+		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
+
+		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
+		glUniform4fv(glGetUniformLocation(pbrShaderProgramId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
+		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
+	}
+
+	glActiveTexture(GL_TEXTURE0);
 }
 
 

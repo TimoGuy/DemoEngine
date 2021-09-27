@@ -47,7 +47,7 @@ public:
 	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
 
 private:
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer;
 
@@ -73,6 +73,7 @@ private:
 	void createFonts();
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
+	void setupSceneLights();
 
 	// ImGui Debug stuff
 	void renderImGuiPass();

@@ -19,7 +19,7 @@ uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
 
 // lights
-const int MAX_LIGHTS = 4;
+const int MAX_LIGHTS = 8;
 uniform int numLights;
 uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
 uniform vec3 lightDirections[MAX_LIGHTS];
