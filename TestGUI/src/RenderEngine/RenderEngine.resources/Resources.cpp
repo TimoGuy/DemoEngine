@@ -364,4 +364,6 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, isUnloading, "res/slime_glb.glb", { /*0, 1, 2, 3, 4,*/ 5 });
 	if (resourceName == "model;yosemiteTerrain")				return loadModel(resourceName, isUnloading, "res/cube.glb");
+
+	assert(false);
 }

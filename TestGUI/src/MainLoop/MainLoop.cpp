@@ -41,10 +41,69 @@ MainLoop& MainLoop::getInstance()
 
 void MainLoop::initialize()
 {
+	// https://www.text-image.com/convert/ascii.html
+	const char* logoText =
+		"                            .dh                     /do                         \n"
+		"                            -MN                    -NN:                         \n"
+		"                            -MN                    dMNhhhhhhhhhhhhhhhhhhhhhhho  \n"
+		"             `://///////////+MN/////////////-     +Md////////////////////////-  \n"
+		"             -hhhhhhhhhhhhhhdMMhhhhhhhhhhhhho    `NM/                           \n"
+		"              ``````````````/MN`````````````     /Mm `syyyyyyyyyyyyyyyyyys      \n"
+		"                        `:odNMMy/.               yMo `/++++++++++++++++++/      \n"
+		"                     `:smmdo+MMsdmds:.           `-`                            \n"
+		"                  `-smNh+.` -MN `-+ymmh+-`          /hhhhhhhhhhhhhhhhhhhhhh/    \n"
+		"                .+dNd+-     -MN     `:odmmy/.       -++++++++++++++++++++NMo    \n"
+		"              -smmy:`       -MN         ./sdm+                 .-`      `NM:    \n"
+		"              hd+.          -MN            `.`       `ys-`   `+mN-      .MM.    \n"
+		"                       shhhhdMMhhhhhy                `+dNh/.:dNh-       `NM:    \n"
+		"                       /++++oMM+++++/                  `/hMmMN+`         oMd`   \n"
+		"                            -MN                        .+dNdymmdyo.       sNm/` \n"
+		"                            -MN                      `hNms-   ./oy:        -yNm-\n"
+		"                            `so                       ::`                    .-`\n"
+		"\n"
+		"    `.                    .o/`                                                                       \n"
+		"    yN:                 ` `smm+`                                                                     \n"
+		"   .MN`                /my- .omh`                                                `oh.                \n"
+		"   sMNyyyyyyyyyyyyyyyyyhNMNh- ``                                                :dNo`                \n"
+		"  `NM+///////////////NMs///s/                                                 .yNd-                  \n"
+		"  +Mh                oMy                                                     :mNo`                   \n"
+		"  dM:                .MN`                                                  `oNd-                     \n"
+		"  --                  NM.              `+oossyyyyyyyyyyyyssoo/            `yMy`                      \n"
+		"                     `MM`              `oso+++++++++++++++oos+           `hMs`              --       \n"
+		"                     /Md                                                 yMy                yNs`     \n"
+		"                    .mN:                                                :Mm`                `oNd:    \n"
+		"                   :mN/                                                 +Mh                  `/NNo`  \n"
+		"               `.:yNd:                                                  -NNo.``    ```..-/+syhdmmMh. \n"
+		"         `:/+oyhmmy:                                                     .smmdhhhhhhddmmmdhs+/-.`/mm.\n"
+		"         .hhys+/-`                                                          .-:////::-.``         .- \n"
+		"\n"
+		"    `-`         .`         `.`                                                      `s+               \n"
+		"    yNo     .+hmmh sm:  -sdNm+      :+/osyyyys+-    `ss+oyyyyyo/`       ````````````-MN`````````````  \n"
+		" ```hMs``` -mNs:.` hMs oNmo-`       mMyso++++sdNh`  /Mmoso+++oymm/    .mmmmmmmmmmmmmNMMmmmmmmmmmmmmmd`\n"
+		"+mmmNMNmmm.+Md. .- yMd dMy  -.     `MM-`````  `hMo  oMh``````  .NN-    .........-://oMM///:--........ \n"
+		"`...hMy... `sNNdNd.oMN -hNddNy     .MMmmmmmmmy sMy  sMNmmmmmmms yMo        `:oydmddddMMddddmmho:`     \n"
+		"    dMs     :NMh:. -MM- +MNy-.     :MN-------. hMo  oMh-------. +Mh       +mNdo:-..`-MN``...:+hNm/    \n"
+		"   oMMh.   :NN/`/ms`mMo+Mm- ym/    /MN::::::::/NM.  /Md:::::::::sMh      oMm:`      .MN        -dMo   \n"
+		"  oMMMMms- +MN+/sMMs+MmyMh//hMN:   /MNhhhhhhhhhy+   .hyhhhhhhhhhmMh     `NM- ```````-MN```````` -MN`  \n"
+		" sMddMyodm-`/yhhyshm:mMooyhhyymh   /Mh        oo`    `+s`       oMy     -MN odddddddmMMdddddddh` NM-  \n"
+		"sMh`hMs `.`/++++++os+hMm+++:-dh.   /Md       `sMd-  /mNs`       yMs     .MM``-------/MN-------- .MM.  \n"
+		"ss` hMs    shMMmhhhhhhdMMhho`yMh`  /Md     /hhdNMmddNMNdh/      dM+      hMs`       .MN        `yMy   \n"
+		"    hMs     +Mm.      `dMo `:-+y.  :Mm     .:::::sMNo::::.      NM-      .hNd+-``   .MN    `.-+dNy`   \n"
+		"    hMs    .NMmyo:.    .dMshMy     -MN     `....oNN+.....`     .MM`        :sdmdhhhyhMMyyhhddmds-     \n"
+		"    hMs    hMy+shmmy`   -NMMy`     .MM     smmmNMNNNNNmmms     /Mm      ``````-:/++osMMoo+//:.``````  \n"
+		"    hMs   :MN`   `::  .omNhNN+`     MM.    `.-hMh.-smMd+.`     sMy     `hddddddddddddMMddddddddddddh` \n"
+		"    yMo   sNs         dmo- .yNh`    mM-      :Nd`   `/hm.      dM/      ------------/MN-------------  \n"
+		"    .:`   `:`                --     :o`       .`               /o`                  `ys               \n";
+
+
+	std::cout << logoText << std::endl;
+
 	createWindow("Test Window");
 	setupViewPort();
 	setupImGui();
 	setupPhysx();
+
+	std::cout << "OpenGL Version and Vendor:\t" << glGetString(GL_VERSION) << std::endl << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
