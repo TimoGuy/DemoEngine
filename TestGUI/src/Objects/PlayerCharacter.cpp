@@ -62,6 +62,14 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
 	refreshResources();
+
+	playerCamera.priority = 10;
+	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
+}
+
+PlayerRender::~PlayerRender()
+{
+	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
 }
 
 void PlayerRender::refreshResources()
@@ -142,6 +150,12 @@ void PlayerRender::preRenderUpdate()
 {
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
+
+	//
+	// Update playercam pos
+	//
+	playerCamera.position = PhysicsUtils::getPosition(baseObject->transform) + playerCamOffset;
+	playerCamera.orientation = glm::normalize(-playerCamOffset);
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
@@ -244,6 +258,10 @@ void PlayerImGui::propertyPanelImGui()
 
 	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp[0]);
 	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setUpDirection(((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp.getNormalized());
+
+	ImGui::Separator();
+	ImGui::Text("Virtual Camera");
+	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->playerCamOffset[0]);
 }
 
 void PlayerImGui::renderImGui()

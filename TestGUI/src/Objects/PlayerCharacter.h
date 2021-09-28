@@ -4,7 +4,10 @@
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
+#include "../RenderEngine/RenderEngine.camera/Camera.h"
 
+
+struct VirtualCamera;
 
 class PlayerImGui : public ImGuiComponent
 {
@@ -30,6 +33,7 @@ class PlayerRender : public RenderComponent
 {
 public:
 	PlayerRender(BaseObject* bo, Bounds* bounds);
+	~PlayerRender();
 
 	void preRenderUpdate();
 	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
@@ -41,8 +45,13 @@ public:
 	Animator animator;
 	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
 
+	glm::vec3 playerCamOffset = glm::vec3(0, 5, -20);
+	// TODO: start here and add x and y floats for the looking direction in tps
+
 private:
 	void refreshResources();
+
+	VirtualCamera playerCamera;
 };
 
 class PlayerCharacter : public BaseObject

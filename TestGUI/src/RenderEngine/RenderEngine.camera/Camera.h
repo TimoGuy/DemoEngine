@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vector_angle.hpp>
+#include <vector>
 
 
 struct Bounds;
@@ -36,6 +37,14 @@ struct ViewFrustum
 	bool checkIfInViewFrustum(const Bounds& bounds, const glm::mat4& modelMatrix);
 };
 
+struct VirtualCamera
+{
+	glm::vec3 position;
+	glm::vec3 orientation;		// NOTE: this doesn't have to be normalized
+	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+	int priority = 10;
+};
+
 class Camera
 {
 public:
@@ -59,9 +68,16 @@ public:
 	glm::mat4 calculateViewMatrix();
 	glm::vec3 PositionToClipSpace(glm::vec3 positionInSpace);
 	glm::vec3 clipSpacePositionToWordSpace(glm::vec3 clipSpacePosition);
+
+	void addVirtualCamera(VirtualCamera* virtualCamera);
+	void removeVirtualCamera(VirtualCamera* virtualCamera);
+	void updateToVirtualCameras();
 	void Inputs(GLFWwindow* window);
 
 private:
 	bool firstClicked = true;
 	double savedMouseX, savedMouseY;
+
+	bool freeCameraMode = true;
+	std::vector<VirtualCamera*> virtualCameras;
 };

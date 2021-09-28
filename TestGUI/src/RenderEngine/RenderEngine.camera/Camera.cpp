@@ -106,8 +106,63 @@ glm::vec3 Camera::clipSpacePositionToWordSpace(glm::vec3 clipSpacePosition)
 	return glm::vec3(result);
 }
 
+void Camera::addVirtualCamera(VirtualCamera* virtualCamera)
+{
+	// TODO: add checking for if the virtualcam was already in there
+	virtualCameras.push_back(virtualCamera);
+}
+
+void Camera::removeVirtualCamera(VirtualCamera* virtualCamera)
+{
+	virtualCameras.erase(std::remove(virtualCameras.begin(), virtualCameras.end(), virtualCamera), virtualCameras.end());
+}
+
+void Camera::updateToVirtualCameras()
+{
+	if (freeCameraMode)
+		return;
+
+	//
+	// Select the highest priority camera
+	//
+	VirtualCamera* currentVirtualCamera = nullptr;
+	int currentHighestPriority = -2147483648;
+	for (size_t i = 0; i < virtualCameras.size(); i++)
+	{
+		if (currentHighestPriority < virtualCameras[i]->priority)
+		{
+			currentHighestPriority = virtualCameras[i]->priority;
+			currentVirtualCamera = virtualCameras[i];
+		}
+	}
+
+	if (currentVirtualCamera == nullptr)
+		return;
+
+	//
+	// Set myself to the highest priority virtual camera
+	//
+	position = currentVirtualCamera->position;
+	orientation = currentVirtualCamera->orientation;
+	up = currentVirtualCamera->up;
+}
+
+bool prevF4Keypressed;
 void Camera::Inputs(GLFWwindow* window)
 {
+	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && prevF4Keypressed == GLFW_RELEASE)
+	{
+		//
+		// Switch to game camera, free camera
+		//
+		freeCameraMode = !freeCameraMode;
+	}
+	prevF4Keypressed = glfwGetKey(window, GLFW_KEY_F4);
+
+	// Don't do look around stuff unless if doing freecam mode
+	if (!freeCameraMode)
+		return;
+
 	//
 	// Look around
 	//

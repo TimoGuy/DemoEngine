@@ -207,6 +207,9 @@ void MainLoop::run()
 			renderObjects[i]->preRenderUpdate();
 		}
 
+		// Update camera after all other updates
+		camera.updateToVirtualCameras();
+
 		//
 		// Render out the rendermanager
 		//
