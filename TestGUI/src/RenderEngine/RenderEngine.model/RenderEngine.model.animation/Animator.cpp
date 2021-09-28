@@ -22,6 +22,8 @@ Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animat
 }
 
 
+long long accumTime = 0;
+size_t numCounts = 0;
 void Animator::updateAnimation(float deltaTime)
 {
 	auto start_time = std::chrono::high_resolution_clock::now();
@@ -33,29 +35,32 @@ void Animator::updateAnimation(float deltaTime)
 		currentTime = fmod(currentTime, currentAnimation->getDuration());
 		//std::cout << "----------------" << std::endl;
 	}
-	bool useNextAnimation = false;
-	if (nextAnimation)
-	{
-		nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
-		nextTime = fmod(nextTime, nextAnimation->getDuration());
-		mixTime -= deltaTime;
-
-		if (mixTime <= 0.0f)
-		{
-			// Switch over to primary animation only
-			currentTime = nextTime;
-			currentAnimation = nextAnimation;
-			nextTime = totalMixTime = -1.0f;
-			nextAnimation = nullptr;
-		}
-		else useNextAnimation = true;
-	}
-	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), useNextAnimation);
+	// @Optimize: This comment block makes no difference in exec time
+	//bool useNextAnimation = false;
+	//if (nextAnimation)
+	//{
+	//	nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
+	//	nextTime = fmod(nextTime, nextAnimation->getDuration());
+	//	mixTime -= deltaTime;
+	//
+	//	if (mixTime <= 0.0f)
+	//	{
+	//		// Switch over to primary animation only
+	//		currentTime = nextTime;
+	//		currentAnimation = nextAnimation;
+	//		nextTime = totalMixTime = -1.0f;
+	//		nextAnimation = nullptr;
+	//	}
+	//	else useNextAnimation = true;
+	//}
+	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), false/*useNextAnimation*/);
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	auto time = end_time - start_time;
-	
-	std::cout << std::left << std::setw(40) << "TOTAL took " << time.count() / 1000000.0 << "ms to run.\n";
+	accumTime += time.count();
+	numCounts++;
+
+	std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 6.15ms
 }
 
 
