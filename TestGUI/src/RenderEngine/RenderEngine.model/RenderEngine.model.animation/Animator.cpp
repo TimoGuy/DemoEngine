@@ -35,32 +35,33 @@ void Animator::updateAnimation(float deltaTime)
 		currentTime = fmod(currentTime, currentAnimation->getDuration());
 		//std::cout << "----------------" << std::endl;
 	}
-	// @Optimize: This comment block makes no difference in exec time
-	//bool useNextAnimation = false;
-	//if (nextAnimation)
-	//{
-	//	nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
-	//	nextTime = fmod(nextTime, nextAnimation->getDuration());
-	//	mixTime -= deltaTime;
-	//
-	//	if (mixTime <= 0.0f)
-	//	{
-	//		// Switch over to primary animation only
-	//		currentTime = nextTime;
-	//		currentAnimation = nextAnimation;
-	//		nextTime = totalMixTime = -1.0f;
-	//		nextAnimation = nullptr;
-	//	}
-	//	else useNextAnimation = true;
-	//}
-	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), false/*useNextAnimation*/);
+
+	bool useNextAnimation = false; // @Optimize: This comment block makes no difference in exec time
+	if (nextAnimation)
+	{
+		nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
+		nextTime = fmod(nextTime, nextAnimation->getDuration());
+		mixTime -= deltaTime;
+	
+		if (mixTime <= 0.0f)
+		{
+			// Switch over to primary animation only
+			currentTime = nextTime;
+			currentAnimation = nextAnimation;
+			nextTime = totalMixTime = -1.0f;
+			nextAnimation = nullptr;
+		}
+		else useNextAnimation = true;
+	}
+
+	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), useNextAnimation);
 
 	auto end_time = std::chrono::high_resolution_clock::now();
 	auto time = end_time - start_time;
 	accumTime += time.count();
 	numCounts++;
 
-	std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 6.15ms
+	std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 9.25ms :::: now: 7.15ms
 }
 
 
@@ -87,8 +88,6 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime)
 
 void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, bool useNextAnimation)
 {
-
-	//std::cout << "Bone: " << node->name << std::endl;
 	std::string nodeName = node->name;
 	glm::mat4 nodeTransform = node->transformation;
 
@@ -99,8 +98,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		glm::quat rotation;
 		glm::vec3 scale;
 
-		//auto start_time = std::chrono::high_resolution_clock::now();
-		bone->update(currentTime, position, rotation, scale);																		// @Optimize: Right here
+		bone->update(currentTime, position, rotation, scale);																		// @Optimize: 0.003388ms to run on avg
 
 		if (useNextAnimation)
 		{
@@ -120,12 +118,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		}
 
 		// Convert this all to matrix4x4
-		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);		// @Optimize: Right here
-
-		//auto end_time = std::chrono::high_resolution_clock::now();
-		//auto time = end_time - start_time;
-		//
-		//std::cout << std::left << std::setw(40) << ("updateMatrix(" + nodeName + ") took ") << time.count() / 1000000.0 << "ms to run.\n";
+		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);		// @Optimize: Took 0.0043ms to run on avg
 	}
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;

@@ -32,15 +32,12 @@ Animation::Animation(const aiScene* scene, Model* model, unsigned int animationI
 
 Bone* Animation::findBone(const std::string& name)
 {
-	auto iterator = std::find_if(bones.begin(), bones.end(),
-		[&](const Bone& bone)
-		{
-			return bone.getBoneName() == name;
-		}
-	);
-	if (iterator == bones.end()) return nullptr;
-	
-	return &(*iterator);
+	if (bones.find(name) != bones.end())
+	{
+		return &bones[name];
+	}
+
+	return nullptr;
 }
 
 
@@ -69,7 +66,14 @@ void Animation::readMissingBones(const aiAnimation* animation, Model& model)
 			boneCount++;
 		}
 
-		bones.push_back(Bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].id, channel));
+		//bones.push_back(Bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].id, channel));
+		bones.insert(
+			bones.begin(),
+			std::pair<std::string, Bone>(
+				channel->mNodeName.data,
+				Bone(boneInfoMap[channel->mNodeName.data].id, channel)
+			)
+		);
 	}
 	Animation::boneInfoMap = boneInfoMap;
 }

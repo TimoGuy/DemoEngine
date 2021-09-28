@@ -1,7 +1,7 @@
 #include "Bone.h"
 
 
-Bone::Bone(const std::string& name, int id, const aiNodeAnim* channel) : name(name), id(id)
+Bone::Bone(int id, const aiNodeAnim* channel) : id(id)
 {
 	numPositions = channel->mNumPositionKeys;
 	for (unsigned int i = 0; i < numPositions; i++)

@@ -31,7 +31,7 @@ private:
 
 	float duration;
 	int ticksPerSecond;
-	std::vector<Bone> bones;
+	std::map<std::string, Bone> bones;
 	AssimpNodeData rootNode;
 	glm::mat4 globalRootInverseMatrix;
 	std::map<std::string, BoneInfo> boneInfoMap;

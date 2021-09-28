@@ -34,11 +34,11 @@ private:
 	int id;
 
 public:
-	Bone(const std::string& name, int id, const aiNodeAnim* channel);
+	Bone() : id(-1) {}
+	Bone(int id, const aiNodeAnim* channel);
 	
 	void update(float animationTime, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale);
 
-	std::string getBoneName() const { return name; }
 	int getBoneId() { return id; }
 
 	int getPositionIndex(float animationTime);
