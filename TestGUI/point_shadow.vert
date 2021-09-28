@@ -16,7 +16,7 @@ void main()
 {
 	
 	//
-	// Do Bone Transformations
+	// Do Bone Transformations (NOTE: the branching paths don't do much of a difference in performance)
 	//
 	mat4 boneTransform = mat4(1.0f);
 	mat3 normTransform = mat3(1.0f);
