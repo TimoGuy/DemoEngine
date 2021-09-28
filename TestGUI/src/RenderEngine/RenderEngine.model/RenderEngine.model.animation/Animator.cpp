@@ -100,7 +100,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		}
 
 		// Convert this all to matrix4x4
-		nodeTransform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)) * glm::scale(glm::mat4(1.0f), scale);
+		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);
 	}
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;

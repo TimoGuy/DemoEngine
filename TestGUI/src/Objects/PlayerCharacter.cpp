@@ -141,7 +141,7 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 void PlayerRender::preRenderUpdate()
 {
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);
+	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)

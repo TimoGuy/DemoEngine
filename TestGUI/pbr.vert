@@ -25,8 +25,9 @@ void main()
 	//
 	// Do Bone Transformations
 	//
-	mat4 boneTransform = mat4(0.0f);
-	mat3 normTransform = mat3(0.0f);
+	mat4 boneTransform = mat4(1.0f);
+	mat3 normTransform = mat3(1.0f);
+	bool first = true;
 	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (boneIds[i] == -1)
@@ -38,9 +39,18 @@ void main()
 		}
 		int selectedBone = boneIds[i];
 
-		// Apply bone transformation since valid bone!
-		boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
-		normTransform += mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
+		if (!first)
+		{
+			// Apply bone transformation since valid bone!
+			boneTransform += finalBoneMatrices[selectedBone] * boneWeights[i];
+			normTransform += mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);		// NOTE: I don't know if this is correct! (But it seems to be so far... maybe with non uniform scales this'll stop working???)
+		}
+		else
+		{
+			first = false;
+			boneTransform = finalBoneMatrices[selectedBone] * boneWeights[i];
+			normTransform = mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);
+		}
 	}
 
 	//
