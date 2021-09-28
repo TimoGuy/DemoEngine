@@ -100,7 +100,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		glm::vec3 scale;
 
 		//auto start_time = std::chrono::high_resolution_clock::now();
-		bone->update(currentTime, position, rotation, scale);
+		bone->update(currentTime, position, rotation, scale);																		// @Optimize: Right here
 
 		if (useNextAnimation)
 		{
@@ -120,7 +120,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		}
 
 		// Convert this all to matrix4x4
-		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);
+		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);		// @Optimize: Right here
 
 		//auto end_time = std::chrono::high_resolution_clock::now();
 		//auto time = end_time - start_time;
