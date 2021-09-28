@@ -1,7 +1,12 @@
 #include "Animator.h"
 
 #include <glm/gtx/quaternion.hpp>
-//#include <iostream>
+
+
+// @Debug: for seeing how long matrix updates occur
+#include <chrono>
+#include <iostream>
+#include <iomanip>
 
 
 Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
@@ -19,6 +24,8 @@ Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animat
 
 void Animator::updateAnimation(float deltaTime)
 {
+	auto start_time = std::chrono::high_resolution_clock::now();
+
 	Animator::deltaTime = deltaTime;
 	if (currentAnimation)
 	{
@@ -44,6 +51,11 @@ void Animator::updateAnimation(float deltaTime)
 		else useNextAnimation = true;
 	}
 	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), useNextAnimation);
+
+	auto end_time = std::chrono::high_resolution_clock::now();
+	auto time = end_time - start_time;
+	
+	std::cout << std::left << std::setw(40) << "TOTAL took " << time.count() / 1000000.0 << "ms to run.\n";
 }
 
 
@@ -70,6 +82,7 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime)
 
 void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform, bool useNextAnimation)
 {
+
 	//std::cout << "Bone: " << node->name << std::endl;
 	std::string nodeName = node->name;
 	glm::mat4 nodeTransform = node->transformation;
@@ -80,6 +93,8 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 		glm::vec3 position;
 		glm::quat rotation;
 		glm::vec3 scale;
+
+		//auto start_time = std::chrono::high_resolution_clock::now();
 		bone->update(currentTime, position, rotation, scale);
 
 		if (useNextAnimation)
@@ -101,6 +116,11 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 
 		// Convert this all to matrix4x4
 		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);
+
+		//auto end_time = std::chrono::high_resolution_clock::now();
+		//auto time = end_time - start_time;
+		//
+		//std::cout << std::left << std::setw(40) << ("updateMatrix(" + nodeName + ") took ") << time.count() / 1000000.0 << "ms to run.\n";
 	}
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;
