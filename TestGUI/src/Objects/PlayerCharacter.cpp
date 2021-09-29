@@ -1,6 +1,7 @@
 #include "PlayerCharacter.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "../MainLoop/MainLoop.h"
@@ -143,21 +144,16 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
 	}
 
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(physx::PxVec3(0.0f, -9.8f, 0.0f), 0.01f, deltaTime, NULL, NULL);
+	velocity.y -= 9.8f * deltaTime;
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, deltaTime, NULL, NULL);
 
 	pos = controller->getPosition();
-	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
+	baseObject->transform[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
 }
 
 double previousMouseX, previousMouseY;
 void PlayerRender::preRenderUpdate()
 {
-	if (!MainLoop::getInstance().playMode)
-	{
-		lookingInput = glm::vec2(0, 0);
-		return;
-	}
-
 	//
 	// Update Camera position based off new mousex/y pos's
 	//
@@ -168,6 +164,16 @@ void PlayerRender::preRenderUpdate()
 	previousMouseX = mouseX;
 	previousMouseY = mouseY;
 
+	// Short circuit if so
+	if (!MainLoop::getInstance().playMode)
+	{
+		lookingInput = glm::vec2(0, 0);
+		return;
+	}
+
+	//
+	// Update looking input
+	//
 	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
 	lookingInput.x = fmodf(lookingInput.x, 360.0f);
 	if (lookingInput.x < 0.0f)
@@ -181,7 +187,45 @@ void PlayerRender::preRenderUpdate()
 	playerCamera.position = PhysicsUtils::getPosition(baseObject->transform) + lookingRotation * playerCamOffset;
 	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
+	//
+	// Movement
+	//
+	float mvtSpeed = 0.5f;
+	glm::vec2 movementVector(0.0f);
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += mvtSpeed;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= mvtSpeed;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= mvtSpeed;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += mvtSpeed;
+
+	bool isMoving = false;
+	if (glm::length2(movementVector) > 0.001f)
+	{
+		isMoving = true;
+		movementVector = glm::normalize(movementVector);
+	}
+
+	glm::vec3 velocity =
+		glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z)) * movementVector.y +
+		glm::cross(playerCamera.orientation, playerCamera.up) * movementVector.x;
+
+	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
+
+	if (isMoving)
+	{
+		// Start facing towards movement direction
+		float targetFacingDirection = glm::degrees(std::atan2f(velocity.x, velocity.z));
+		facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
+
+		baseObject->transform =
+			glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->transform)) *
+			glm::eulerAngleXYZ(0.0f, glm::radians(facingDirection), 0.0f) *
+			glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->transform));
+	}
+
+	//
+	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
+	//
 	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
 }
 

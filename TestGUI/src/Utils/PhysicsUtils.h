@@ -73,4 +73,7 @@ namespace PhysicsUtils
 
 	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix);
 	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds);
+
+	float lerp(float a, float b, float t);
+	float lerpAngleDegrees(float a, float b, float t);
 }

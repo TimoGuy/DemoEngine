@@ -25,6 +25,8 @@ public:
 
 	void physicsUpdate(float deltaTime);
 
+	physx::PxVec3 velocity;
+
 	physx::PxCapsuleController* controller;
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
 };
@@ -53,6 +55,9 @@ private:
 	void refreshResources();
 
 	VirtualCamera playerCamera;
+
+	float facingDirection = 0.0f;
+	float facingSpeed = 0.25f;
 };
 
 class PlayerCharacter : public BaseObject

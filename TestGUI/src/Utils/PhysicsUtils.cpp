@@ -384,4 +384,42 @@ namespace PhysicsUtils
 		glm::vec3 hitPosition = nearTime * delta + start;
 		return { true, hitPosition, nearTime };
 	}
+
+	float lerp(float a, float b, float t)
+	{
+		return ((1.0f - t) * a) + (t * b);
+	}
+
+	float lerpAngleDegrees(float a, float b, float t)
+	{
+		float result;
+		float diff = b - a;
+		if (diff < -180.f)
+		{
+			// lerp upwards past 360
+			b += 360.f;
+			result = lerp(a, b, t);
+			if (result >= 360.f)
+			{
+				result -= 360.f;
+			}
+		}
+		else if (diff > 180.f)
+		{
+			// lerp downwards past 0
+			b -= 360.f;
+			result = lerp(a, b, t);
+			if (result < 0.f)
+			{
+				result += 360.f;
+			}
+		}
+		else
+		{
+			// straight lerp
+			result = lerp(a, b, t);
+		}
+
+		return result;
+	}
 }
