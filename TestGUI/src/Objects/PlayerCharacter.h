@@ -45,8 +45,9 @@ public:
 	Animator animator;
 	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
 
-	glm::vec3 playerCamOffset = glm::vec3(0, 5, -20);
-	// TODO: start here and add x and y floats for the looking direction in tps
+	glm::vec3 playerCamOffset = glm::vec3(0, 0, -20);
+	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis
+	glm::vec2 lookingSensitivity = glm::vec2(0.5f, 0.0025f);	// Sensitivity for how much the amount moves
 
 private:
 	void refreshResources();

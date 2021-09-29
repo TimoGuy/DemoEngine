@@ -78,6 +78,5 @@ private:
 	bool firstClicked = true;
 	double savedMouseX, savedMouseY;
 
-	bool freeCameraMode = true;
 	std::vector<VirtualCamera*> virtualCameras;
 };

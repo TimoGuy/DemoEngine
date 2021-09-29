@@ -33,6 +33,7 @@ public:
 	physx::PxMaterial* defaultPhysicsMaterial;
 
 	float deltaTime;		// NOTE: to only be used on the rendering thread
+	bool playMode = false;
 
 	//
 	// Debug mode flags

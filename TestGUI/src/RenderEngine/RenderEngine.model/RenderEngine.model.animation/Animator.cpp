@@ -22,11 +22,11 @@ Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animat
 }
 
 
-long long accumTime = 0;
-size_t numCounts = 0;
+//long long accumTime = 0;
+//size_t numCounts = 0;
 void Animator::updateAnimation(float deltaTime)
 {
-	auto start_time = std::chrono::high_resolution_clock::now();
+	//auto start_time = std::chrono::high_resolution_clock::now();
 
 	Animator::deltaTime = deltaTime;
 	if (currentAnimation)
@@ -56,12 +56,12 @@ void Animator::updateAnimation(float deltaTime)
 
 	calculateBoneTransform(&currentAnimation->getRootNode(), glm::mat4(1.0f), useNextAnimation);
 
-	auto end_time = std::chrono::high_resolution_clock::now();
-	auto time = end_time - start_time;
-	accumTime += time.count();
-	numCounts++;
-
-	std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 9.25ms :::: now: 7.15ms
+	//auto end_time = std::chrono::high_resolution_clock::now();
+	//auto time = end_time - start_time;
+	//accumTime += time.count();
+	//numCounts++;
+	//
+	//std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 9.25ms :::: now: 7.15ms
 }
 
 

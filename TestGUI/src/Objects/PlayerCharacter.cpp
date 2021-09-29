@@ -1,6 +1,7 @@
 #include "PlayerCharacter.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
@@ -8,6 +9,8 @@
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
+
+#include <cmath>
 
 
 
@@ -146,16 +149,40 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 	baseObject->transform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 }
 
+double previousMouseX, previousMouseY;
 void PlayerRender::preRenderUpdate()
 {
-	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
+	if (!MainLoop::getInstance().playMode)
+	{
+		lookingInput = glm::vec2(0, 0);
+		return;
+	}
+
+	//
+	// Update Camera position based off new mousex/y pos's
+	//
+	double mouseX, mouseY;
+	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);					// TODO: make this a centralized input update that occurs
+	double deltaX = mouseX - previousMouseX;
+	double deltaY = mouseY - previousMouseY;
+	previousMouseX = mouseX;
+	previousMouseY = mouseY;
+
+	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
+	lookingInput.x = fmodf(lookingInput.x, 360.0f);
+	if (lookingInput.x < 0.0f)
+		lookingInput.x += 360.0f;
+	lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
 
 	//
 	// Update playercam pos
 	//
-	playerCamera.position = PhysicsUtils::getPosition(baseObject->transform) + playerCamOffset;
-	playerCamera.orientation = glm::normalize(-playerCamOffset);
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.position = PhysicsUtils::getPosition(baseObject->transform) + lookingRotation * playerCamOffset;
+	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
+
+	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
+	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
@@ -198,32 +225,33 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 
 	glActiveTexture(GL_TEXTURE0);
 
-
-	auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
-	for (size_t i = 0; i < transforms.size(); i++)
-		glUniformMatrix4fv(
-			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-			1,
-			GL_FALSE,
-			glm::value_ptr(transforms[i])
-		);
+	if (MainLoop::getInstance().playMode)
+	{
+		auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
+		for (size_t i = 0; i < transforms.size(); i++)
+			glUniformMatrix4fv(
+				glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+				1,
+				GL_FALSE,
+				glm::value_ptr(transforms[i])
+			);
+	}
+	else
+	{
+		for (size_t i = 0; i < 100; i++)
+			glUniformMatrix4fv(
+				glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+				1,
+				GL_FALSE,
+				glm::value_ptr(glm::mat4(1.0f))
+			);
+	}
 
 	//
 	// Setup the transformation matrices and lights
 	//
-	glUniformMatrix4fv(
-		glGetUniformLocation(pbrShaderProgramId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(baseObject->transform)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
-	);
-
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(baseObject->transform));
+	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform)))));
 	model.render(pbrShaderProgramId);
 }
 
@@ -262,6 +290,8 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
 	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->playerCamOffset[0]);
+	ImGui::DragFloat2("Looking Input", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->lookingInput[0]);
+	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->lookingSensitivity[0]);
 }
 
 void PlayerImGui::renderImGui()

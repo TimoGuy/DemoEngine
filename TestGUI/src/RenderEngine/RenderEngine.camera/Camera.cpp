@@ -4,6 +4,8 @@
 #include "../../Objects/BaseObject.h"
 #include "../../Utils/PhysicsUtils.h"
 
+#include "../../MainLoop/MainLoop.h"
+
 #include <iostream>
 
 
@@ -119,7 +121,7 @@ void Camera::removeVirtualCamera(VirtualCamera* virtualCamera)
 
 void Camera::updateToVirtualCameras()
 {
-	if (freeCameraMode)
+	if (!MainLoop::getInstance().playMode)
 		return;
 
 	//
@@ -155,12 +157,12 @@ void Camera::Inputs(GLFWwindow* window)
 		//
 		// Switch to game camera, free camera
 		//
-		freeCameraMode = !freeCameraMode;
+		MainLoop::getInstance().playMode = !MainLoop::getInstance().playMode;
 	}
 	prevF4Keypressed = glfwGetKey(window, GLFW_KEY_F4);
 
 	// Don't do look around stuff unless if doing freecam mode
-	if (!freeCameraMode)
+	if (MainLoop::getInstance().playMode)
 		return;
 
 	//
