@@ -216,8 +216,8 @@ void PointLightImGui::propertyPanelImGui()
 	std::string toggleShadowsLabel = "Turn " + std::string(((PointLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
 	if (ImGui::Button(toggleShadowsLabel.c_str()))
 	{
-		((PointLight*)baseObject)->lightComponent->castsShadows = !((PointLight*)baseObject)->lightComponent->castsShadows;
-		((PointLightLight*)((PointLight*)baseObject)->lightComponent)->refreshShadowBuffers();
+		baseObject->getLightComponent()->castsShadows = !baseObject->getLightComponent()->castsShadows;
+		((PointLightLight*)baseObject->getLightComponent())->refreshShadowBuffers();
 	}
 }
 

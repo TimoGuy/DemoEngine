@@ -208,7 +208,7 @@ void PlayerRender::preRenderUpdate()
 		glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z)) * movementVector.y +
 		glm::cross(playerCamera.orientation, playerCamera.up) * movementVector.x;
 
-	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
 
 	if (isMoving)
 	{
@@ -326,22 +326,22 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
 	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->transform);
-	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
-	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp[0]);
-	((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller->setUpDirection(((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->tempUp.getNormalized());
+	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
-	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->playerCamOffset[0]);
-	ImGui::DragFloat2("Looking Input", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->lookingInput[0]);
-	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)((PlayerCharacter*)baseObject)->renderComponent)->lookingSensitivity[0]);
+	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)baseObject->getRenderComponent())->playerCamOffset[0]);
+	ImGui::DragFloat2("Looking Input", &((PlayerRender*)baseObject->getRenderComponent())->lookingInput[0]);
+	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)baseObject->getRenderComponent())->lookingSensitivity[0]);
 }
 
 void PlayerImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)((PlayerCharacter*)baseObject)->physicsComponent)->controller);
+	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
 	ImGuiComponent::renderImGui();
 }

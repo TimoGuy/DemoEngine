@@ -8,6 +8,11 @@
 #include "../Utils/json.hpp"
 
 
+class ImGuiComponent;
+class LightComponent;
+class PhysicsComponent;
+class RenderComponent;
+
 class BaseObject
 {
 public:
@@ -16,6 +21,11 @@ public:
 
 	virtual void loadPropertiesFromJson(nlohmann::json& object);
 	virtual nlohmann::json savePropertiesToJson();
+
+	virtual ImGuiComponent* getImguiComponent() { assert(false); return nullptr; }
+	virtual LightComponent* getLightComponent() { assert(false); return nullptr; }
+	virtual PhysicsComponent* getPhysicsComponent() { assert(false); return nullptr; }
+	virtual RenderComponent* getRenderComponent() { assert(false); return nullptr; }
 
 	glm::mat4 transform;
 	std::string guid;

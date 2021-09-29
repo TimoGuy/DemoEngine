@@ -401,8 +401,8 @@ void DirectionalLightImGui::propertyPanelImGui()
 	std::string toggleShadowsLabel = "Turn " + std::string(((DirectionalLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
 	if (ImGui::Button(toggleShadowsLabel.c_str()))
 	{
-		((DirectionalLight*)baseObject)->lightComponent->castsShadows = !((DirectionalLight*)baseObject)->lightComponent->castsShadows;
-		((DirectionalLightLight*)((DirectionalLight*)baseObject)->lightComponent)->refreshRenderBuffers();
+		baseObject->getLightComponent()->castsShadows = !baseObject->getLightComponent()->castsShadows;
+		((DirectionalLightLight*)baseObject->getLightComponent())->refreshRenderBuffers();
 	}
 }
 
