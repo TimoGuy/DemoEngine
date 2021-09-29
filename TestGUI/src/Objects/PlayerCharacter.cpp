@@ -60,7 +60,7 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 			MainLoop::getInstance().defaultPhysicsMaterial,
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
 			1.0f,
-			2.0f);
+			4.5f);
 }
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
