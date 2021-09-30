@@ -61,12 +61,13 @@ void Animator::updateAnimation(float deltaTime)
 	auto boneInfoMap = currentAnimation->getBoneIdMap();
 	calculateBoneTransform(&currentAnimation->getRootNode(), globalRootInverseMatrix, glm::mat4(1.0f), boneInfoMap, useNextAnimation);
 
+	// @Optimize: Goal for skeletal animation is 0.01ms, however, right now it is taking 0.10ms in release mode, which is okay for now
 	//auto end_time = std::chrono::high_resolution_clock::now();
 	//auto time = end_time - start_time;
 	//accumTime += time.count();
 	//numCounts++;
 	//
-	//std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// AVG: 9.25ms :::: now: 7.15ms :::: now: 1.05ms
+	//std::cout << std::left << std::setw(40) << "AVG TOTAL took " << accumTime / (double)numCounts / 1000000.0 << "ms to run.\n";			// DEBUG MODE AVG: 9.25ms :::: now: 7.15ms :::: now: 1.05ms
 }
 
 
@@ -128,7 +129,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, const glm::mat
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-	if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+	if (boneInfoMap.find(nodeName) != boneInfoMap.end())	// @Optimize: AFAIK, this check doesn't need to be here... but hey what if huh? I wonder what the corner case would be for this.
 	{
 		// Populate bone matrices for shader
 		BoneInfo& bi = boneInfoMap[nodeName];
