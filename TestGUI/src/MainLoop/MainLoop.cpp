@@ -133,12 +133,12 @@ void MainLoop::initialize()
 	//
 	new PlayerCharacter();
 	DirectionalLight* dl = new DirectionalLight(true);
-	dl->transform = glm::toMat4(glm::quat(glm::radians(glm::vec3(26.975f, 41.029f, 0.0f)))) * glm::mat4(1.0f);
-	dl->setLookDirection(PhysicsUtils::getRotation(dl->transform));
+	dl->setTransform(glm::toMat4(glm::quat(glm::radians(glm::vec3(26.975f, 41.029f, 0.0f)))));
+	dl->setLookDirection(PhysicsUtils::getRotation(dl->getTransform()));
 	dl->lightComponent->getLight().colorIntensity = 10.0f;
 
 	YosemiteTerrain* jj = new YosemiteTerrain();
-	jj->transform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -4.56f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 1, 100));
+	jj->setTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0, -4.56f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 1, 100)));
 }
 
 void MainLoop::run()

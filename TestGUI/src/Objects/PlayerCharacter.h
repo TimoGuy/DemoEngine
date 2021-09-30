@@ -24,6 +24,7 @@ public:
 	PlayerPhysics(BaseObject* bo, Bounds* bounds);
 
 	void physicsUpdate();
+	void propagateNewTransform(glm::mat4 newTransform);
 
 	physx::PxVec3 velocity;
 

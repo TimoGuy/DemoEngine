@@ -17,8 +17,6 @@
 
 YosemiteTerrain::YosemiteTerrain()
 {
-	transform = glm::mat4(1.0f);
-
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -128,13 +126,13 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 		glGetUniformLocation(pbrShaderProgramId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->transform)
+		glm::value_ptr(baseObject->getTransform())
 	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform))))
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->getTransform()))))
 	);
 
 	model.render(pbrShaderProgramId);
@@ -146,7 +144,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->transform)
+		glm::value_ptr(baseObject->getTransform())
 	);
 	model.render(programId);
 }
@@ -155,30 +153,45 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
 }
 
 void YosemiteTerrainImGui::renderImGui()
 {
-	//imguiRenderBoxCollider(transform, boxCollider);
-	//imguiRenderCapsuleCollider(transform, capsuleCollider);
+	physx::PxBoxGeometry geom = ((BoxCollider*)baseObject->getPhysicsComponent())->getBoxGeometry();
+	PhysicsUtils::imguiRenderBoxCollider(baseObject->getTransform(), geom);
+
 	ImGuiComponent::renderImGui();
 }
 
 BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
 {
-	glm::vec3 scale = PhysicsUtils::getScale(baseObject->transform);
+	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 
-	physx::PxRigidStatic* boxBody = PhysicsUtils::createRigidbodyStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->transform));
+	body = PhysicsUtils::createRigidbodyStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
 	glm::vec3 realExtents = bounds->extents * scale;
-	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
-	boxBody->attachShape(*shape);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
+	body->attachShape(*shape);
 
-	MainLoop::getInstance().physicsScene->addActor(*boxBody);
+	MainLoop::getInstance().physicsScene->addActor(*body);
 	shape->release();
 }
 
 void BoxCollider::physicsUpdate()
 {
 	// Do nothing
+}
+
+void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
+{
+	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
+	glm::vec3 realExtents = bounds->extents * scale;
+	shape->setGeometry(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z));
+}
+
+physx::PxBoxGeometry BoxCollider::getBoxGeometry()
+{
+	physx::PxBoxGeometry geom;
+	shape->getBoxGeometry(geom);
+	return geom;
 }

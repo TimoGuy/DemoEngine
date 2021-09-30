@@ -22,13 +22,18 @@ public:
 	virtual void loadPropertiesFromJson(nlohmann::json& object);
 	virtual nlohmann::json savePropertiesToJson();
 
-	virtual ImGuiComponent* getImguiComponent() = 0;//{ assert(false); return nullptr; }
-	virtual LightComponent* getLightComponent() = 0;//{ assert(false); return nullptr; }
-	virtual PhysicsComponent* getPhysicsComponent() = 0;//{ assert(false); return nullptr; }
-	virtual RenderComponent* getRenderComponent() = 0;//{ assert(false); return nullptr; }
+	virtual ImGuiComponent* getImguiComponent() = 0;
+	virtual LightComponent* getLightComponent() = 0;
+	virtual PhysicsComponent* getPhysicsComponent() = 0;
+	virtual RenderComponent* getRenderComponent() = 0;
 
-	glm::mat4 transform;
+	glm::mat4& getTransform();
+	void setTransform(glm::mat4 newTransform, bool propagate = true);
+
 	std::string guid;
+
+private:
+	glm::mat4 transform;
 };
 
 //
@@ -36,7 +41,7 @@ public:
 //
 struct Bounds
 {
-	glm::vec3 center;		// NOTE: multiply the model matrix with this to get the world space
+	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
 	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
 };
 
@@ -112,6 +117,7 @@ public:
 	virtual void physicsUpdate() = 0;
 
 	glm::mat4 getTransform();		// NOTE: this is automatically interpolated
+	virtual void propagateNewTransform(glm::mat4 newTransform) = 0;
 
 protected:
 	PhysicsTransformState physicsTransformState;

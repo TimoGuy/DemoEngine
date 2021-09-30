@@ -40,6 +40,13 @@ public:
 	BoxCollider(BaseObject* bo, Bounds* bounds);
 
 	void physicsUpdate();
+	void propagateNewTransform(glm::mat4 newTransform);
+
+	physx::PxBoxGeometry getBoxGeometry();
+
+private:
+	physx::PxRigidStatic* body;
+	physx::PxShape* shape;
 };
 
 class YosemiteTerrain : public BaseObject

@@ -18,7 +18,6 @@ static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
-	transform = glm::mat4(1.0f);
 
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
@@ -27,7 +26,7 @@ DirectionalLight::DirectionalLight(bool castsShadows)
 	imguiComponent = new DirectionalLightImGui(this, bounds);
 	lightComponent = new DirectionalLightLight(this, castsShadows);
 
-	setLookDirection(PhysicsUtils::getRotation(transform));
+	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 }
 
 DirectionalLight::~DirectionalLight()			// TODO: when there are shadow maps, delete them too! When deleting the light, there is garbage shadow maps
@@ -48,7 +47,7 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	lightComponent->getLight().color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
 	lightComponent->getLight().colorIntensity = object["color_multiplier"];
 
-	setLookDirection(PhysicsUtils::getRotation(transform));
+	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 	((DirectionalLightLight*)lightComponent)->refreshRenderBuffers();
 }
 
@@ -320,7 +319,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	if (doThis)
 	{
 		doThis = false;
-		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->transform;
+		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
 		trans = glm::translate(trans, glm::vec3(/*cropMatrix * lpMatrix * lightView * proj * MainLoop::getInstance().camera.calculateViewMatrix() * */ glm::vec4(center, 1.0f)) - PhysicsUtils::getPosition(trans));
 		//center = MainLoop::getInstance().camera.calculateViewMatrix() * glm::vec4(center, 1.0f);
 	}
@@ -365,9 +364,9 @@ void DirectionalLightImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
-	((DirectionalLight*)baseObject)->setLookDirection(PhysicsUtils::getRotation(baseObject->transform));
-	
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	((DirectionalLight*)baseObject)->setLookDirection(PhysicsUtils::getRotation(baseObject->getTransform()));
+
 	ImGui::ColorEdit3("Light base color", &((DirectionalLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->getLight().colorIntensity);
 
@@ -391,7 +390,7 @@ void DirectionalLightImGui::propertyPanelImGui()
 		glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
 		glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
 
-		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->transform;
+		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
 		trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
 	}
 
@@ -416,8 +415,8 @@ void DirectionalLightImGui::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->transform));
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->transform) + ((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection);
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + ((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 
@@ -455,7 +454,7 @@ void DirectionalLightImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
 
-	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
+	PhysicsUtils::imguiRenderCircle(baseObject->getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 
 	ImGuiComponent::renderImGui();
 }

@@ -569,7 +569,7 @@ void RenderManager::renderScene()
 		if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
 			!cookedViewFrustum.checkIfInViewFrustum(
 				*MainLoop::getInstance().renderObjects[i]->bounds,
-				MainLoop::getInstance().renderObjects[i]->baseObject->transform))
+				MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
 			continue;
 		succ++;
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
@@ -676,7 +676,7 @@ void RenderManager::setupSceneLights()
 		if (light->getLight().lightType != LightType::POINT)
 			lightDirection = glm::normalize(light->getLight().facingDirection);																									// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
 
-		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->transform[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->getTransform()[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 
 		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
@@ -1190,7 +1190,7 @@ void RenderManager::renderImGuiContents()
 				glm::value_ptr(cameraProjection),
 				transOperation,
 				transMode,
-				glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->transform),
+				glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->getTransform()),
 				NULL,
 				&snapValues.x
 			);

@@ -14,8 +14,6 @@
 
 PointLight::PointLight(bool castsShadows)
 {
-	transform = glm::mat4(1.0f);
-
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(0.5f);
@@ -158,7 +156,7 @@ void PointLightLight::configureShaderAndMatrices()
 {
 	glm::mat4 shadowProjection = glm::perspective(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
 
-	glm::vec3 position = PhysicsUtils::getPosition(baseObject->transform);
+	glm::vec3 position = PhysicsUtils::getPosition(baseObject->getTransform());
 
 	shadowTransforms.clear();
 	shadowTransforms.push_back(shadowProjection * glm::lookAt(position, position + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
@@ -205,7 +203,7 @@ void PointLightImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
 
 	ImGui::ColorEdit3("Light base color", &((PointLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &((PointLight*)baseObject)->lightComponent->getLight().colorIntensity);
@@ -231,7 +229,7 @@ void PointLightImGui::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->transform));
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
 	float clipZ = lightPosOnScreen.z;
 
 
@@ -259,7 +257,7 @@ void PointLightImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
-	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
+	PhysicsUtils::imguiRenderCircle(baseObject->getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 
 	ImGuiComponent::renderImGui();
 }

@@ -21,8 +21,6 @@
 
 PlayerCharacter::PlayerCharacter()
 {
-	transform = glm::mat4(1.0f);
-
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
@@ -140,9 +138,9 @@ void PlayerPhysics::physicsUpdate()
 	// TODO: figure out better way of conforming self to rendering position
 	physx::PxExtendedVec3 pos = controller->getPosition();
 	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-	if (!(newTransform == baseObject->transform))
+	if (!(newTransform == baseObject->getTransform()))
 	{
-		glm::vec3 newPosition = PhysicsUtils::getPosition(baseObject->transform);
+		glm::vec3 newPosition = PhysicsUtils::getPosition(baseObject->getTransform());
 		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
 	}
 
@@ -154,9 +152,16 @@ void PlayerPhysics::physicsUpdate()
 	// Apply transform
 	//
 	pos = controller->getPosition();
-	glm::mat4 trans = baseObject->transform;
+	glm::mat4 trans = baseObject->getTransform();
 	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
 	physicsTransformState.updateTransform(trans);
+	baseObject->setTransform(trans, false);
+}
+
+void PlayerPhysics::propagateNewTransform(glm::mat4 newTransform)
+{
+	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
+	controller->setPosition(physx::PxExtendedVec3(pos.x, pos.y, pos.z));
 }
 
 double previousMouseX, previousMouseY;
@@ -182,7 +187,7 @@ void PlayerRender::preRenderUpdate()
 	//
 	// Update rendering transform
 	//
-	baseObject->transform = baseObject->getPhysicsComponent()->getTransform();
+	baseObject->setTransform(baseObject->getPhysicsComponent()->getTransform());
 
 	//
 	// Update looking input
@@ -197,7 +202,7 @@ void PlayerRender::preRenderUpdate()
 	// Update playercam pos
 	//
 	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.position = PhysicsUtils::getPosition(baseObject->transform) + lookingRotation * playerCamOffset;
+	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
 	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
 	//
@@ -234,10 +239,11 @@ void PlayerRender::preRenderUpdate()
 		float targetFacingDirection = glm::degrees(std::atan2f(velocity.x, velocity.z));
 		facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
 
-		baseObject->transform =
-			glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->transform)) *
+		baseObject->setTransform(
+			glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
 			glm::eulerAngleXYZ(0.0f, glm::radians(facingDirection), 0.0f) *
-			glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->transform));
+			glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()))
+		);
 	}
 
 	//
@@ -312,8 +318,8 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 	//
 	// Setup the transformation matrices and lights
 	//
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(baseObject->transform));
-	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->transform)))));
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(baseObject->getTransform()));
+	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->getTransform())))));
 	model.render(pbrShaderProgramId);
 }
 
@@ -332,7 +338,7 @@ void PlayerRender::renderShadow(GLuint programId)
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->transform)
+		glm::value_ptr(baseObject->getTransform())
 	);
 	// TODO: add skeletal stuff too eh!
 	model.render(programId);
@@ -342,8 +348,8 @@ void PlayerImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->transform));
-	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->transform);
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
 	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
@@ -360,6 +366,6 @@ void PlayerImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
-	PhysicsUtils::imguiRenderCharacterController(baseObject->transform, *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
+	PhysicsUtils::imguiRenderCharacterController(baseObject->getTransform(), *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
 	ImGuiComponent::renderImGui();
 }

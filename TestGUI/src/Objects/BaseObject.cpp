@@ -37,6 +37,7 @@ std::string generate_hex(const uint32_t len)
 
 BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing pointers of these in mainloop for scene cleanup!!!!!
 {
+	transform = glm::mat4(1.0f);
 	guid = generate_hex(32);
 }
 
@@ -69,6 +70,23 @@ nlohmann::json BaseObject::savePropertiesToJson()
 	j["rotation"] = { eulerAngles.x, eulerAngles.y, eulerAngles.z };
 	j["scale"] = { scale.x, scale.y, scale.z };
 	return j;
+}
+
+glm::mat4& BaseObject::getTransform()
+{
+	return transform;
+}
+
+void BaseObject::setTransform(glm::mat4 newTransform, bool propagate)
+{
+	transform = newTransform;
+
+	if (!propagate)
+		return;
+
+	PhysicsComponent* pc = getPhysicsComponent();
+	if (pc != nullptr)
+		pc->propagateNewTransform(newTransform);
 }
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
@@ -106,7 +124,7 @@ void ImGuiComponent::renderImGui()
 	if (bounds == nullptr || MainLoop::getInstance().playMode)
 		return;
 	
-	Bounds cookedBounds = PhysicsUtils::fitAABB(*bounds, baseObject->transform);
+	Bounds cookedBounds = PhysicsUtils::fitAABB(*bounds, baseObject->getTransform());
 
 	double xpos, ypos;
 	glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
@@ -194,8 +212,8 @@ void LightComponent::renderPassShadowMap() {}
 PhysicsComponent::PhysicsComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
 {
 	// Populate the transformstate struct
-	physicsTransformState.updateTransform(baseObject->transform);
-	physicsTransformState.updateTransform(baseObject->transform);
+	physicsTransformState.updateTransform(baseObject->getTransform());
+	physicsTransformState.updateTransform(baseObject->getTransform());
 
 	MainLoop::getInstance().physicsObjects.push_back(this);
 }
@@ -246,6 +264,6 @@ glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 {
 	float time = (float)glfwGetTime();
 	time -= MainLoop::getInstance().physicsDeltaTime;
-	float interpolationValue = (time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime);
+	float interpolationValue = std::clamp((time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime), 0.0f, 1.0f);
 	return glm::interpolate(previousTransform, currentTransform, interpolationValue);
 }
