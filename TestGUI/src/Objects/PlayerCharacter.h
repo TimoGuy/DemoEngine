@@ -75,5 +75,10 @@ public:
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
+	ImGuiComponent* getImguiComponent() { return imguiComponent; }
+	LightComponent* getLightComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
+	RenderComponent* getRenderComponent() { return renderComponent; }
+
 	Bounds* bounds;
 };

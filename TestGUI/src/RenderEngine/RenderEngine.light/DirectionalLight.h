@@ -69,5 +69,10 @@ public:
 	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;
 
+	ImGuiComponent* getImguiComponent() { return imguiComponent; }
+	LightComponent* getLightComponent() { return lightComponent; }
+	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	RenderComponent* getRenderComponent() { return nullptr; }
+
 	Bounds* bounds;
 };

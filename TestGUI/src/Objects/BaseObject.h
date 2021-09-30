@@ -22,10 +22,10 @@ public:
 	virtual void loadPropertiesFromJson(nlohmann::json& object);
 	virtual nlohmann::json savePropertiesToJson();
 
-	virtual ImGuiComponent* getImguiComponent() { assert(false); return nullptr; }
-	virtual LightComponent* getLightComponent() { assert(false); return nullptr; }
-	virtual PhysicsComponent* getPhysicsComponent() { assert(false); return nullptr; }
-	virtual RenderComponent* getRenderComponent() { assert(false); return nullptr; }
+	virtual ImGuiComponent* getImguiComponent() = 0;//{ assert(false); return nullptr; }
+	virtual LightComponent* getLightComponent() = 0;//{ assert(false); return nullptr; }
+	virtual PhysicsComponent* getPhysicsComponent() = 0;//{ assert(false); return nullptr; }
+	virtual RenderComponent* getRenderComponent() = 0;//{ assert(false); return nullptr; }
 
 	glm::mat4 transform;
 	std::string guid;
