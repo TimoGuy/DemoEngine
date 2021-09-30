@@ -23,7 +23,7 @@ class PlayerPhysics : public PhysicsComponent
 public:
 	PlayerPhysics(BaseObject* bo, Bounds* bounds);
 
-	void physicsUpdate(float deltaTime);
+	void physicsUpdate();
 
 	physx::PxVec3 velocity;
 

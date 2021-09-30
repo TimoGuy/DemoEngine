@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <random>
+#include <glm/gtx/matrix_interpolation.hpp>
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
@@ -23,7 +24,7 @@ uint32_t random_char()
 std::string generate_hex(const uint32_t len)
 {
 	std::stringstream ss;
-	for (auto i = 0; i < len; i++)
+	for (uint32_t i = 0; i < len; i++)
 	{
 		const auto rc = random_char();
 		std::stringstream hexstream;
@@ -126,7 +127,7 @@ void ImGuiComponent::renderImGui()
 	//
 	// Setup selection state color
 	//
-	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667, 0.1529411765);			// Nothing color
+	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f);			// Nothing color
 	if (MainLoop::getInstance().renderManager->currentSelectedObjectIndex >= 0 &&
 		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentSelectedObjectIndex] == this)
 		selectionStateColor = ImColor(0.921568627f, 0.423529412f, 0.901960784f);			// Selected color
@@ -192,6 +193,10 @@ void LightComponent::renderPassShadowMap() {}
 
 PhysicsComponent::PhysicsComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
 {
+	// Populate the transformstate struct
+	physicsTransformState.updateTransform(baseObject->transform);
+	physicsTransformState.updateTransform(baseObject->transform);
+
 	MainLoop::getInstance().physicsObjects.push_back(this);
 }
 
@@ -205,6 +210,11 @@ PhysicsComponent::~PhysicsComponent()
 		),
 		MainLoop::getInstance().physicsObjects.end()
 	);
+}
+
+glm::mat4 PhysicsComponent::getTransform()
+{
+	return physicsTransformState.getInterpolatedTransform();
 }
 
 RenderComponent::RenderComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
@@ -222,4 +232,20 @@ RenderComponent::~RenderComponent()
 		),
 		MainLoop::getInstance().renderObjects.end()
 	);
+}
+
+void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
+{
+	previousUpdateTime = currentUpdateTime;
+	currentUpdateTime = (float)glfwGetTime();
+	previousTransform = currentTransform;
+	currentTransform = newTransform;
+}
+
+glm::mat4 PhysicsTransformState::getInterpolatedTransform()
+{
+	float time = (float)glfwGetTime();
+	time -= MainLoop::getInstance().physicsDeltaTime;
+	float interpolationValue = (time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime);
+	return glm::interpolate(previousTransform, currentTransform, interpolationValue);
 }

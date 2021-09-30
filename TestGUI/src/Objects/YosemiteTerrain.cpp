@@ -12,8 +12,8 @@
 
 
 
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"			// tEMP
-#include "../RenderEngine/RenderEngine.light/PointLight.h"					// temp
+#include "../Objects/DirectionalLight.h"			// tEMP
+#include "../Objects/PointLight.h"					// temp
 
 YosemiteTerrain::YosemiteTerrain()
 {
@@ -24,6 +24,7 @@ YosemiteTerrain::YosemiteTerrain()
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	imguiComponent = new YosemiteTerrainImGui(this, bounds);
+	physicsComponent = new BoxCollider(this, bounds);
 	renderComponent = new YosemiteTerrainRender(this, bounds);
 }
 
@@ -48,6 +49,7 @@ void YosemiteTerrainRender::refreshResources()
 YosemiteTerrain::~YosemiteTerrain()
 {
 	delete renderComponent;
+	delete physicsComponent;
 	delete imguiComponent;
 }
 
@@ -161,4 +163,22 @@ void YosemiteTerrainImGui::renderImGui()
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
 	ImGuiComponent::renderImGui();
+}
+
+BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
+{
+	glm::vec3 scale = PhysicsUtils::getScale(baseObject->transform);
+
+	physx::PxRigidStatic* boxBody = PhysicsUtils::createRigidbodyStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->transform));
+	glm::vec3 realExtents = bounds->extents * scale;
+	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
+	boxBody->attachShape(*shape);
+
+	MainLoop::getInstance().physicsScene->addActor(*boxBody);
+	shape->release();
+}
+
+void BoxCollider::physicsUpdate()
+{
+	// Do nothing
 }

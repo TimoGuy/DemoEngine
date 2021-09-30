@@ -366,4 +366,5 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "model;yosemiteTerrain")				return loadModel(resourceName, isUnloading, "res/cube.glb");
 
 	assert(false);
+	return nullptr;
 }

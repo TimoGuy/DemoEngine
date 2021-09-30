@@ -7,7 +7,7 @@ Bone::Bone(int id, const aiNodeAnim* channel) : id(id)
 	for (unsigned int i = 0; i < numPositions; i++)
 	{
 		aiVector3D aiPosition = channel->mPositionKeys[i].mValue;
-		float timeStamp = channel->mPositionKeys[i].mTime;
+		float timeStamp = (float)channel->mPositionKeys[i].mTime;
 		KeyPosition data;
 		data.position = glm::vec3(aiPosition.x, aiPosition.y, aiPosition.z);				// FIXME: For some reason the positioning of the models isn't quite right. It's like the bones are twice as long as they're supposed to be... like the bone moves twice in bone space...
 		data.timeStamp = timeStamp;
@@ -18,7 +18,7 @@ Bone::Bone(int id, const aiNodeAnim* channel) : id(id)
 	for (unsigned int i = 0; i < numRotations; i++)
 	{
 		aiQuaternion aiOrientation = channel->mRotationKeys[i].mValue;
-		float timeStamp = channel->mRotationKeys[i].mTime;
+		float timeStamp = (float)channel->mRotationKeys[i].mTime;
 		KeyRotation data;
 		data.orientation = glm::quat(aiOrientation.w, aiOrientation.x, aiOrientation.y, aiOrientation.z);
 		data.timeStamp = timeStamp;
@@ -29,7 +29,7 @@ Bone::Bone(int id, const aiNodeAnim* channel) : id(id)
 	for (unsigned int i = 0; i < numScales; i++)
 	{
 		aiVector3D scale = channel->mScalingKeys[i].mValue;
-		float timeStamp = channel->mScalingKeys[i].mTime;
+		float timeStamp = (float)channel->mScalingKeys[i].mTime;
 		KeyScale data;
 		data.scale = glm::vec3(scale.x, scale.y, scale.z);
 		data.timeStamp = timeStamp;
@@ -54,6 +54,7 @@ int Bone::getPositionIndex(float animationTime)
 			return i;
 	}
 	assert(0);
+	return -1;
 }
 
 
@@ -65,6 +66,7 @@ int Bone::getRotationIndex(float animationTime)
 			return i;
 	}
 	assert(0);
+	return -1;
 }
 
 
@@ -76,6 +78,7 @@ int Bone::getScaleIndex(float animationTime)
 			return i;
 	}
 	assert(0);
+	return -1;
 }
 
 

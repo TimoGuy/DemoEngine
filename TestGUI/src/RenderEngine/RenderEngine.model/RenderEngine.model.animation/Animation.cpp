@@ -10,8 +10,8 @@ Animation::Animation(const aiScene* scene, Model* model, unsigned int animationI
 	assert(scene && scene->mRootNode);
 
 	auto animation = scene->mAnimations[animationIndex];		// #5 is idle for slime girl btw; #14 is the capoeira for slime_capoeira.fbx
-	duration = animation->mDuration;
-	ticksPerSecond = animation->mTicksPerSecond;
+	duration = (float)animation->mDuration;
+	ticksPerSecond = (int)animation->mTicksPerSecond;
 
 	aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 	globalTransformation = globalTransformation.Inverse();
@@ -46,7 +46,7 @@ Bone* Animation::findBone(const std::string& name)
 //
 void Animation::readMissingBones(const aiAnimation* animation, Model& model)
 {
-	int size = animation->mNumChannels;
+	uint32_t size = animation->mNumChannels;
 
 	auto& boneInfoMap = model.getBoneInfoMap();
 	int& boneCount = model.getBoneCount();
@@ -54,7 +54,7 @@ void Animation::readMissingBones(const aiAnimation* animation, Model& model)
 	//
 	// Read channels
 	//
-	for (unsigned int i = 0; i < size; i++)
+	for (uint32_t i = 0; i < size; i++)
 	{
 		auto channel = animation->mChannels[i];
 		std::string boneName = channel->mNodeName.data;

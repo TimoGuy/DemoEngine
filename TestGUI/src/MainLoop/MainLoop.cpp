@@ -12,7 +12,7 @@
 
 #include "../Objects/PlayerCharacter.h"
 #include "../Objects/YosemiteTerrain.h"
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
+#include "../Objects/DirectionalLight.h"
 
 #include "../Utils/PhysicsUtils.h"
 
@@ -155,12 +155,12 @@ void MainLoop::run()
 	float startFrameTime = 0;
 #endif
 
-	float lastFrame = glfwGetTime();
+	float lastFrame = (float)glfwGetTime();
 
 	while (!glfwWindowShouldClose(window))
 	{
 #if SINGLE_BUFFERED_MODE
-		startFrameTime = glfwGetTime();
+		startFrameTime = (float)glfwGetTime();
 #endif
 
 		glfwPollEvents();
@@ -195,7 +195,7 @@ void MainLoop::run()
 		//	animator.playAnimation(5, 12.0f);
 
 		// Update deltatime (NOTE: render thread only!!!)
-		float currentFrame = glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 			
@@ -271,8 +271,8 @@ void createWindow(const char* windowName)
 
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
-	MainLoop::getInstance().camera.width = width;
-	MainLoop::getInstance().camera.height = height;
+	MainLoop::getInstance().camera.width = (float)width;
+	MainLoop::getInstance().camera.height = (float)height;
 
 	if (MainLoop::getInstance().renderManager != nullptr)
 		MainLoop::getInstance().renderManager->recreateHDRBuffer();
@@ -465,8 +465,8 @@ void setupPhysx()
 	//
 	// Init scene
 	//
-	physx::PxRigidStatic* groundPlane = physx::PxCreatePlane(*MainLoop::getInstance().physicsPhysics, physx::PxPlane(0, 1, 0, 3.6f), *MainLoop::getInstance().defaultPhysicsMaterial);
-	MainLoop::getInstance().physicsScene->addActor(*groundPlane);
+	//physx::PxRigidStatic* groundPlane = physx::PxCreatePlane(*MainLoop::getInstance().physicsPhysics, physx::PxPlane(0, 1, 0, 3.6f), *MainLoop::getInstance().defaultPhysicsMaterial);
+	//MainLoop::getInstance().physicsScene->addActor(*groundPlane);
 
 	float halfExtent = 1.0f;
 	const int size = 50;
@@ -497,24 +497,25 @@ void setupPhysx()
 
 void physicsUpdate()
 {
-	float deltaTime = 1.0f / 50.0f;
-	float deltaTime1000 = deltaTime * 1000.0f;
+	MainLoop::getInstance().physicsDeltaTime = 1.0f / 50.0f;
+	float deltaTime1000 = MainLoop::getInstance().physicsDeltaTime * 1000.0f;
 
 	while (loopRunning)
 	{
-		float startFrameTime = glfwGetTime();
+		float startFrameTime = (float)glfwGetTime();
 
-		if (MainLoop::getInstance().simulatePhysics)
+		if (MainLoop::getInstance().playMode)
 		{
 			for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 			{
-				MainLoop::getInstance().physicsObjects[i]->physicsUpdate(deltaTime);
+				MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
 			}
 
-			MainLoop::getInstance().physicsScene->simulate(deltaTime);
+			MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 			MainLoop::getInstance().physicsScene->fetchResults(true);
 		}
 
+		// Sleep until next chance to do physics
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));
 	}
 }

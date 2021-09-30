@@ -15,8 +15,8 @@
 
 
 
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"			// temp
-#include "../RenderEngine/RenderEngine.light/PointLight.h"					// temp
+#include "../Objects/DirectionalLight.h"			// temp
+#include "../Objects/PointLight.h"					// temp
 
 
 PlayerCharacter::PlayerCharacter()
@@ -101,7 +101,7 @@ PlayerCharacter::~PlayerCharacter()
 	delete imguiComponent;
 }
 
-void PlayerPhysics::physicsUpdate(float deltaTime)
+void PlayerPhysics::physicsUpdate()
 {
 	//if (reapplyTransform)
 	//{
@@ -136,6 +136,8 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 
 	//	modelMatrix = newMat;
 	//}
+
+	// TODO: figure out better way of conforming self to rendering position
 	physx::PxExtendedVec3 pos = controller->getPosition();
 	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
 	if (!(newTransform == baseObject->transform))
@@ -144,11 +146,17 @@ void PlayerPhysics::physicsUpdate(float deltaTime)
 		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
 	}
 
-	velocity.y -= 9.8f * deltaTime;
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, deltaTime, NULL, NULL);
+	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
+	physx::PxF32 jj = MainLoop::getInstance().physicsDeltaTime;
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, 0.025f, NULL, NULL);
 
+	//
+	// Apply transform
+	//
 	pos = controller->getPosition();
-	baseObject->transform[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
+	glm::mat4 trans = baseObject->transform;
+	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
+	physicsTransformState.updateTransform(trans);
 }
 
 double previousMouseX, previousMouseY;
@@ -170,6 +178,11 @@ void PlayerRender::preRenderUpdate()
 		lookingInput = glm::vec2(0, 0);
 		return;
 	}
+
+	//
+	// Update rendering transform
+	//
+	baseObject->transform = baseObject->getPhysicsComponent()->getTransform();
 
 	//
 	// Update looking input
@@ -207,6 +220,11 @@ void PlayerRender::preRenderUpdate()
 	glm::vec3 velocity =
 		glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z)) * movementVector.y +
 		glm::cross(playerCamera.orientation, playerCamera.up) * movementVector.x;
+
+	velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
+
+	float jumpSpeed = 10;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS) velocity.y = jumpSpeed;
 
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
 

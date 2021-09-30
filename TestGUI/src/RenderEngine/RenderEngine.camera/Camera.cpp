@@ -207,8 +207,8 @@ void Camera::Inputs(GLFWwindow* window)
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		float rotX = sensitivity * (mouseY - savedMouseY) / height;
-		float rotY = sensitivity * (mouseX - savedMouseX) / height;
+		float rotX = sensitivity * (float)(mouseY - savedMouseY) / height;
+		float rotY = sensitivity * (float)(mouseX - savedMouseX) / height;
 		// NOTE: Below is for debug
 		//std::cout << "Rotation X: " << rotX << "\tHeight/2: " << (height / 2.0) << "\tmouseY: " << mouseY << std::endl;
 

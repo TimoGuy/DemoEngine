@@ -28,7 +28,7 @@ void Mesh::render(unsigned int shaderId)
         if (texName == "texture_specular")
             number = std::to_string(specularNr++);
 
-        glUniform1f(glGetUniformLocation(shaderId, (/*"material." + */texName + number).c_str()), i);   // NOTE: the 'material.' portion was to assign a uniform to the material struct. You have much to learn, young timoteo, and don't forget about this syntax!!
+        glUniform1f(glGetUniformLocation(shaderId, (/*"material." + */texName + number).c_str()), (GLfloat)i);   // NOTE: the 'material.' portion was to assign a uniform to the material struct. You have much to learn, young timoteo, and don't forget about this syntax!!
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
@@ -37,7 +37,7 @@ void Mesh::render(unsigned int shaderId)
     // Draw the mesh
     //
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+    glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
 }
 

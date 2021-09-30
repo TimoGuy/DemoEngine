@@ -11,8 +11,8 @@
 #include "../Objects/BaseObject.h"
 #include "../Objects/YosemiteTerrain.h"
 #include "../Objects/PlayerCharacter.h"
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
-#include "../RenderEngine/RenderEngine.light/PointLight.h"
+#include "../Objects/DirectionalLight.h"
+#include "../Objects/PointLight.h"
 
 #include "../Utils/Utils.h"
 
@@ -45,7 +45,7 @@ void FileLoading::loadFileWithPrompt()
 	//
 	// Clear out the whole scene
 	//
-	for (int i = MainLoop::getInstance().imguiObjects.size() - 1; i >= 0; i--)
+	for (int i = (int)MainLoop::getInstance().imguiObjects.size() - 1; i >= 0; i--)
 	{
 		delete MainLoop::getInstance().imguiObjects[i]->baseObject;
 	}

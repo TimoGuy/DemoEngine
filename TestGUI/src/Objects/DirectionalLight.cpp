@@ -1,15 +1,15 @@
 #include "DirectionalLight.h"
 
 #include <glad/glad.h>
-#include "../RenderEngine.resources/Resources.h"
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include <glm/gtx/quaternion.hpp>
-#include "../../MainLoop/MainLoop.h"
-#include "../RenderEngine.manager/RenderManager.h"
+#include "../MainLoop/MainLoop.h"
+#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
-#include "../../ImGui/imgui.h"
-#include "../../ImGui/imgui_stdlib.h"
-#include "../../ImGui/ImGuizmo.h"
-#include "../../Utils/PhysicsUtils.h"
+#include "../ImGui/imgui.h"
+#include "../ImGui/imgui_stdlib.h"
+#include "../ImGui/ImGuizmo.h"
+#include "../Utils/PhysicsUtils.h"
 #include <glm/glm.hpp>
 
 
@@ -443,7 +443,7 @@ void DirectionalLightImGui::renderImGui()
 		ImVec2 p_min = ImVec2(lightPosOnScreen.x - gizmoRadius, lightPosOnScreen.y + gizmoRadius);
 		ImVec2 p_max = ImVec2(lightPosOnScreen.x + gizmoRadius, lightPosOnScreen.y - gizmoRadius);
 
-		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)lightGizmoTextureId, p_min, p_max);
+		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
 	if (clipZ2 > 0.0f)

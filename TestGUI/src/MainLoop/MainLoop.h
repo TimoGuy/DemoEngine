@@ -32,11 +32,12 @@ public:
 	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
 
-	float deltaTime;		// NOTE: to only be used on the rendering thread
+	float deltaTime;			// To only be used on the rendering thread
+	float physicsDeltaTime;		// To only be used on the physics thread
 	bool playMode = false;
 
 	//
 	// Debug mode flags
 	//
-	bool simulatePhysics = false;
+	//bool simulatePhysics = false;		@Simplify: this was making things too complicated
 };

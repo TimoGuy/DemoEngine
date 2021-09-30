@@ -13,6 +13,8 @@ namespace PhysicsUtils
 
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles = glm::vec3(0.0f));
 
+	physx::PxTransform createTransform(glm::mat4 transform);
+
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform);
 
 	physx::PxRigidStatic* createRigidbodyStatic(physx::PxPhysics* physics, physx::PxTransform transform);

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Objects/BaseObject.h"
-#include "Light.h"
-#include "../RenderEngine.camera/Camera.h"
+#include "BaseObject.h"
+#include "../RenderEngine/RenderEngine.light/Light.h"
+#include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 #include <vector>
 

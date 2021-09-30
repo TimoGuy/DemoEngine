@@ -19,7 +19,7 @@ public:
 
 	Bone* findBone(const std::string& name);
 
-	inline float getTicksPerSecond() { return ticksPerSecond; }
+	inline float getTicksPerSecond() { return (float)ticksPerSecond; }
 	inline float getDuration() { return duration; }
 	inline const AssimpNodeData& getRootNode() { return rootNode; }
 	inline const std::map<std::string, BoneInfo>& getBoneIdMap() { return boneInfoMap; }

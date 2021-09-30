@@ -34,6 +34,14 @@ private:
 	void refreshResources();
 };
 
+class BoxCollider : public PhysicsComponent
+{
+public:
+	BoxCollider(BaseObject* bo, Bounds* bounds);
+
+	void physicsUpdate();
+};
+
 class YosemiteTerrain : public BaseObject
 {
 public:
@@ -46,11 +54,12 @@ public:
 	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
+	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
 	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	Bounds* bounds;

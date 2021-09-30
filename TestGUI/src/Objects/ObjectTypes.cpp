@@ -1,7 +1,7 @@
 #include "PlayerCharacter.h"
 #include "YosemiteTerrain.h"
-#include "../RenderEngine/RenderEngine.light/DirectionalLight.h"
-#include "../RenderEngine/RenderEngine.light/PointLight.h"
+#include "../Objects/DirectionalLight.h"
+#include "../Objects/PointLight.h"
 
 const std::string PlayerCharacter::TYPE_NAME =		"player";
 const std::string YosemiteTerrain::TYPE_NAME =		"ground";

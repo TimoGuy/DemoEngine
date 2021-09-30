@@ -35,6 +35,17 @@ namespace PhysicsUtils
 		return physx::PxTransform(position.x, position.y, position.z, quat);
 	}
 
+	physx::PxTransform createTransform(glm::mat4 transform)
+	{
+		glm::vec3 position = getPosition(transform);
+		glm::quat rotation = getRotation(transform);
+
+		return physx::PxTransform(
+			physx::PxVec3(position.x, position.y, position.z),
+			physx::PxQuat(rotation.x, rotation.y, rotation.z, rotation.w)
+		);
+	}
+
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform)
 	{
 		return physics->createRigidDynamic(transform);
@@ -230,7 +241,7 @@ namespace PhysicsUtils
 
 		ImGui::GetBackgroundDrawList()->AddPolyline(
 			&screenSpacePoints[0],
-			screenSpacePoints.size(),
+			(int)screenSpacePoints.size(),
 			color,
 			ImDrawFlags_Closed,
 			3.0f
@@ -284,7 +295,7 @@ namespace PhysicsUtils
 
 		ImGui::GetBackgroundDrawList()->AddPolyline(
 			&screenSpacePoints[0],
-			screenSpacePoints.size(),
+			(int)screenSpacePoints.size(),
 			ImColor::HSV(0.39f, 0.88f, 0.92f),
 			ImDrawFlags_Closed,
 			3.0f
@@ -330,9 +341,9 @@ namespace PhysicsUtils
 		constexpr float paddingY = 0.0f;
 		constexpr float paddingZ = 0.0f;
 
-		const float scaleX = 1.0 / delta.x;
-		const float scaleY = 1.0 / delta.y;
-		const float scaleZ = 1.0 / delta.z;
+		const float scaleX = 1.0f / delta.x;
+		const float scaleY = 1.0f / delta.y;
+		const float scaleZ = 1.0f / delta.z;
 		const float signX = std::copysignf(1.0f, scaleX);
 		const float signY = std::copysignf(1.0f, scaleY);
 		const float signZ = std::copysignf(1.0f, scaleZ);

@@ -24,8 +24,8 @@
 
 #include "../../Objects/PlayerCharacter.h"
 #include "../../Objects/YosemiteTerrain.h"
-#include "../../RenderEngine/RenderEngine.light/DirectionalLight.h"
-#include "../../RenderEngine/RenderEngine.light/PointLight.h"
+#include "../../Objects/DirectionalLight.h"
+#include "../../Objects/PointLight.h"
 
 
 void renderCube();
@@ -190,8 +190,8 @@ void RenderManager::createHDRSkybox()
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
 		// Resize to mip level size
-		unsigned int mipWidth = 128 * std::pow(0.5, mip);
-		unsigned int mipHeight = 128 * std::pow(0.5, mip);
+		unsigned int mipWidth = (unsigned int)(128.0 * std::pow(0.5, mip));
+		unsigned int mipHeight = (unsigned int)(128.0 * std::pow(0.5, mip));
 		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -251,13 +251,13 @@ void RenderManager::createHDRBuffer()
 	// Create floating point color buffer
 	glGenTextures(1, &hdrColorBuffer);
 	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height, 0, GL_RGBA, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RGBA, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Create depth buffer (renderbuffer)
 	glGenRenderbuffers(1, &hdrDepthRBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	// Attach buffers
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0);
@@ -375,7 +375,7 @@ void RenderManager::createFonts()
 			texture,
 			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-			face->glyph->advance.x
+			(unsigned int)face->glyph->advance.x
 		};
 		characters.insert(std::pair<char, TextCharacter>(c, newChar));
 	}
@@ -436,7 +436,7 @@ void RenderManager::render()
 	// -----------------------------------------------------------------------------------------------------------------------------
 	// Render scene normally
 	// -----------------------------------------------------------------------------------------------------------------------------
-	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	renderScene();
@@ -453,7 +453,7 @@ void RenderManager::render()
 		{
 			size_t bloomFBOIndex = i * 2 + j % 2;					// Needs to have a sequence of i(0):  0,1,0; i(1): 2,3,2; i(2): 4,5,4; i(3): 6,7,6; i(4): 8,9,8
 			size_t colorBufferIndex = i * 2 - 1 + j;				// Needs to have a sequence of i(0): -1,0,1; i(1): 1,2,3; i(2): 3,4,5; i(3): 5,6,7; i(4): 7,8,9
-			GLint stageNumber = j + 1;								// Needs to have a sequence of i(n):  1,2,3
+			GLint stageNumber = (GLint)j + 1;						// Needs to have a sequence of i(n):  1,2,3
 
 			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
 			glUseProgram(bloom_postprocessing_program_id);
@@ -613,7 +613,7 @@ void RenderManager::setupSceneLights()
 	// Setup lights and shadows
 	//
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), numLights);
+	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), (GLint)numLights);
 	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
 	const GLuint baseOffset = 7;											// @Hardcode: Bc GL_TEXTURE6 is the highest being used rn
@@ -635,7 +635,7 @@ void RenderManager::setupSceneLights()
 				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
 
 				// DirectionalLight: Setup for csm rendering
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
 				for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
 				{
 					glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
@@ -790,7 +790,7 @@ void RenderManager::renderImGuiContents()
 					j["baseObject"].erase("guid");
 					FileLoading::getInstance().createObjectWithJson(j);
 
-					currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
+					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
 				}
 				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
 				{
@@ -816,12 +816,6 @@ void RenderManager::renderImGuiContents()
 				{
 					glPolygonMode(GL_FRONT_AND_BACK, renderWireframeMode ? GL_LINE : GL_FILL);
 				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Physics"))
-			{
-				ImGui::MenuItem("Simulate Physics", NULL, &MainLoop::getInstance().simulatePhysics);
-
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -932,10 +926,10 @@ void RenderManager::renderImGuiContents()
 			{
 				if (checkForRequestedObjects == 1)
 					// Click Event
-					currentSelectedObjectIndex = requestedListObjectIndices[closestIndex];
+					currentSelectedObjectIndex = (int)requestedListObjectIndices[closestIndex];
 				else if (checkForRequestedObjects == 2)
 					// Hover Event
-					currentHoveringObjectIndex = requestedListObjectIndices[closestIndex];
+					currentHoveringObjectIndex = (int)requestedListObjectIndices[closestIndex];
 			}
 			else
 			{
@@ -1005,7 +999,7 @@ void RenderManager::renderImGuiContents()
 							j["baseObject"].erase("guid");
 							FileLoading::getInstance().createObjectWithJson(j);
 
-							currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
+							currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
 						}
 					}
 					else
@@ -1051,7 +1045,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
 
 				if (newObject != nullptr)
-					currentSelectedObjectIndex = MainLoop::getInstance().imguiObjects.size() - 1;
+					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
 
 				ImGui::EndPopup();
 			}
@@ -1232,8 +1226,8 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 		float xpos = x + ch.bearing.x;
 		float ypos = y - (ch.size.y - ch.bearing.y);
 
-		float w = ch.size.x;
-		float h = ch.size.y;
+		float w = (float)ch.size.x;
+		float h = (float)ch.size.y;
 		// update VBO for each character
 		float vertices[6][4] = {
 			{ xpos,     ypos + h,   0.0f, 0.0f },

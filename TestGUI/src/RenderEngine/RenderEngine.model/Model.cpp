@@ -326,7 +326,7 @@ void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* 
 
 		assert(boneId != -1);
 		auto weights = mesh->mBones[boneIndex]->mWeights;
-		int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+		unsigned int numWeights = mesh->mBones[boneIndex]->mNumWeights;
 
 		for (unsigned int weightIndex = 0; weightIndex < numWeights; weightIndex++)	// Hi
 		{

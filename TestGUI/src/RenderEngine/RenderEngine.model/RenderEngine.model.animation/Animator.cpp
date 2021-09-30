@@ -110,7 +110,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 				glm::vec3 nextScale;
 				nextBone->update(nextTime, nextPosition, nextRotation, nextScale);
 
-				float mixScaleFactor = 1.0 - mixTime / totalMixTime;
+				float mixScaleFactor = 1.0f - mixTime / totalMixTime;
 				position = glm::mix(position, nextPosition, mixScaleFactor);
 				rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
 				scale = glm::mix(scale, nextScale, mixScaleFactor);
@@ -135,7 +135,7 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, glm::mat4 pare
 	}
 
 	// Recursively find childrens' bone transformation
-	for (unsigned int i = 0; i < node->childrenCount; i++)
+	for (int i = 0; i < node->childrenCount; i++)
 	{
 		calculateBoneTransform(&node->children[i], globalTransformation, useNextAnimation);
 	}

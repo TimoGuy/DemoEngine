@@ -1,15 +1,15 @@
 #include "PointLight.h"
 
 #include <glad/glad.h>
-#include "../RenderEngine.resources/Resources.h"
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include <glm/gtx/quaternion.hpp>
-#include "../../MainLoop/MainLoop.h"
-#include "../RenderEngine.manager/RenderManager.h"
+#include "../MainLoop/MainLoop.h"
+#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
-#include "../../ImGui/imgui.h"
-#include "../../ImGui/imgui_stdlib.h"
-#include "../../ImGui/ImGuizmo.h"
-#include "../../Utils/PhysicsUtils.h"
+#include "../ImGui/imgui.h"
+#include "../ImGui/imgui_stdlib.h"
+#include "../ImGui/ImGuizmo.h"
+#include "../Utils/PhysicsUtils.h"
 
 
 PointLight::PointLight(bool castsShadows)
@@ -256,7 +256,7 @@ void PointLightImGui::renderImGui()
 		ImVec2 p_min = ImVec2(lightPosOnScreen.x - gizmoRadius, lightPosOnScreen.y + gizmoRadius);
 		ImVec2 p_max = ImVec2(lightPosOnScreen.x + gizmoRadius, lightPosOnScreen.y - gizmoRadius);
 
-		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)lightGizmoTextureId, p_min, p_max);
+		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
 	PhysicsUtils::imguiRenderCircle(baseObject->transform, 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));

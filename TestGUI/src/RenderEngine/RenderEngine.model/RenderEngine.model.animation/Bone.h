@@ -28,7 +28,7 @@ private:
 	std::vector<KeyPosition>	positions;
 	std::vector<KeyRotation>	rotations;
 	std::vector<KeyScale>		scales;
-	int numPositions, numRotations, numScales;
+	unsigned int numPositions, numRotations, numScales;
 
 	std::string name;
 	int id;
