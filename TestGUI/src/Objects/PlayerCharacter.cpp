@@ -154,8 +154,7 @@ void PlayerPhysics::physicsUpdate()
 	pos = controller->getPosition();
 	glm::mat4 trans = baseObject->getTransform();
 	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
-	physicsTransformState.updateTransform(trans);
-	baseObject->setTransform(trans, false);
+	baseObject->INTERNALsubmitPhysicsCalculation(trans);
 }
 
 void PlayerPhysics::propagateNewTransform(glm::mat4 newTransform)
@@ -183,11 +182,6 @@ void PlayerRender::preRenderUpdate()
 		lookingInput = glm::vec2(0, 0);
 		return;
 	}
-
-	//
-	// Update rendering transform
-	//
-	baseObject->setTransform(baseObject->getPhysicsComponent()->getTransform());
 
 	//
 	// Update looking input

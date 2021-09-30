@@ -198,6 +198,14 @@ void MainLoop::run()
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		//
+		// Take all physics objects and update their transforms
+		//
+		for (size_t i = 0; i < physicsObjects.size(); i++)
+		{
+			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform();
+		}
 			
 		//
 		// Commit to render everything
@@ -253,9 +261,9 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
 #else
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
 	glfwSwapInterval(1);
 #endif
 

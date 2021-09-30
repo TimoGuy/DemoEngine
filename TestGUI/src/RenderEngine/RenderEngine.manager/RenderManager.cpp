@@ -1090,8 +1090,8 @@ void RenderManager::renderImGuiContents()
 				ImGui::Text("No object is currently selected");
 
 
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 
 	//
@@ -1142,8 +1142,8 @@ void RenderManager::renderImGuiContents()
 				}
 			}
 
-			ImGui::End();
 		}
+		ImGui::End();
 	}
 
 	//

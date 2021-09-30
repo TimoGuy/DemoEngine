@@ -13,6 +13,17 @@ class LightComponent;
 class PhysicsComponent;
 class RenderComponent;
 
+struct PhysicsTransformState
+{
+	float previousUpdateTime;
+	float currentUpdateTime;
+	glm::mat4 previousTransform;
+	glm::mat4 currentTransform;
+
+	void updateTransform(glm::mat4 newTransform, float timeOffset);		// NOTE: if you wanna interpolate, add fixedDeltaTime for the timeOffset
+	glm::mat4 getInterpolatedTransform();
+};
+
 class BaseObject
 {
 public:
@@ -28,12 +39,19 @@ public:
 	virtual RenderComponent* getRenderComponent() = 0;
 
 	glm::mat4& getTransform();
-	void setTransform(glm::mat4 newTransform, bool propagate = true);
+	void setTransform(glm::mat4 newTransform);
 
 	std::string guid;
 
+	//
+	// INTERNAL FUNCTIONS (for physics)
+	//
+	void INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform);
+	void INTERNALfetchInterpolatedPhysicsTransform();
+
 private:
 	glm::mat4 transform;
+	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
 //
@@ -95,17 +113,6 @@ public:
 // This indicates that the object wants physics to be called.
 // Will (hopefully) be added into the physicsobjects queue.
 //
-struct PhysicsTransformState
-{
-	float previousUpdateTime;
-	float currentUpdateTime;
-	glm::mat4 previousTransform;
-	glm::mat4 currentTransform;
-
-	void updateTransform(glm::mat4 newTransform);
-	glm::mat4 getInterpolatedTransform();
-};
-
 class PhysicsComponent
 {
 public:
@@ -116,11 +123,7 @@ public:
 	virtual ~PhysicsComponent();
 	virtual void physicsUpdate() = 0;
 
-	glm::mat4 getTransform();		// NOTE: this is automatically interpolated
 	virtual void propagateNewTransform(glm::mat4 newTransform) = 0;
-
-protected:
-	PhysicsTransformState physicsTransformState;
 };
 
 

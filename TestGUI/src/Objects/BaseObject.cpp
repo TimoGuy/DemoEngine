@@ -39,6 +39,10 @@ BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing 
 {
 	transform = glm::mat4(1.0f);
 	guid = generate_hex(32);
+
+	// This is for physics realm of baseobject
+	physicsTransformState.updateTransform(getTransform(), 0.0f);
+	physicsTransformState.updateTransform(getTransform(), 0.0f);
 }
 
 BaseObject::~BaseObject()
@@ -77,16 +81,28 @@ glm::mat4& BaseObject::getTransform()
 	return transform;
 }
 
-void BaseObject::setTransform(glm::mat4 newTransform, bool propagate)
+void BaseObject::setTransform(glm::mat4 newTransform)
 {
 	transform = newTransform;
 
-	if (!propagate)
-		return;
-
 	PhysicsComponent* pc = getPhysicsComponent();
 	if (pc != nullptr)
+	{
+		// Reset the transform and propagate it
+		physicsTransformState.updateTransform(getTransform(), 0.0f);
+		physicsTransformState.updateTransform(getTransform(), 0.0f);
 		pc->propagateNewTransform(newTransform);
+	}
+}
+
+void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
+{
+	physicsTransformState.updateTransform(newTransform, MainLoop::getInstance().physicsDeltaTime);
+}
+
+void BaseObject::INTERNALfetchInterpolatedPhysicsTransform()
+{
+	transform = physicsTransformState.getInterpolatedTransform();		// Do this without propagating transforms
 }
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
@@ -212,9 +228,6 @@ void LightComponent::renderPassShadowMap() {}
 PhysicsComponent::PhysicsComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
 {
 	// Populate the transformstate struct
-	physicsTransformState.updateTransform(baseObject->getTransform());
-	physicsTransformState.updateTransform(baseObject->getTransform());
-
 	MainLoop::getInstance().physicsObjects.push_back(this);
 }
 
@@ -228,11 +241,6 @@ PhysicsComponent::~PhysicsComponent()
 		),
 		MainLoop::getInstance().physicsObjects.end()
 	);
-}
-
-glm::mat4 PhysicsComponent::getTransform()
-{
-	return physicsTransformState.getInterpolatedTransform();
 }
 
 RenderComponent::RenderComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
@@ -252,10 +260,10 @@ RenderComponent::~RenderComponent()
 	);
 }
 
-void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
+void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOffset)
 {
 	previousUpdateTime = currentUpdateTime;
-	currentUpdateTime = (float)glfwGetTime();
+	currentUpdateTime = (float)glfwGetTime() + timeOffset;
 	previousTransform = currentTransform;
 	currentTransform = newTransform;
 }
@@ -263,7 +271,6 @@ void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
 glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 {
 	float time = (float)glfwGetTime();
-	time -= MainLoop::getInstance().physicsDeltaTime;
 	float interpolationValue = std::clamp((time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime), 0.0f, 1.0f);
 	return glm::interpolate(previousTransform, currentTransform, interpolationValue);
 }
