@@ -9,6 +9,15 @@ struct AssimpNodeData
 	std::string name;
 	int childrenCount;
 	std::vector<AssimpNodeData> children;
+
+	//
+	// INTERNAL CACHE
+	//
+	bool isCacheCreated = false;
+	Bone* cacheBone;
+	int cacheBoneInfo_id;
+	glm::mat4 cacheBoneInfo_offset;
+	bool cacheBoneInfoExists;
 };
 
 class Animation
@@ -21,7 +30,7 @@ public:
 
 	inline float getTicksPerSecond() { return (float)ticksPerSecond; }
 	inline float getDuration() { return duration; }
-	inline const AssimpNodeData& getRootNode() { return rootNode; }
+	inline AssimpNodeData& getRootNode() { return rootNode; }
 	inline const std::map<std::string, BoneInfo>& getBoneIdMap() { return boneInfoMap; }
 	inline const glm::mat4 getGlobalRootInverseMatrix() { return globalRootInverseMatrix; }
 

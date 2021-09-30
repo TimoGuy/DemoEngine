@@ -92,36 +92,58 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime)
 }
 
 
-void Animator::calculateBoneTransform(const AssimpNodeData* node, const glm::mat4& globalRootInverseMatrix, const glm::mat4& parentTransform, std::map<std::string, BoneInfo>& boneInfoMap, bool useNextAnimation)
+void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& globalRootInverseMatrix, const glm::mat4& parentTransform, std::map<std::string, BoneInfo>& boneInfoMap, bool useNextAnimation)
 {
-	std::string nodeName = node->name;
+	//
+	// Create cache if not created
+	//
+	if (!node->isCacheCreated)
+	{
+		std::string nodeName = node->name;
+		node->cacheBone = currentAnimation->findBone(nodeName);
+
+		if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+		{
+			node->cacheBoneInfo_id = boneInfoMap[nodeName].id;
+			node->cacheBoneInfo_offset = boneInfoMap[nodeName].offset;
+			node->cacheBoneInfoExists = true;
+		}
+		else
+		{
+			node->cacheBoneInfoExists = false;
+		}
+
+		node->isCacheCreated = true;
+	}
 	glm::mat4 nodeTransform = node->transformation;
 
-	Bone* bone = currentAnimation->findBone(nodeName);
-	if (bone)
+	//
+	// Do matrix magic for this bone
+	//
+	if (node->cacheBone)
 	{
 		glm::vec3 position;
 		glm::quat rotation;
 		glm::vec3 scale;
 
-		bone->update(currentTime, position, rotation, scale);																		// @Optimize: 0.003388ms to run on avg
+		node->cacheBone->update(currentTime, position, rotation, scale);																		// @Optimize: 0.003388ms to run on avg
 
-		if (useNextAnimation)
-		{
-			Bone* nextBone = nextAnimation->findBone(nodeName);
-			if (nextBone)
-			{
-				glm::vec3 nextPosition;
-				glm::quat nextRotation;
-				glm::vec3 nextScale;
-				nextBone->update(nextTime, nextPosition, nextRotation, nextScale);
-
-				float mixScaleFactor = 1.0f - mixTime / totalMixTime;
-				position = glm::mix(position, nextPosition, mixScaleFactor);
-				rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
-				scale = glm::mix(scale, nextScale, mixScaleFactor);
-			}
-		}
+		//if (useNextAnimation)			// TODO: create caching system for this too.
+		//{
+		//	Bone* nextBone = nextAnimation->findBone(nodeName);
+		//	if (nextBone)
+		//	{
+		//		glm::vec3 nextPosition;
+		//		glm::quat nextRotation;
+		//		glm::vec3 nextScale;
+		//		nextBone->update(nextTime, nextPosition, nextRotation, nextScale);
+		//
+		//		float mixScaleFactor = 1.0f - mixTime / totalMixTime;
+		//		position = glm::mix(position, nextPosition, mixScaleFactor);
+		//		rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
+		//		scale = glm::mix(scale, nextScale, mixScaleFactor);
+		//	}
+		//}
 
 		// Convert this all to matrix4x4
 		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);		// @Optimize: Took 0.0043ms to run on avg
@@ -129,13 +151,10 @@ void Animator::calculateBoneTransform(const AssimpNodeData* node, const glm::mat
 
 	glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
-	if (boneInfoMap.find(nodeName) != boneInfoMap.end())	// @Optimize: AFAIK, this check doesn't need to be here... but hey what if huh? I wonder what the corner case would be for this.
+	if (node->cacheBoneInfoExists)
 	{
 		// Populate bone matrices for shader
-		BoneInfo& bi = boneInfoMap[nodeName];
-		finalBoneMatrices[bi.id] = globalRootInverseMatrix * globalTransformation * bi.offset;
-		//finalBoneMatrices[index] = globalTransformation;
-		//std::cout << "BONE: " << index << std::endl;
+		finalBoneMatrices[node->cacheBoneInfo_id] = globalRootInverseMatrix * globalTransformation * node->cacheBoneInfo_offset;
 	}
 
 	// Recursively find childrens' bone transformation
