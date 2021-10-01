@@ -59,7 +59,9 @@ void BaseObject::loadPropertiesFromJson(nlohmann::json& object)
 	glm::vec3 eulerAngles = glm::vec3(object["rotation"][0], object["rotation"][1], object["rotation"][2]);
 	glm::vec3 scale = glm::vec3(object["scale"][0], object["scale"][1], object["scale"][2]);
 
-	transform = glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(eulerAngles))) * glm::scale(glm::mat4(1.0f), scale);
+	setTransform(
+		glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(glm::radians(eulerAngles))) * glm::scale(glm::mat4(1.0f), scale)
+	);
 }
 
 nlohmann::json BaseObject::savePropertiesToJson()

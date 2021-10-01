@@ -53,6 +53,7 @@ YosemiteTerrain::~YosemiteTerrain()
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
 {
+	// NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
@@ -159,7 +160,7 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 void YosemiteTerrainImGui::renderImGui()
 {
 	physx::PxBoxGeometry geom = ((BoxCollider*)baseObject->getPhysicsComponent())->getBoxGeometry();
-	PhysicsUtils::imguiRenderBoxCollider(baseObject->getTransform(), geom);
+	PhysicsUtils::imguiRenderBoxCollider(PhysicsUtils::fromPhysxTransformToGlmMatrix(baseObject->getPhysicsComponent()->getGlobalPose()), geom);
 
 	ImGuiComponent::renderImGui();
 }
@@ -172,6 +173,8 @@ BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, 
 	glm::vec3 realExtents = bounds->extents * scale;
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
 	body->attachShape(*shape);
+
+	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
 
 	MainLoop::getInstance().physicsScene->addActor(*body);
 	shape->release();
@@ -186,7 +189,21 @@ void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 	glm::vec3 realExtents = bounds->extents * scale;
-	shape->setGeometry(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z));
+
+	//
+	// Recreate shape
+	//
+	body->detachShape(*shape);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
+	body->attachShape(*shape);
+	shape->release();
+
+	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
+}
+
+physx::PxTransform BoxCollider::getGlobalPose()
+{
+	return body->getGlobalPose();
 }
 
 physx::PxBoxGeometry BoxCollider::getBoxGeometry()

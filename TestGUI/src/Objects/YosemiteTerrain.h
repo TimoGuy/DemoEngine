@@ -41,6 +41,7 @@ public:
 
 	void physicsUpdate();
 	void propagateNewTransform(glm::mat4 newTransform);
+	physx::PxTransform getGlobalPose();
 
 	physx::PxBoxGeometry getBoxGeometry();
 

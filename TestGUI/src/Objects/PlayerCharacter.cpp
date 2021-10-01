@@ -163,6 +163,12 @@ void PlayerPhysics::propagateNewTransform(glm::mat4 newTransform)
 	controller->setPosition(physx::PxExtendedVec3(pos.x, pos.y, pos.z));
 }
 
+physx::PxTransform PlayerPhysics::getGlobalPose()
+{
+	physx::PxExtendedVec3 pos = controller->getPosition();
+	return PhysicsUtils::createTransform(glm::vec3(pos.x, pos.y, pos.z));
+}
+
 double previousMouseX, previousMouseY;
 void PlayerRender::preRenderUpdate()
 {
@@ -232,13 +238,12 @@ void PlayerRender::preRenderUpdate()
 		// Start facing towards movement direction
 		float targetFacingDirection = glm::degrees(std::atan2f(velocity.x, velocity.z));
 		facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
-
-		baseObject->setTransform(
-			glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
-			glm::eulerAngleXYZ(0.0f, glm::radians(facingDirection), 0.0f) *
-			glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()))
-		);
 	}
+
+	renderTransform =
+		glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
+		glm::eulerAngleXYZ(0.0f, glm::radians(facingDirection), 0.0f) *
+		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
 
 	//
 	// Mesh Skinning
@@ -312,8 +317,8 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 	//
 	// Setup the transformation matrices and lights
 	//
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(baseObject->getTransform()));
-	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->getTransform())))));
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 	model.render(pbrShaderProgramId);
 }
 
@@ -332,7 +337,7 @@ void PlayerRender::renderShadow(GLuint programId)
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->getTransform())
+		glm::value_ptr(renderTransform)
 	);
 	// TODO: add skeletal stuff too eh!
 	model.render(programId);
@@ -342,12 +347,14 @@ void PlayerImGui::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
-	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
-	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
+	// @Broken: The commented out lines below are apparently illegal operations towards the physics component
+	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	//glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
+	//((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
+
+	//ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
+	//((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");

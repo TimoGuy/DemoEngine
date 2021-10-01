@@ -15,6 +15,8 @@ namespace PhysicsUtils
 
 	physx::PxTransform createTransform(glm::mat4 transform);
 
+	glm::mat4 fromPhysxTransformToGlmMatrix(physx::PxTransform transform);
+
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform);
 
 	physx::PxRigidStatic* createRigidbodyStatic(physx::PxPhysics* physics, physx::PxTransform transform);

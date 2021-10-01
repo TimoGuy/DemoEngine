@@ -1185,15 +1185,22 @@ void RenderManager::renderImGuiContents()
 
 		if (!MainLoop::getInstance().playMode)
 		{
+			glm::mat4 transformCopy1 = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->getTransform();
+			glm::mat4 transformCopy2 = transformCopy1;
 			ImGuizmo::Manipulate(
 				glm::value_ptr(cameraView),
 				glm::value_ptr(cameraProjection),
 				transOperation,
 				transMode,
-				glm::value_ptr(MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->getTransform()),
+				glm::value_ptr(transformCopy1),
 				NULL,
 				&snapValues.x
 			);
+
+			if (transformCopy1 != transformCopy2)
+			{
+				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->setTransform(transformCopy1);
+			}
 		}
 	}
 

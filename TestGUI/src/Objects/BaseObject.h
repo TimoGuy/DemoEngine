@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <string>
 #include <vector>
+#include <PxPhysicsAPI.h>
 #include "../Utils/json.hpp"
 
 
@@ -122,6 +123,7 @@ public:
 	PhysicsComponent(BaseObject* baseObject, Bounds* bounds);
 	virtual ~PhysicsComponent();
 	virtual void physicsUpdate() = 0;
+	virtual physx::PxTransform getGlobalPose() = 0;
 
 	virtual void propagateNewTransform(glm::mat4 newTransform) = 0;
 };
@@ -143,4 +145,7 @@ public:
 	virtual void preRenderUpdate() = 0;
 	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;
 	virtual void renderShadow(GLuint programId) = 0;
+
+protected:
+	glm::mat4 renderTransform;
 };

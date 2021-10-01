@@ -46,6 +46,13 @@ namespace PhysicsUtils
 		);
 	}
 
+	glm::mat4 fromPhysxTransformToGlmMatrix(physx::PxTransform transform)
+	{
+		return
+			glm::translate(glm::mat4(1.0f), glm::vec3(transform.p.x, transform.p.y, transform.p.z)) *
+			glm::toMat4(glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w));
+	}
+
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform)
 	{
 		return physics->createRigidDynamic(transform);
