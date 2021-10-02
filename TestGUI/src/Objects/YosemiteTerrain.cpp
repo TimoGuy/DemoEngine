@@ -160,7 +160,10 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 void YosemiteTerrainImGui::renderImGui()
 {
 	physx::PxBoxGeometry geom = ((BoxCollider*)baseObject->getPhysicsComponent())->getBoxGeometry();
-	PhysicsUtils::imguiRenderBoxCollider(PhysicsUtils::fromPhysxTransformToGlmMatrix(baseObject->getPhysicsComponent()->getGlobalPose()), geom);
+	PhysicsUtils::imguiRenderBoxCollider(
+		baseObject->getTransformWithoutScale(),
+		geom
+	);
 
 	ImGuiComponent::renderImGui();
 }
@@ -169,7 +172,7 @@ BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, 
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 
-	body = PhysicsUtils::createRigidbodyKinematic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
+	body = PhysicsUtils::createRigidStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
 	glm::vec3 realExtents = bounds->extents * scale;
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
 	body->attachShape(*shape);
@@ -182,12 +185,11 @@ BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, 
 
 void BoxCollider::physicsUpdate()
 {
-	// Do nothing
 }
 
 void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
 {
-	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
+	glm::vec3 scale = PhysicsUtils::getScale(newTransform);
 	glm::vec3 realExtents = bounds->extents * scale;
 
 	//
@@ -198,8 +200,8 @@ void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
 	body->attachShape(*shape);
 	shape->release();
 
-	physx::PxTransform trans = PhysicsUtils::createTransform(baseObject->getTransform());
-	body->setKinematicTarget(trans);
+	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
+	body->setGlobalPose(trans);
 }
 
 physx::PxTransform BoxCollider::getGlobalPose()

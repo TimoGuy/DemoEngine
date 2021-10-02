@@ -145,8 +145,7 @@ void PlayerPhysics::physicsUpdate()
 	}
 
 	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
-	physx::PxF32 jj = MainLoop::getInstance().physicsDeltaTime;
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, 0.025f, NULL, NULL);
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 
 	//
 	// Apply transform

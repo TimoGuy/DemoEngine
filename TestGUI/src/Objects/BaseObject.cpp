@@ -83,6 +83,13 @@ glm::mat4& BaseObject::getTransform()
 	return transform;
 }
 
+glm::mat4 BaseObject::getTransformWithoutScale()
+{
+	glm::vec3 pos = PhysicsUtils::getPosition(transform);
+	glm::quat rot = glm::normalize(PhysicsUtils::getRotation(transform));
+	return glm::translate(glm::mat4(1.0f), pos) * glm::toMat4(rot);
+}
+
 void BaseObject::setTransform(glm::mat4 newTransform)
 {
 	transform = newTransform;

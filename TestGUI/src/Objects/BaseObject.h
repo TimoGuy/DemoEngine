@@ -40,6 +40,7 @@ public:
 	virtual RenderComponent* getRenderComponent() = 0;
 
 	glm::mat4& getTransform();
+	glm::mat4 getTransformWithoutScale();				// NOTE: this is not a getter; it computes the transform without the scale
 	void setTransform(glm::mat4 newTransform);
 
 	std::string guid;

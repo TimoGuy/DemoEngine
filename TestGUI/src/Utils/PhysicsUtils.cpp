@@ -51,7 +51,7 @@ namespace PhysicsUtils
 	{
 		return
 			glm::translate(glm::mat4(1.0f), glm::vec3(transform.p.x, transform.p.y, transform.p.z)) *
-			glm::toMat4(glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w));
+			glm::toMat4(glm::normalize(glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w)));
 	}
 
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform)
@@ -64,6 +64,11 @@ namespace PhysicsUtils
 		physx::PxRigidDynamic* body = physics->createRigidDynamic(transform);
 		body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
 		return body;
+	}
+
+	physx::PxRigidStatic* createRigidStatic(physx::PxPhysics* physics, physx::PxTransform transform)
+	{
+		return physics->createRigidStatic(transform);
 	}
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are
