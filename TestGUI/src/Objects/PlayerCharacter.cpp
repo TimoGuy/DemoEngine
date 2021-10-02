@@ -101,62 +101,56 @@ PlayerCharacter::~PlayerCharacter()
 
 void PlayerPhysics::physicsUpdate()
 {
-	//if (reapplyTransform)
-	//{
-	//	reapplyTransform = false;
-	//	body->setGlobalPose(transform);
-	//}
-
-	//// Convert the physx object to model matrix
-	//transform = body->getGlobalPose();
-	//{
-	//	physx::PxMat44 mat4 = physx::PxMat44(transform);
-	//	glm::mat4 newMat;
-	//	newMat[0][0] = mat4[0][0];
-	//	newMat[0][1] = mat4[0][1];
-	//	newMat[0][2] = mat4[0][2];
-	//	newMat[0][3] = mat4[0][3];
-
-	//	newMat[1][0] = mat4[1][0];
-	//	newMat[1][1] = mat4[1][1];
-	//	newMat[1][2] = mat4[1][2];
-	//	newMat[1][3] = mat4[1][3];
-
-	//	newMat[2][0] = mat4[2][0];
-	//	newMat[2][1] = mat4[2][1];
-	//	newMat[2][2] = mat4[2][2];
-	//	newMat[2][3] = mat4[2][3];
-
-	//	newMat[3][0] = mat4[3][0];
-	//	newMat[3][1] = mat4[3][1];
-	//	newMat[3][2] = mat4[3][2];
-	//	newMat[3][3] = mat4[3][3];
-
-	//	modelMatrix = newMat;
-	//}
-
-	// TODO: figure out better way of conforming self to rendering position
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	glm::mat4 newTransform = glm::translate(glm::mat4(1.0f), glm::vec3(pos.x, pos.y, pos.z));
-	if (!(newTransform == baseObject->getTransform()))
-	{
-		glm::vec3 newPosition = PhysicsUtils::getPosition(baseObject->getTransform());
-		controller->setPosition(physx::PxExtendedVec3(newPosition.x, newPosition.y, newPosition.z));
-	}
-
 	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
+
+	isGrounded = false;
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+	{
+		std::cout << "\tDown Collision";
+
+		//
+		// Check if actually grounded
+		//
+		physx::PxVec3 origin = PhysicsUtils::toPxVec3(controller->getFootPosition());				// [in] Ray origin
+		physx::PxVec3 unitDir = physx::PxVec3(0, -1, 0);											// [in] Ray direction
+		physx::PxReal maxDistance = 0.5f;															// [in] Raycast max distance
+		physx::PxRaycastBuffer hit;																	// [out] Raycast results
+
+		// Raycast against all static & dynamic objects (no filtering)
+		// The main result from this call is the closest hit, stored in the 'hit.block' structure
+		if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit) &&
+			hit.block.normal.dot(physx::PxVec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		{
+			velocity.y = 0.0f;		// Remove gravity
+			isGrounded = true;		// Can jump now
+			physx::PxVec3 normal = hit.block.normal;		// For ground movement information	
+			groundedNormal = glm::vec3(normal.x, normal.y, normal.z);
+		}
+			
+	}
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
+	{
+		std::cout << "\tSide Collision";
+	}
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
+	{
+		std::cout << "\tAbove Collision";
+		//velocity.y = 0.0f;		// Hit your head on the ceiling
+	}
+
+	std::cout << std::endl;
 
 	//
 	// Apply transform
 	//
-	pos = controller->getPosition();
+	physx::PxExtendedVec3 pos = controller->getPosition();
 	glm::mat4 trans = baseObject->getTransform();
 	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
 	baseObject->INTERNALsubmitPhysicsCalculation(trans);
 }
 
-void PlayerPhysics::propagateNewTransform(glm::mat4 newTransform)
+void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)
 {
 	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
 	controller->setPosition(physx::PxExtendedVec3(pos.x, pos.y, pos.z));
@@ -205,6 +199,7 @@ void PlayerRender::preRenderUpdate()
 	{
 		lookingInput = glm::vec2(0, 0);
 		movementVector = glm::vec2(0, 0);
+		facingDirection = 0.0f;
 	}
 
 	//
@@ -225,13 +220,28 @@ void PlayerRender::preRenderUpdate()
 	}
 
 	glm::vec3 velocity =
-		glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z)) * movementVector.y +
-		glm::cross(playerCamera.orientation, playerCamera.up) * movementVector.x;
+		movementVector.y * groundRunSpeed * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z))  +
+		movementVector.x * groundRunSpeed * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up));
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+	{
+		// Add on a grounded rotation based on the ground you're standing on
+		glm::quat slopeRotation = glm::rotation(
+			glm::vec3(0, 1, 0),
+			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
+		);
+		velocity = slopeRotation * velocity;
+	}
 
-	velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
+	// Fetch in physics y (overwriting) (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
+	if (velocity.y < 0.0f)
+		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
+	else
+		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
 
-	float jumpSpeed = 10;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS) velocity.y = jumpSpeed;
+	// Jump
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() &&
+		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		velocity.y = jumpSpeed;
 
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
 
@@ -363,6 +373,11 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)baseObject->getRenderComponent())->playerCamOffset[0]);
 	ImGui::DragFloat2("Looking Input", &((PlayerRender*)baseObject->getRenderComponent())->lookingInput[0]);
 	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)baseObject->getRenderComponent())->lookingSensitivity[0]);
+
+	ImGui::Separator();
+	ImGui::Text("Movement Properties");
+	ImGui::DragFloat("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed);
+	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed);
 }
 
 void PlayerImGui::renderImGui()

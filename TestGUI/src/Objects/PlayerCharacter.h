@@ -24,13 +24,22 @@ public:
 	PlayerPhysics(BaseObject* bo, Bounds* bounds);
 
 	void physicsUpdate();
-	void propagateNewTransform(glm::mat4 newTransform);
+	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
 	physx::PxVec3 velocity;
 
 	physx::PxCapsuleController* controller;
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
+
+	bool getIsGrounded() { return isGrounded; }
+
+	// NOTE: this should not be accessed while !isGrounded, bc it isn't updated unless if on ground <45degrees
+	glm::vec3 getGroundedNormal() { return groundedNormal; }
+
+private:
+	bool isGrounded;
+	glm::vec3 groundedNormal;
 };
 
 class PlayerRender : public RenderComponent
@@ -52,6 +61,9 @@ public:
 	glm::vec3 playerCamOffset = glm::vec3(0, 0, -20);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis
 	glm::vec2 lookingSensitivity = glm::vec2(0.5f, 0.0025f);	// Sensitivity for how much the amount moves
+
+	float jumpSpeed = 2.5f;
+	float groundRunSpeed = 1.0f;
 
 private:
 	void refreshResources();

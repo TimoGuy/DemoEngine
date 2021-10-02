@@ -11,11 +11,13 @@ namespace PhysicsUtils
 {
 #pragma region Factory functions
 
+	physx::PxVec3 toPxVec3(physx::PxExtendedVec3 in);
+
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles = glm::vec3(0.0f));
 
 	physx::PxTransform createTransform(glm::mat4 transform);
 
-	glm::mat4 fromPhysxTransformToGlmMatrix(physx::PxTransform transform);
+	glm::mat4 physxTransformToGlmMatrix(physx::PxTransform transform);
 
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform);
 

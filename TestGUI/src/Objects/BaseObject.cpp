@@ -86,7 +86,7 @@ glm::mat4& BaseObject::getTransform()
 glm::mat4 BaseObject::getTransformWithoutScale()
 {
 	glm::vec3 pos = PhysicsUtils::getPosition(transform);
-	glm::quat rot = glm::normalize(PhysicsUtils::getRotation(transform));
+	glm::quat rot = PhysicsUtils::getRotation(transform);
 	return glm::translate(glm::mat4(1.0f), pos) * glm::toMat4(rot);
 }
 
@@ -289,6 +289,11 @@ void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOf
 glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 {
 	float time = (float)glfwGetTime();
+	if (time >= currentUpdateTime)
+		return currentTransform;
+	if (time <= previousUpdateTime)
+		return previousTransform;
+
 	float interpolationValue = std::clamp((time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime), 0.0f, 1.0f);
-	return glm::interpolate(previousTransform, currentTransform, interpolationValue);
+	return glm::interpolate(previousTransform, currentTransform, interpolationValue);				// TODO: rotation doesn't seem to like this function, so maybe decompose and recompose matrix??
 }

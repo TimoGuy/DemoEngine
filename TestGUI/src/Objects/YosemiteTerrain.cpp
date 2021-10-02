@@ -127,13 +127,13 @@ void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int pref
 		glGetUniformLocation(pbrShaderProgramId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->getTransform())
+		glm::value_ptr(renderTransform)
 	);
 	glUniformMatrix3fv(
 		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(baseObject->getTransform()))))
+		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform))))
 	);
 
 	model.render(pbrShaderProgramId);
@@ -145,7 +145,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 		glGetUniformLocation(programId, "modelMatrix"),
 		1,
 		GL_FALSE,
-		glm::value_ptr(baseObject->getTransform())
+		glm::value_ptr(renderTransform)
 	);
 	model.render(programId);
 }
@@ -161,7 +161,7 @@ void YosemiteTerrainImGui::renderImGui()
 {
 	physx::PxBoxGeometry geom = ((BoxCollider*)baseObject->getPhysicsComponent())->getBoxGeometry();
 	PhysicsUtils::imguiRenderBoxCollider(
-		baseObject->getTransformWithoutScale(),
+		PhysicsUtils::physxTransformToGlmMatrix(baseObject->getPhysicsComponent()->getGlobalPose()),
 		geom
 	);
 
@@ -187,7 +187,7 @@ void BoxCollider::physicsUpdate()
 {
 }
 
-void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
+void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(newTransform);
 	glm::vec3 realExtents = bounds->extents * scale;
@@ -200,8 +200,13 @@ void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
 	body->attachShape(*shape);
 	shape->release();
 
+	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
+	glm::quat rot = PhysicsUtils::getRotation(newTransform);
+
 	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
 	body->setGlobalPose(trans);
+
+	physx::PxTransform fim = body->getGlobalPose();
 }
 
 physx::PxTransform BoxCollider::getGlobalPose()

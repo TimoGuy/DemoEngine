@@ -11,6 +11,11 @@ namespace PhysicsUtils
 {
 #pragma region Factory functions
 
+	physx::PxVec3 toPxVec3(physx::PxExtendedVec3 in)
+	{
+		return physx::PxVec3(in.x, in.y, in.z);
+	}
+
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles)
 	{
 		//
@@ -39,19 +44,39 @@ namespace PhysicsUtils
 	physx::PxTransform createTransform(glm::mat4 transform)
 	{
 		glm::vec3 position = getPosition(transform);
-		glm::quat rotation = glm::normalize(getRotation(transform));
-
+		glm::quat rotation = getRotation(transform);
+		
 		return physx::PxTransform(
 			physx::PxVec3(position.x, position.y, position.z),
 			physx::PxQuat(rotation.x, rotation.y, rotation.z, rotation.w)
 		);
 	}
 
-	glm::mat4 fromPhysxTransformToGlmMatrix(physx::PxTransform transform)
+	glm::mat4 physxTransformToGlmMatrix(physx::PxTransform transform)
 	{
-		return
-			glm::translate(glm::mat4(1.0f), glm::vec3(transform.p.x, transform.p.y, transform.p.z)) *
-			glm::toMat4(glm::normalize(glm::quat(transform.q.x, transform.q.y, transform.q.z, transform.q.w)));
+		physx::PxMat44 mat4 = physx::PxMat44(transform);
+		glm::mat4 newMat;
+		newMat[0][0] = mat4[0][0];
+		newMat[0][1] = mat4[0][1];
+		newMat[0][2] = mat4[0][2];
+		newMat[0][3] = mat4[0][3];
+
+		newMat[1][0] = mat4[1][0];
+		newMat[1][1] = mat4[1][1];
+		newMat[1][2] = mat4[1][2];
+		newMat[1][3] = mat4[1][3];
+
+		newMat[2][0] = mat4[2][0];
+		newMat[2][1] = mat4[2][1];
+		newMat[2][2] = mat4[2][2];
+		newMat[2][3] = mat4[2][3];
+
+		newMat[3][0] = mat4[3][0];
+		newMat[3][1] = mat4[3][1];
+		newMat[3][2] = mat4[3][2];
+		newMat[3][3] = mat4[3][3];
+
+		return newMat;
 	}
 
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform)
@@ -90,7 +115,7 @@ namespace PhysicsUtils
 		desc.radius = radius;
 		desc.height = height;
 		desc.slopeLimit = slopeLimit;
-		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;
+		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;	// @NOTE: This is better... and that is because force sliding prevents input to move side-to-side. @TODO: perhaps in the future, making a "sliding down" state would be good. This is mainly because of me adding a raycast downward to check if the controller is standing on too steep of a slope. When the controller is on a lip, the -y velocity builds up for the automatic sliding down algorithm.    //ePREVENT_CLIMBING_AND_FORCE_SLIDING;
 		desc.upDirection = upDirection;
 
 		return (physx::PxCapsuleController*)controllerManager->createController(desc);
@@ -107,7 +132,14 @@ namespace PhysicsUtils
 
 	glm::quat getRotation(glm::mat4 transform)
 	{
-		return glm::quat_cast(transform);
+		// NOTE: when the scale gets larger, the quaternion will rotate up to however many dimensions there are, thus we have to scale down/normalize this transform to unit scale before extracting the quaternion
+		glm::vec3 scale = getScale(transform);
+		const glm::mat3 unitScaledRotationMatrix(
+			glm::vec3(transform[0]) / scale[0],
+			glm::vec3(transform[1]) / scale[1],
+			glm::vec3(transform[2]) / scale[2]
+		);
+		return glm::quat_cast(unitScaledRotationMatrix);
 	}
 
 	glm::vec3 getScale(glm::mat4 transform)
