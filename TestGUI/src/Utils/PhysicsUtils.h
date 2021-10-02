@@ -19,7 +19,7 @@ namespace PhysicsUtils
 
 	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform);
 
-	physx::PxRigidStatic* createRigidbodyStatic(physx::PxPhysics* physics, physx::PxTransform transform);
+	physx::PxRigidDynamic* createRigidbodyKinematic(physx::PxPhysics* physics, physx::PxTransform transform);
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are
 	//physx::PxSphereGeometry sphereCollider;

@@ -174,22 +174,22 @@ void Camera::Inputs(GLFWwindow* window)
 		// Move around in the scene (only when right button pressed)
 		//
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			position += speed * orientation;
+			position += speed * orientation * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			position += speed * -glm::cross(orientation, up);
+			position += speed * -glm::cross(orientation, up) * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			position += speed * -orientation;
+			position += speed * -orientation * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			position += speed * glm::cross(orientation, up);
+			position += speed * glm::cross(orientation, up) * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-			position += speed * -up;
+			position += speed * -up * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-			position += speed * up;
+			position += speed * up * MainLoop::getInstance().deltaTime;
 
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-			speed = 0.4f;
+			speed = 50.0f;
 		else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-			speed = 0.1f;
+			speed = 15.0f;
 
 		//
 		// Look around functionality

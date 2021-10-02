@@ -182,28 +182,14 @@ void PlayerRender::preRenderUpdate()
 	previousMouseX = mouseX;
 	previousMouseY = mouseY;
 
-	// Short circuit if so
-	if (!MainLoop::getInstance().playMode)
-	{
-		lookingInput = glm::vec2(0, 0);
-		return;
-	}
-
 	//
-	// Update looking input
+	// Get looking input
 	//
 	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
 	lookingInput.x = fmodf(lookingInput.x, 360.0f);
 	if (lookingInput.x < 0.0f)
 		lookingInput.x += 360.0f;
 	lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
-
-	//
-	// Update playercam pos
-	//
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
-	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
 	//
 	// Movement
@@ -215,6 +201,23 @@ void PlayerRender::preRenderUpdate()
 	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= mvtSpeed;
 	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += mvtSpeed;
 
+	// Remove input if not playmode
+	if (!MainLoop::getInstance().playMode)
+	{
+		lookingInput = glm::vec2(0, 0);
+		movementVector = glm::vec2(0, 0);
+	}
+
+	//
+	// Update playercam pos
+	//
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
+	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
+
+	//
+	// Update Movement Vector
+	//
 	bool isMoving = false;
 	if (glm::length2(movementVector) > 0.001f)
 	{

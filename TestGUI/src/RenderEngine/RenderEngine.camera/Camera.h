@@ -59,7 +59,7 @@ public:
 	float zNear = 0.1f;
 	float zFar = 2000.0f;
 
-	float speed = 0.1f;
+	float speed = 1.0f;
 	float sensitivity = 100.0f;
 
 	Camera();

@@ -15,6 +15,7 @@ namespace PhysicsUtils
 	{
 		//
 		// Do this freaky long conversion that I copied off the interwebs
+		// @Broken: the transform created from this could possibly be not isSane()
 		//
 		glm::vec3 angles = glm::radians(eulerAngles);
 
@@ -38,7 +39,7 @@ namespace PhysicsUtils
 	physx::PxTransform createTransform(glm::mat4 transform)
 	{
 		glm::vec3 position = getPosition(transform);
-		glm::quat rotation = getRotation(transform);
+		glm::quat rotation = glm::normalize(getRotation(transform));
 
 		return physx::PxTransform(
 			physx::PxVec3(position.x, position.y, position.z),
@@ -58,9 +59,11 @@ namespace PhysicsUtils
 		return physics->createRigidDynamic(transform);
 	}
 
-	physx::PxRigidStatic* createRigidbodyStatic(physx::PxPhysics* physics, physx::PxTransform transform)
+	physx::PxRigidDynamic* createRigidbodyKinematic(physx::PxPhysics* physics, physx::PxTransform transform)
 	{
-		return physics->createRigidStatic(transform);
+		physx::PxRigidDynamic* body = physics->createRigidDynamic(transform);
+		body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+		return body;
 	}
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are

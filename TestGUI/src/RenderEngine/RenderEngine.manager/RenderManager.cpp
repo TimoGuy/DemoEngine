@@ -569,7 +569,7 @@ void RenderManager::renderScene()
 		if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
 			!cookedViewFrustum.checkIfInViewFrustum(
 				*MainLoop::getInstance().renderObjects[i]->bounds,
-				MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
+				MainLoop::getInstance().renderObjects[i]->baseObject->getRenderComponent()->getRenderTransform()))
 			continue;
 		succ++;
 		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);

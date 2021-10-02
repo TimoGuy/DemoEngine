@@ -46,7 +46,7 @@ public:
 	physx::PxBoxGeometry getBoxGeometry();
 
 private:
-	physx::PxRigidStatic* body;
+	physx::PxRigidDynamic* body;
 	physx::PxShape* shape;
 };
 

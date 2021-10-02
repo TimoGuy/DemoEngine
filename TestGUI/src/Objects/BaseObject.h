@@ -146,6 +146,8 @@ public:
 	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;
 	virtual void renderShadow(GLuint programId) = 0;
 
+	const glm::mat4& getRenderTransform();
+
 protected:
 	glm::mat4 renderTransform;
 };

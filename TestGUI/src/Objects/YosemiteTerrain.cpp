@@ -74,7 +74,7 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 
 void YosemiteTerrainRender::preRenderUpdate()
 {
-	
+	renderTransform = baseObject->getTransform();
 }
 
 
@@ -169,7 +169,7 @@ BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, 
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 
-	body = PhysicsUtils::createRigidbodyStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
+	body = PhysicsUtils::createRigidbodyKinematic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
 	glm::vec3 realExtents = bounds->extents * scale;
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
 	body->attachShape(*shape);
@@ -198,7 +198,8 @@ void BoxCollider::propagateNewTransform(glm::mat4 newTransform)
 	body->attachShape(*shape);
 	shape->release();
 
-	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
+	physx::PxTransform trans = PhysicsUtils::createTransform(baseObject->getTransform());
+	body->setKinematicTarget(trans);
 }
 
 physx::PxTransform BoxCollider::getGlobalPose()

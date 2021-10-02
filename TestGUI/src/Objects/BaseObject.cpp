@@ -142,7 +142,11 @@ void ImGuiComponent::renderImGui()
 	if (bounds == nullptr || MainLoop::getInstance().playMode)
 		return;
 	
-	Bounds cookedBounds = PhysicsUtils::fitAABB(*bounds, baseObject->getTransform());
+	Bounds cookedBounds =
+		PhysicsUtils::fitAABB(
+			*bounds,
+			(baseObject->getRenderComponent() == nullptr) ? baseObject->getTransform() : baseObject->getRenderComponent()->getRenderTransform()
+		);
 
 	double xpos, ypos;
 	glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
@@ -260,6 +264,11 @@ RenderComponent::~RenderComponent()
 		),
 		MainLoop::getInstance().renderObjects.end()
 	);
+}
+
+const glm::mat4& RenderComponent::getRenderTransform()
+{
+	return renderTransform;
 }
 
 void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOffset)

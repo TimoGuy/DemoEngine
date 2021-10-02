@@ -1,7 +1,7 @@
 #include "Animator.h"
 
 #include <glm/gtx/quaternion.hpp>
-
+#include "../../../MainLoop/MainLoop.h"
 
 // @Debug: for seeing how long matrix updates occur
 #include <chrono>
@@ -26,6 +26,10 @@ Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animat
 //size_t numCounts = 0;
 void Animator::updateAnimation(float deltaTime)
 {
+	// Don't run the animation update unless in playmode
+	if (!MainLoop::getInstance().playMode)
+		return;
+
 	//auto start_time = std::chrono::high_resolution_clock::now();
 
 	Animator::deltaTime = deltaTime;
