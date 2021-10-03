@@ -18,6 +18,14 @@ public:
 	void renderImGui();
 };
 
+class CustomHitReport : public physx::PxUserControllerHitReport
+{
+public:
+	virtual void onShapeHit(const physx::PxControllerShapeHit& hit);
+	virtual void onControllerHit(const physx::PxControllersHit& hit);
+	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
+};
+
 class PlayerPhysics : public PhysicsComponent
 {
 public:
@@ -40,6 +48,8 @@ public:
 private:
 	bool isGrounded;
 	glm::vec3 groundedNormal;
+	bool isSliding;
+	glm::vec3 slidingNormal;		// NOTE: this cooould get combined with groundedNormal, however, for sake of ease of reading the code...
 };
 
 class PlayerRender : public RenderComponent

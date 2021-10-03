@@ -58,7 +58,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 			MainLoop::getInstance().defaultPhysicsMaterial,
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
 			1.0f,
-			4.5f);
+			4.5f,
+			new CustomHitReport());		// TODO: check to see if doing this will destroy the object once out of scope
 }
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
@@ -223,10 +224,26 @@ PlayerCharacter::~PlayerCharacter()
 
 void PlayerPhysics::physicsUpdate()
 {
-	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
+	//
+	// Add gravity (or sliding gravity if sliding)
+	//
+	if (isSliding)
+	{
+		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), slidingNormal);
+		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, slidingNormal));
+		const glm::vec3 slidingVector = uxnXnormal * 9.8f * MainLoop::getInstance().physicsDeltaTime;
+		velocity += physx::PxVec3(slidingVector.x, slidingVector.y, slidingVector.z);
+	}
+	else
+		velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
+	
+	//
+	// Do the deed
+	//
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 
 	isGrounded = false;
+	isSliding = false;
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		//std::cout << "\tDown Collision";
@@ -236,20 +253,29 @@ void PlayerPhysics::physicsUpdate()
 		//
 		physx::PxVec3 origin = PhysicsUtils::toPxVec3(controller->getFootPosition());				// [in] Ray origin
 		physx::PxVec3 unitDir = physx::PxVec3(0, -1, 0);											// [in] Ray direction
-		physx::PxReal maxDistance = 0.5f;															// [in] Raycast max distance
+		physx::PxReal maxDistance = 5.5f;															// [in] Raycast max distance
 		physx::PxRaycastBuffer hit;																	// [out] Raycast results
 
 		// Raycast against all static & dynamic objects (no filtering)
 		// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit) &&
-			hit.block.normal.dot(physx::PxVec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit))
 		{
-			velocity.y = 0.0f;		// Remove gravity
-			isGrounded = true;		// Can jump now
-			physx::PxVec3 normal = hit.block.normal;		// For ground movement information	
-			groundedNormal = glm::vec3(normal.x, normal.y, normal.z);
+			if (hit.block.normal.dot(physx::PxVec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+			{
+				velocity.y = 0.0f;		// Remove gravity
+				isGrounded = true;		// Can jump now
+				physx::PxVec3 normal = hit.block.normal;		// For ground movement information	
+				groundedNormal = glm::vec3(normal.x, normal.y, normal.z);
+			}
+			else
+			{
+				// Slide down!
+				isSliding = true;
+				physx::PxVec3 normal = hit.block.normal;		// For sliding information	
+				slidingNormal = glm::vec3(normal.x, normal.y, normal.z);
+				std::cout << "Hey, I'm sliding!!!!" << std::endl;
+			}
 		}
-			
 	}
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
 	{
@@ -488,4 +514,19 @@ void PlayerImGui::renderImGui()
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
 	PhysicsUtils::imguiRenderCharacterController(baseObject->getTransform(), *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
 	ImGuiComponent::renderImGui();
+}
+
+void CustomHitReport::onShapeHit(const physx::PxControllerShapeHit& hit)
+{
+	std::cout << "\t\t\tSHAPE HIT" << std::endl;
+}
+
+void CustomHitReport::onControllerHit(const physx::PxControllersHit& hit)
+{
+	std::cout << "\t\t\t Contrller HIT" << std::endl;
+}
+
+void CustomHitReport::onObstacleHit(const physx::PxControllerObstacleHit& hit)
+{
+	std::cout << "\t\t\t SHAPE HIT" << std::endl;
 }

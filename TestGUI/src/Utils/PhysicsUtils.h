@@ -35,6 +35,7 @@ namespace PhysicsUtils
 		physx::PxExtendedVec3 position,
 		float radius,
 		float height,
+		physx::PxUserControllerHitReport* hitReport = nullptr,
 		float slopeLimit = 0.70710678118f,						// cosine of 45 degrees
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 

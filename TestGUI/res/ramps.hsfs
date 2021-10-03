@@ -1,0 +1,190 @@
+{
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
+                "position": [
+                    -55.14158630371094,
+                    1.2217081785202026,
+                    14.49972915649414
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Player Controller"
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "f01e1dec7ca83a80aed9f30613bfc56e483e2e0f80a745ed3ae6ea2e1909680b",
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    26.974990844726563,
+                    41.02898406982422,
+                    -6.7905530158896e-06
+                ],
+                "scale": [
+                    0.9999999403953552,
+                    0.9999999403953552,
+                    0.9999998211860657
+                ]
+            },
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "color_multiplier": 10.0,
+            "imguiComponent": {
+                "name": "Directional Light"
+            },
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "25dc066639e6ffe4e9bce63a5156b4ac4e8e70c088b6a8f9d6238581e07fdd5b",
+                "position": [
+                    0.0,
+                    -4.559999942779541,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    180.0
+                ],
+                "scale": [
+                    100.0,
+                    1.0,
+                    100.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Yosemite Terrain"
+            },
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "61a83ace583fb5c7234b5dca6094805a1572b85fad6250f081a92d014ced712b",
+                "position": [
+                    15.579507827758789,
+                    -3.1241304874420166,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0033877738751471043
+                ],
+                "scale": [
+                    100.0,
+                    1.0,
+                    100.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Yosemite Terrain"
+            },
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "97e007be6a929a0468819bd837ca881f1b6cc182a09927f09bac22f7f5eafc37",
+                "position": [
+                    -82.96435546875,
+                    0.0,
+                    31.492265701293945
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "color_multiplier": 10000.0,
+            "imguiComponent": {
+                "name": "Point Light"
+            },
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "pt_light"
+        },
+        {
+            "baseObject": {
+                "guid": "329f1a730dbe1926fc42885a6735de9e41d561799458f18628e5375ad044bff1",
+                "position": [
+                    -6.025249481201172,
+                    -3.1225244998931885,
+                    51.13435363769531
+                ],
+                "rotation": [
+                    -58.50212860107422,
+                    2.6608659027260728e-05,
+                    -179.99989318847656
+                ],
+                "scale": [
+                    100.0,
+                    42.04001235961914,
+                    1.6721563339233398
+                ]
+            },
+            "imguiComponent": {
+                "name": "Yosemite Terrain"
+            },
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "4d983ebe23f3fb0dfac2f8a431034529a137abe1082b799fc050b982aa70e45f",
+                "position": [
+                    -6.025291919708252,
+                    14.439979553222656,
+                    79.79620361328125
+                ],
+                "rotation": [
+                    -21.361955642700195,
+                    2.6608360712998547e-05,
+                    -179.99989318847656
+                ],
+                "scale": [
+                    100.0,
+                    42.03999710083008,
+                    1.6721558570861816
+                ]
+            },
+            "imguiComponent": {
+                "name": "Yosemite Terrain"
+            },
+            "type": "ground"
+        }
+    ]
+}
