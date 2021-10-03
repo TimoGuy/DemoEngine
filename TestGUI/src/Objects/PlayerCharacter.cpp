@@ -92,25 +92,28 @@ void PlayerRender::refreshResources()
 	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
 }
 
-glm::vec3 PlayerRender::processGroundedMovement(glm::vec2 movementVector)
+physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVector)
 {
 	//
 	// Set Movement Vector
 	//
-	bool isMoving = false;
-	if (glm::length2(movementVector) > 0.001f)
+	const float movementVectorLength = glm::length(movementVector);
+	if (movementVectorLength > 0.001f)
 	{
-		isMoving = true;
-		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
-
 		//
 		// Update facing direction
 		//
-		if (glm::dot(movementVector, facingDirection) < -0.707106781f)
+		physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+		velocityCopy.y = 0.0f;
+		float mvtDotFacing = glm::dot(movementVector, facingDirection);
+		if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed ||			// NOTE: not using magnitudeSquared() could defs be an inefficiency yo
+			mvtDotFacing < -0.707106781f)
 		{
-			// TODO: implement the alternate "skid stop" state
-			facingDirection = -facingDirection;
-			currentRunSpeed = -currentRunSpeed;
+			//
+			// "Skid stop" state
+			//
+			facingDirection = movementVector;
+			currentRunSpeed *= mvtDotFacing;		// If moving in the opposite direction than the facingDirection was, then the dot product will be negative, making the speed look like a skid
 		}
 		else
 		{
@@ -129,7 +132,7 @@ glm::vec3 PlayerRender::processGroundedMovement(glm::vec2 movementVector)
 	//
 	// Update Running Speed
 	//
-	float targetRunningSpeed = glm::length(movementVector) * groundRunSpeed;
+	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
@@ -153,7 +156,10 @@ glm::vec3 PlayerRender::processGroundedMovement(glm::vec2 movementVector)
 		velocity = slopeRotation * velocity;
 	}
 
-	// Fetch in physics y (overwriting) (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
+	//
+	// Fetch in physics y (overwriting)
+	// (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
+	//
 	if (velocity.y < 0.0f)
 		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
 	else
@@ -163,12 +169,49 @@ glm::vec3 PlayerRender::processGroundedMovement(glm::vec2 movementVector)
 	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		velocity.y = jumpSpeed;
+
+	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
-glm::vec3 PlayerRender::processAirMovement(glm::vec2 movementVector)
+physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 {
-	// TODO: air movement
-	return glm::vec3();
+	//
+	// Update facing direction
+	//
+	if (glm::length2(movementVector) > 0.001f)
+	{
+		float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+		float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+
+		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
+
+		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+	}
+
+	//
+	// Setup velocity manipulation
+	//
+	physx::PxVec3 currentVelocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+
+	//
+	// Just add velocity in a flat way
+	//
+	float accelAmount = glm::length(movementVector);		// [0,1] range due to clamping before this function
+	currentVelocity.x += movementVector.x * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
+	currentVelocity.z += movementVector.y * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
+
+	//
+	// Clamp the velocity
+	//
+	glm::vec2 flatNewVelocity(currentVelocity.x, currentVelocity.z);
+	if (glm::length2(flatNewVelocity) > 0.001f)
+	{
+		flatNewVelocity = PhysicsUtils::clampVector(flatNewVelocity, 0.0f, groundRunSpeed);		// NOTE: groundRunSpeed is simply a placeholder... I think.
+		currentVelocity.x = flatNewVelocity.x;
+		currentVelocity.z = flatNewVelocity.y;
+	}
+
+	return currentVelocity;
 }
 
 PlayerCharacter::~PlayerCharacter()
@@ -278,6 +321,9 @@ void PlayerRender::preRenderUpdate()
 	movementVector.x = ThreeDMvtVector.x;
 	movementVector.y = ThreeDMvtVector.z;
 
+	if (glm::length2(movementVector) > 0.001f)
+		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
+
 	// Remove input if not playmode
 	if (!MainLoop::getInstance().playMode)
 	{
@@ -294,20 +340,13 @@ void PlayerRender::preRenderUpdate()
 	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
 	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
-	glm::vec3 velocity(0.0f);
+	physx::PxVec3 velocity(0.0f);
 	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
 		velocity = processGroundedMovement(movementVector);
 	else
 		velocity = processAirMovement(movementVector);
 
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
-
-	//if (isMoving)
-	//{
-	//	// Start facing towards movement direction
-	//	float targetFacingDirection = glm::degrees();
-	//	facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
-	//}
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
 
 	renderTransform =
 		glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
@@ -440,6 +479,7 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed, 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
 	ImGui::DragFloat("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed, 0.1f);
+	ImGui::DragFloat("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed, 0.1f);
 }
 
 void PlayerImGui::renderImGui()

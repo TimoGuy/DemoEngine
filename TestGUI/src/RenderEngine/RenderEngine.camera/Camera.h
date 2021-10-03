@@ -43,6 +43,8 @@ struct VirtualCamera
 	glm::vec3 orientation;		// NOTE: this doesn't have to be normalized
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 	int priority = 10;
+
+	VirtualCamera() : position(glm::vec3(0.0f)), orientation(glm::vec3(0.0f, 0.0f, 1.0f)) {}
 };
 
 class Camera

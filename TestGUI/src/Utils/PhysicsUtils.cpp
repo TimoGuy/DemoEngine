@@ -163,6 +163,9 @@ namespace PhysicsUtils
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max)
 	{
 		float magnitude = glm::length(vector);
+
+		assert(std::abs(magnitude) > 0.00001f);
+
 		return glm::normalize(vector) * std::clamp(magnitude, min, max);
 	}
 

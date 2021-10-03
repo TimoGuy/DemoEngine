@@ -70,15 +70,17 @@ public:
 	float airAcceleration = 2.5f;
 	float groundRunSpeed = 1.0f;						// TODO: may wanna change that variable name eh
 	float currentRunSpeed = 0.0f;						// This is the value that gets changed
+	float immediateTurningRequiredSpeed = 0.1f;			// The maximum velocity you can have to keep the ability to immediately turn (while grounded)
 
 	glm::vec2 facingDirection = glm::vec2(0, 1);		// NOTE: this is assumed to always be normalized
 	float facingTurnSpeed = 575.0f;
+	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
 
 private:
 	void refreshResources();
 
-	glm::vec3 processGroundedMovement(glm::vec2 movementVector);
-	glm::vec3 processAirMovement(glm::vec2 movementVector);
+	physx::PxVec3 processGroundedMovement(const glm::vec2& movementVector);
+	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
 
 	VirtualCamera playerCamera;
 };
