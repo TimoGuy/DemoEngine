@@ -115,10 +115,55 @@ namespace PhysicsUtils
 		desc.radius = radius;
 		desc.height = height;
 		desc.slopeLimit = slopeLimit;
-		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;	// @NOTE: This is better... and that is because force sliding prevents input to move side-to-side. @TODO: perhaps in the future, making a "sliding down" state would be good. This is mainly because of me adding a raycast downward to check if the controller is standing on too steep of a slope. When the controller is on a lip, the -y velocity builds up for the automatic sliding down algorithm.    //ePREVENT_CLIMBING_AND_FORCE_SLIDING;
+		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;	// @NOTE: This is better... and that is because force sliding prevents input to move side-to-side. @TODO: perhaps in the future, making a "sliding down" state would be good. This is mainly because of me adding a raycast downward to check if the controller is standing on too steep of a slope. When the controller is on a lip, the -y velocity builds up for the automatic sliding down algorithm. Another reason why, is bc if the character brushes against a steep slope in ePREVENT_ANDFORCE_SLIDING mode, then the character cannot move except in one single direction.    //ePREVENT_CLIMBING_AND_FORCE_SLIDING;
 		desc.upDirection = upDirection;
 
 		return (physx::PxCapsuleController*)controllerManager->createController(desc);
+	}
+
+	float moveTowards(float current, float target, float maxDistanceDelta)
+	{
+		float delta = target - current;
+		return (maxDistanceDelta >= std::abs(delta)) ? target : (current + std::copysignf(1.0f, delta) * maxDistanceDelta);
+	}
+
+	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta)
+	{
+		float result;
+		float diff = targetAngle - currentAngle;
+		if (diff < -180.0f)
+		{
+			// Move upwards past 360
+			targetAngle += 360.0f;
+			result = moveTowards(currentAngle, targetAngle, maxTurnDelta);
+			if (result >= 360.0f)
+			{
+				result -= 360.0f;
+			}
+		}
+		else if (diff > 180.0f)
+		{
+			// Move downwards past 0
+			targetAngle -= 360.0f;
+			result = moveTowards(currentAngle, targetAngle, maxTurnDelta);
+			if (result < 0.0f)
+			{
+				result += 360.0f;
+			}
+		}
+		else
+		{
+			// Straight move
+			result = moveTowards(currentAngle, targetAngle, maxTurnDelta);
+		}
+
+		return result;
+	}
+
+	glm::vec2 clampVector(glm::vec2 vector, float min, float max)
+	{
+		float magnitude = glm::length(vector);
+		return glm::normalize(vector) * std::clamp(magnitude, min, max);
 	}
 
 #pragma endregion

@@ -38,6 +38,10 @@ namespace PhysicsUtils
 		float slopeLimit = 0.70710678118f,						// cosine of 45 degrees
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 
+	float moveTowards(float current, float target, float maxDistanceDelta);
+	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
+	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
+
 #pragma endregion
 
 #pragma region simple glm decomposition functions

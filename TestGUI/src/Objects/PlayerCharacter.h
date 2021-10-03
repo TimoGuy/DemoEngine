@@ -62,16 +62,25 @@ public:
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis
 	glm::vec2 lookingSensitivity = glm::vec2(0.5f, 0.0025f);	// Sensitivity for how much the amount moves
 
+	// TODO: tune these lol (jk jk)
+	// And then after, we can make these all consts!!!!
 	float jumpSpeed = 2.5f;
-	float groundRunSpeed = 1.0f;
+	float groundAcceleration = 4.2f;
+	float groundDecceleration = 9.0f;
+	float airAcceleration = 2.5f;
+	float groundRunSpeed = 1.0f;						// TODO: may wanna change that variable name eh
+	float currentRunSpeed = 0.0f;						// This is the value that gets changed
+
+	glm::vec2 facingDirection = glm::vec2(0, 1);		// NOTE: this is assumed to always be normalized
+	float facingTurnSpeed = 575.0f;
 
 private:
 	void refreshResources();
 
-	VirtualCamera playerCamera;
+	glm::vec3 processGroundedMovement(glm::vec2 movementVector);
+	glm::vec3 processAirMovement(glm::vec2 movementVector);
 
-	float facingDirection = 0.0f;
-	float facingSpeed = 0.25f;
+	VirtualCamera playerCamera;
 };
 
 class PlayerCharacter : public BaseObject

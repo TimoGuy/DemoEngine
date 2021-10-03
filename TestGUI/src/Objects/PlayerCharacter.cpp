@@ -92,6 +92,85 @@ void PlayerRender::refreshResources()
 	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
 }
 
+glm::vec3 PlayerRender::processGroundedMovement(glm::vec2 movementVector)
+{
+	//
+	// Set Movement Vector
+	//
+	bool isMoving = false;
+	if (glm::length2(movementVector) > 0.001f)
+	{
+		isMoving = true;
+		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
+
+		//
+		// Update facing direction
+		//
+		if (glm::dot(movementVector, facingDirection) < -0.707106781f)
+		{
+			// TODO: implement the alternate "skid stop" state
+			facingDirection = -facingDirection;
+			currentRunSpeed = -currentRunSpeed;
+		}
+		else
+		{
+			//
+			// Slowly face towards the targetfacingdirection
+			//
+			float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+			float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+
+			facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
+
+			facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+		}
+	}
+
+	//
+	// Update Running Speed
+	//
+	float targetRunningSpeed = glm::length(movementVector) * groundRunSpeed;
+	currentRunSpeed = PhysicsUtils::moveTowards(
+		currentRunSpeed,
+		targetRunningSpeed,
+		(((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() ?
+			(currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) :
+			airAcceleration) *
+		MainLoop::getInstance().deltaTime
+	);
+
+	//
+	// Apply the maths onto the actual velocity vector now!
+	//
+	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+	{
+		// Add on a grounded rotation based on the ground you're standing on
+		glm::quat slopeRotation = glm::rotation(
+			glm::vec3(0, 1, 0),
+			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
+		);
+		velocity = slopeRotation * velocity;
+	}
+
+	// Fetch in physics y (overwriting) (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
+	if (velocity.y < 0.0f)
+		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
+	else
+		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
+
+	// Jump
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() &&
+		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		velocity.y = jumpSpeed;
+}
+
+glm::vec3 PlayerRender::processAirMovement(glm::vec2 movementVector)
+{
+	// TODO: air movement
+	return glm::vec3();
+}
+
 PlayerCharacter::~PlayerCharacter()
 {
 	delete renderComponent;
@@ -107,7 +186,7 @@ void PlayerPhysics::physicsUpdate()
 	isGrounded = false;
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
-		std::cout << "\tDown Collision";
+		//std::cout << "\tDown Collision";
 
 		//
 		// Check if actually grounded
@@ -131,15 +210,14 @@ void PlayerPhysics::physicsUpdate()
 	}
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
 	{
-		std::cout << "\tSide Collision";
+		//std::cout << "\tSide Collision";
 	}
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
 	{
-		std::cout << "\tAbove Collision";
-		//velocity.y = 0.0f;		// Hit your head on the ceiling
+		//std::cout << "\tAbove Collision";
+		velocity.y = 0.0f;		// Hit your head on the ceiling
 	}
-
-	std::cout << std::endl;
+	//std::cout << std::endl;
 
 	//
 	// Apply transform
@@ -187,19 +265,26 @@ void PlayerRender::preRenderUpdate()
 	//
 	// Movement
 	//
-	float mvtSpeed = 0.5f;
 	glm::vec2 movementVector(0.0f);
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += mvtSpeed;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= mvtSpeed;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= mvtSpeed;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += mvtSpeed;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += 1.0f;
+
+	// Change input vector to camera view
+	glm::vec3 ThreeDMvtVector = 
+		movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
+		movementVector.y * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z));
+	movementVector.x = ThreeDMvtVector.x;
+	movementVector.y = ThreeDMvtVector.z;
 
 	// Remove input if not playmode
 	if (!MainLoop::getInstance().playMode)
 	{
 		lookingInput = glm::vec2(0, 0);
+		currentRunSpeed = 0.0f;
+		facingDirection = glm::vec2(0, 1);
 		movementVector = glm::vec2(0, 0);
-		facingDirection = 0.0f;
 	}
 
 	//
@@ -209,52 +294,24 @@ void PlayerRender::preRenderUpdate()
 	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
 	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
-	//
-	// Update Movement Vector
-	//
-	bool isMoving = false;
-	if (glm::length2(movementVector) > 0.001f)
-	{
-		isMoving = true;
-		movementVector = glm::normalize(movementVector);
-	}
-
-	glm::vec3 velocity =
-		movementVector.y * groundRunSpeed * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z))  +
-		movementVector.x * groundRunSpeed * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up));
+	glm::vec3 velocity(0.0f);
 	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
-	{
-		// Add on a grounded rotation based on the ground you're standing on
-		glm::quat slopeRotation = glm::rotation(
-			glm::vec3(0, 1, 0),
-			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
-		);
-		velocity = slopeRotation * velocity;
-	}
-
-	// Fetch in physics y (overwriting) (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
-	if (velocity.y < 0.0f)
-		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
+		velocity = processGroundedMovement(movementVector);
 	else
-		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
-
-	// Jump
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() &&
-		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		velocity.y = jumpSpeed;
+		velocity = processAirMovement(movementVector);
 
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = physx::PxVec3(velocity.x, velocity.y, velocity.z);
 
-	if (isMoving)
-	{
-		// Start facing towards movement direction
-		float targetFacingDirection = glm::degrees(std::atan2f(velocity.x, velocity.z));
-		facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
-	}
+	//if (isMoving)
+	//{
+	//	// Start facing towards movement direction
+	//	float targetFacingDirection = glm::degrees();
+	//	facingDirection = PhysicsUtils::lerpAngleDegrees(facingDirection, targetFacingDirection, facingSpeed);
+	//}
 
 	renderTransform =
 		glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
-		glm::eulerAngleXYZ(0.0f, glm::radians(facingDirection), 0.0f) *
+		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), 0.0f) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
 
 	//
@@ -376,8 +433,13 @@ void PlayerImGui::propertyPanelImGui()
 
 	ImGui::Separator();
 	ImGui::Text("Movement Properties");
-	ImGui::DragFloat("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed);
-	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed);
+	ImGui::DragFloat("Running Acceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundAcceleration, 0.1f);
+	ImGui::DragFloat("Running Decceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundDecceleration, 0.1f);
+	ImGui::DragFloat("Running Acceleration (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airAcceleration, 0.1f);
+	ImGui::DragFloat("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed, 0.1f);
+	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed, 0.1f);
+	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
+	ImGui::DragFloat("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed, 0.1f);
 }
 
 void PlayerImGui::renderImGui()

@@ -949,6 +949,16 @@ void RenderManager::renderImGuiContents()
 	}
 
 	//
+	// @Broken: I want to be able to see during playmode some object's properties, but this will clear it out as soon as I enter play mode!
+	// Reset the selected objects while in playmode
+	//
+	//if (MainLoop::getInstance().playMode)
+	//{
+	//	currentSelectedObjectIndex = -1;
+	//	currentHoveringObjectIndex = -1;
+	//}
+
+	//
 	// Object Selection Window
 	//
 	static int imGuizmoTransformOperation = 0;
