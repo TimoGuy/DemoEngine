@@ -18,15 +18,7 @@ public:
 	void renderImGui();
 };
 
-class CustomHitReport : public physx::PxUserControllerHitReport
-{
-public:
-	virtual void onShapeHit(const physx::PxControllerShapeHit& hit);
-	virtual void onControllerHit(const physx::PxControllersHit& hit);
-	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
-};
-
-class PlayerPhysics : public PhysicsComponent
+class PlayerPhysics : public PhysicsComponent, public physx::PxUserControllerHitReport
 {
 public:
 	PlayerPhysics(BaseObject* bo, Bounds* bounds);
@@ -41,15 +33,22 @@ public:
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
 
 	bool getIsGrounded() { return isGrounded; }
+	bool getIsSliding() { return isSliding; }
 
 	// NOTE: this should not be accessed while !isGrounded, bc it isn't updated unless if on ground <45degrees
-	glm::vec3 getGroundedNormal() { return groundedNormal; }
+	glm::vec3 getGroundedNormal() { return currentHitNormal; }
+
+	//
+	// PxUserControllerHitReport methods
+	//
+	virtual void onShapeHit(const physx::PxControllerShapeHit& hit);
+	virtual void onControllerHit(const physx::PxControllersHit& hit);
+	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
 
 private:
 	bool isGrounded;
-	glm::vec3 groundedNormal;
 	bool isSliding;
-	glm::vec3 slidingNormal;		// NOTE: this cooould get combined with groundedNormal, however, for sake of ease of reading the code...
+	glm::vec3 currentHitNormal;
 };
 
 class PlayerRender : public RenderComponent

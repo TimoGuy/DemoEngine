@@ -59,7 +59,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
 			1.0f,
 			4.5f,
-			new CustomHitReport());		// TODO: check to see if doing this will destroy the object once out of scope
+			this		// PxUserControllerHitReport
+		);
 }
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
@@ -137,9 +138,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
-		(((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() ?
-			(currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) :
-			airAcceleration) *
+		(currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *
 		MainLoop::getInstance().deltaTime
 	);
 
@@ -147,9 +146,18 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	// Apply the maths onto the actual velocity vector now!
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding())
 	{
-		// Add on a grounded rotation based on the ground you're standing on
+		// Cut off movement towards uphill if supposed to be sliding
+		glm::vec3 normal = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal();
+		glm::vec2 TwoDNormal = glm::normalize(glm::vec2(normal.x, normal.z));
+
+		velocity *= std::clamp(1.0f - std::abs(glm::dot(TwoDNormal, facingDirection)), 0.0f, 1.0f);
+	}
+	else
+	{
+		// Add on a grounded rotation based on the ground you're standing on (!isSliding)
 		glm::quat slopeRotation = glm::rotation(
 			glm::vec3(0, 1, 0),
 			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
@@ -166,8 +174,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	else
 		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
 
-	// Jump
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() &&
+	// Jump (but not if sliding)
+	if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		velocity.y = jumpSpeed;
 
@@ -227,54 +235,62 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Add gravity (or sliding gravity if sliding)
 	//
+	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
+
+	physx::PxVec3 cookedVelocity = velocity;
+
+	// (Last minute) convert -y to y along the face you're sliding down
 	if (isSliding)
 	{
-		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), slidingNormal);
-		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, slidingNormal));
-		const glm::vec3 slidingVector = uxnXnormal * 9.8f * MainLoop::getInstance().physicsDeltaTime;
-		velocity += physx::PxVec3(slidingVector.x, slidingVector.y, slidingVector.z);
+		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
+
+		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
+		cookedVelocity.y = 0.0f;
+		cookedVelocity += physx::PxVec3(
+			slidingVector.x * flatSlidingUmph,
+			slidingVector.y,
+			slidingVector.z * flatSlidingUmph
+		);
 	}
-	else
-		velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
 	
 	//
 	// Do the deed
 	//
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(velocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
-
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
-	isSliding = false;
+	isSliding = false;			// @Check: see if the player is sliding down the hill if they're still considered "grounded" with this being flipped off at every step
+
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		//std::cout << "\tDown Collision";
-
+	
+		////
+		//// Check if actually grounded
+		//// @Example: of a raycast in the scene, so note this down!!!!!
+		////
+		//physx::PxVec3 origin = PhysicsUtils::toPxVec3(controller->getFootPosition());				// [in] Ray origin
+		//physx::PxVec3 unitDir = physx::PxVec3(0, -1, 0);											// [in] Ray direction
+		//physx::PxReal maxDistance = 5.5f;															// [in] Raycast max distance
+		//physx::PxRaycastBuffer hit;																	// [out] Raycast results
 		//
-		// Check if actually grounded
-		//
-		physx::PxVec3 origin = PhysicsUtils::toPxVec3(controller->getFootPosition());				// [in] Ray origin
-		physx::PxVec3 unitDir = physx::PxVec3(0, -1, 0);											// [in] Ray direction
-		physx::PxReal maxDistance = 5.5f;															// [in] Raycast max distance
-		physx::PxRaycastBuffer hit;																	// [out] Raycast results
+		//// Raycast against all static & dynamic objects (no filtering)
+		//// The main result from this call is the closest hit, stored in the 'hit.block' structure
+		//if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit))
+		//{
+		//	
+		//}
 
-		// Raycast against all static & dynamic objects (no filtering)
-		// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit))
+		isGrounded = true;
+		if (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
 		{
-			if (hit.block.normal.dot(physx::PxVec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
-			{
-				velocity.y = 0.0f;		// Remove gravity
-				isGrounded = true;		// Can jump now
-				physx::PxVec3 normal = hit.block.normal;		// For ground movement information	
-				groundedNormal = glm::vec3(normal.x, normal.y, normal.z);
-			}
-			else
-			{
-				// Slide down!
-				isSliding = true;
-				physx::PxVec3 normal = hit.block.normal;		// For sliding information	
-				slidingNormal = glm::vec3(normal.x, normal.y, normal.z);
-				std::cout << "Hey, I'm sliding!!!!" << std::endl;
-			}
+			velocity.y = 0.0f;		// Remove gravity
+		}
+		else
+		{
+			// Slide down!
+			isSliding = true;
 		}
 	}
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
@@ -512,21 +528,47 @@ void PlayerImGui::renderImGui()
 {
 	//imguiRenderBoxCollider(transform, boxCollider);
 	//imguiRenderCapsuleCollider(transform, capsuleCollider);
+	
+	glm::vec3 pos1 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
+	physx::PxVec3 velocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+	glm::vec3 pos2 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(velocity.x, velocity.y, velocity.z));
+
+	if (pos1.z > 0.0f && pos2.z > 0.0f)
+	{
+		pos1 /= pos1.z;
+		pos1.x = pos1.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+		pos1.y = -pos1.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+
+		pos2 /= pos2.z;
+		pos2.x = pos2.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+		pos2.y = -pos2.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+
+		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
+	}
+
 	PhysicsUtils::imguiRenderCharacterController(baseObject->getTransform(), *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
 	ImGuiComponent::renderImGui();
 }
 
-void CustomHitReport::onShapeHit(const physx::PxControllerShapeHit& hit)
+void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
-	std::cout << "\t\t\tSHAPE HIT" << std::endl;
+	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
+
+	//// @Checkin
+	if (hit.worldNormal.dot(physx::PxVec3(0, 1, 0)) <= 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+	{
+		physx::PxVec3 dtiith = hit.dir;
+		float jjjjj = hit.length;
+		//std::cout << dtiith << jjjjj << std::endl;
+	}
 }
 
-void CustomHitReport::onControllerHit(const physx::PxControllersHit& hit)
+void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit)
 {
-	std::cout << "\t\t\t Contrller HIT" << std::endl;
+	//std::cout << "\t\t\t Contrller HIT" << std::endl;
 }
 
-void CustomHitReport::onObstacleHit(const physx::PxControllerObstacleHit& hit)
+void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit)
 {
-	std::cout << "\t\t\t SHAPE HIT" << std::endl;
+	//std::cout << "\t\t\t SHAPE HIT" << std::endl;
 }
