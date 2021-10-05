@@ -152,7 +152,7 @@ void ImGuiComponent::renderImGui()
 	Bounds cookedBounds =
 		PhysicsUtils::fitAABB(
 			*bounds,
-			(baseObject->getRenderComponent() == nullptr) ? baseObject->getTransform() : baseObject->getRenderComponent()->getRenderTransform()
+			baseObject->getTransform()
 		);
 
 	double xpos, ypos;

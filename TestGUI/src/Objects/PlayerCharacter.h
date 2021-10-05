@@ -85,6 +85,9 @@ public:
 	float facingTurnSpeed = 575.0f;
 	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
 
+	float leanLerpTime = 10.0f;
+	float modelOffsetY = -3.35f;
+
 private:
 	void refreshResources();
 
@@ -92,6 +95,9 @@ private:
 	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
 
 	VirtualCamera playerCamera;
+
+	float targetCharacterLeanValue = 0.0f;
+	float characterLeanValue = 0.0f;		// [-1, 1], where 0 is no lean
 };
 
 class PlayerCharacter : public BaseObject

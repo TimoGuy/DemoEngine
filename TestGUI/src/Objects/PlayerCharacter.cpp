@@ -125,9 +125,25 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 			float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 			float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-			facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
+			float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
 
-			facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+
+			//
+			// Calculate lean amount
+			//
+			float deltaFacingDirectionAngle = glm::degrees(newFacingDirectionAngle) - facingDirectionAngle;
+			
+			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
+			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
+
+			const float deadZoneDeltaAngle = 0.1f;
+			if (deltaFacingDirectionAngle < -deadZoneDeltaAngle)
+				targetCharacterLeanValue = 1.0f;
+			else if (deltaFacingDirectionAngle > deadZoneDeltaAngle)
+				targetCharacterLeanValue = -1.0f;
+			else
+				targetCharacterLeanValue = 0.0f;
 		}
 	}
 
@@ -341,8 +357,8 @@ void PlayerRender::preRenderUpdate()
 		// Lock the cursor
 		// @Refactor: this code should not be here. It should probs be in mainloop ya think????
 		//
-		previousMouseX = MainLoop::getInstance().camera.width / 2;
-		previousMouseY = MainLoop::getInstance().camera.height / 2;
+		previousMouseX = (int)MainLoop::getInstance().camera.width / 2;		// NOTE: when setting cursor position as a double, the getCursorPos() function is slightly off, making the camera slowly move upwards
+		previousMouseY = (int)MainLoop::getInstance().camera.height / 2;
 		glfwSetCursorPos(MainLoop::getInstance().window, previousMouseX, previousMouseY);
 	}
 	else
@@ -396,17 +412,30 @@ void PlayerRender::preRenderUpdate()
 	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
 	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
 
+	//
+	// Update movement
+	//
+	targetCharacterLeanValue = 0.0f;
 	physx::PxVec3 velocity(0.0f);
 	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
 		velocity = processGroundedMovement(movementVector);
 	else
 		velocity = processAirMovement(movementVector);
 
+	characterLeanValue = PhysicsUtils::lerp(
+		characterLeanValue,
+		targetCharacterLeanValue,
+		leanLerpTime * MainLoop::getInstance().deltaTime
+	);
+
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
 
+	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
+	modelPosition.y += modelOffsetY;
+
 	renderTransform =
-		glm::translate(glm::mat4(1.0f), PhysicsUtils::getPosition(baseObject->getTransform())) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), 0.0f) *
+		glm::translate(glm::mat4(1.0f), modelPosition) *
+		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 10.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
 
 	//
@@ -534,8 +563,12 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::DragFloat("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed, 0.1f);
 	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed, 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
+	ImGui::DragFloat("Leaning Lerp Time", &((PlayerRender*)baseObject->getRenderComponent())->leanLerpTime);
 	ImGui::DragFloat("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed, 0.1f);
 	ImGui::DragFloat("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed, 0.1f);
+
+	ImGui::Separator();
+	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
 }
 
 void PlayerImGui::renderImGui()
