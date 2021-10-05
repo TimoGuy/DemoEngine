@@ -46,9 +46,9 @@ public:
 	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
 
 private:
-	bool isGrounded;
-	bool isSliding;
-	glm::vec3 currentHitNormal;
+	bool isGrounded = false;
+	bool isSliding = false;
+	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
 };
 
 class PlayerRender : public RenderComponent

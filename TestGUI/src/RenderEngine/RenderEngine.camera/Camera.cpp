@@ -150,7 +150,7 @@ void Camera::updateToVirtualCameras()
 }
 
 bool prevF4Keypressed;
-void Camera::Inputs(GLFWwindow* window)
+void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
 	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && prevF4Keypressed == GLFW_RELEASE)
 	{
@@ -163,7 +163,28 @@ void Camera::Inputs(GLFWwindow* window)
 
 	// Don't do look around stuff unless if doing freecam mode
 	if (MainLoop::getInstance().playMode)
+	{
+		if (!lockedCursor)
+		{
+			// Lock cursor if clicks
+			if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			{
+				lockedCursor = true;
+			}
+		}
+		else
+		{
+			// Unlock cursor if press f3
+			if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+			{
+				lockedCursor = false;
+			}
+		}
 		return;
+	}
+	else
+		lockedCursor = false;
+
 
 	//
 	// Look around
@@ -202,7 +223,6 @@ void Camera::Inputs(GLFWwindow* window)
 
 		//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 		ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-		int jojo = ImGui::GetMouseCursor();
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);

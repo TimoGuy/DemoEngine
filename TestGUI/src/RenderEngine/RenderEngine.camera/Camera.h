@@ -76,7 +76,11 @@ public:
 	void updateToVirtualCameras();
 	void Inputs(GLFWwindow* window);
 
+	bool getLockedCursor() { return lockedCursor; }
+
 private:
+	bool lockedCursor = false;
+
 	bool firstClicked = true;
 	double savedMouseX, savedMouseY;
 

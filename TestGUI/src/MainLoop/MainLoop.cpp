@@ -16,7 +16,7 @@
 
 #include "../Utils/PhysicsUtils.h"
 
-#define SINGLE_BUFFERED_MODE 0
+#define SINGLE_BUFFERED_MODE 1
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
 #endif

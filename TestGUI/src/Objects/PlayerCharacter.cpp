@@ -151,9 +151,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	{
 		// Cut off movement towards uphill if supposed to be sliding
 		glm::vec3 normal = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal();
-		glm::vec2 TwoDNormal = glm::normalize(glm::vec2(normal.x, normal.z));
-
-		velocity *= std::clamp(1.0f - std::abs(glm::dot(TwoDNormal, facingDirection)), 0.0f, 1.0f);
+		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
+		velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
 	}
 	else
 	{
@@ -335,8 +334,23 @@ void PlayerRender::preRenderUpdate()
 	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);					// TODO: make this a centralized input update that occurs
 	double deltaX = mouseX - previousMouseX;
 	double deltaY = mouseY - previousMouseY;
-	previousMouseX = mouseX;
-	previousMouseY = mouseY;
+
+	if (MainLoop::getInstance().camera.getLockedCursor())
+	{
+		//
+		// Lock the cursor
+		// @Refactor: this code should not be here. It should probs be in mainloop ya think????
+		//
+		previousMouseX = MainLoop::getInstance().camera.width / 2;
+		previousMouseY = MainLoop::getInstance().camera.height / 2;
+		glfwSetCursorPos(MainLoop::getInstance().window, previousMouseX, previousMouseY);
+	}
+	else
+	{
+		// Regular update the previousMouse position
+		previousMouseX = mouseX;
+		previousMouseY = mouseY;
+	}
 
 	//
 	// Get looking input
