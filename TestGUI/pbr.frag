@@ -158,7 +158,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         //
         // Create a fading edge in the far plane
         //
-        float fadingEdge = 2f;
+        float fadingEdge = 2.0;
         float subtractAmount = clamp((projCoords.z - 1.0) * (farPlane - nearPlane) + fadingEdge, 0.0, fadingEdge) / fadingEdge;
         shadow -= subtractAmount;
         shadow = clamp(shadow, 0.0, 1.0);
