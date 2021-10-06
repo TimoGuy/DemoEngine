@@ -11,7 +11,8 @@ namespace PhysicsUtils
 {
 #pragma region Factory functions
 
-	physx::PxVec3 toPxVec3(physx::PxExtendedVec3 in);
+	physx::PxVec3 toPxVec3(const physx::PxExtendedVec3& in);
+	physx::PxVec3 toPxVec3(const glm::vec3& in);
 
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles = glm::vec3(0.0f));
 
@@ -42,6 +43,7 @@ namespace PhysicsUtils
 	float moveTowards(float current, float target, float maxDistanceDelta);
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
+	bool raycast(physx::PxVec3 origin, physx::PxVec3 unitDirection, physx::PxReal distance, physx::PxRaycastBuffer& hitInfo);
 
 #pragma endregion
 

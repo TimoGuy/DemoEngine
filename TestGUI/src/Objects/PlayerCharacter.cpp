@@ -23,7 +23,7 @@ PlayerCharacter::PlayerCharacter()
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
+	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);		// TODO: the bounds are getting transformed when doing frustum culling. Oh noooo!!!! (w/ the modeloffsetY pos probably)
 
 	imguiComponent = new PlayerImGui(this, bounds);
 	physicsComponent = new PlayerPhysics(this, bounds);
@@ -275,28 +275,10 @@ void PlayerPhysics::physicsUpdate()
 	//
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
-	isSliding = false;			// @Check: see if the player is sliding down the hill if they're still considered "grounded" with this being flipped off at every step
+	isSliding = false;
 
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
-		//std::cout << "\tDown Collision";
-	
-		////
-		//// Check if actually grounded
-		//// @Example: of a raycast in the scene, so note this down!!!!!
-		////
-		//physx::PxVec3 origin = PhysicsUtils::toPxVec3(controller->getFootPosition());				// [in] Ray origin
-		//physx::PxVec3 unitDir = physx::PxVec3(0, -1, 0);											// [in] Ray direction
-		//physx::PxReal maxDistance = 5.5f;															// [in] Raycast max distance
-		//physx::PxRaycastBuffer hit;																	// [out] Raycast results
-		//
-		//// Raycast against all static & dynamic objects (no filtering)
-		//// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		//if (MainLoop::getInstance().physicsScene->raycast(origin, unitDir, maxDistance, hit))
-		//{
-		//	
-		//}
-
 		isGrounded = true;
 		if (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
 		{
@@ -408,14 +390,23 @@ void PlayerRender::preRenderUpdate()
 	//
 	// Update playercam pos
 	//
-	const glm::vec3 depthOffset(0, 0, playerCamOffset.z);
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * depthOffset;
-	playerCamera.orientation = glm::normalize(lookingRotation * -depthOffset);
+	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
+	float cameraDistance = playerCamOffset.z;
 
-	const glm::vec3 rightVector = glm::normalize(glm::cross(playerCamera.orientation, glm::vec3(0, 1, 0)));
-	playerCamera.position += playerCamOffset.x * rightVector;															// X-offset on the camera
-	playerCamera.position += playerCamOffset.y * glm::normalize(glm::cross(rightVector, playerCamera.orientation));		// Y-offset on the camera
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
+
+	{
+		// Do raycast to see what the camera distance should be
+		physx::PxRaycastBuffer hitInfo;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance), hitInfo))
+		{
+			cameraDistance = -hitInfo.block.distance;		// NOTE: must be negative distance since behind model
+		}
+	}
+
+	const glm::vec3 depthOffset(0, 0, cameraDistance);
+	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
 
 	//
 	// Update movement

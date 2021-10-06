@@ -11,7 +11,12 @@ namespace PhysicsUtils
 {
 #pragma region Factory functions
 
-	physx::PxVec3 toPxVec3(physx::PxExtendedVec3 in)
+	physx::PxVec3 toPxVec3(const physx::PxExtendedVec3& in)
+	{
+		return physx::PxVec3(in.x, in.y, in.z);
+	}
+
+	physx::PxVec3 toPxVec3(const glm::vec3& in)
 	{
 		return physx::PxVec3(in.x, in.y, in.z);
 	}
@@ -170,6 +175,13 @@ namespace PhysicsUtils
 		assert(std::abs(magnitude) > 0.00001f);
 
 		return glm::normalize(vector) * std::clamp(magnitude, min, max);
+	}
+
+	bool raycast(physx::PxVec3 origin, physx::PxVec3 unitDirection, physx::PxReal distance, physx::PxRaycastBuffer& hitInfo)
+	{		
+		// Raycast against all static & dynamic objects (no filtering)
+		// The main result from this call is the closest hit, stored in the 'hit.block' structure
+		return MainLoop::getInstance().physicsScene->raycast(origin, unitDirection, distance, hitInfo);
 	}
 
 #pragma endregion
