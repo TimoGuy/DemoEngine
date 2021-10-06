@@ -15,6 +15,7 @@ struct AssimpNodeData
 	//
 	bool isCacheCreated = false;
 	Bone* cacheBone, *cacheNextBone;
+	bool cacheNextBoneExists;
 	int cacheBoneInfo_id;
 	glm::mat4 cacheBoneInfo_offset;
 	bool cacheBoneInfoExists;
