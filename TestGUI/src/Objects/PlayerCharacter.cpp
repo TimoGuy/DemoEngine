@@ -359,7 +359,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 void PlayerRender::processAnimation()
 {
-	animator.playAnimation((unsigned int)isMoving, 12.0f);
+	animator.playAnimation((unsigned int)isMoving, 6.0f);
 
 	//
 	// Mesh Skinning
