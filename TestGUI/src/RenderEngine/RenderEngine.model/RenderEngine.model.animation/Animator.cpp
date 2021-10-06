@@ -55,7 +55,7 @@ void Animator::updateAnimation(float deltaTime)
 			nextTime = totalMixTime = -1.0f;
 			nextAnimation = nullptr;
 
-			std::cout << "Invalidated cache" << std::endl;
+			//std::cout << "Invalidated cache" << std::endl;
 			invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation blend stopped (i.e. the mixed animation state ended).
 		}
 		else useNextAnimation = true;
