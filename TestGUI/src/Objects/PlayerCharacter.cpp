@@ -408,9 +408,14 @@ void PlayerRender::preRenderUpdate()
 	//
 	// Update playercam pos
 	//
+	const glm::vec3 depthOffset(0, 0, playerCamOffset.z);
 	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * playerCamOffset;
-	playerCamera.orientation = glm::normalize(lookingRotation * -playerCamOffset);
+	playerCamera.position = PhysicsUtils::getPosition(baseObject->getTransform()) + lookingRotation * depthOffset;
+	playerCamera.orientation = glm::normalize(lookingRotation * -depthOffset);
+
+	const glm::vec3 rightVector = glm::normalize(glm::cross(playerCamera.orientation, glm::vec3(0, 1, 0)));
+	playerCamera.position += playerCamOffset.x * rightVector;															// X-offset on the camera
+	playerCamera.position += playerCamOffset.y * glm::normalize(glm::cross(rightVector, playerCamera.orientation));		// Y-offset on the camera
 
 	//
 	// Update movement
