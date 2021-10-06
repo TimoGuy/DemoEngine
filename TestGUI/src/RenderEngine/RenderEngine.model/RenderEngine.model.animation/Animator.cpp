@@ -55,7 +55,8 @@ void Animator::updateAnimation(float deltaTime)
 			nextTime = totalMixTime = -1.0f;
 			nextAnimation = nullptr;
 
-			invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed (i.e. the mixed animation state ended).
+			std::cout << "Invalidated cache" << std::endl;
+			invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation blend stopped (i.e. the mixed animation state ended).
 		}
 		else useNextAnimation = true;
 	}
@@ -84,6 +85,8 @@ void Animator::playAnimation(unsigned int animationIndex)
 	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
+	currentAnimationIndex = animationIndex;
+
 	currentTime = 0.0f;
 	currentAnimation = &(*animations)[animationIndex];
 	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
@@ -96,6 +99,8 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime)
 	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
+	currentAnimationIndex = animationIndex;
+
 	nextTime = 0.0f;
 	nextAnimation = &(*animations)[animationIndex];
 	Animator::mixTime = Animator::totalMixTime = mixTime;
@@ -126,8 +131,14 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 
 		if (useNextAnimation)
 		{
-			node->cacheNextBone = nextAnimation->findBone(nodeName);		// TODO: findBone seems to erturn 0xcccccccccccccccccc as the memory address for the ptr yo!
+			node->cacheNextBone = nextAnimation->findBone(nodeName);
+			if (node->cacheNextBone)
+				node->cacheNextBoneExists = true;
+			else
+				node->cacheNextBoneExists = false;
 		}
+		else
+			node->cacheNextBoneExists = false;
 
 		node->isCacheCreated = true;
 	}
@@ -145,7 +156,7 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 		node->cacheBone->update(currentTime, position, rotation, scale);																		// @Optimize: 0.003388ms to run on avg
 
 		// 2nd Animation if exists
-		if (useNextAnimation && node->cacheNextBone)
+		if (useNextAnimation && node->cacheNextBoneExists)
 		{
 			glm::vec3 nextPosition;
 			glm::quat nextRotation;
@@ -179,7 +190,7 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 
 void Animator::invalidateCache(AssimpNodeData* node)
 {
-	node->cacheBoneInfoExists = false;
+	node->isCacheCreated = false;
 	for (size_t i = 0; i < node->childrenCount; i++)
 		invalidateCache(&node->children[i]);
 }
