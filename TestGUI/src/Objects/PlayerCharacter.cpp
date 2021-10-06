@@ -94,6 +94,119 @@ void PlayerRender::refreshResources()
 	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
 }
 
+void PlayerRender::processMovement()
+{
+	//
+	// Update Camera position based off new mousex/y pos's
+	//
+	double mouseX, mouseY;
+	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);					// TODO: make this a centralized input update that occurs
+	double deltaX = mouseX - previousMouseX;
+	double deltaY = mouseY - previousMouseY;
+
+	if (MainLoop::getInstance().camera.getLockedCursor())
+	{
+		//
+		// Lock the cursor
+		// @Refactor: this code should not be here. It should probs be in mainloop ya think????
+		//
+		previousMouseX = (int)MainLoop::getInstance().camera.width / 2;		// NOTE: when setting cursor position as a double, the getCursorPos() function is slightly off, making the camera slowly move upwards
+		previousMouseY = (int)MainLoop::getInstance().camera.height / 2;
+		glfwSetCursorPos(MainLoop::getInstance().window, previousMouseX, previousMouseY);
+	}
+	else
+	{
+		// Regular update the previousMouse position
+		previousMouseX = mouseX;
+		previousMouseY = mouseY;
+	}
+
+	//
+	// Get looking input
+	//
+	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
+	lookingInput.x = fmodf(lookingInput.x, 360.0f);
+	if (lookingInput.x < 0.0f)
+		lookingInput.x += 360.0f;
+	lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+
+	//
+	// Movement
+	//
+	glm::vec2 movementVector(0.0f);
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= 1.0f;
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += 1.0f;
+
+	// Change input vector to camera view
+	glm::vec3 ThreeDMvtVector =
+		movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
+		movementVector.y * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z));
+	movementVector.x = ThreeDMvtVector.x;
+	movementVector.y = ThreeDMvtVector.z;
+
+	if (glm::length2(movementVector) > 0.001f)
+		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
+
+	// Remove input if not playmode
+	if (!MainLoop::getInstance().playMode)
+	{
+		lookingInput = glm::vec2(0, 0);
+		currentRunSpeed = 0.0f;
+		facingDirection = glm::vec2(0, 1);
+		movementVector = glm::vec2(0, 0);
+	}
+
+	//
+	// Update playercam pos
+	//
+	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
+	float cameraDistance = playerCamOffset.z;
+
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
+
+	{
+		// Do raycast to see what the camera distance should be
+		physx::PxRaycastBuffer hitInfo;
+		const float hitDistancePadding = 0.75f;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
+		{
+			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+		}
+	}
+
+	const glm::vec3 depthOffset(0, 0, cameraDistance);
+	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
+
+	//
+	// Update movement
+	//
+	targetCharacterLeanValue = 0.0f;
+	physx::PxVec3 velocity(0.0f);
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		velocity = processGroundedMovement(movementVector);
+	else
+		velocity = processAirMovement(movementVector);
+
+	characterLeanValue = PhysicsUtils::lerp(
+		characterLeanValue,
+		targetCharacterLeanValue,
+		leanLerpTime * MainLoop::getInstance().deltaTime
+	);
+
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
+
+	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
+	modelPosition.y += modelOffsetY;
+
+	renderTransform =
+		glm::translate(glm::mat4(1.0f), modelPosition) *
+		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 10.0f)) *
+		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
+}
+
 physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVector)
 {
 	//
@@ -238,6 +351,20 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	return currentVelocity;
 }
 
+void PlayerRender::processAnimation()
+{
+	//
+	// Mesh Skinning
+	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
+	//
+	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
+
+	//
+	// Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
+	//
+	
+}
+
 PlayerCharacter::~PlayerCharacter()
 {
 	delete renderComponent;
@@ -325,121 +452,8 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 double previousMouseX, previousMouseY;
 void PlayerRender::preRenderUpdate()
 {
-	//
-	// Update Camera position based off new mousex/y pos's
-	//
-	double mouseX, mouseY;
-	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);					// TODO: make this a centralized input update that occurs
-	double deltaX = mouseX - previousMouseX;
-	double deltaY = mouseY - previousMouseY;
-
-	if (MainLoop::getInstance().camera.getLockedCursor())
-	{
-		//
-		// Lock the cursor
-		// @Refactor: this code should not be here. It should probs be in mainloop ya think????
-		//
-		previousMouseX = (int)MainLoop::getInstance().camera.width / 2;		// NOTE: when setting cursor position as a double, the getCursorPos() function is slightly off, making the camera slowly move upwards
-		previousMouseY = (int)MainLoop::getInstance().camera.height / 2;
-		glfwSetCursorPos(MainLoop::getInstance().window, previousMouseX, previousMouseY);
-	}
-	else
-	{
-		// Regular update the previousMouse position
-		previousMouseX = mouseX;
-		previousMouseY = mouseY;
-	}
-
-	//
-	// Get looking input
-	//
-	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
-	lookingInput.x = fmodf(lookingInput.x, 360.0f);
-	if (lookingInput.x < 0.0f)
-		lookingInput.x += 360.0f;
-	lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
-
-	//
-	// Movement
-	//
-	glm::vec2 movementVector(0.0f);
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += 1.0f;
-
-	// Change input vector to camera view
-	glm::vec3 ThreeDMvtVector = 
-		movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
-		movementVector.y * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z));
-	movementVector.x = ThreeDMvtVector.x;
-	movementVector.y = ThreeDMvtVector.z;
-
-	if (glm::length2(movementVector) > 0.001f)
-		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
-
-	// Remove input if not playmode
-	if (!MainLoop::getInstance().playMode)
-	{
-		lookingInput = glm::vec2(0, 0);
-		currentRunSpeed = 0.0f;
-		facingDirection = glm::vec2(0, 1);
-		movementVector = glm::vec2(0, 0);
-	}
-
-	//
-	// Update playercam pos
-	//
-	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
-	float cameraDistance = playerCamOffset.z;
-
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
-
-	{
-		// Do raycast to see what the camera distance should be
-		physx::PxRaycastBuffer hitInfo;
-		const float hitDistancePadding = 0.1f;
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
-		{
-			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
-		}
-	}
-
-	const glm::vec3 depthOffset(0, 0, cameraDistance);
-	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
-
-	//
-	// Update movement
-	//
-	targetCharacterLeanValue = 0.0f;
-	physx::PxVec3 velocity(0.0f);
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
-		velocity = processGroundedMovement(movementVector);
-	else
-		velocity = processAirMovement(movementVector);
-
-	characterLeanValue = PhysicsUtils::lerp(
-		characterLeanValue,
-		targetCharacterLeanValue,
-		leanLerpTime * MainLoop::getInstance().deltaTime
-	);
-
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
-
-	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
-	modelPosition.y += modelOffsetY;
-
-	renderTransform =
-		glm::translate(glm::mat4(1.0f), modelPosition) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 10.0f)) *
-		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
-
-	//
-	// Mesh Skinning
-	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
-	//
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
+	processMovement();
+	processAnimation();
 }
 
 void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)

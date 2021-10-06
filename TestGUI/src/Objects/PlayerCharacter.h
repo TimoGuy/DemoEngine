@@ -91,8 +91,11 @@ public:
 private:
 	void refreshResources();
 
+	void processMovement();
 	physx::PxVec3 processGroundedMovement(const glm::vec2& movementVector);
 	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
+
+	void processAnimation();
 
 	VirtualCamera playerCamera;
 

@@ -174,7 +174,7 @@ void ImGuiComponent::renderImGui()
 	//
 	// Setup selection state color
 	//
-	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f);			// Nothing color
+	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f);		// Nothing color
 	if (MainLoop::getInstance().renderManager->currentSelectedObjectIndex >= 0 &&
 		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentSelectedObjectIndex] == this)
 		selectionStateColor = ImColor(0.921568627f, 0.423529412f, 0.901960784f);			// Selected color

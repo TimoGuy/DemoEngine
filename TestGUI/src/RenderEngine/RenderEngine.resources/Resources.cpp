@@ -362,7 +362,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;lightIcon")					return loadTexture2D(resourceName, isUnloading, "res/cool_img.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;hdrEnvironmentMap")			return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, isUnloading, "res/slime_glb.glb", { /*0, 1, 2, 3, 4,*/ 5 });
+	if (resourceName == "model;slimeGirl")						return loadModel(resourceName, isUnloading, "res/slime_glb.glb", { /*0, 1, 2, 3, 4,*/ 5 });		// 5: idle; 8: running
 	if (resourceName == "model;yosemiteTerrain")				return loadModel(resourceName, isUnloading, "res/cube.glb");
 
 	assert(false);
