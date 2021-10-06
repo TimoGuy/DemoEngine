@@ -23,7 +23,7 @@ PlayerCharacter::PlayerCharacter()
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);		// TODO: the bounds are getting transformed when doing frustum culling. Oh noooo!!!! (w/ the modeloffsetY pos probably)
+	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
 
 	imguiComponent = new PlayerImGui(this, bounds);
 	physicsComponent = new PlayerPhysics(this, bounds);
@@ -399,9 +399,10 @@ void PlayerRender::preRenderUpdate()
 	{
 		// Do raycast to see what the camera distance should be
 		physx::PxRaycastBuffer hitInfo;
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance), hitInfo))
+		const float hitDistancePadding = 0.1f;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
-			cameraDistance = -hitInfo.block.distance;		// NOTE: must be negative distance since behind model
+			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
 	}
 
