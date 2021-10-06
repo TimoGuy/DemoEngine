@@ -22,5 +22,9 @@ private:
 	std::vector<Animation>* animations;
 	float currentTime, nextTime, mixTime, totalMixTime;
 	float deltaTime;
+
+	unsigned int currentAnimationIndex = -1;		// This is nextAnimation's id when it's transitioning too btw.
+
+	void invalidateCache(AssimpNodeData* node);
 };
 

@@ -19,6 +19,8 @@
 #include "../Objects/PointLight.h"					// temp
 
 
+double previousMouseX, previousMouseY;
+
 PlayerCharacter::PlayerCharacter()
 {
 	bounds = new Bounds();
@@ -184,6 +186,8 @@ void PlayerRender::processMovement()
 	// Update movement
 	//
 	targetCharacterLeanValue = 0.0f;
+	isMoving = false;
+
 	physx::PxVec3 velocity(0.0f);
 	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
 		velocity = processGroundedMovement(movementVector);
@@ -215,6 +219,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	const float movementVectorLength = glm::length(movementVector);
 	if (movementVectorLength > 0.001f)
 	{
+		isMoving = true;
+
 		//
 		// Update facing direction
 		//
@@ -353,6 +359,8 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 void PlayerRender::processAnimation()
 {
+	animator.playAnimation((unsigned int)isMoving, 12.0f);
+
 	//
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
@@ -360,7 +368,7 @@ void PlayerRender::processAnimation()
 	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
 
 	//
-	// Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
+	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
 	
 }
@@ -449,7 +457,6 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 	return PhysicsUtils::createTransform(glm::vec3(pos.x, pos.y, pos.z));
 }
 
-double previousMouseX, previousMouseY;
 void PlayerRender::preRenderUpdate()
 {
 	processMovement();

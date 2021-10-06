@@ -54,6 +54,8 @@ void Animator::updateAnimation(float deltaTime)
 			currentAnimation = nextAnimation;
 			nextTime = totalMixTime = -1.0f;
 			nextAnimation = nullptr;
+
+			invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed (i.e. the mixed animation state ended).
 		}
 		else useNextAnimation = true;
 	}
@@ -78,22 +80,26 @@ void Animator::updateAnimation(float deltaTime)
 
 void Animator::playAnimation(unsigned int animationIndex)
 {
+	if (currentAnimationIndex == animationIndex) return;
 	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
 	currentTime = 0.0f;
 	currentAnimation = &(*animations)[animationIndex];
+	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
 }
 
 
 void Animator::playAnimation(unsigned int animationIndex, float mixTime)
 {
+	if (currentAnimationIndex == animationIndex) return;
 	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
 	nextTime = 0.0f;
 	nextAnimation = &(*animations)[animationIndex];
 	Animator::mixTime = Animator::totalMixTime = mixTime;
+	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
 }
 
 
@@ -118,6 +124,11 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 			node->cacheBoneInfoExists = false;
 		}
 
+		if (useNextAnimation)
+		{
+			node->cacheNextBone = nextAnimation->findBone(nodeName);		// TODO: findBone seems to erturn 0xcccccccccccccccccc as the memory address for the ptr yo!
+		}
+
 		node->isCacheCreated = true;
 	}
 	glm::mat4 nodeTransform = node->transformation;
@@ -133,22 +144,19 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 
 		node->cacheBone->update(currentTime, position, rotation, scale);																		// @Optimize: 0.003388ms to run on avg
 
-		//if (useNextAnimation)			// TODO: create caching system for this too.
-		//{
-		//	Bone* nextBone = nextAnimation->findBone(nodeName);
-		//	if (nextBone)
-		//	{
-		//		glm::vec3 nextPosition;
-		//		glm::quat nextRotation;
-		//		glm::vec3 nextScale;
-		//		nextBone->update(nextTime, nextPosition, nextRotation, nextScale);
-		//
-		//		float mixScaleFactor = 1.0f - mixTime / totalMixTime;
-		//		position = glm::mix(position, nextPosition, mixScaleFactor);
-		//		rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
-		//		scale = glm::mix(scale, nextScale, mixScaleFactor);
-		//	}
-		//}
+		// 2nd Animation if exists
+		if (useNextAnimation && node->cacheNextBone)
+		{
+			glm::vec3 nextPosition;
+			glm::quat nextRotation;
+			glm::vec3 nextScale;
+			node->cacheNextBone->update(nextTime, nextPosition, nextRotation, nextScale);
+		
+			float mixScaleFactor = 1.0f - mixTime / totalMixTime;
+			position = glm::mix(position, nextPosition, mixScaleFactor);
+			rotation = glm::slerp(rotation, nextRotation, mixScaleFactor);
+			scale = glm::mix(scale, nextScale, mixScaleFactor);
+		}
 
 		// Convert this all to matrix4x4
 		nodeTransform = glm::scale(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::normalize(rotation)), scale);		// @Optimize: Took 0.0043ms to run on avg
@@ -167,4 +175,11 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 	{
 		calculateBoneTransform(&node->children[i], globalRootInverseMatrix, globalTransformation, boneInfoMap, useNextAnimation);
 	}
+}
+
+void Animator::invalidateCache(AssimpNodeData* node)
+{
+	node->cacheBoneInfoExists = false;
+	for (size_t i = 0; i < node->childrenCount; i++)
+		invalidateCache(&node->children[i]);
 }
