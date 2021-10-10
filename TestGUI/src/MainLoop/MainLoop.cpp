@@ -12,6 +12,7 @@
 
 #include "../Utils/FileLoading.h"
 
+#define PHYSX_VISUALIZATION 1
 #define SINGLE_BUFFERED_MODE 1
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
@@ -308,7 +309,7 @@ class ContactReportCallback : public physx::PxSimulationEventCallback
 	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) { PX_UNUSED(constraints); PX_UNUSED(count); }
 	void onWake(physx::PxActor** actors, physx::PxU32 count) { PX_UNUSED(actors); PX_UNUSED(count); }
 	void onSleep(physx::PxActor** actors, physx::PxU32 count) { PX_UNUSED(actors); PX_UNUSED(count); }
-	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) { PX_UNUSED(pairs); PX_UNUSED(count); }
+	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) { std::cout << "Heyho!!" << std::endl; PX_UNUSED(pairs); PX_UNUSED(count); }
 	void onAdvance(const physx::PxRigidBody* const*, const physx::PxTransform*, const physx::PxU32) {}
 	void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 	{
@@ -401,9 +402,15 @@ void setupPhysx()
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
 	sceneDesc.ccdMaxPasses = 4;
+
 	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	MainLoop::getInstance().defaultPhysicsMaterial = MainLoop::getInstance().physicsPhysics->createMaterial(0.5f, 0.5f, 1.0f);
 
+#if PHYSX_VISUALIZATION
+	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
+	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
+	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_SHAPES, true);
+#endif
 
 
 	physx::PxPvdSceneClient* pvdClient = MainLoop::getInstance().physicsScene->getScenePvdClient();
@@ -472,6 +479,19 @@ void physicsUpdate()
 			MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 			MainLoop::getInstance().physicsScene->fetchResults(true);
 		}
+
+#if PHYSX_VISUALIZATION
+		const physx::PxRenderBuffer& rb = MainLoop::getInstance().physicsScene->getRenderBuffer();
+		const physx::PxU32 numLines = rb.getNbLines();
+		std::vector<physx::PxDebugLine>* lineList = new std::vector<physx::PxDebugLine>();
+
+		for (physx::PxU32 i = 0; i < numLines; i++)
+		{
+			const physx::PxDebugLine& line = rb.getLines()[i];
+			lineList->push_back(line);
+		}
+		MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
+#endif
 
 		// Sleep until next chance to do physics
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));

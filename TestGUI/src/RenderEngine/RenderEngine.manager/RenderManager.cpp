@@ -246,6 +246,12 @@ void RenderManager::recreateHDRBuffer()
 	createHDRBuffer();
 }
 
+void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList)
+{
+	delete physxVisDebugLines;			// NOTE: this gets destroyed to prevent any memory leaks
+	physxVisDebugLines = lineList;
+}
+
 void RenderManager::createHDRBuffer()
 {
 	glGenFramebuffers(1, &hdrFBO);
@@ -745,6 +751,7 @@ void RenderManager::renderImGuiContents()
 	static bool showLoadedResourcesWindow = true;
 
 	static bool renderWireframeMode = false;
+	static bool renderPhysicsDebug = true;
 
 	static bool showShadowMap = false;
 
@@ -779,10 +786,12 @@ void RenderManager::renderImGuiContents()
 			{
 				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
 				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+				
 				ImGui::Separator();
 				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+
 				ImGui::Separator();
 				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0))
 				{
@@ -800,6 +809,7 @@ void RenderManager::renderImGuiContents()
 					currentSelectedObjectIndex = -1;
 					currentHoveringObjectIndex = -1;
 				}
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Windows"))
@@ -808,6 +818,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Scene Properties", NULL, &showScenePropterties)) {}
 				if (ImGui::MenuItem("Object Selection", NULL, &showObjectSelectionWindow)) {}
 				if (ImGui::MenuItem("Loaded Resources", NULL, &showLoadedResourcesWindow)) {}
+
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Rendering"))
@@ -817,6 +828,8 @@ void RenderManager::renderImGuiContents()
 				{
 					glPolygonMode(GL_FRONT_AND_BACK, renderWireframeMode ? GL_LINE : GL_FILL);
 				}
+				ImGui::MenuItem("Physics Debug During Playmode", NULL, &renderPhysicsDebug);
+
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -892,6 +905,54 @@ void RenderManager::renderImGuiContents()
 	static bool show = true;
 	if (show)
 		ImGui::ShowDemoWindow(&show);
+
+	//
+	// @PHYSX_VISUALIZATION
+	//
+	if (renderPhysicsDebug &&
+		MainLoop::getInstance().playMode &&
+		physxVisDebugLines != nullptr)
+	{
+		std::vector<physx::PxDebugLine> debugLinesCopy = *physxVisDebugLines;		// @NOTE: this is to prevent the debugLines object from getting deleted while this render function is running
+		for (size_t i = 0; i < debugLinesCopy.size(); i++)
+		{
+			//
+			// Convert to screen space
+			//
+			const physx::PxDebugLine& debugLine = debugLinesCopy[i];
+			physx::PxU32 lineColor = debugLine.color0;		// @Checkup: would there be any situation where color0 and color1 would differ????
+
+			// Change ugly purple color to the collision green!
+			if (lineColor == 0xFFFF00FF)
+				lineColor = ImColor::HSV(0.39f, 0.88f, 0.92f);
+
+			bool willBeOnScreen = true;
+			glm::vec3 pointsOnScreen[] = {
+				MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::toGLMVec3(debugLine.pos0)),
+				MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::toGLMVec3(debugLine.pos1))
+			};
+			for (size_t ii = 0; ii < 2; ii++)
+			{
+				if (pointsOnScreen[ii].z < 0.0f)
+				{
+					// Short circuit bc it won't be on screen anymore
+					willBeOnScreen = false;
+					break;
+				}
+
+				pointsOnScreen[ii] /= pointsOnScreen[ii].z;
+				pointsOnScreen[ii].x = pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+				pointsOnScreen[ii].y = -pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+			}
+
+			if (!willBeOnScreen)
+				continue;
+
+			ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
+			ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
+			ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 3.0f);
+		}
+	}
 
 	//
 	// Everything else

@@ -590,10 +590,11 @@ void PlayerImGui::propertyPanelImGui()
 }
 
 void PlayerImGui::renderImGui()
-{
-	//imguiRenderBoxCollider(transform, boxCollider);
-	//imguiRenderCapsuleCollider(transform, capsuleCollider);
-	
+{	
+	//
+	// Draw the velocity line
+	// TODO: add in a drawline function in physicsUtils.h
+	//
 	glm::vec3 pos1 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
 	physx::PxVec3 velocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
 	glm::vec3 pos2 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(velocity.x, velocity.y, velocity.z));
@@ -611,7 +612,6 @@ void PlayerImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
 
-	PhysicsUtils::imguiRenderCharacterController(baseObject->getTransform(), *((PlayerPhysics*)baseObject->getPhysicsComponent())->controller);
 	ImGuiComponent::renderImGui();
 }
 

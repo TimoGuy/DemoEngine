@@ -13,6 +13,7 @@ namespace PhysicsUtils
 
 	physx::PxVec3 toPxVec3(const physx::PxExtendedVec3& in);
 	physx::PxVec3 toPxVec3(const glm::vec3& in);
+	glm::vec3 toGLMVec3(const physx::PxVec3& in);
 
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles = glm::vec3(0.0f));
 

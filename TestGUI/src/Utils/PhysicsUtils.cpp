@@ -21,6 +21,11 @@ namespace PhysicsUtils
 		return physx::PxVec3(in.x, in.y, in.z);
 	}
 
+	glm::vec3 toGLMVec3(const physx::PxVec3& in)
+	{
+		return glm::vec3(in.x, in.y, in.z);
+	}
+
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles)
 	{
 		//

@@ -46,6 +46,9 @@ public:
 
 	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
 
+	// @PHYSX_VISUALIZATION
+	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
+
 private:
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, cascaded_shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId;
 
@@ -79,4 +82,7 @@ private:
 	void renderImGuiPass();
 	void renderImGuiContents();
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
+
+	// @PHYSX_VISUALIZATION
+	std::vector<physx::PxDebugLine>* physxVisDebugLines;
 };

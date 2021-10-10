@@ -157,17 +157,6 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
 }
 
-void YosemiteTerrainImGui::renderImGui()
-{
-	physx::PxBoxGeometry geom = ((BoxCollider*)baseObject->getPhysicsComponent())->getBoxGeometry();
-	PhysicsUtils::imguiRenderBoxCollider(
-		PhysicsUtils::physxTransformToGlmMatrix(baseObject->getPhysicsComponent()->getGlobalPose()),
-		geom
-	);
-
-	ImGuiComponent::renderImGui();
-}
-
 BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
@@ -193,7 +182,7 @@ void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 	glm::vec3 realExtents = bounds->extents * scale;
 
 	//
-	// Recreate shape
+	// TODO: change to: Get, then move shape
 	//
 	body->detachShape(*shape);
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);

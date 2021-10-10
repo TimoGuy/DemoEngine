@@ -3,24 +3,6 @@
 #include "BaseObject.h"
 
 
-class WaterPuddle : public BaseObject
-{
-public:
-	static const std::string TYPE_NAME;
-
-	ImGuiComponent* imguiComponent;
-	PhysicsComponent* physicsComponent;		// NOTE: maybe not here, bc it's just a trigger for the puddle???
-	RenderComponent* renderComponent;
-
-	ImGuiComponent* getImguiComponent() { return imguiComponent; }
-	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
-	RenderComponent* getRenderComponent() { return renderComponent; }
-
-	Bounds* bounds;
-};
-
-
 class WaterPuddleImgui : public ImGuiComponent
 {
 public:
@@ -31,22 +13,44 @@ public:
 };
 
 
-class WaterPuddlePhysics : public PhysicsComponent
-{
-	// NOTE: this may not be needed to do the physics, since it'd just be one spherical trigger
-public:
-	void physicsUpdate();
-	physx::PxTransform getGlobalPose();
-	void propagateNewTransform(const glm::mat4& newTransform);
-};
-
-
 class WaterPuddleRender : public RenderComponent
 {
 public:
-	WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds) {}
+	WaterPuddleRender(BaseObject* bo, Bounds* bounds);
 
 	void preRenderUpdate();
 	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
 	void renderShadow(GLuint programId);
+};
+
+class WaterPuddle : public BaseObject, public physx::PxSimulationEventCallback
+{
+public:
+	static const std::string TYPE_NAME;
+
+	WaterPuddle();
+	~WaterPuddle();
+
+	WaterPuddleImgui* imguiComponent;
+	WaterPuddleRender* renderComponent;
+
+	virtual WaterPuddleImgui* getImguiComponent() override { return imguiComponent; }
+	LightComponent* getLightComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	virtual WaterPuddleRender* getRenderComponent() override { return renderComponent; }
+
+	Bounds* bounds;
+
+private:
+	physx::PxRigidDynamic* body;
+	physx::PxShape* triggerShape;
+
+	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count);
+
+	// Unused, but need to define
+	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) {}
+	void onWake(physx::PxActor** actors, physx::PxU32 count) {}
+	void onSleep(physx::PxActor** actors, physx::PxU32 count) {}
+	void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {}
+	void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) {}
 };

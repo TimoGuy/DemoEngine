@@ -12,7 +12,6 @@ public:
 	YosemiteTerrainImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Yosemite Terrain") {}
 
 	void propertyPanelImGui();
-	void renderImGui();
 };
 
 class YosemiteTerrainRender : public RenderComponent
