@@ -26,6 +26,7 @@
 #include "../../Objects/YosemiteTerrain.h"
 #include "../../Objects/DirectionalLight.h"
 #include "../../Objects/PointLight.h"
+#include "../../Objects/WaterPuddle.h"
 
 
 void renderCube();
@@ -1053,6 +1054,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Directional Light"))			newObject = new DirectionalLight(true);
 				if (ImGui::Selectable("Point Light"))				newObject = new PointLight(true);
 				if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
+				if (ImGui::Selectable("Collectable Water Puddle"))	newObject = new WaterPuddle();
 
 				if (newObject != nullptr)
 					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;

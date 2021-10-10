@@ -98,11 +98,13 @@
     <ClCompile Include="src\Objects\BaseObject.cpp" />
     <ClCompile Include="src\Objects\ObjectTypes.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
+    <ClCompile Include="src\Objects\WaterPuddle.cpp" />
     <ClCompile Include="src\Objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\Objects\PointLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\Resources.cpp" />
     <ClCompile Include="src\TinyFileDialogs\tinyfiledialogs.c" />
     <ClCompile Include="src\Utils\FileLoading.cpp" />
+    <ClCompile Include="src\Utils\GameState.cpp" />
     <ClCompile Include="src\Utils\PhysicsUtils.cpp" />
     <ClCompile Include="src\Objects\DirectionalLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
@@ -164,6 +166,8 @@
     <ClInclude Include="src\ImGui\imgui_stdlib.h" />
     <ClInclude Include="src\ImGui\ImSequencer.h" />
     <ClInclude Include="src\ImGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Objects\WaterPuddle.h" />
+    <ClInclude Include="src\Utils\GameState.h" />
     <ClInclude Include="src\Utils\json.hpp" />
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
