@@ -10,11 +10,7 @@
 #include "../ImGui/imgui_impl_opengl3.h"
 #include "../ImGui/ImGuizmo.h"
 
-#include "../Objects/PlayerCharacter.h"
-#include "../Objects/YosemiteTerrain.h"
-#include "../Objects/DirectionalLight.h"
-
-#include "../Utils/PhysicsUtils.h"
+#include "../Utils/FileLoading.h"
 
 #define SINGLE_BUFFERED_MODE 1
 #if SINGLE_BUFFERED_MODE
@@ -95,16 +91,9 @@ void MainLoop::initialize()
 	renderManager = new RenderManager();
 
 	//
-	// Create objects
+	// Once loading of all the internals happens, now we can load in the level
 	//
-	new PlayerCharacter();
-	DirectionalLight* dl = new DirectionalLight(true);
-	dl->setTransform(glm::toMat4(glm::quat(glm::radians(glm::vec3(26.975f, 41.029f, 0.0f)))));
-	dl->setLookDirection(PhysicsUtils::getRotation(dl->getTransform()));
-	dl->lightComponent->getLight().colorIntensity = 10.0f;
-
-	YosemiteTerrain* jj = new YosemiteTerrain();
-	jj->setTransform(glm::translate(glm::mat4(1.0f), glm::vec3(0, -4.56f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 1, 100)));
+	FileLoading::getInstance().loadFileWithPrompt();
 }
 
 void MainLoop::run()
