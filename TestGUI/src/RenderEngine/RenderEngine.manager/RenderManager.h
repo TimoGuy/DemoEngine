@@ -79,6 +79,7 @@ private:
 	void setupSceneLights();
 
 	// ImGui Debug stuff
+	bool isWireFrameMode;
 	void renderImGuiPass();
 	void renderImGuiContents();
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);

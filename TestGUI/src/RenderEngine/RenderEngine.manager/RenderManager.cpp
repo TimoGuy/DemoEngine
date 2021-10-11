@@ -429,9 +429,9 @@ void RenderManager::render()
 		updateMatrices(cameraProjection, cameraView);
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------------------
+	//
 	// Render shadow map(s) to depth framebuffer(s)
-	// -----------------------------------------------------------------------------------------------------------------------------
+	//
 	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
 	{
 		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
@@ -439,14 +439,19 @@ void RenderManager::render()
 		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
 	}
 
-
-	// -----------------------------------------------------------------------------------------------------------------------------
+	//
 	// Render scene normally
-	// -----------------------------------------------------------------------------------------------------------------------------
+	//
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	renderScene();
+	
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
@@ -750,7 +755,6 @@ void RenderManager::renderImGuiContents()
 	static bool showObjectSelectionWindow = true;
 	static bool showLoadedResourcesWindow = true;
 
-	static bool renderWireframeMode = false;
 	static bool renderPhysicsDebug = true;
 
 	static bool showShadowMap = false;
@@ -823,18 +827,33 @@ void RenderManager::renderImGuiContents()
 			}
 			if (ImGui::BeginMenu("Rendering"))
 			{
-				// @Broken: Lol this is pretty funny actually; so we're rendering everything to an fbo and then render it onto a 1x1 ndc quad. Wireframe mode just shows the quad, so lol.
-				if (ImGui::MenuItem("Wireframe Mode", NULL, &renderWireframeMode))
-				{
-					glPolygonMode(GL_FRONT_AND_BACK, renderWireframeMode ? GL_LINE : GL_FILL);
-				}
-				ImGui::MenuItem("Physics Debug During Playmode", NULL, &renderPhysicsDebug);
+				ImGui::MenuItem("Wireframe Mode", "F1", &isWireFrameMode);
+				ImGui::MenuItem("Physics Debug During Playmode", "F2", &renderPhysicsDebug);
 
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
 		}
 	}
+
+	//
+	// Some keyboard shortcuts
+	//
+	static bool prevF1Keypressed = GLFW_RELEASE;
+	bool f1Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F1);
+	if (prevF1Keypressed == GLFW_RELEASE && f1Keypressed == GLFW_PRESS)
+	{
+		isWireFrameMode = !isWireFrameMode;
+	}
+	prevF1Keypressed = f1Keypressed;
+
+	static bool prevF2Keypressed = GLFW_RELEASE;
+	bool f2Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F2);
+	if (prevF2Keypressed == GLFW_RELEASE && f2Keypressed == GLFW_PRESS)
+	{
+		renderPhysicsDebug = !renderPhysicsDebug;
+	}
+	prevF2Keypressed = f2Keypressed;
 
 	//
 	// Analytics Overlay
@@ -857,7 +876,6 @@ void RenderManager::renderImGuiContents()
 			prevTime = crntTime;
 			counter = 0;
 		}
-
 
 		const float PAD = 10.0f;
 		static int corner = 0;
@@ -901,6 +919,7 @@ void RenderManager::renderImGuiContents()
 
 	//
 	// Demo window
+	// @TODO: once everything you need is made, just comment this out (for future reference in the future eh)
 	//
 	static bool show = true;
 	if (show)
@@ -1009,16 +1028,6 @@ void RenderManager::renderImGuiContents()
 		requestedListHitInformations.clear();
 		requestedListObjectIndices.clear();
 	}
-
-	//
-	// @Broken: I want to be able to see during playmode some object's properties, but this will clear it out as soon as I enter play mode!
-	// Reset the selected objects while in playmode
-	//
-	//if (MainLoop::getInstance().playMode)
-	//{
-	//	currentSelectedObjectIndex = -1;
-	//	currentHoveringObjectIndex = -1;
-	//}
 
 	//
 	// Object Selection Window
