@@ -303,13 +303,36 @@ physx::PxFilterFlags contactReportFilterShader(physx::PxFilterObjectAttributes a
 std::vector<physx::PxVec3> gContactPositions;
 std::vector<physx::PxVec3> gContactImpulses;
 std::vector<physx::PxVec3> gContactSphereActorPositions;
-
+int times = 0;			// @Remove
 class ContactReportCallback : public physx::PxSimulationEventCallback
 {
 	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) { PX_UNUSED(constraints); PX_UNUSED(count); }
 	void onWake(physx::PxActor** actors, physx::PxU32 count) { PX_UNUSED(actors); PX_UNUSED(count); }
 	void onSleep(physx::PxActor** actors, physx::PxU32 count) { PX_UNUSED(actors); PX_UNUSED(count); }
-	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count) { std::cout << "Heyho!!" << std::endl; PX_UNUSED(pairs); PX_UNUSED(count); }
+	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
+	{
+		for (physx::PxU32 i = 0; i < count; i++)
+		{
+			// ignore pairs when shapes have been deleted
+			if (pairs[i].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER |
+				physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+				continue;
+
+			//if ((&pairs[i].otherShape->getActor() == nullptr/*mSubmarineActor*/) &&
+			//	(&pairs[i].triggerShape->getActor() == nullptr/*gTreasureActor*/))
+			//{
+			//	//gTreasureFound = true;
+			//}
+
+			// @TODO: implement the reporting system here!
+			pairs[i].
+
+
+			std::cout << "Heyho!!\t" << times << std::endl;
+			times++;
+
+		}
+	}
 	void onAdvance(const physx::PxRigidBody* const*, const physx::PxTransform*, const physx::PxU32) {}
 	void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs)
 	{
