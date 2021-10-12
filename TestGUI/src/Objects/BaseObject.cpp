@@ -102,8 +102,6 @@ void BaseObject::setTransform(glm::mat4 newTransform)
 		physicsTransformState.updateTransform(getTransform(), 0.0f);
 		pc->propagateNewTransform(newTransform);
 	}
-
-	notifyNewTransform(newTransform);		// @Optimize: I have no idea if this wastes clock cycles or whatever, but architecturally this is the best I could come up with lol
 }
 
 void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
@@ -240,7 +238,7 @@ nlohmann::json LightComponent::savePropertiesToJson()
 
 void LightComponent::renderPassShadowMap() {}
 
-PhysicsComponent::PhysicsComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
+PhysicsComponent::PhysicsComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	// Populate the transformstate struct
 	MainLoop::getInstance().physicsObjects.push_back(this);
@@ -258,21 +256,14 @@ PhysicsComponent::~PhysicsComponent()
 	);
 }
 
-TriggerComponent::TriggerComponent(BaseObject* baseObject) : baseObject(baseObject)
+physx::PxActor* PhysicsComponent::getActor()
 {
-	MainLoop::getInstance().triggerObjects.push_back(this);
+	return body;
 }
 
-TriggerComponent::~TriggerComponent()
+void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 {
-	MainLoop::getInstance().triggerObjects.erase(
-		std::remove(
-			MainLoop::getInstance().triggerObjects.begin(),
-			MainLoop::getInstance().triggerObjects.end(),
-			this
-		),
-		MainLoop::getInstance().triggerObjects.end()
-	);
+	baseObject->onTrigger(pair);
 }
 
 RenderComponent::RenderComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)

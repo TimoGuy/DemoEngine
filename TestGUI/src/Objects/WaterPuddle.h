@@ -23,7 +23,7 @@ public:
 	void renderShadow(GLuint programId);
 };
 
-class WaterPuddle : public BaseObject, public TriggerComponent
+class WaterPuddle : public BaseObject
 {
 public:
 	static const std::string TYPE_NAME;
@@ -35,21 +35,15 @@ public:
 	nlohmann::json savePropertiesToJson();
 
 	WaterPuddleImgui* imguiComponent;
+	PhysicsComponent* physicsComponent;
 	WaterPuddleRender* renderComponent;
 
 	virtual WaterPuddleImgui* getImguiComponent() override { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	virtual WaterPuddleRender* getRenderComponent() override { return renderComponent; }
-
-	void notifyNewTransform(glm::mat4 newTransform);
 
 	Bounds* bounds;
 
 private:
-	physx::PxRigidDynamic* body;
-	physx::PxShape* triggerShape;
-
-	physx::PxActor* getActor();
-	void onTrigger(const physx::PxTriggerPair& pair);
 };

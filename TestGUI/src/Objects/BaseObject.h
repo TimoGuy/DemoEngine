@@ -39,12 +39,18 @@ public:
 	virtual PhysicsComponent* getPhysicsComponent() = 0;
 	virtual RenderComponent* getRenderComponent() = 0;
 
+
 	glm::mat4& getTransform();
 	glm::mat4 getTransformWithoutScale();				// NOTE: this is not a getter; it computes the transform without the scale
 	void setTransform(glm::mat4 newTransform);
-	virtual void notifyNewTransform(glm::mat4 newTransform) {}
 
 	std::string guid;
+
+	//
+	// Callback functions (optional)
+	//
+	virtual void physicsUpdate() {}
+	virtual void onTrigger(const physx::PxTriggerPair& pair) {}
 
 	//
 	// INTERNAL FUNCTIONS (for physics)
@@ -54,6 +60,7 @@ public:
 
 private:
 	glm::mat4 transform;
+
 	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
@@ -120,26 +127,19 @@ class PhysicsComponent
 {
 public:
 	BaseObject* baseObject;
-	Bounds* bounds = nullptr;
 
-	PhysicsComponent(BaseObject* baseObject, Bounds* bounds);
+	PhysicsComponent(BaseObject* baseObject);
 	virtual ~PhysicsComponent();
 	virtual void physicsUpdate() = 0;
 	virtual physx::PxTransform getGlobalPose() = 0;
 
 	virtual void propagateNewTransform(const glm::mat4& newTransform) = 0;
-};
 
-class TriggerComponent
-{
-public:
-	BaseObject* baseObject;
-	
-	TriggerComponent(BaseObject* baseObject);
-	virtual ~TriggerComponent();
+	physx::PxActor* getActor();
+	void INTERNALonTrigger(const physx::PxTriggerPair& pair);
 
-	virtual physx::PxActor* getActor() = 0;
-	virtual void onTrigger(const physx::PxTriggerPair& pair) = 0;
+protected:
+	physx::PxRigidActor* body;
 };
 
 

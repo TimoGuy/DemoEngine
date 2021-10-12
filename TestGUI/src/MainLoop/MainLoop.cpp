@@ -320,11 +320,11 @@ class ContactReportCallback : public physx::PxSimulationEventCallback
 			// Find which actor is needing this callback!!!
 			// @NOTE: the onTrigger() function will call either when enter or leave the trigger, so keep that PxTriggerPair ref handy
 			//
-			for (size_t ii = 0; ii < MainLoop::getInstance().triggerObjects.size(); ii++)
+			for (size_t ii = 0; ii < MainLoop::getInstance().physicsObjects.size(); ii++)
 			{
-				if (pairs[i].triggerActor == MainLoop::getInstance().triggerObjects[ii]->getActor())
+				if (pairs[i].triggerActor == MainLoop::getInstance().physicsObjects[ii]->getActor())
 				{
-					MainLoop::getInstance().triggerObjects[ii]->onTrigger(pairs[i]);
+					MainLoop::getInstance().physicsObjects[ii]->INTERNALonTrigger(pairs[i]);
 				}
 			}
 		}

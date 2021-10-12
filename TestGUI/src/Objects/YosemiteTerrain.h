@@ -33,22 +33,6 @@ private:
 	void refreshResources();
 };
 
-class BoxCollider : public PhysicsComponent
-{
-public:
-	BoxCollider(BaseObject* bo, Bounds* bounds);
-
-	void physicsUpdate();
-	void propagateNewTransform(const glm::mat4& newTransform);
-	physx::PxTransform getGlobalPose();
-
-	physx::PxBoxGeometry getBoxGeometry();
-
-private:
-	physx::PxRigidStatic* body;
-	physx::PxShape* shape;
-};
-
 class YosemiteTerrain : public BaseObject
 {
 public:

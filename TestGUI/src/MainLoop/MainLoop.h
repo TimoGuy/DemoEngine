@@ -23,7 +23,6 @@ public:
 	std::vector<ImGuiComponent*> imguiObjects;		// NOTE: This is only for debug... imgui renders from here.
 	std::vector<LightComponent*> lightObjects;
 	std::vector<PhysicsComponent*> physicsObjects;
-	std::vector<TriggerComponent*> triggerObjects;
 	std::vector<RenderComponent*> renderObjects;
 
 	RenderManager* renderManager;

@@ -96,6 +96,7 @@
     <ClCompile Include="src\ImGui\ImSequencer.cpp" />
     <ClCompile Include="src\MainLoop\MainLoop.cpp" />
     <ClCompile Include="src\Objects\BaseObject.cpp" />
+    <ClCompile Include="src\Objects\Components\PhysicsComponents.cpp" />
     <ClCompile Include="src\Objects\ObjectTypes.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
     <ClCompile Include="src\Objects\WaterPuddle.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src\ImGui\imgui_stdlib.h" />
     <ClInclude Include="src\ImGui\ImSequencer.h" />
     <ClInclude Include="src\ImGui\ImZoomSlider.h" />
+    <ClInclude Include="src\Objects\Components\PhysicsComponents.h" />
     <ClInclude Include="src\Objects\WaterPuddle.h" />
     <ClInclude Include="src\Utils\GameState.h" />
     <ClInclude Include="src\Utils\json.hpp" />
@@ -177,6 +179,7 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\Resources.h" />
     <ClInclude Include="src\TinyFileDialogs\tinyfiledialogs.h" />
     <ClInclude Include="src\Utils\FileLoading.h" />
+    <ClInclude Include="src\Utils\PhysicsTypes.h" />
     <ClInclude Include="src\Utils\PhysicsUtils.h" />
     <ClInclude Include="src\Objects\DirectionalLight.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />

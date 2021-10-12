@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include "Components/PhysicsComponents.h"
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
@@ -10,11 +11,6 @@
 #include "../ImGui/imgui_stdlib.h"
 
 
-
-
-#include "../Objects/DirectionalLight.h"			// tEMP
-#include "../Objects/PointLight.h"					// temp
-
 YosemiteTerrain::YosemiteTerrain()
 {
 	bounds = new Bounds();
@@ -22,7 +18,7 @@ YosemiteTerrain::YosemiteTerrain()
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	imguiComponent = new YosemiteTerrainImGui(this, bounds);
-	physicsComponent = new BoxCollider(this, bounds);
+	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC);
 	renderComponent = new YosemiteTerrainRender(this, bounds);
 }
 
@@ -155,57 +151,4 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
-}
-
-BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
-{
-	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
-
-	body = PhysicsUtils::createRigidStatic(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()));
-	glm::vec3 realExtents = bounds->extents * scale;
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
-	body->attachShape(*shape);
-
-	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
-
-	MainLoop::getInstance().physicsScene->addActor(*body);
-	shape->release();
-}
-
-void BoxCollider::physicsUpdate()
-{
-}
-
-void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
-{
-	glm::vec3 scale = PhysicsUtils::getScale(newTransform);
-	glm::vec3 realExtents = bounds->extents * scale;
-
-	//
-	// TODO: change to: Get, then move shape
-	//
-	body->detachShape(*shape);
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
-	body->attachShape(*shape);
-	shape->release();
-
-	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
-	glm::quat rot = PhysicsUtils::getRotation(newTransform);
-
-	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
-	body->setGlobalPose(trans);
-
-	physx::PxTransform fim = body->getGlobalPose();
-}
-
-physx::PxTransform BoxCollider::getGlobalPose()
-{
-	return body->getGlobalPose();
-}
-
-physx::PxBoxGeometry BoxCollider::getBoxGeometry()
-{
-	physx::PxBoxGeometry geom;
-	shape->getBoxGeometry(geom);
-	return geom;
 }

@@ -89,21 +89,20 @@ namespace PhysicsUtils
 		return newMat;
 	}
 
-	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform)
+	physx::PxRigidActor* createRigidActor(physx::PxPhysics* physics, physx::PxTransform transform, RigidActorTypes rigidActorType)
 	{
-		return physics->createRigidDynamic(transform);
-	}
+		if (rigidActorType == RigidActorTypes::STATIC)
+			return physics->createRigidStatic(transform);
+		
+		if (rigidActorType == RigidActorTypes::KINEMATIC)
+		{
+			physx::PxRigidDynamic* body = physics->createRigidDynamic(transform);
+			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+			return body;
+		}
 
-	physx::PxRigidDynamic* createRigidbodyKinematic(physx::PxPhysics* physics, physx::PxTransform transform)
-	{
-		physx::PxRigidDynamic* body = physics->createRigidDynamic(transform);
-		body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
-		return body;
-	}
-
-	physx::PxRigidStatic* createRigidStatic(physx::PxPhysics* physics, physx::PxTransform transform)
-	{
-		return physics->createRigidStatic(transform);
+		if (rigidActorType == RigidActorTypes::DYNAMIC)
+			return physics->createRigidDynamic(transform);
 	}
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are

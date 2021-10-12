@@ -4,6 +4,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include "Components/PhysicsComponents.h"
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
@@ -12,11 +13,6 @@
 #include "../ImGui/imgui_stdlib.h"
 
 #include <cmath>
-
-
-
-#include "../Objects/DirectionalLight.h"			// temp
-#include "../Objects/PointLight.h"					// temp
 
 
 double previousMouseX, previousMouseY;
@@ -28,7 +24,7 @@ PlayerCharacter::PlayerCharacter()
 	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
 
 	imguiComponent = new PlayerImGui(this, bounds);
-	physicsComponent = new PlayerPhysics(this, bounds);
+	physicsComponent = new PlayerPhysics(this);
 	renderComponent = new PlayerRender(this, bounds);
 }
 
@@ -50,19 +46,6 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 
 	return j;
-}
-
-PlayerPhysics::PlayerPhysics(BaseObject* bo, Bounds* bounds) : PhysicsComponent(bo, bounds)
-{
-	controller =
-		PhysicsUtils::createCapsuleController(
-			MainLoop::getInstance().physicsControllerManager,
-			MainLoop::getInstance().defaultPhysicsMaterial,
-			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
-			1.0f,
-			4.5f,
-			this		// PxUserControllerHitReport
-		);
 }
 
 PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
@@ -380,83 +363,6 @@ PlayerCharacter::~PlayerCharacter()
 	delete imguiComponent;
 }
 
-void PlayerPhysics::physicsUpdate()
-{
-	//
-	// Add gravity (or sliding gravity if sliding)
-	//
-	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
-
-	physx::PxVec3 cookedVelocity = velocity;
-
-	// (Last minute) convert -y to y along the face you're sliding down
-	if (isSliding)
-	{
-		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
-		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
-
-		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
-		cookedVelocity.y = 0.0f;
-		cookedVelocity += physx::PxVec3(
-			slidingVector.x * flatSlidingUmph,
-			slidingVector.y,
-			slidingVector.z * flatSlidingUmph
-		);
-	}
-	
-	//
-	// Do the deed
-	//
-	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
-	isGrounded = false;
-	isSliding = false;
-
-	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
-	{
-		isGrounded = true;
-		if (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
-		{
-			velocity.y = 0.0f;		// Remove gravity
-		}
-		else
-		{
-			// Slide down!
-			isSliding = true;
-		}
-	}
-	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
-	{
-		//std::cout << "\tSide Collision";
-	}
-	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
-	{
-		//std::cout << "\tAbove Collision";
-		velocity.y = 0.0f;		// Hit your head on the ceiling
-	}
-	//std::cout << std::endl;
-
-	//
-	// Apply transform
-	//
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	glm::mat4 trans = baseObject->getTransform();
-	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
-	baseObject->INTERNALsubmitPhysicsCalculation(trans);
-}
-
-void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)
-{
-	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
-	controller->setPosition(physx::PxExtendedVec3(pos.x, pos.y, pos.z));
-}
-
-physx::PxTransform PlayerPhysics::getGlobalPose()
-{
-	physx::PxExtendedVec3 pos = controller->getPosition();
-	return PhysicsUtils::createTransform(glm::vec3(pos.x, pos.y, pos.z));
-}
-
 void PlayerRender::preRenderUpdate()
 {
 	processMovement();
@@ -613,27 +519,4 @@ void PlayerImGui::renderImGui()
 	}
 
 	ImGuiComponent::renderImGui();
-}
-
-void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
-{
-	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
-
-	//// @Checkin
-	if (hit.worldNormal.dot(physx::PxVec3(0, 1, 0)) <= 0.707106781f)		// NOTE: 0.7... is cos(45deg)
-	{
-		physx::PxVec3 dtiith = hit.dir;
-		float jjjjj = hit.length;
-		//std::cout << dtiith << jjjjj << std::endl;
-	}
-}
-
-void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit)
-{
-	//std::cout << "\t\t\t Contrller HIT" << std::endl;
-}
-
-void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit)
-{
-	//std::cout << "\t\t\t SHAPE HIT" << std::endl;
 }

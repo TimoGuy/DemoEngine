@@ -5,6 +5,7 @@
 #include <PxPhysicsAPI.h>
 
 #include "../ImGui/imgui.h"
+#include "PhysicsTypes.h"
 
 
 namespace PhysicsUtils
@@ -21,11 +22,7 @@ namespace PhysicsUtils
 
 	glm::mat4 physxTransformToGlmMatrix(physx::PxTransform transform);
 
-	physx::PxRigidDynamic* createRigidbodyDynamic(physx::PxPhysics* physics, physx::PxTransform transform);
-
-	physx::PxRigidDynamic* createRigidbodyKinematic(physx::PxPhysics* physics, physx::PxTransform transform);
-
-	physx::PxRigidStatic* createRigidStatic(physx::PxPhysics* physics, physx::PxTransform transform);
+	physx::PxRigidActor* createRigidActor(physx::PxPhysics* physics, physx::PxTransform transform, RigidActorTypes rigidActorType);
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are
 	//physx::PxSphereGeometry sphereCollider;
