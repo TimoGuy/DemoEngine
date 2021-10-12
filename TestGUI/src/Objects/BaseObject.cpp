@@ -102,6 +102,8 @@ void BaseObject::setTransform(glm::mat4 newTransform)
 		physicsTransformState.updateTransform(getTransform(), 0.0f);
 		pc->propagateNewTransform(newTransform);
 	}
+
+	notifyNewTransform(newTransform);		// @Optimize: I have no idea if this wastes clock cycles or whatever, but architecturally this is the best I could come up with lol
 }
 
 void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
@@ -253,6 +255,23 @@ PhysicsComponent::~PhysicsComponent()
 			this
 		),
 		MainLoop::getInstance().physicsObjects.end()
+	);
+}
+
+TriggerComponent::TriggerComponent(BaseObject* baseObject) : baseObject(baseObject)
+{
+	MainLoop::getInstance().triggerObjects.push_back(this);
+}
+
+TriggerComponent::~TriggerComponent()
+{
+	MainLoop::getInstance().triggerObjects.erase(
+		std::remove(
+			MainLoop::getInstance().triggerObjects.begin(),
+			MainLoop::getInstance().triggerObjects.end(),
+			this
+		),
+		MainLoop::getInstance().triggerObjects.end()
 	);
 }
 

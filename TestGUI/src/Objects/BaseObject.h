@@ -42,6 +42,7 @@ public:
 	glm::mat4& getTransform();
 	glm::mat4 getTransformWithoutScale();				// NOTE: this is not a getter; it computes the transform without the scale
 	void setTransform(glm::mat4 newTransform);
+	virtual void notifyNewTransform(glm::mat4 newTransform) {}
 
 	std::string guid;
 
@@ -127,6 +128,18 @@ public:
 	virtual physx::PxTransform getGlobalPose() = 0;
 
 	virtual void propagateNewTransform(const glm::mat4& newTransform) = 0;
+};
+
+class TriggerComponent
+{
+public:
+	BaseObject* baseObject;
+	
+	TriggerComponent(BaseObject* baseObject);
+	virtual ~TriggerComponent();
+
+	virtual physx::PxActor* getActor() = 0;
+	virtual void onTrigger(const physx::PxTriggerPair& pair) = 0;
 };
 
 

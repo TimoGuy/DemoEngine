@@ -23,13 +23,16 @@ public:
 	void renderShadow(GLuint programId);
 };
 
-class WaterPuddle : public BaseObject, public physx::PxSimulationEventCallback
+class WaterPuddle : public BaseObject, public TriggerComponent
 {
 public:
 	static const std::string TYPE_NAME;
 
 	WaterPuddle();
 	~WaterPuddle();
+
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
 
 	WaterPuddleImgui* imguiComponent;
 	WaterPuddleRender* renderComponent;
@@ -39,18 +42,14 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	virtual WaterPuddleRender* getRenderComponent() override { return renderComponent; }
 
+	void notifyNewTransform(glm::mat4 newTransform);
+
 	Bounds* bounds;
 
 private:
 	physx::PxRigidDynamic* body;
 	physx::PxShape* triggerShape;
 
-	void onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count);
-
-	// Unused, but need to define
-	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) {}
-	void onWake(physx::PxActor** actors, physx::PxU32 count) {}
-	void onSleep(physx::PxActor** actors, physx::PxU32 count) {}
-	void onContact(const physx::PxContactPairHeader& pairHeader, const physx::PxContactPair* pairs, physx::PxU32 nbPairs) {}
-	void onAdvance(const physx::PxRigidBody* const* bodyBuffer, const physx::PxTransform* poseBuffer, const physx::PxU32 count) {}
+	physx::PxActor* getActor();
+	void onTrigger(const physx::PxTriggerPair& pair);
 };

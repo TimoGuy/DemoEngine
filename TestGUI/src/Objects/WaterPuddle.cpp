@@ -4,7 +4,7 @@
 #include "../Utils/PhysicsUtils.h"
 
 
-WaterPuddle::WaterPuddle()
+WaterPuddle::WaterPuddle() : TriggerComponent(this)
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
@@ -34,9 +34,39 @@ WaterPuddle::~WaterPuddle()
 	delete bounds;
 }
 
-void WaterPuddle::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
+void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 {
-	std::cout << "Hello, there!!!!" << std::endl;
+	BaseObject::loadPropertiesFromJson(object["baseObject"]);
+	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
+
+	//
+	// I'll take the leftover tokens then
+	//
+}
+
+nlohmann::json WaterPuddle::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["type"] = TYPE_NAME;
+	j["baseObject"] = BaseObject::savePropertiesToJson();
+	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
+
+	return j;
+}
+
+void WaterPuddle::notifyNewTransform(glm::mat4 newTransform)
+{
+	body->setGlobalPose(PhysicsUtils::createTransform(newTransform));
+}
+
+physx::PxActor* WaterPuddle::getActor()
+{
+	return body;
+}
+
+void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
+{
+	std::cout << "Hello, there!!!! " << baseObject->guid << std::endl;
 }
 
 WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
@@ -61,4 +91,5 @@ void WaterPuddleImgui::propertyPanelImGui()
 
 void WaterPuddleImgui::renderImGui()
 {
+	ImGuiComponent::renderImGui();
 }

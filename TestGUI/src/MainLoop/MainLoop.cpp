@@ -303,7 +303,6 @@ physx::PxFilterFlags contactReportFilterShader(physx::PxFilterObjectAttributes a
 std::vector<physx::PxVec3> gContactPositions;
 std::vector<physx::PxVec3> gContactImpulses;
 std::vector<physx::PxVec3> gContactSphereActorPositions;
-int times = 0;			// @Remove
 class ContactReportCallback : public physx::PxSimulationEventCallback
 {
 	void onConstraintBreak(physx::PxConstraintInfo* constraints, physx::PxU32 count) { PX_UNUSED(constraints); PX_UNUSED(count); }
@@ -313,24 +312,21 @@ class ContactReportCallback : public physx::PxSimulationEventCallback
 	{
 		for (physx::PxU32 i = 0; i < count; i++)
 		{
-			// ignore pairs when shapes have been deleted
-			if (pairs[i].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER |
-				physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
+			// Ignore pairs when shapes have been deleted
+			if (pairs[i].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
 				continue;
 
-			//if ((&pairs[i].otherShape->getActor() == nullptr/*mSubmarineActor*/) &&
-			//	(&pairs[i].triggerShape->getActor() == nullptr/*gTreasureActor*/))
-			//{
-			//	//gTreasureFound = true;
-			//}
-
-			// @TODO: implement the reporting system here!
-			pairs[i].
-
-
-			std::cout << "Heyho!!\t" << times << std::endl;
-			times++;
-
+			//
+			// Find which actor is needing this callback!!!
+			// @NOTE: the onTrigger() function will call either when enter or leave the trigger, so keep that PxTriggerPair ref handy
+			//
+			for (size_t ii = 0; ii < MainLoop::getInstance().triggerObjects.size(); ii++)
+			{
+				if (pairs[i].triggerActor == MainLoop::getInstance().triggerObjects[ii]->getActor())
+				{
+					MainLoop::getInstance().triggerObjects[ii]->onTrigger(pairs[i]);
+				}
+			}
 		}
 	}
 	void onAdvance(const physx::PxRigidBody* const*, const physx::PxTransform*, const physx::PxU32) {}
@@ -398,15 +394,10 @@ physx::PxRigidStatic* gTriangleMeshActor = NULL;
 physx::PxRigidDynamic* gSphereActor = NULL;
 physx::PxPvd* gPvd = NULL;
 
-
-physx::PxRigidDynamic* body = NULL;
-
 void setupPhysx()
 {
-
-
-
 	gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
+
 	gPvd = PxCreatePvd(*gFoundation);
 	physx::PxPvdTransport* transport = physx::PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 	gPvd->connect(*transport, physx::PxPvdInstrumentationFlag::eALL);
@@ -448,38 +439,6 @@ void setupPhysx()
 	// Create controller manager
 	//
 	MainLoop::getInstance().physicsControllerManager = PxCreateControllerManager(*MainLoop::getInstance().physicsScene);
-
-
-	//
-	// Init scene
-	//
-	//physx::PxRigidStatic* groundPlane = physx::PxCreatePlane(*MainLoop::getInstance().physicsPhysics, physx::PxPlane(0, 1, 0, 3.6f), *MainLoop::getInstance().defaultPhysicsMaterial);
-	//MainLoop::getInstance().physicsScene->addActor(*groundPlane);
-
-	float halfExtent = 1.0f;
-	const int size = 50;
-	//physx::PxTransform t;
-	physx::PxShape* shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(halfExtent, halfExtent, halfExtent), *MainLoop::getInstance().defaultPhysicsMaterial);
-	/*for (physx::PxU32 i = 0; i < size; i++)
-	{
-		for (physx::PxU32 j = 0; j < size - i; j++)
-		{
-			physx::PxTransform localTm(physx::PxVec3(physx::PxReal(j * 2) - physx::PxReal(size - i), physx::PxReal(i * 5 + 1), 0) * halfExtent);
-			physx::PxRigidDynamic* body = gPhysics->createRigidDynamic(localTm);
-			body->attachShape(*shape);
-
-			physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-			gScene->addActor(*body);
-		}
-	}*/
-
-	physx::PxTransform localTm(physx::PxVec3(physx::PxReal(0), physx::PxReal(200), 0) * halfExtent);
-	body = MainLoop::getInstance().physicsPhysics->createRigidDynamic(localTm);
-	body->attachShape(*shape);
-
-	physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
-	MainLoop::getInstance().physicsScene->addActor(*body);
-	shape->release();
 }
 
 
