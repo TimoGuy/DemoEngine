@@ -152,7 +152,7 @@ void ImGuiComponent::renderImGui()
 	Bounds cookedBounds =
 		PhysicsUtils::fitAABB(
 			*bounds,
-			baseObject->getTransform()		// NOTE: when player character is turning, the cookedbounds do not reflect the turning
+			baseObject->getTransform()
 		);
 
 	double xpos, ypos;

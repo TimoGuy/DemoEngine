@@ -21,7 +21,7 @@ PlayerCharacter::PlayerCharacter()
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(2.0f, 3.0f, 1.0f);
+	bounds->extents = glm::vec3(3.0f, 3.0f, 3.0f);		// NOTE: bc the renderTransform is different from the real transform, the bounds have to be thicker to account for when spinning
 
 	imguiComponent = new PlayerImGui(this, bounds);
 	physicsComponent = new PlayerPhysics(this);
