@@ -43,6 +43,8 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	virtual WaterPuddleRender* getRenderComponent() override { return renderComponent; }
 
+	void onTrigger(const physx::PxTriggerPair& pair);
+
 	Bounds* bounds;
 
 private:

@@ -44,10 +44,9 @@ void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 
 	//
 	// TODO: change to: Get, then move shape
+	// NOTE: apparently it doesn't work when trying to set the geometry
 	//
 	body->detachShape(*shape);
-	//body->getShapes(&shape, 1);
-	//shape->setGeometry(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z));
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
 	{

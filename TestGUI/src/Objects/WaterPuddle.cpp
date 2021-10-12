@@ -44,6 +44,11 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 	return j;
 }
 
+void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
+{
+	std::cout << "Heyho! " << guid << std::endl;
+}
+
 WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
 }
