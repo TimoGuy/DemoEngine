@@ -10,8 +10,8 @@ class GameState
 public:
 	static GameState& getInstance();
 
-	physx::PxActor*				playerActorPointer					= nullptr;
-	bool						playerIsHoldingWater;
+	physx::PxActor*				playerActorPointer				= nullptr;
+	bool						playerIsHoldingWater			= false;
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;
 

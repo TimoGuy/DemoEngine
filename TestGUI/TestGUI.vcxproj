@@ -99,6 +99,7 @@
     <ClCompile Include="src\Objects\Components\PhysicsComponents.cpp" />
     <ClCompile Include="src\Objects\ObjectTypes.cpp" />
     <ClCompile Include="src\Objects\PlayerCharacter.cpp" />
+    <ClCompile Include="src\Objects\RiverDropoff.cpp" />
     <ClCompile Include="src\Objects\WaterPuddle.cpp" />
     <ClCompile Include="src\Objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\Objects\PointLight.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="src\ImGui\ImSequencer.h" />
     <ClInclude Include="src\ImGui\ImZoomSlider.h" />
     <ClInclude Include="src\Objects\Components\PhysicsComponents.h" />
+    <ClInclude Include="src\Objects\RiverDropoff.h" />
     <ClInclude Include="src\Objects\WaterPuddle.h" />
     <ClInclude Include="src\Utils\GameState.h" />
     <ClInclude Include="src\Utils\json.hpp" />

@@ -14,6 +14,7 @@
 #include "../Objects/DirectionalLight.h"
 #include "../Objects/PointLight.h"
 #include "../Objects/WaterPuddle.h"
+#include "../Objects/RiverDropoff.h"
 
 #include "../Utils/Utils.h"
 
@@ -83,6 +84,7 @@ void FileLoading::createObjectWithJson(nlohmann::json& object)
 	if (object["type"] == DirectionalLight::TYPE_NAME)	buildingObject = new DirectionalLight(false);
 	if (object["type"] == PointLight::TYPE_NAME)		buildingObject = new PointLight(false);
 	if (object["type"] == WaterPuddle::TYPE_NAME)		buildingObject = new WaterPuddle();
+	if (object["type"] == RiverDropoff::TYPE_NAME)		buildingObject = new RiverDropoff();
 
 	buildingObject->loadPropertiesFromJson(object);
 

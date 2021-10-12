@@ -1,4 +1,4 @@
-#include "WaterPuddle.h"
+#include "RiverDropoff.h"
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
@@ -6,18 +6,18 @@
 #include "Components/PhysicsComponents.h"
 
 
-WaterPuddle::WaterPuddle()
+RiverDropoff::RiverDropoff()
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(4.0f, 4.0f, 4.0f);
+	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	imguiComponent = new WaterPuddleImgui(this, bounds);
-	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
-	renderComponent = new WaterPuddleRender(this, bounds);
+	imguiComponent = new RiverDropoffImgui(this, bounds);
+	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
+	renderComponent = new RiverDropoffRender(this, bounds);
 }
 
-WaterPuddle::~WaterPuddle()
+RiverDropoff::~RiverDropoff()
 {
 	delete renderComponent;
 	delete physicsComponent;
@@ -26,7 +26,7 @@ WaterPuddle::~WaterPuddle()
 	delete bounds;
 }
 
-void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
+void RiverDropoff::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
@@ -36,7 +36,7 @@ void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 	//
 }
 
-nlohmann::json WaterPuddle::savePropertiesToJson()
+nlohmann::json RiverDropoff::savePropertiesToJson()
 {
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
@@ -46,7 +46,7 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 	return j;
 }
 
-void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
+void RiverDropoff::onTrigger(const physx::PxTriggerPair& pair)
 {
 	if (pair.otherActor != GameState::getInstance().playerActorPointer)
 		return;
@@ -63,28 +63,22 @@ void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 	}
 }
 
-void WaterPuddle::collectWaterPuddle()
+void RiverDropoff::dropoffWater()
 {
-	if (GameState::getInstance().playerIsHoldingWater)
+	if (!GameState::getInstance().playerIsHoldingWater)
 		return;
 
-	//
-	// Collect and log the puddle
-	//
-	GameState::getInstance().playerIsHoldingWater = true;
-	GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
-
-	std::cout << "Collected!!!!" << std::endl;
-	MainLoop::getInstance().destroyObject(this);
+	std::cout << "Dropped Off!!!!" << std::endl;
+	GameState::getInstance().playerIsHoldingWater = false;
 }
 
-WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
+RiverDropoffRender::RiverDropoffRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
 }
 
-void WaterPuddleRender::preRenderUpdate()
+void RiverDropoffRender::preRenderUpdate()
 {
-	if (!((WaterPuddle*)baseObject)->isBeingTriggeredByPlayer())
+	if (!((RiverDropoff*)baseObject)->isBeingTriggeredByPlayer())
 		return;
 
 	static bool prevEBtnPressed = GLFW_RELEASE;
@@ -97,25 +91,25 @@ void WaterPuddleRender::preRenderUpdate()
 		if (baseObject->getPhysicsComponent()->getActor() == GameState::getInstance().getCurrentTriggerHold())
 		{
 			// Success!
-			((WaterPuddle*)baseObject)->collectWaterPuddle();
+			((RiverDropoff*)baseObject)->dropoffWater();
 		}
 	}
 	prevEBtnPressed = EBtnpressed;
 }
 
-void WaterPuddleRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
+void RiverDropoffRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
 {
 }
 
-void WaterPuddleRender::renderShadow(GLuint programId)
+void RiverDropoffRender::renderShadow(GLuint programId)
 {
 }
 
-void WaterPuddleImgui::propertyPanelImGui()
+void RiverDropoffImgui::propertyPanelImGui()
 {
 }
 
-void WaterPuddleImgui::renderImGui()
+void RiverDropoffImgui::renderImGui()
 {
 	ImGuiComponent::renderImGui();
 }
