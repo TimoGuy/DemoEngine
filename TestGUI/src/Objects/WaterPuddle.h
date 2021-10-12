@@ -45,7 +45,12 @@ public:
 
 	void onTrigger(const physx::PxTriggerPair& pair);
 
+	void collectWaterPuddle();
+
 	Bounds* bounds;
 
+	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
+
 private:
+	bool beingTriggeredByPlayer = false;
 };

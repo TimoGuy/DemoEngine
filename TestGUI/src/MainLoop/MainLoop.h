@@ -18,6 +18,9 @@ public:
 	void run();
 	void cleanup();
 
+	void destroyObject(BaseObject* object);
+	std::vector<BaseObject*> destroyObjectList;
+
 	GLFWwindow* window;
 	Camera camera;
 	std::vector<ImGuiComponent*> imguiObjects;		// NOTE: This is only for debug... imgui renders from here.

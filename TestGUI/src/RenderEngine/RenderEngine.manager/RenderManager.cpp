@@ -719,7 +719,10 @@ void RenderManager::requestSelectObject(bool isHoverEvent, ImGuiComponent* imgui
 	// Mark this as true just in case the user isn't clicking anything
 	checkForRequestedObjects = isHoverEvent ? 2 : 1;
 	if (!hitInformation.hit) return;
-	if (currentSelectedObjectIndex >= 0 && MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex] == imguiObject) return;
+	if (currentSelectedObjectIndex >= 0 &&
+		currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
+		MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex] == imguiObject)
+		return;
 
 	if (ImGui::GetIO().WantCaptureMouse ||
 		ImGuizmo::IsOver() ||
@@ -797,7 +800,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0))
+				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size()))
 				{
 					// NOTE: copypasta
 					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
@@ -806,7 +809,7 @@ void RenderManager::renderImGuiContents()
 
 					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
 				}
-				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0))
+				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size()))
 				{
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
@@ -1043,6 +1046,7 @@ void RenderManager::renderImGuiContents()
 
 			GLFWwindow* windowRef = MainLoop::getInstance().window;
 			if (currentSelectedObjectIndex >= 0 &&
+				currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
@@ -1166,7 +1170,8 @@ void RenderManager::renderImGuiContents()
 			// Render out the properties panels of selected object
 			//
 			ImGui::Separator();
-			if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size())
+			if (currentSelectedObjectIndex >= 0 &&
+				currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size())
 				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->propertyPanelImGui();
 			else
 				ImGui::Text("No object is currently selected");

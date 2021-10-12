@@ -103,6 +103,9 @@ namespace PhysicsUtils
 
 		if (rigidActorType == RigidActorTypes::DYNAMIC)
 			return physics->createRigidDynamic(transform);
+
+		assert(false);
+		return nullptr;
 	}
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are

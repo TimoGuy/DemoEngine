@@ -2,6 +2,7 @@
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
+#include "../Utils/GameState.h"
 #include "Components/PhysicsComponents.h"
 
 
@@ -19,6 +20,7 @@ WaterPuddle::WaterPuddle()
 WaterPuddle::~WaterPuddle()
 {
 	delete renderComponent;
+	delete physicsComponent;
 	delete imguiComponent;
 
 	delete bounds;
@@ -46,7 +48,25 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 
 void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 {
-	std::cout << "Heyho! " << guid << std::endl;
+	if (pair.otherActor != GameState::getInstance().playerActorPointer)
+		return;
+
+	if (pair.status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
+	{
+		beingTriggeredByPlayer = true;
+		GameState::getInstance().requestTriggerHold(physicsComponent->getActor());
+	}
+	else if (pair.status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
+	{
+		beingTriggeredByPlayer = false;
+		GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+	}
+}
+
+void WaterPuddle::collectWaterPuddle()
+{
+	std::cout << "Collected!!!!" << std::endl;
+	MainLoop::getInstance().destroyObject(this);
 }
 
 WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
@@ -55,6 +75,23 @@ WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderCom
 
 void WaterPuddleRender::preRenderUpdate()
 {
+	if (!((WaterPuddle*)baseObject)->isBeingTriggeredByPlayer())
+		return;
+
+	static bool prevEBtnPressed = GLFW_RELEASE;
+	bool EBtnpressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_E);
+	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
+	{
+		//
+		// Try to collect this object!
+		//
+		if (baseObject->getPhysicsComponent()->getActor() == GameState::getInstance().getCurrentTriggerHold())
+		{
+			// Success!
+			((WaterPuddle*)baseObject)->collectWaterPuddle();
+		}
+	}
+	prevEBtnPressed = EBtnpressed;
 }
 
 void WaterPuddleRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)

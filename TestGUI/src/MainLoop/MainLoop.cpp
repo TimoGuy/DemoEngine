@@ -179,6 +179,13 @@ void MainLoop::run()
 		//
 		renderManager->render();
 
+		//
+		// Destroy everything in the destroy list
+		//
+		for (size_t i = 0; i < destroyObjectList.size(); i++)
+			delete destroyObjectList[i];
+		destroyObjectList.clear();
+
 #if SINGLE_BUFFERED_MODE
 		glFlush();
 		//std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
@@ -210,6 +217,12 @@ void MainLoop::cleanup()
 }
 
 
+void MainLoop::destroyObject(BaseObject* object)
+{
+	destroyObjectList.push_back(object);
+}
+
+
 void createWindow(const char* windowName)
 {
 	if (!glfwInit())
@@ -217,7 +230,7 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 	glfwSwapInterval(1);

@@ -2,6 +2,7 @@
 
 #include "../../MainLoop/MainLoop.h"
 #include "../../Utils/PhysicsUtils.h"
+#include "../../Utils/GameState.h"
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -151,6 +152,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			4.5f,
 			this		// PxUserControllerHitReport
 		);
+
+	GameState::getInstance().playerActorPointer = controller->getActor();
 }
 
 PlayerPhysics::~PlayerPhysics()

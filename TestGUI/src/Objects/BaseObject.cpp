@@ -176,9 +176,11 @@ void ImGuiComponent::renderImGui()
 	//
 	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f);		// Nothing color
 	if (MainLoop::getInstance().renderManager->currentSelectedObjectIndex >= 0 &&
+		MainLoop::getInstance().renderManager->currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
 		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentSelectedObjectIndex] == this)
 		selectionStateColor = ImColor(0.921568627f, 0.423529412f, 0.901960784f);			// Selected color
 	else if (MainLoop::getInstance().renderManager->currentHoveringObjectIndex >= 0 &&
+		MainLoop::getInstance().renderManager->currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
 		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentHoveringObjectIndex] == this)
 		selectionStateColor = ImColor(0.980392157f, 0.631372549f, 0.223529412f);			// Hover color
 
