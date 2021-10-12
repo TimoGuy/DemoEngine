@@ -9,7 +9,7 @@ WaterPuddle::WaterPuddle()
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
+	bounds->extents = glm::vec3(4.0f, 4.0f, 4.0f);
 
 	imguiComponent = new WaterPuddleImgui(this, bounds);
 	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);

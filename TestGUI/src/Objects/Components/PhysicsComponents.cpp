@@ -29,6 +29,12 @@ BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds, RigidActorTypes rigidAc
 	shape->release();
 }
 
+BoxCollider::~BoxCollider()
+{
+	MainLoop::getInstance().physicsScene->removeActor(*body);
+	body->release();
+}
+
 void BoxCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
@@ -91,6 +97,12 @@ SphereCollider::SphereCollider(BaseObject* bo, float radius, RigidActorTypes rig
 	shape->release();
 }
 
+SphereCollider::~SphereCollider()
+{
+	MainLoop::getInstance().physicsScene->removeActor(*body);
+	body->release();
+}
+
 void SphereCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void SphereCollider::propagateNewTransform(const glm::mat4& newTransform)
@@ -140,6 +152,11 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			4.5f,
 			this		// PxUserControllerHitReport
 		);
+}
+
+PlayerPhysics::~PlayerPhysics()
+{
+	controller->release();
 }
 
 void PlayerPhysics::physicsUpdate()

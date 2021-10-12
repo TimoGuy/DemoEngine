@@ -8,6 +8,7 @@ class BoxCollider : public PhysicsComponent
 {
 public:
 	BoxCollider(BaseObject* bo, Bounds* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
+	~BoxCollider();
 
 	void physicsUpdate();
 	void propagateNewTransform(const glm::mat4& newTransform);
@@ -26,6 +27,7 @@ class SphereCollider : public PhysicsComponent
 {
 public:
 	SphereCollider(BaseObject* bo, float radius, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
+	~SphereCollider();
 
 	void physicsUpdate();
 	void propagateNewTransform(const glm::mat4& newTransform);
@@ -44,6 +46,7 @@ class PlayerPhysics : public PhysicsComponent, public physx::PxUserControllerHit
 {
 public:
 	PlayerPhysics(BaseObject* bo);
+	~PlayerPhysics();
 
 	void physicsUpdate();
 	void propagateNewTransform(const glm::mat4& newTransform);
