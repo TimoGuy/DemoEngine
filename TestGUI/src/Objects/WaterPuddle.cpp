@@ -73,6 +73,7 @@ void WaterPuddle::collectWaterPuddle()
 	//
 	GameState::getInstance().playerIsHoldingWater = true;
 	GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
+	GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 	std::cout << "Collected!!!!" << std::endl;
 	MainLoop::getInstance().destroyObject(this);
@@ -84,21 +85,18 @@ WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderCom
 
 void WaterPuddleRender::preRenderUpdate()
 {
-	if (!((WaterPuddle*)baseObject)->isBeingTriggeredByPlayer())
+	if (!((WaterPuddle*)baseObject)->isBeingTriggeredByPlayer() ||
+		baseObject->getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
-	static bool prevEBtnPressed = GLFW_RELEASE;
+	static bool prevEBtnPressed = GLFW_RELEASE;		// @TODO: have a separate input system that I can query!!! (Or else bugs will ensue if you keep the E button pressed in this example eh
 	bool EBtnpressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_E);
 	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
 	{
 		//
-		// Try to collect this object!
+		// Collect this object!
 		//
-		if (baseObject->getPhysicsComponent()->getActor() == GameState::getInstance().getCurrentTriggerHold())
-		{
-			// Success!
-			((WaterPuddle*)baseObject)->collectWaterPuddle();
-		}
+		((WaterPuddle*)baseObject)->collectWaterPuddle();
 	}
 	prevEBtnPressed = EBtnpressed;
 }
