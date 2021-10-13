@@ -135,7 +135,7 @@ public:
 
 	virtual void propagateNewTransform(const glm::mat4& newTransform) = 0;
 
-	physx::PxActor* getActor();
+	physx::PxRigidActor* getActor();
 	void INTERNALonTrigger(const physx::PxTriggerPair& pair);
 
 protected:
