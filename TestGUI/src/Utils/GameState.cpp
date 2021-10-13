@@ -11,19 +11,21 @@ GameState& GameState::getInstance()
 
 void GameState::requestTriggerHold(physx::PxRigidActor* triggerActor)
 {
-	currentHeldTriggerActor = triggerActor;
+	// Add at the end of the queue
+	currentHeldTriggerActorQueue.push_back(triggerActor);
 }
 
 void GameState::requestTriggerRelease(physx::PxRigidActor* triggerActor)
 {
-	std::cout << "Not implemented yet" << std::endl;
-
-	// TEMP remove from "stack"
-	if (triggerActor == currentHeldTriggerActor)
-		currentHeldTriggerActor = nullptr;
+	// Remove from queue
+	currentHeldTriggerActorQueue.erase(std::remove(currentHeldTriggerActorQueue.begin(), currentHeldTriggerActorQueue.end(), triggerActor), currentHeldTriggerActorQueue.end());
 }
 
 physx::PxRigidActor* GameState::getCurrentTriggerHold()
 {
-	return currentHeldTriggerActor;
+	if (currentHeldTriggerActorQueue.size() == 0)
+		return nullptr;
+
+	// Grab the beginning of the queue
+	return currentHeldTriggerActorQueue[0];
 }

@@ -20,5 +20,5 @@ public:
 	physx::PxRigidActor* getCurrentTriggerHold();
 
 private:
-	physx::PxRigidActor* currentHeldTriggerActor = nullptr;		// @TODO: this needs to be a stack. And then getCurrentTriggerHold() returns the most recent thing on the stack
+	std::vector<physx::PxRigidActor*> currentHeldTriggerActorQueue;
 };
