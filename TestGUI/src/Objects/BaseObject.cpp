@@ -258,7 +258,7 @@ PhysicsComponent::~PhysicsComponent()
 	);
 }
 
-physx::PxActor* PhysicsComponent::getActor()
+physx::PxRigidActor* PhysicsComponent::getActor()
 {
 	return body;
 }

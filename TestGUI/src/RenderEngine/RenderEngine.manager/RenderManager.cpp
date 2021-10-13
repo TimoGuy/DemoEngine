@@ -18,6 +18,7 @@
 #include "../RenderEngine.resources/Resources.h"
 #include "../../Utils/FileLoading.h"
 #include "../../Utils/PhysicsUtils.h"
+#include "../../Utils/GameState.h"
 
 #include <assimp/matrix4x4.h>
 
@@ -984,6 +985,26 @@ void RenderManager::renderImGuiContents()
 	{
 		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
+
+	//
+	// @TODO: This needs to be moved to a real ui production implmeentation
+	// Add small pointer indicating to interactable object
+	//
+	physx::PxRigidActor* triggerHoldActor = GameState::getInstance().getCurrentTriggerHold();
+	if (triggerHoldActor != nullptr)
+	{
+		glm::vec3 actorPosition = PhysicsUtils::toGLMVec3(triggerHoldActor->getGlobalPose().p);
+		actorPosition.y += 1.0f;
+		PhysicsUtils::imguiRenderCircle(
+			glm::translate(glm::mat4(1.0f), actorPosition),
+			1.0f,
+			glm::vec3(0.0f),
+			glm::vec3(0.0f),
+			8,
+			ImColor(75, 227, 98)
+		);
+	}
+
 
 	if (checkForRequestedObjects != 0)		// NOTE: 1=clickevent, 2=hoverevent
 	{

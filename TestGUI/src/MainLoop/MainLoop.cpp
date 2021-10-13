@@ -230,7 +230,7 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 	glfwSwapInterval(1);

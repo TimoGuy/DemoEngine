@@ -9,17 +9,21 @@ GameState& GameState::getInstance()
 	return instance;
 }
 
-void GameState::requestTriggerHold(physx::PxActor* triggerActor)
+void GameState::requestTriggerHold(physx::PxRigidActor* triggerActor)
 {
 	currentHeldTriggerActor = triggerActor;
 }
 
-void GameState::requestTriggerRelease(physx::PxActor* triggerActor)
+void GameState::requestTriggerRelease(physx::PxRigidActor* triggerActor)
 {
 	std::cout << "Not implemented yet" << std::endl;
+
+	// TEMP remove from "stack"
+	if (triggerActor == currentHeldTriggerActor)
+		currentHeldTriggerActor = nullptr;
 }
 
-physx::PxActor* GameState::getCurrentTriggerHold()
+physx::PxRigidActor* GameState::getCurrentTriggerHold()
 {
 	return currentHeldTriggerActor;
 }

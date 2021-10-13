@@ -78,7 +78,8 @@ RiverDropoffRender::RiverDropoffRender(BaseObject* bo, Bounds* bounds) : RenderC
 
 void RiverDropoffRender::preRenderUpdate()
 {
-	if (!((RiverDropoff*)baseObject)->isBeingTriggeredByPlayer())
+	if (!((RiverDropoff*)baseObject)->isBeingTriggeredByPlayer() ||
+		baseObject->getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
 	static bool prevEBtnPressed = GLFW_RELEASE;
@@ -86,13 +87,9 @@ void RiverDropoffRender::preRenderUpdate()
 	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
 	{
 		//
-		// Try to collect this object!
+		// Drop off the water!
 		//
-		if (baseObject->getPhysicsComponent()->getActor() == GameState::getInstance().getCurrentTriggerHold())
-		{
-			// Success!
-			((RiverDropoff*)baseObject)->dropoffWater();
-		}
+		((RiverDropoff*)baseObject)->dropoffWater();
 	}
 	prevEBtnPressed = EBtnpressed;
 }

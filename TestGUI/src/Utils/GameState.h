@@ -10,15 +10,15 @@ class GameState
 public:
 	static GameState& getInstance();
 
-	physx::PxActor*				playerActorPointer				= nullptr;
+	physx::PxRigidActor*		playerActorPointer				= nullptr;
 	bool						playerIsHoldingWater			= false;
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;
 
-	void requestTriggerHold(physx::PxActor* triggerActor);
-	void requestTriggerRelease(physx::PxActor* triggerActor);	// NOTE: this hsould remove the triggeractor from the stack... but it's not implemented yet
-	physx::PxActor* getCurrentTriggerHold();
+	void requestTriggerHold(physx::PxRigidActor* triggerActor);
+	void requestTriggerRelease(physx::PxRigidActor* triggerActor);	// NOTE: this hsould remove the triggeractor from the stack... but it's not implemented yet
+	physx::PxRigidActor* getCurrentTriggerHold();
 
 private:
-	physx::PxActor* currentHeldTriggerActor = nullptr;		// @TODO: this needs to be a stack. And then getCurrentTriggerHold() returns the most recent thing on the stack
+	physx::PxRigidActor* currentHeldTriggerActor = nullptr;		// @TODO: this needs to be a stack. And then getCurrentTriggerHold() returns the most recent thing on the stack
 };
