@@ -46,6 +46,10 @@ public:
 
 	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
 
+	inline GLuint getIrradianceMap() { return irradianceMap; }
+	inline GLuint getPrefilterMap() { return prefilterMap; }
+	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
+
 	// @PHYSX_VISUALIZATION
 	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
 

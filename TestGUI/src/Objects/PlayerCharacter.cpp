@@ -70,13 +70,29 @@ void PlayerRender::refreshResources()
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
-	model = *(Model*)Resources::getResource("model;slimeGirl");
-	animator = Animator(&model.getAnimations());
+	model = (Model*)Resources::getResource("model;slimeGirl");
+	animator = Animator(&model->getAnimations());
 
-	pbrAlbedoTexture = *(GLuint*)Resources::getResource("texture;pbrAlbedo");
-	pbrNormalTexture = *(GLuint*)Resources::getResource("texture;pbrNormal");
-	pbrMetalnessTexture = *(GLuint*)Resources::getResource("texture;pbrMetalness");
-	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBelt"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBeltAccent"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBody"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeEyebrow"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeEye"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeHair"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeInvisible"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeAccent"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeBlack"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeWhite"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeWhite2"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShorts"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShortsAccent"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeSweater"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeSweater2"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeTights"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeUndershirt"));
+	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeVest"));
+
+	model->setMaterialList(materialList);
 }
 
 void PlayerRender::processMovement()
@@ -369,45 +385,11 @@ void PlayerRender::preRenderUpdate()
 	processAnimation();
 }
 
-void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
+void PlayerRender::render()
 {
 #ifdef _DEBUG
 	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
 #endif
-
-	// @Copypasta
-	//
-	// Load in textures
-	//
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "albedoMap"), 0);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "normalMap"), 1);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "metallicMap"), 2);
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "roughnessMap"), 3);
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "irradianceMap"), 4);
-
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "prefilterMap"), 5);
-
-	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "brdfLUT"), 6);
-
-	glActiveTexture(GL_TEXTURE0);
 
 	if (MainLoop::getInstance().playMode)
 	{
@@ -436,7 +418,7 @@ void PlayerRender::render(unsigned int irradianceMap, unsigned int prefilterMap,
 	//
 	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
 	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
-	model.render(pbrShaderProgramId);
+	model->render(pbrShaderProgramId);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -457,7 +439,7 @@ void PlayerRender::renderShadow(GLuint programId)
 		glm::value_ptr(renderTransform)
 	);
 	// TODO: add skeletal stuff too eh!
-	model.render(programId);
+	model->render(programId);
 }
 
 void PlayerImGui::propertyPanelImGui()

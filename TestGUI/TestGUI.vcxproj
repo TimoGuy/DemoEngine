@@ -103,6 +103,7 @@
     <ClCompile Include="src\Objects\WaterPuddle.cpp" />
     <ClCompile Include="src\Objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\Objects\PointLight.cpp" />
+    <ClCompile Include="src\RenderEngine\RenderEngine.material\Material.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.resources\Resources.cpp" />
     <ClCompile Include="src\TinyFileDialogs\tinyfiledialogs.c" />
     <ClCompile Include="src\Utils\FileLoading.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="src\Objects\Components\PhysicsComponents.h" />
     <ClInclude Include="src\Objects\RiverDropoff.h" />
     <ClInclude Include="src\Objects\WaterPuddle.h" />
+    <ClInclude Include="src\RenderEngine\RenderEngine.material\Material.h" />
     <ClInclude Include="src\Utils\GameState.h" />
     <ClInclude Include="src\Utils\json.hpp" />
     <ClInclude Include="src\Objects\BaseObject.h" />

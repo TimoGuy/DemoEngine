@@ -19,7 +19,7 @@ public:
 	RiverDropoffRender(BaseObject* bo, Bounds* bounds);
 
 	void preRenderUpdate();
-	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
+	void render();
 	void renderShadow(GLuint programId);
 };
 

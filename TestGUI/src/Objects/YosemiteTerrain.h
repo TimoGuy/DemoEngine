@@ -20,14 +20,13 @@ public:
 	YosemiteTerrainRender(BaseObject* bo, Bounds* bounds);
 
 	void preRenderUpdate();
-	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
+	void render();
 	void renderShadow(GLuint programId);
 
 	unsigned int pbrShaderProgramId, shadowPassProgramId;
 
-	Model model;
-	Animator animator;
-	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+	Model* model;
+	Material* material;
 
 private:
 	void refreshResources();

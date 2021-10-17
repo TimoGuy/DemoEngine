@@ -3,8 +3,10 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
+#include "../RenderEngine.material/Material.h"
 
 #define MAX_BONE_INFLUENCE 4
+
 
 struct Vertex
 {
@@ -26,15 +28,18 @@ struct Texture
 class Mesh
 {
 public:
-	std::vector<Vertex>			vertices;
-	std::vector<unsigned int>	indices;
-	std::vector<Texture>		textures;
-
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, int materialIndex = -1);
 	void render(unsigned int shaderId);
+
+	void pickFromMaterialList(std::vector<Material*> materialList);
 
 private:
 	unsigned int VAO, VBO, EBO;
 	void setupMesh();
+
+	std::vector<Vertex>			vertices;
+	std::vector<unsigned int>	indices;
+	Material*					material;
+	int							materialIndex;
 };
 

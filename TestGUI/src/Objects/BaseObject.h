@@ -157,7 +157,7 @@ public:
 	virtual ~RenderComponent();
 
 	virtual void preRenderUpdate() = 0;
-	virtual void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture) = 0;
+	virtual void render() = 0;
 	virtual void renderShadow(GLuint programId) = 0;
 
 	// NOTE: this transform could be messed up due to 3d model offset placement, or other factors, so with anything that isn't related to rendering, like frustum culling, for example, pls do not use this value.

@@ -586,7 +586,7 @@ void RenderManager::renderScene()
 				MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
 			continue;
 		succ++;
-		MainLoop::getInstance().renderObjects[i]->render(irradianceMap, prefilterMap, brdfLUTTexture);
+		MainLoop::getInstance().renderObjects[i]->render();
 	}
 	//std::cout << "Drawing after culled: \t" << succ << std::endl;				// @Debug: How many objects are culled
 

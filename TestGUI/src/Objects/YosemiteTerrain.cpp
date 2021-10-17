@@ -32,12 +32,12 @@ void YosemiteTerrainRender::refreshResources()
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 
-	model = *(Model*)Resources::getResource("model;yosemiteTerrain");
+	model = (Model*)Resources::getResource("model;yosemiteTerrain");
+	material = (Material*)Resources::getResource("material;pbrRustyMetal");
 
-	pbrAlbedoTexture = *(GLuint*)Resources::getResource("texture;pbrAlbedo");
-	pbrNormalTexture = *(GLuint*)Resources::getResource("texture;pbrNormal");
-	pbrMetalnessTexture = *(GLuint*)Resources::getResource("texture;pbrMetalness");
-	pbrRoughnessTexture = *(GLuint*)Resources::getResource("texture;pbrRoughness");
+	std::vector<Material*> mats;
+	mats.push_back(material);
+	model->setMaterialList(mats);
 }
 
 YosemiteTerrain::~YosemiteTerrain()
@@ -74,65 +74,18 @@ void YosemiteTerrainRender::preRenderUpdate()
 }
 
 
-void YosemiteTerrainRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
+void YosemiteTerrainRender::render()
 {
 #ifdef _DEBUG
 	refreshResources();
 #endif
-	// @Copypasta
-	//
-	// Load in textures
-	//
-	glUseProgram(pbrShaderProgramId);
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, pbrAlbedoTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "albedoMap"), 0);
-
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, pbrNormalTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "normalMap"), 1);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, pbrMetalnessTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "metallicMap"), 2);
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, pbrRoughnessTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "roughnessMap"), 3);
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "irradianceMap"), 4);
-
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "prefilterMap"), 5);
-
-	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "brdfLUT"), 6);
-
-	glActiveTexture(GL_TEXTURE0);
 
 	//
 	// Setup the transformation matrices and lights
 	//
-	glUniformMatrix4fv(
-		glGetUniformLocation(pbrShaderProgramId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(renderTransform)
-	);
-	glUniformMatrix3fv(
-		glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform))))
-	);
-
-	model.render(pbrShaderProgramId);
+	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
+	model->render(pbrShaderProgramId);
 }
 
 void YosemiteTerrainRender::renderShadow(GLuint programId)
@@ -143,7 +96,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 		GL_FALSE,
 		glm::value_ptr(renderTransform)
 	);
-	model.render(programId);
+	model->render(programId);
 }
 
 void YosemiteTerrainImGui::propertyPanelImGui()

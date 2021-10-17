@@ -141,6 +141,9 @@
     <ClCompile Include="src\Objects\RiverDropoff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\RenderEngine\RenderEngine.material\Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.frag">
@@ -300,6 +303,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Objects\RiverDropoff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderEngine\RenderEngine.material\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

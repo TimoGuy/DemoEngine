@@ -28,6 +28,8 @@ public:
 	int& getBoneCount() { return boneCounter; }
 	auto& getAnimations() { return animations; }
 
+	void setMaterialList(std::vector<Material*> materialList);
+
 private:
 	std::vector<Texture> loadedTextures;
 	std::vector<Mesh> meshes;

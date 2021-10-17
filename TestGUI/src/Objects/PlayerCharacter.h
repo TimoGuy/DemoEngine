@@ -25,14 +25,14 @@ public:
 	~PlayerRender();
 
 	void preRenderUpdate();
-	void render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture);
+	void render();
 	void renderShadow(GLuint programId);
 
 	unsigned int pbrShaderProgramId;
 
-	Model model;
+	Model* model;
 	Animator animator;
-	GLuint pbrAlbedoTexture, pbrNormalTexture, pbrMetalnessTexture, pbrRoughnessTexture;
+	std::vector<Material*> materialList;
 
 	glm::vec3 playerCamOffset = glm::vec3(0, 3, -30);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis

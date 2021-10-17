@@ -101,7 +101,7 @@ void WaterPuddleRender::preRenderUpdate()
 	prevEBtnPressed = EBtnpressed;
 }
 
-void WaterPuddleRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
+void WaterPuddleRender::render()
 {
 }
 

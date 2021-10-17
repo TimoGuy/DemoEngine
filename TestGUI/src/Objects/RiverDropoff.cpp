@@ -94,7 +94,7 @@ void RiverDropoffRender::preRenderUpdate()
 	prevEBtnPressed = EBtnpressed;
 }
 
-void RiverDropoffRender::render(unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
+void RiverDropoffRender::render()
 {
 }
 

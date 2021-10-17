@@ -32,6 +32,14 @@ void Model::render(unsigned int shaderId)
 	}
 }
 
+void Model::setMaterialList(std::vector<Material*> materialList)
+{
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].pickFromMaterialList(materialList);
+	}
+}
+
 
 void Model::loadModel(std::string path, std::vector<int> animationIndices)
 {
@@ -136,27 +144,32 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	//
 	// Process material
 	//
+	int materialIndex = -1;
 	if (mesh->mMaterialIndex >= 0)
 	{
-		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-		
-		std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-		textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+		materialIndex = mesh->mMaterialIndex;
 
-		std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-		textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+		//aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		//
+		//std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+		//textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+		//
+		//std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+		//textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 	}
 
 	// Process Bones
 	extractBoneWeightForVertices(vertices, mesh, scene);
 
-	return Mesh(vertices, indices, textures);
+	return Mesh(vertices, indices, materialIndex);
 }
 
 
 unsigned int textureFromFile(const char* path, const std::string& directory);
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName)
 {
+	size_t numTextures = material->GetTextureCount(type);
+
 	std::vector<Texture> textures;
 	for (unsigned int i = 0; i < material->GetTextureCount(type); i++)
 	{

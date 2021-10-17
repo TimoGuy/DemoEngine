@@ -1,37 +1,27 @@
 #include "Mesh.h"
 
 #include <glad/glad.h>
+#include "../../MainLoop/MainLoop.h"
+#include "../RenderEngine.manager/RenderManager.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, int materialIndex)
 {
     Mesh::vertices = vertices;
     Mesh::indices = indices;
-    Mesh::textures = textures;
+    Mesh::materialIndex = materialIndex;
 
     setupMesh();
 }
 
 void Mesh::render(unsigned int shaderId)
 {
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-
-    for (unsigned int i = 0; i < textures.size(); i++)
-    {
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        std::string number;
-        std::string texName = textures[i].type;
-
-        if (texName == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-        if (texName == "texture_specular")
-            number = std::to_string(specularNr++);
-
-        glUniform1f(glGetUniformLocation(shaderId, (/*"material." + */texName + number).c_str()), (GLfloat)i);   // NOTE: the 'material.' portion was to assign a uniform to the material struct. You have much to learn, young timoteo, and don't forget about this syntax!!
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
-    }
-    glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
+    if (material != nullptr)
+        material->applyTextureUniforms(
+            shaderId,
+            MainLoop::getInstance().renderManager->getIrradianceMap(),
+            MainLoop::getInstance().renderManager->getPrefilterMap(),
+            MainLoop::getInstance().renderManager->getBRDFLUTTexture()
+        );
 
     //
     // Draw the mesh
@@ -39,6 +29,12 @@ void Mesh::render(unsigned int shaderId)
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
+}
+
+void Mesh::pickFromMaterialList(std::vector<Material*> materialList)
+{
+    // TODO: make this spit out an error instead
+    material = materialList[materialIndex];
 }
 
 void Mesh::setupMesh()
