@@ -388,16 +388,16 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "material;pbrSlimeBelt")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbrSlimeBeltMetalness", "texture;pbrSlimeBeltRoughness");
 	if (resourceName == "texture;pbrSlimeBeltAlbedo")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeBeltAccent")			return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo2", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
+	if (resourceName == "material;pbrSlimeBeltAccent")			return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAccentAlbedo", "texture;pbrSlimeBeltAccentNormal", "texture;pbrSlimeBeltAccentMetalness", "texture;pbrSlimeBeltAccentRoughness");
 	if (resourceName == "texture;pbrAlbedo2")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/2.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeBody")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo3", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
+	if (resourceName == "material;pbrSlimeBody")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBodyAlbedo", "texture;pbrSlimeBodyNormal", "texture;pbrSlimeBodyMetalness", "texture;pbrSlimeBodyRoughness");
 	if (resourceName == "texture;pbrAlbedo3")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/3.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeEyebrow")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo4", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
+	if (resourceName == "material;pbrSlimeEyebrow")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrSlimeEyebrowNormal", "texture;pbrSlimeEyebrowMetalness", "texture;pbrSlimeEyebrowRoughness");
 	if (resourceName == "texture;pbrAlbedo4")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/4.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeEye")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo5", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
+	if (resourceName == "material;pbrSlimeEye")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyeAlbedo", "texture;pbrSlimeEyeNormal", "texture;pbrSlimeEyeMetalness", "texture;pbrSlimeEyeRoughness");
 	if (resourceName == "texture;pbrAlbedo5")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/5.png", GL_RGBA, GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeHair")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo6", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
