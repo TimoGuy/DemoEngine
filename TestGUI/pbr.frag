@@ -278,17 +278,22 @@ void main()
 {
     vec2 adjustedTexCoord = texCoord * tilingAndOffset.xy + tilingAndOffset.zw;
 
-    float mipmapLevel = textureQueryLod(albedoMap, adjustedTexCoord).x;
-    vec3 albedo     = pow(textureLod(albedoMap, adjustedTexCoord, mipmapLevel).rgb, vec3(2.2));
+    float mipmapLevel   = textureQueryLod(albedoMap, adjustedTexCoord).x;
+    vec4 rawAlbedo      = textureLod(albedoMap, adjustedTexCoord, mipmapLevel);
 
-    mipmapLevel = textureQueryLod(metallicMap, adjustedTexCoord).x;
-    float metallic  = textureLod(metallicMap, adjustedTexCoord, mipmapLevel).r;
+    if (rawAlbedo.a < 0.5)      // NOTE: optimization defecit here... this is just to test out the princess eyebrows texture
+        discard;
     
-    mipmapLevel = textureQueryLod(roughnessMap, adjustedTexCoord).x;
-    float roughness = textureLod(roughnessMap, adjustedTexCoord, mipmapLevel).r;
+    vec3 albedo         = pow(rawAlbedo.rgb, vec3(2.2));
+
+    mipmapLevel         = textureQueryLod(metallicMap, adjustedTexCoord).x;
+    float metallic      = textureLod(metallicMap, adjustedTexCoord, mipmapLevel).r;
     
-    //mipmapLevel = textureQueryLod(aoMap, adjustedTexCoord).x;
-    //float ao        = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
+    mipmapLevel         = textureQueryLod(roughnessMap, adjustedTexCoord).x;
+    float roughness     = textureLod(roughnessMap, adjustedTexCoord, mipmapLevel).r;
+    
+    //mipmapLevel       = textureQueryLod(aoMap, adjustedTexCoord).x;
+    //float ao          = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition - fragPosition);
