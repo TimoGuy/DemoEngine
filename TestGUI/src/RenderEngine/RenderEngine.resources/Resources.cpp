@@ -362,6 +362,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	// NOTE: this is gonna be a huge function btw
 	//
 	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "pbr.frag");
+	if (resourceName == "shader;unlit")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "unlit.frag");			// TODO: implement the unlit.frag shader!
 	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "vertex.vert", "fragment.frag");
 	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "model.vert", "model.frag");
 	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "skybox.vert", "skybox.frag");
@@ -385,7 +386,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { /*0, 1, 2, 3, 4,*/ 5, 8});		// 5: idle; 8: running
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { /*0, 1, 2, 3, 4,*/ 6, 9});
 	if (resourceName == "model;yosemiteTerrain")						return loadModel(resourceName, isUnloading, "res/cube.glb");
 	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/house_w_interior.glb");
 
@@ -393,16 +394,16 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	// TODO: continue back here!~!!!!
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbrSlimeBeltMetalness", "texture;pbrSlimeBeltRoughness");
-	if (resourceName == "texture;pbrSlimeBeltAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltNormal")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltRoughness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeBeltAccent")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAccentAlbedo", "texture;pbrSlimeBeltAccentNormal", "texture;pbrSlimeBeltAccentMetalness", "texture;pbrSlimeBeltAccentRoughness");
-	if (resourceName == "texture;pbrSlimeBeltAccentAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_brass/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltAccentNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_brass/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltAccentMetalness")			return loadTexture2D(resourceName, isUnloading, "res/material_brass/metallic.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeBeltAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/material_brass/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltAccentAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltAccentNormal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltAccentMetalness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Metalness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeBeltAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeBody")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBodyAlbedo", "texture;pbrSlimeBodyNormal", "texture;pbrSlimeBodyMetalness", "texture;pbrSlimeBodyRoughness");
 	if (resourceName == "texture;pbrSlimeBodyAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/3.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -453,28 +454,22 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeShoeWhite2Roughness")			return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeShorts")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeShortsNormal", "texture;pbrSlimeShortsMetalness", "texture;pbrSlimeShortsRoughness");
-	if (resourceName == "texture;pbrSlimeShortsAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/material_blue_burlap/albedo.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsNormal")					return loadTexture2D(resourceName, isUnloading, "res/material_blue_burlap/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsMetalness")				return loadTexture2D(resourceName, isUnloading, "res/material_blue_burlap/metallic.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsRoughness")				return loadTexture2D(resourceName, isUnloading, "res/material_blue_burlap/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-
-	if (resourceName == "material;pbrSlimeShortsAccent")				return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAccentAlbedo", "texture;pbrSlimeShortsAccentNormal", "texture;pbrSlimeShortsAccentMetalness", "texture;pbrSlimeShortsAccentRoughness");
-	if (resourceName == "texture;pbrSlimeShortsAccentAlbedo")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/13.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsAccentNormal")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/13.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsAccentMetalness")		return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/13.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShortsAccentRoughness")		return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/13.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShortsAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric023/1K-JPG/Fabric023_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShortsNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric023/1K-JPG/Fabric023_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShortsMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShortsRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric023/1K-JPG/Fabric023_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeSweater")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeSweaterAlbedo", "texture;pbrSlimeSweaterNormal", "texture;pbrSlimeSweaterMetalness", "texture;pbrSlimeSweaterRoughness");
-	if (resourceName == "texture;pbrSlimeSweaterAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_white_fabric/albedo.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeSweaterNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_white_fabric/normalDX.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweaterAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric060/1K-JPG/Fabric060_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweaterNormal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric060/1K-JPG/Fabric060_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeSweaterMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeSweaterRoughness")				return loadTexture2D(resourceName, isUnloading, "res/material_white_fabric/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweaterRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric060/1K-JPG/Fabric060_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeSweater2")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeSweater2Albedo", "texture;pbrSlimeSweater2Normal", "texture;pbrSlimeSweater2Metalness", "texture;pbrSlimeSweater2Roughness");
-	if (resourceName == "texture;pbrSlimeSweater2Albedo")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/15.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeSweater2Normal")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/15.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeSweater2Metalness")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/15.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeSweater2Roughness")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/15.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweater2Albedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric028/1K-JPG/Fabric028_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweater2Normal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric028/1K-JPG/Fabric028_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweater2Metalness")			return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeSweater2Roughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric028/1K-JPG/Fabric028_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeTights")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeTightsAlbedo", "texture;pbrSlimeTightsNormal", "texture;pbrSlimeTightsMetalness", "texture;pbrSlimeTightsRoughness");
 	if (resourceName == "texture;pbrSlimeTightsAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/material_plaid/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -482,17 +477,11 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeTightsMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeTightsRoughness")				return loadTexture2D(resourceName, isUnloading, "res/material_plaid/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeUndershirt")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeUndershirtAlbedo", "texture;pbrSlimeUndershirtNormal", "texture;pbrSlimeUndershirtMetalness", "texture;pbrSlimeUndershirtRoughness");
-	if (resourceName == "texture;pbrSlimeUndershirtAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_wrinkled_paper/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeUndershirtNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_wrinkled_paper/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeUndershirtMetalness")			return loadTexture2D(resourceName, isUnloading, "res/material_wrinkled_paper/metalness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeUndershirtRoughness")			return loadTexture2D(resourceName, isUnloading, "res/material_wrinkled_paper/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-
 	if (resourceName == "material;pbrSlimeVest")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeVestAlbedo", "texture;pbrSlimeVestNormal", "texture;pbrSlimeVestMetalness", "texture;pbrSlimeVestRoughness");
-	if (resourceName == "texture;pbrSlimeVestAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/material_red_soiled/albedo.png", GL_RGBA, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/material_red_soiled/normalGL.png", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeVestMetalness")				return loadTexture2D(resourceName, isUnloading, "res/material_red_soiled/metallic.png", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/material_red_soiled/roughness.png", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeVestAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Color.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeVestMetalness")				return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/1.png", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
 	assert(false);
 	return nullptr;
