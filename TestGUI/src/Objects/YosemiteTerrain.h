@@ -26,7 +26,7 @@ public:
 	unsigned int pbrShaderProgramId, shadowPassProgramId;
 
 	Model* model;
-	Material* material;
+	std::map<std::string, Material*> materials;
 
 private:
 	void refreshResources();

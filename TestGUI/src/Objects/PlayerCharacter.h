@@ -32,7 +32,7 @@ public:
 
 	Model* model;
 	Animator animator;
-	std::vector<Material*> materialList;
+	std::map<std::string, Material*> materials;
 
 	glm::vec3 playerCamOffset = glm::vec3(0, 3, -30);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis

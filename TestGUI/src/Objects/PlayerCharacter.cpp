@@ -73,26 +73,28 @@ void PlayerRender::refreshResources()
 	model = (Model*)Resources::getResource("model;slimeGirl");
 	animator = Animator(&model->getAnimations());
 
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBelt"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBeltAccent"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeBody"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeEyebrow"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeEye"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeHair"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeInvisible"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeAccent"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeBlack"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeWhite"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShoeWhite2"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShorts"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeShortsAccent"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeSweater"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeSweater2"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeTights"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeUndershirt"));
-	materialList.push_back((Material*)Resources::getResource("material;pbrSlimeVest"));
+	materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
+	materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
+	materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
+	materials["Sweater"] = (Material*)Resources::getResource("material;pbrSlimeSweater");
+	materials["Sweater2"] = (Material*)Resources::getResource("material;pbrSlimeSweater2");
+	materials["Vest"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+	materials["Shorts"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
+	materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
+	materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
+	materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
+	materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
+	materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
+	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
+	materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
 
-	model->setMaterialList(materialList);
+	materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
+	materials["Tights"]->setTilingAndOffset(glm::vec4(15, 15, 0, 0));
+	materials["Vest"]->setTilingAndOffset(glm::vec4(1.5, 1.5, 0, 0));
+	materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
+
+	model->setMaterials(materials);
 }
 
 void PlayerRender::processMovement()

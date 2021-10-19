@@ -33,11 +33,9 @@ void YosemiteTerrainRender::refreshResources()
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 
 	model = (Model*)Resources::getResource("model;yosemiteTerrain");
-	material = (Material*)Resources::getResource("material;pbrRustyMetal");
 
-	std::vector<Material*> mats;
-	mats.push_back(material);
-	model->setMaterialList(mats);
+	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
+	model->setMaterials(materials);
 }
 
 YosemiteTerrain::~YosemiteTerrain()

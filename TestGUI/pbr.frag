@@ -12,6 +12,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 //uniform sampler2D aoMap;
+uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -212,12 +213,13 @@ float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentnormalVector = texture(normalMap, texCoord).xyz * 2.0 - 1.0;
+    float mipmapLevel = textureQueryLod(normalMap, texCoord * tilingAndOffset.xy + tilingAndOffset.zw).x;
+    vec3 tangentnormalVector = textureLod(normalMap, texCoord * tilingAndOffset.xy + tilingAndOffset.zw, mipmapLevel).xyz * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(fragPosition);
     vec3 Q2  = dFdy(fragPosition);
-    vec2 st1 = dFdx(texCoord);
-    vec2 st2 = dFdy(texCoord);
+    vec2 st1 = dFdx(texCoord * tilingAndOffset.xy + tilingAndOffset.zw);
+    vec2 st2 = dFdy(texCoord * tilingAndOffset.xy + tilingAndOffset.zw);
 
     vec3 N   = normalize(normalVector);
     vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
@@ -274,10 +276,19 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 // ----------------------------------------------------------------------------
 void main()
 {
-    vec3 albedo     = pow(texture(albedoMap, texCoord).rgb, vec3(2.2));
-    float metallic  = texture(metallicMap, texCoord).r;
-    float roughness = texture(roughnessMap, texCoord).r;
-    //float ao        = texture(aoMap, texCoord).r;
+    vec2 adjustedTexCoord = texCoord * tilingAndOffset.xy + tilingAndOffset.zw;
+
+    float mipmapLevel = textureQueryLod(albedoMap, adjustedTexCoord).x;
+    vec3 albedo     = pow(textureLod(albedoMap, adjustedTexCoord, mipmapLevel).rgb, vec3(2.2));
+
+    mipmapLevel = textureQueryLod(metallicMap, adjustedTexCoord).x;
+    float metallic  = textureLod(metallicMap, adjustedTexCoord, mipmapLevel).r;
+    
+    mipmapLevel = textureQueryLod(roughnessMap, adjustedTexCoord).x;
+    float roughness = textureLod(roughnessMap, adjustedTexCoord, mipmapLevel).r;
+    
+    //mipmapLevel = textureQueryLod(aoMap, adjustedTexCoord).x;
+    //float ao        = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition - fragPosition);

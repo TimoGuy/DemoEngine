@@ -4,11 +4,11 @@
 #include "../../MainLoop/MainLoop.h"
 #include "../RenderEngine.manager/RenderManager.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, int materialIndex)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const std::string& materialName)
 {
     Mesh::vertices = vertices;
     Mesh::indices = indices;
-    Mesh::materialIndex = materialIndex;
+    Mesh::materialName = materialName;
 
     setupMesh();
 }
@@ -31,10 +31,17 @@ void Mesh::render(unsigned int shaderId)
     glBindVertexArray(0);
 }
 
-void Mesh::pickFromMaterialList(std::vector<Material*> materialList)
+void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)
 {
-    // TODO: make this spit out an error instead
-    material = materialList[materialIndex];
+    if (materialName.empty())
+        return;
+
+    if (materialMap.find(materialName) != materialMap.end())
+    {
+        material = materialMap[materialName];
+    }
+    else
+        std::cout << "ERROR: material assignment: Material \"" << materialName << "\" not found!" << std::endl;
 }
 
 void Mesh::setupMesh()

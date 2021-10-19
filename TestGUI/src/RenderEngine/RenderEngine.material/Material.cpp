@@ -1,14 +1,16 @@
 #include "Material.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 
-Material::Material(unsigned int albedoMap, unsigned int normalMap, unsigned int metallicMap, unsigned int roughnessMap)
+Material::Material(unsigned int albedoMap, unsigned int normalMap, unsigned int metallicMap, unsigned int roughnessMap, glm::vec4 offsetTiling)
 {
 	Material::albedoMap = albedoMap;
 	Material::normalMap = normalMap;
 	Material::metallicMap = metallicMap;
 	Material::roughnessMap = roughnessMap;
+	Material::tilingAndOffset = offsetTiling;
 }
 
 void Material::applyTextureUniforms(unsigned int shaderId, unsigned int irradianceMap, unsigned int prefilterMap, unsigned int brdfLUTTexture)
@@ -42,4 +44,21 @@ void Material::applyTextureUniforms(unsigned int shaderId, unsigned int irradian
 	glUniform1i(glGetUniformLocation(shaderId, "brdfLUT"), 6);
 
 	glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
+
+	glUniform4fv(glGetUniformLocation(shaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
+}
+
+float* Material::getTilingPtr()
+{
+	return &tilingAndOffset.x;
+}
+
+float* Material::getOffsetPtr()
+{
+	return &tilingAndOffset.z;
+}
+
+void Material::setTilingAndOffset(glm::vec4 tilingAndOffset)
+{
+	Material::tilingAndOffset = tilingAndOffset;
 }
