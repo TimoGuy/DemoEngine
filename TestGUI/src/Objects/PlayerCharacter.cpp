@@ -396,7 +396,7 @@ void PlayerRender::preRenderUpdate()
 	processAnimation();
 }
 
-void PlayerRender::render()
+void PlayerRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
 {
 #ifdef _DEBUG
 	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen

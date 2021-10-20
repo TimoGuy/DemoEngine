@@ -13,10 +13,10 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Mesh::render()
 {
     if (material != nullptr)
-        material->applyTextureUniforms(modelMatrix, boneMatrices);
+        material->applyTextureUniforms(savedModelMatrix, savedBoneMatrices);
 
     //
     // Draw the mesh
@@ -24,6 +24,17 @@ void Mesh::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* bo
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
+}
+
+void Mesh::setupMatrixCache(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+{
+    savedModelMatrix = modelMatrix;
+    savedBoneMatrices = boneMatrices;
+}
+
+void Mesh::saveToSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
+{
+    // TODO: implement this
 }
 
 void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)

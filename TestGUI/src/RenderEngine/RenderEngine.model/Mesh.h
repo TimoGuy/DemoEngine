@@ -30,7 +30,10 @@ class Mesh
 {
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const std::string& materialName);
-	void render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void render();
+
+	void setupMatrixCache(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void saveToSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue);
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 
@@ -42,5 +45,9 @@ private:
 	std::vector<unsigned int>	indices;
 	Material*					material;
 	std::string					materialName;
+
+	// Cache for renderObject stuff
+	const glm::mat4*					savedModelMatrix;
+	const std::vector<glm::mat4>*		savedBoneMatrices;		// TODO: don't forget about meeeee!!!
 };
 

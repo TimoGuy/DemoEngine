@@ -72,7 +72,7 @@ void YosemiteTerrainRender::preRenderUpdate()
 }
 
 
-void YosemiteTerrainRender::render()
+void YosemiteTerrainRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
 {
 #ifdef _DEBUG
 	refreshResources();
@@ -85,7 +85,8 @@ void YosemiteTerrainRender::render()
 	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 	//model->render(pbrShaderProgramId);
 
-	model->render(renderTransform, nullptr);
+	//model->render(renderTransform, nullptr);
+	model->insertMeshesIntoSortedRenderQueue(sortedRenderQueue, &renderTransform, nullptr);
 }
 
 void YosemiteTerrainRender::renderShadow(GLuint programId)
@@ -98,7 +99,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 	//);
 	//model->render(programId);
 
-	model->renderShadow(renderTransform, nullptr);
+	model->renderShadow(&renderTransform, nullptr);
 }
 
 void YosemiteTerrainImGui::propertyPanelImGui()

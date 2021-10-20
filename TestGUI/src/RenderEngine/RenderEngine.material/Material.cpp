@@ -85,9 +85,9 @@ Material::Material(unsigned int myShaderId, unsigned int albedoMap, unsigned int
 	Material::tilingAndOffset = offsetTiling;
 }
 
-void Material::applyTextureUniforms(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Material::applyTextureUniforms(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
-	setupShader(myShaderId, &modelMatrix, boneMatrices);
+	setupShader(myShaderId, modelMatrix, boneMatrices);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, albedoMap);

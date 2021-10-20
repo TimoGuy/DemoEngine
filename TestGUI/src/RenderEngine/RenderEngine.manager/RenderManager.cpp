@@ -575,6 +575,8 @@ void RenderManager::renderScene()
 	//
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	int succ = 0;
+
+	// First, cull out the renderobjects
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
 		if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
@@ -583,10 +585,23 @@ void RenderManager::renderScene()
 				MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
 			continue;
 		succ++;
-		MainLoop::getInstance().renderObjects[i]->render();
+		MainLoop::getInstance().renderObjects[i]->insertMeshesIntoSortedRenderQueue(
+			MainLoop::getInstance().sortedRenderQueue
+		);
 	}
 	//std::cout << "Drawing after culled: \t" << succ << std::endl;				// @Debug: How many objects are culled
 
+	// Then, draw in the sorted order
+	for (std::map<GLuint, std::vector<Mesh*>>::iterator it = MainLoop::getInstance().sortedRenderQueue.begin();
+		it != MainLoop::getInstance().sortedRenderQueue.end();
+		it++)
+	{
+		std::vector<Mesh*>& meshes = it->second;
+		for (size_t i = 0; i < meshes.size(); i++)
+		{
+			meshes[i]->render();
+		}
+	}
 
 	//
 	// Draw the shadowmaps

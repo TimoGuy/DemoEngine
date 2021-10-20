@@ -1,10 +1,12 @@
 #pragma once
 
+#include <map>
 #include <vector>
 #include <PxPhysicsAPI.h>
 
 #include "../Objects/BaseObject.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
+#include "../RenderEngine/RenderEngine.model/Mesh.h"
 
 class RenderManager;
 
@@ -27,6 +29,7 @@ public:
 	std::vector<LightComponent*> lightObjects;
 	std::vector<PhysicsComponent*> physicsObjects;
 	std::vector<RenderComponent*> renderObjects;
+	std::map<GLuint, std::vector<Mesh*>> sortedRenderQueue;
 
 	RenderManager* renderManager;
 

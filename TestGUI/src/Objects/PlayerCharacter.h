@@ -25,7 +25,7 @@ public:
 	~PlayerRender();
 
 	void preRenderUpdate();
-	void render();
+	void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue);
 	void renderShadow(GLuint programId);
 
 	unsigned int pbrShaderProgramId;
