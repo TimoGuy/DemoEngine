@@ -23,6 +23,7 @@ public:
 	Model(const char* path);
 	Model(const char* path, std::vector<int> animationIndices);
 	void render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void renderShadow(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices);
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
 	int& getBoneCount() { return boneCounter; }

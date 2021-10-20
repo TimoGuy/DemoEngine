@@ -98,7 +98,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 	//);
 	//model->render(programId);
 
-	model->render(renderTransform, nullptr);
+	model->renderShadow(renderTransform, nullptr);
 }
 
 void YosemiteTerrainImGui::propertyPanelImGui()

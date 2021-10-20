@@ -23,8 +23,15 @@ Model::Model(const char* path, std::vector<int> animationIndices)
 	loadModel(path, animationIndices);
 }
 
-
 void Model::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+{
+	for (unsigned int i = 0; i < meshes.size(); i++)
+	{
+		meshes[i].render(modelMatrix, boneMatrices);
+	}
+}
+
+void Model::renderShadow(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{

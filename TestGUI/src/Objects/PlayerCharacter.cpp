@@ -455,7 +455,7 @@ void PlayerRender::renderShadow(GLuint programId)
 	//model->render(programId);
 
 	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->render(renderTransform, transforms);
+	model->renderShadow(renderTransform, transforms);
 }
 
 void PlayerImGui::propertyPanelImGui()

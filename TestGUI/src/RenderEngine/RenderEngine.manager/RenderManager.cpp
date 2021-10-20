@@ -568,9 +568,6 @@ void RenderManager::renderScene()
 	//		glm::translate(textPosition);
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
-	
-	// Pre-real rendering setup
-	setupSceneLights();
 
 	//
 	// Draw objects but cull them
@@ -608,26 +605,24 @@ void RenderManager::renderScene()
 
 
 const size_t MAX_LIGHTS = 8;			// @Hardcode: hopefully this limit goes away in the future if we wanna do forward+ rendering
-void RenderManager::setupSceneLights()
+void RenderManager::setupSceneLights(GLuint programId)
 {
-	glUseProgram(pbrShaderProgramId);
-
 	//
 	// Reset shadow maps
 	//
 	for (size_t i = 0; i < MAX_LIGHTS; i++)
 	{
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), 100);
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(programId, "csmShadowMap"), 100);
+		glUniform1i(glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
 	}
 
 	//
 	// Setup lights and shadows
 	//
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), (GLint)numLights);
-	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
+	glUniform1i(glGetUniformLocation(programId, "numLights"), (GLint)numLights);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
 	const GLuint baseOffset = 7;											// @Hardcode: Bc GL_TEXTURE6 is the highest being used rn
 	GLuint shadowMapTextureIndex = 0;
@@ -637,7 +632,7 @@ void RenderManager::setupSceneLights()
 		//
 		// Figures out casting shadows
 		//
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
+		glUniform1i(glGetUniformLocation(programId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
 		if (MainLoop::getInstance().lightObjects[i]->castsShadows)
 		{
 			glActiveTexture(GL_TEXTURE0 + baseOffset + shadowMapTextureIndex);
@@ -645,22 +640,22 @@ void RenderManager::setupSceneLights()
 			if (!setupCSM && MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
 			{
 				glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
+				glUniform1i(glGetUniformLocation(programId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
 
 				// DirectionalLight: Setup for csm rendering
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+				glUniform1i(glGetUniformLocation(programId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
 				for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
 				{
-					glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
+					glUniform1f(glGetUniformLocation(programId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
 				}
 				glUniformMatrix4fv(
-					glGetUniformLocation(pbrShaderProgramId, "cameraView"),
+					glGetUniformLocation(programId, "cameraView"),
 					1,
 					GL_FALSE,
 					glm::value_ptr(MainLoop::getInstance().camera.calculateViewMatrix())
 				);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "nearPlane"), MainLoop::getInstance().camera.zNear);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
+				glUniform1f(glGetUniformLocation(programId, "nearPlane"), MainLoop::getInstance().camera.zNear);
+				glUniform1f(glGetUniformLocation(programId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
 
 				// Set flag
 				setupCSM = true;
@@ -668,13 +663,13 @@ void RenderManager::setupSceneLights()
 			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::SPOT)
 			{
 				glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1i(glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
 			}
 			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::POINT)
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
+				glUniform1i(glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1f(glGetUniformLocation(programId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
 			}
 
 			shadowMapTextureIndex++;
@@ -692,9 +687,9 @@ void RenderManager::setupSceneLights()
 		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->getTransform()[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
 		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
 
-		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
-		glUniform4fv(glGetUniformLocation(pbrShaderProgramId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
-		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
+		glUniform3fv(glGetUniformLocation(programId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
+		glUniform4fv(glGetUniformLocation(programId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);
+		glUniform3fv(glGetUniformLocation(programId, ("lightColors[" + std::to_string(i) + "]").c_str()), 1, &lightColorWithIntensity[0]);
 	}
 
 	glActiveTexture(GL_TEXTURE0);

@@ -27,6 +27,7 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix, const std::vecto
 
 		glUseProgram(shaderId);
 		glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
+		MainLoop::getInstance().renderManager->setupSceneLights(shaderId);
 		
 		currentShaderId = shaderId;
 	}

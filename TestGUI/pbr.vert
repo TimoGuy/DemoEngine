@@ -11,14 +11,14 @@ out vec3 fragPosition;
 out vec4 fragPositionLightSpace;
 out vec3 normalVector;
 
-layout (location=0) uniform mat4 modelMatrix;
-layout (location=1) uniform mat3 normalsModelMatrix;
-layout (location=2) uniform mat4 cameraMatrix;
-layout (location=3) uniform mat4 lightSpaceMatrix;
+uniform mat4 modelMatrix;
+uniform mat3 normalsModelMatrix;
+uniform mat4 cameraMatrix;
+uniform mat4 lightSpaceMatrix;
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
-layout (location=4) uniform mat4 finalBoneMatrices[MAX_BONES];
+uniform mat4 finalBoneMatrices[MAX_BONES];
 
 void main()
 {

@@ -50,6 +50,8 @@ public:
 	inline GLuint getPrefilterMap() { return prefilterMap; }
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
 
+	void setupSceneLights(GLuint programId);
+
 	// @PHYSX_VISUALIZATION
 	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
 
@@ -80,7 +82,6 @@ private:
 	void createFonts();
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
-	void setupSceneLights();
 
 	// ImGui Debug stuff
 	bool isWireFrameMode;
