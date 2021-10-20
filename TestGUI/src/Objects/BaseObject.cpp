@@ -8,6 +8,7 @@
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/Utils.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
+#include "../RenderEngine/RenderEngine.model/Mesh.h"
 
 
 //
@@ -271,7 +272,6 @@ void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 RenderComponent::RenderComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
 {
 	MainLoop::getInstance().renderObjects.push_back(this);
-	MainLoop::getInstance().notifyRenderObjectsChanged();
 }
 
 RenderComponent::~RenderComponent()
@@ -284,7 +284,6 @@ RenderComponent::~RenderComponent()
 		),
 		MainLoop::getInstance().renderObjects.end()
 	);
-	MainLoop::getInstance().notifyRenderObjectsChanged();
 }
 
 const glm::mat4& RenderComponent::getRenderTransform()

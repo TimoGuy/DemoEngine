@@ -13,9 +13,9 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render()
+void Mesh::render(bool applyMaterial)
 {
-    if (material != nullptr)
+    if (applyMaterial && material != nullptr)
         material->applyTextureUniforms(savedModelMatrix, savedBoneMatrices);
 
     //
@@ -34,7 +34,7 @@ void Mesh::setupMatrixCache(const glm::mat4* modelMatrix, const std::vector<glm:
 
 void Mesh::saveToSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
 {
-    // TODO: implement this
+    sortedRenderQueue[material->getShaderId()].push_back(this);
 }
 
 void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)

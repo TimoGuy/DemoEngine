@@ -13,6 +13,7 @@ class ImGuiComponent;
 class LightComponent;
 class PhysicsComponent;
 class RenderComponent;
+class Mesh;
 
 struct PhysicsTransformState
 {

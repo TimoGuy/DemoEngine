@@ -37,7 +37,7 @@ void Model::renderShadow(const glm::mat4* modelMatrix, const std::vector<glm::ma
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].setupMatrixCache(modelMatrix, boneMatrices);
-		meshes[i].render();
+		meshes[i].render(false);
 	}
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
@@ -30,7 +31,7 @@ class Mesh
 {
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const std::string& materialName);
-	void render();
+	void render(bool applyMaterial = true);
 
 	void setupMatrixCache(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices);
 	void saveToSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue);

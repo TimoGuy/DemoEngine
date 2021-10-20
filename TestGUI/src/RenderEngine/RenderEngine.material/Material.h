@@ -16,6 +16,8 @@ public:
 	float* getOffsetPtr();
 	void setTilingAndOffset(glm::vec4 tilingAndOffset);
 
+	unsigned int getShaderId() { return myShaderId; }
+
 protected:
 	unsigned int
 		albedoMap,

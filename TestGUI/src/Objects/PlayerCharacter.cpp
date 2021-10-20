@@ -431,7 +431,7 @@ void PlayerRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vecto
 	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 
 	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->render(renderTransform, transforms);
+	model->insertMeshesIntoSortedRenderQueue(sortedRenderQueue, &renderTransform, nullptr);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -455,7 +455,7 @@ void PlayerRender::renderShadow(GLuint programId)
 	//model->render(programId);
 
 	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->renderShadow(renderTransform, transforms);
+	model->renderShadow(&renderTransform, transforms);
 }
 
 void PlayerImGui::propertyPanelImGui()

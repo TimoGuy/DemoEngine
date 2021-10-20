@@ -19,7 +19,7 @@ public:
 	RiverDropoffRender(BaseObject* bo, Bounds* bounds);
 
 	void preRenderUpdate();
-	void render();
+	void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue);
 	void renderShadow(GLuint programId);
 };
 
