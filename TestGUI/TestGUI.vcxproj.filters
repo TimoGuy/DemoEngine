@@ -180,6 +180,7 @@
     <None Include="point_shadow.frag" />
     <None Include="point_shadow.geom" />
     <None Include="point_shadow.vert" />
+    <None Include="zelly.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

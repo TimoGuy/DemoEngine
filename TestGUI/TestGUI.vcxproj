@@ -160,6 +160,7 @@
     <None Include="text.frag" />
     <None Include="text.vert" />
     <None Include="vertex.vert" />
+    <None Include="zelly.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ImGui\GraphEditor.h" />

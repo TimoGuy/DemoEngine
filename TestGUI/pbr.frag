@@ -7,42 +7,42 @@ in vec4 fragPositionLightSpace;
 in vec3 normalVector;
 
 // material parameters
-uniform sampler2D albedoMap;
-uniform sampler2D normalMap;
-uniform sampler2D metallicMap;
-uniform sampler2D roughnessMap;
-//uniform sampler2D aoMap;
-uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
+layout (location=5) uniform sampler2D albedoMap;
+layout (location=6) uniform sampler2D normalMap;
+layout (location=7) uniform sampler2D metallicMap;
+layout (location=8) uniform sampler2D roughnessMap;
+//layout (location=9) uniform sampler2D aoMap;
+layout (location=10) uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
 
 // PBR stuff
-uniform samplerCube irradianceMap;
-uniform samplerCube prefilterMap;
-uniform sampler2D brdfLUT;
+layout (location=11) uniform samplerCube irradianceMap;
+layout (location=12) uniform samplerCube prefilterMap;
+layout (location=13) uniform sampler2D brdfLUT;
 
 // lights
 const int MAX_LIGHTS = 8;
-uniform int numLights;
-uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
-uniform vec3 lightDirections[MAX_LIGHTS];
-uniform vec3 lightColors[MAX_LIGHTS];
+layout (location=14) uniform int numLights;
+layout (location=15) uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
+layout (location=16) uniform vec3 lightDirections[MAX_LIGHTS];
+layout (location=17) uniform vec3 lightColors[MAX_LIGHTS];
 
 // Shadow map
-uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
-uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
-uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
-uniform float pointLightShadowFarPlanes[MAX_LIGHTS];
-uniform bool hasShadow[MAX_LIGHTS];
+layout (location=18) uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+layout (location=19) uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
+layout (location=20) uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
+layout (location=21) uniform float pointLightShadowFarPlanes[MAX_LIGHTS];
+layout (location=22) uniform bool hasShadow[MAX_LIGHTS];
 
 // CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
-uniform float cascadePlaneDistances[16];
-uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 cameraView;
-uniform float nearPlane;
-uniform float farPlane;
+layout (location=23) uniform float cascadePlaneDistances[16];
+layout (location=24) uniform int cascadeCount;   // number of frusta - 1
+layout (location=25) uniform mat4 cameraView;
+layout (location=26) uniform float nearPlane;
+layout (location=27) uniform float farPlane;
 
 // OTHER
-uniform vec3 viewPosition;
+layout (location=28) uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
