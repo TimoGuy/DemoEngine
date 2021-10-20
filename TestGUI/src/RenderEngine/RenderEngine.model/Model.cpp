@@ -8,6 +8,7 @@
 #include <stb/stb_image.h>
 
 #include "RenderEngine.model.animation/Animation.h"
+#include "../../MainLoop/MainLoop.h"
 
 
 Model::Model() { scene = nullptr; }
@@ -23,21 +24,19 @@ Model::Model(const char* path, std::vector<int> animationIndices)
 	loadModel(path, animationIndices);
 }
 
-void Model::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Model::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].setupMatrixCache(modelMatrix, boneMatrices);
-		meshes[i].saveToSortedRenderQueue(sortedRenderQueue);
+		meshes[i].saveToSortedRenderQueue(sortedRenderQueue, modelMatrix, boneMatrices);
 	}
 }
 
 void Model::renderShadow(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].setupMatrixCache(modelMatrix, boneMatrices);
-		meshes[i].render(false);
+		meshes[i].render(modelMatrix, boneMatrices, false);
 	}
 }
 

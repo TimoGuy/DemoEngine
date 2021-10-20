@@ -10,6 +10,12 @@
 
 class RenderManager;
 
+struct RenderQueueLink
+{
+	Mesh* mesh;
+	const glm::mat4* modelMatrix;
+	const std::vector<glm::mat4>* boneMatrices;
+};
 
 class MainLoop
 {
@@ -29,7 +35,7 @@ public:
 	std::vector<LightComponent*> lightObjects;
 	std::vector<PhysicsComponent*> physicsObjects;
 	std::vector<RenderComponent*> renderObjects;
-	std::map<GLuint, std::vector<Mesh*>> sortedRenderQueue;
+	std::map<GLuint, std::vector<RenderQueueLink>> sortedRenderQueue;
 
 	RenderManager* renderManager;
 

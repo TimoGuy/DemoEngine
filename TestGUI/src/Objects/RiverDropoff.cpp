@@ -94,7 +94,7 @@ void RiverDropoffRender::preRenderUpdate()
 	prevEBtnPressed = EBtnpressed;
 }
 
-void RiverDropoffRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
+void RiverDropoffRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue)
 {
 }
 

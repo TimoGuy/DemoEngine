@@ -30,6 +30,8 @@
 #include "../../Objects/WaterPuddle.h"
 #include "../../Objects/RiverDropoff.h"
 
+//#include "../../MainLoop/MainLoop.h"
+
 
 void renderCube();
 void renderQuad();
@@ -592,14 +594,14 @@ void RenderManager::renderScene()
 	//std::cout << "Drawing after culled: \t" << succ << std::endl;				// @Debug: How many objects are culled
 
 	// Then, draw in the sorted order
-	for (std::map<GLuint, std::vector<Mesh*>>::iterator it = MainLoop::getInstance().sortedRenderQueue.begin();
+	for (std::map<GLuint, std::vector<RenderQueueLink>>::iterator it = MainLoop::getInstance().sortedRenderQueue.begin();
 		it != MainLoop::getInstance().sortedRenderQueue.end();
 		it++)
 	{
-		std::vector<Mesh*>& meshes = it->second;
+		std::vector<RenderQueueLink>& meshes = it->second;
 		for (size_t i = 0; i < meshes.size(); i++)
 		{
-			meshes[i]->render();
+			meshes[i].mesh->render(meshes[i].modelMatrix, meshes[i].boneMatrices);
 		}
 	}
 
@@ -616,6 +618,11 @@ void RenderManager::renderScene()
 		glUniform1i(glGetUniformLocation(debug_csm_program_id, "depthMap"), 0);
 		renderQuad();
 	}
+
+
+	// IMPORTANT: reset the render queue
+	MainLoop::getInstance().sortedRenderQueue.clear();
+	Material::resetFlag = true;
 }
 
 

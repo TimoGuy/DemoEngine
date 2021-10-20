@@ -8,6 +8,7 @@
 
 #include <iostream>
 
+bool Material::resetFlag = false;
 
 //
 // Helper funks
@@ -17,11 +18,13 @@ const glm::mat4* currentModelMatrix = nullptr;
 const std::vector<glm::mat4>* currentBoneMatrices = nullptr;
 void setupShader(GLuint shaderId, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
+	// TODO: Use UBO's (Uniform Buffer Object) to store in the light and shadows data
+
 	//
 	// Only update whatever is necessary (when shader changes, the uniforms need to be rewritten fyi)
 	//
-	bool changeAll = false;
-	if (currentShaderId != shaderId)
+	bool changeAll = Material::resetFlag;
+	if (changeAll || currentShaderId != shaderId)
 	{
 		changeAll = true;
 

@@ -101,7 +101,7 @@ void WaterPuddleRender::preRenderUpdate()
 	prevEBtnPressed = EBtnpressed;
 }
 
-void WaterPuddleRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
+void WaterPuddleRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue)
 {
 }
 

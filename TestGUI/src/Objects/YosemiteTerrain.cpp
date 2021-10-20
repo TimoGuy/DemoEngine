@@ -72,7 +72,7 @@ void YosemiteTerrainRender::preRenderUpdate()
 }
 
 
-void YosemiteTerrainRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
+void YosemiteTerrainRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue)
 {
 #ifdef _DEBUG
 	refreshResources();

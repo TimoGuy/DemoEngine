@@ -396,7 +396,7 @@ void PlayerRender::preRenderUpdate()
 	processAnimation();
 }
 
-void PlayerRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
+void PlayerRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue)
 {
 #ifdef _DEBUG
 	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
@@ -430,8 +430,8 @@ void PlayerRender::insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vecto
 	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
 	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 
-	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->insertMeshesIntoSortedRenderQueue(sortedRenderQueue, &renderTransform, nullptr);
+	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
+	model->insertMeshesIntoSortedRenderQueue(sortedRenderQueue, &renderTransform, boneTransforms);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -454,8 +454,8 @@ void PlayerRender::renderShadow(GLuint programId)
 	//// TODO: add skeletal stuff too eh!
 	//model->render(programId);
 
-	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->renderShadow(&renderTransform, transforms);
+	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
+	model->renderShadow(&renderTransform, boneTransforms);
 }
 
 void PlayerImGui::propertyPanelImGui()

@@ -14,6 +14,7 @@ class LightComponent;
 class PhysicsComponent;
 class RenderComponent;
 class Mesh;
+struct RenderQueueLink;
 
 struct PhysicsTransformState
 {
@@ -158,7 +159,7 @@ public:
 	virtual ~RenderComponent();
 
 	virtual void preRenderUpdate() = 0;
-	virtual void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue) = 0;
+	virtual void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue) = 0;
 	virtual void renderShadow(GLuint programId) = 0;
 
 	// NOTE: this transform could be messed up due to 3d model offset placement, or other factors, so with anything that isn't related to rendering, like frustum culling, for example, pls do not use this value.

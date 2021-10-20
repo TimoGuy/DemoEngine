@@ -18,6 +18,8 @@ public:
 
 	unsigned int getShaderId() { return myShaderId; }
 
+	static bool resetFlag;
+
 protected:
 	unsigned int
 		albedoMap,

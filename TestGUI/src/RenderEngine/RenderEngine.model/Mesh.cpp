@@ -13,10 +13,10 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render(bool applyMaterial)
+void Mesh::render(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices, bool applyMaterial)
 {
     if (applyMaterial && material != nullptr)
-        material->applyTextureUniforms(savedModelMatrix, savedBoneMatrices);
+        material->applyTextureUniforms(modelMatrix, boneMatrices);
 
     //
     // Draw the mesh
@@ -26,15 +26,13 @@ void Mesh::render(bool applyMaterial)
     glBindVertexArray(0);
 }
 
-void Mesh::setupMatrixCache(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Mesh::saveToSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
-    savedModelMatrix = modelMatrix;
-    savedBoneMatrices = boneMatrices;
-}
-
-void Mesh::saveToSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue)
-{
-    sortedRenderQueue[material->getShaderId()].push_back(this);
+    RenderQueueLink rql;
+    rql.mesh = this;
+    rql.modelMatrix = modelMatrix;
+    rql.boneMatrices = boneMatrices;
+    sortedRenderQueue[material->getShaderId()].push_back(rql);
 }
 
 void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)

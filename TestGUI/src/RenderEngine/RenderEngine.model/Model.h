@@ -8,6 +8,7 @@
 
 #include "Mesh.h"
 class Animation;
+struct RenderQueueLink;
 
 
 struct BoneInfo
@@ -22,7 +23,7 @@ public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
 	Model(const char* path, std::vector<int> animationIndices);
-	void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<Mesh*>>& sortedRenderQueue, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void insertMeshesIntoSortedRenderQueue(std::map<GLuint, std::vector<RenderQueueLink>>& sortedRenderQueue, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices);
 	void renderShadow(const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices);
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
