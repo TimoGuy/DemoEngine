@@ -14,7 +14,7 @@ public:
 	void playAnimation(unsigned int animationIndex, float mixTime);
 	void calculateBoneTransform(AssimpNodeData* node, const glm::mat4& globalRootInverseMatrix, const glm::mat4& parentTransform, std::map<std::string, BoneInfo>& boneInfoMap, bool useNextAnimation);
 
-	std::vector<glm::mat4> getFinalBoneMatrices() { return finalBoneMatrices; }		// TODO: perhaps make this a reference
+	std::vector<glm::mat4>* getFinalBoneMatrices() { return &finalBoneMatrices; }
 
 private:
 	std::vector<glm::mat4> finalBoneMatrices;

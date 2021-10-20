@@ -63,6 +63,16 @@ PlayerRender::~PlayerRender()
 
 void PlayerRender::refreshResources()
 {
+	//
+	// @IMPLEMENTATION: NOTES FOR SLIME GIRL BODY SHADER IMPLEMENTATION
+	// 
+	// - Make the slime do screen space refraction (For now maybe not, but just a passthru effect, but still sample from color buffer instead of doing completely opaque stuff)
+	// - Keep the drawing of opaque materials onto a duplicated color buffer
+	// - Draw the opaque material render in places where a fresnel shader would be white
+	// - :::::LATER STUFF:::::
+	// - Do the screen space refraction (this is only slight, so if it's not worth it don't do it)
+	//
+
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 
 	//
@@ -90,8 +100,7 @@ void PlayerRender::refreshResources()
 	materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
 
 	materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
-	materials["Tights"]->setTilingAndOffset(glm::vec4(15, 15, 0, 0));
-	materials["Vest"]->setTilingAndOffset(glm::vec4(1.5, 1.5, 0, 0));
+	materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
 	materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
 	model->setMaterials(materials);
@@ -393,55 +402,60 @@ void PlayerRender::render()
 	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
 #endif
 
-	if (MainLoop::getInstance().playMode)
-	{
-		auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
-		for (size_t i = 0; i < transforms.size(); i++)
-			glUniformMatrix4fv(
-				glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-				1,
-				GL_FALSE,
-				glm::value_ptr(transforms[i])
-			);
-	}
-	else
-	{
-		for (size_t i = 0; i < 100; i++)
-			glUniformMatrix4fv(
-				glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-				1,
-				GL_FALSE,
-				glm::value_ptr(glm::mat4(1.0f))
-			);
-	}
+	//if (MainLoop::getInstance().playMode)
+	//{
+	//	;			// @Copypasta
+	//	for (size_t i = 0; i < transforms.size(); i++)
+	//		glUniformMatrix4fv(
+	//			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+	//			1,
+	//			GL_FALSE,
+	//			glm::value_ptr(transforms[i])
+	//		);
+	//}
+	//else
+	//{
+	//	for (size_t i = 0; i < 100; i++)
+	//		glUniformMatrix4fv(
+	//			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+	//			1,
+	//			GL_FALSE,
+	//			glm::value_ptr(glm::mat4(1.0f))
+	//		);
+	//}
+	//
+	////
+	//// Setup the transformation matrices and lights
+	////
+	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 
-	//
-	// Setup the transformation matrices and lights
-	//
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
-	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
-	model->render(pbrShaderProgramId);
+	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
+	model->render(renderTransform, transforms);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
 {
-	auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
-	for (size_t i = 0; i < transforms.size(); i++)
-		glUniformMatrix4fv(
-			glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-			1,
-			GL_FALSE,
-			glm::value_ptr(transforms[i])
-		);
+	//auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
+	//for (size_t i = 0; i < transforms.size(); i++)
+	//	glUniformMatrix4fv(
+	//		glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
+	//		1,
+	//		GL_FALSE,
+	//		glm::value_ptr(transforms[i])
+	//	);
+	//
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(programId, "modelMatrix"),
+	//	1,
+	//	GL_FALSE,
+	//	glm::value_ptr(renderTransform)
+	//);
+	//// TODO: add skeletal stuff too eh!
+	//model->render(programId);
 
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(renderTransform)
-	);
-	// TODO: add skeletal stuff too eh!
-	model->render(programId);
+	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
+	model->render(renderTransform, transforms);
 }
 
 void PlayerImGui::propertyPanelImGui()

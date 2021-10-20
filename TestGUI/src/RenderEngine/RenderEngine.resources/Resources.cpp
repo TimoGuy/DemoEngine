@@ -24,6 +24,7 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<int> animationIndices);
 
 void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName);
+void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
 
 void* loadResource(const std::string& resourceName, bool isUnloading);
 
@@ -341,11 +342,26 @@ void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const s
 	{
 		Material* material =
 			new Material(
+				*(GLuint*)Resources::getResource("shader;pbr"),
 				*(GLuint*)Resources::getResource(albedoName),
 				*(GLuint*)Resources::getResource(normalName),
 				*(GLuint*)Resources::getResource(metallicName),
 				*(GLuint*)Resources::getResource(roughnessName)
 			);
+		return material;
+	}
+	else
+	{
+		delete (Material*)findResource(materialName);
+		return nullptr;
+	}
+}
+
+void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color)
+{
+	if (!isUnloading)
+	{
+		Material* material = new ZellyMaterial(color);
 		return material;
 	}
 	else
@@ -364,6 +380,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	// NOTE: this is gonna be a huge function btw
 	//
 	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "pbr.frag");
+	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "zelly.frag");
 	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "vertex.vert", "fragment.frag");
 	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "model.vert", "model.frag");
 	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "skybox.vert", "skybox.frag");
@@ -411,8 +428,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeBeltAccentMetalness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Metalness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeBeltAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeBody")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBodyAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
-	if (resourceName == "texture;pbrSlimeBodyAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/3.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "material;pbrSlimeBody")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0, 0, 1));
 
 	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
 	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);

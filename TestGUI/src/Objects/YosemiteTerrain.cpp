@@ -81,20 +81,24 @@ void YosemiteTerrainRender::render()
 	//
 	// Setup the transformation matrices and lights
 	//
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
-	glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
-	model->render(pbrShaderProgramId);
+	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
+	//model->render(pbrShaderProgramId);
+
+	model->render(renderTransform, nullptr);
 }
 
 void YosemiteTerrainRender::renderShadow(GLuint programId)
 {
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(renderTransform)
-	);
-	model->render(programId);
+	//glUniformMatrix4fv(
+	//	glGetUniformLocation(programId, "modelMatrix"),
+	//	1,
+	//	GL_FALSE,
+	//	glm::value_ptr(renderTransform)
+	//);
+	//model->render(programId);
+
+	model->render(renderTransform, nullptr);
 }
 
 void YosemiteTerrainImGui::propertyPanelImGui()

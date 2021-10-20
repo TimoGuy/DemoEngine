@@ -568,7 +568,7 @@ void RenderManager::renderScene()
 	//		glm::translate(textPosition);
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
-
+	
 	// Pre-real rendering setup
 	setupSceneLights();
 
@@ -611,7 +611,6 @@ const size_t MAX_LIGHTS = 8;			// @Hardcode: hopefully this limit goes away in t
 void RenderManager::setupSceneLights()
 {
 	glUseProgram(pbrShaderProgramId);
-	glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
 
 	//
 	// Reset shadow maps

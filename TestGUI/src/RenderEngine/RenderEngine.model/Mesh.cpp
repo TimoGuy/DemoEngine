@@ -13,15 +13,10 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render(unsigned int shaderId)
+void Mesh::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
 {
     if (material != nullptr)
-        material->applyTextureUniforms(
-            shaderId,
-            MainLoop::getInstance().renderManager->getIrradianceMap(),
-            MainLoop::getInstance().renderManager->getPrefilterMap(),
-            MainLoop::getInstance().renderManager->getBRDFLUTTexture()
-        );
+        material->applyTextureUniforms(modelMatrix, boneMatrices);
 
     //
     // Draw the mesh
