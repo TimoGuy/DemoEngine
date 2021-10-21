@@ -3,7 +3,6 @@
 out vec4 FragColor;
 in vec2 texCoord;
 in vec3 fragPosition;
-in vec4 fragPositionLightSpace;
 in vec3 normalVector;
 
 // material parameters
@@ -14,7 +13,7 @@ uniform sampler2D roughnessMap;
 //uniform sampler2D aoMap;
 uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
 
-// PBR stuff
+// PBR stuff        TODO: maybe pack these into a UBO that gets calculated at the beginning of the frame only (light positions and the shadow stuff eh!)
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;

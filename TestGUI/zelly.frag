@@ -3,7 +3,6 @@
 out vec4 FragColor;
 in vec2 texCoord;
 in vec3 fragPosition;
-in vec4 fragPositionLightSpace;
 in vec3 normalVector;
 
 // material parameters
