@@ -30,7 +30,7 @@ class Mesh
 {
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const std::string& materialName);
-	void render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void render(const glm::mat4& modelMatrix, bool changeMaterial);
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 

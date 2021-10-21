@@ -13,10 +13,13 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Mesh::render(const glm::mat4& modelMatrix, bool changeMaterial)
 {
-    if (material != nullptr)
-        material->applyTextureUniforms(modelMatrix, boneMatrices);
+    if (changeMaterial)
+    {
+        if (material != nullptr)
+            material->applyTextureUniforms(modelMatrix);
+    }
 
     //
     // Draw the mesh

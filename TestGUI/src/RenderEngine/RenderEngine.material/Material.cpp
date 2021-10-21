@@ -8,25 +8,26 @@
 
 #include <iostream>
 
+bool Material::resetFlag = false;
 
 //
 // Helper funks
 //
 GLuint currentShaderId = 0;
 const glm::mat4* currentModelMatrix = nullptr;
-const std::vector<glm::mat4>* currentBoneMatrices = nullptr;
-void setupShader(GLuint shaderId, const glm::mat4* modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 {
 	//
 	// Only update whatever is necessary (when shader changes, the uniforms need to be rewritten fyi)
 	//
-	bool changeAll = false;
-	if (currentShaderId != shaderId)
+	bool changeAll = Material::resetFlag;
+	if (changeAll || currentShaderId != shaderId)
 	{
 		changeAll = true;
 
 		glUseProgram(shaderId);
 		glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
+		MainLoop::getInstance().renderManager->setupSceneLights(shaderId);			// tODO: I'd really like to move to UBO's so we don't have to do this anymore
 		
 		currentShaderId = shaderId;
 	}
@@ -39,35 +40,7 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix, const std::vecto
 		currentModelMatrix = modelMatrix;
 	}
 
-	if (changeAll || currentBoneMatrices != boneMatrices)
-	{
-		if (boneMatrices != nullptr)
-		{
-			if (MainLoop::getInstance().playMode)
-			{
-				for (size_t i = 0; i < boneMatrices->size(); i++)
-					glUniformMatrix4fv(
-						glGetUniformLocation(shaderId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-						1,
-						GL_FALSE,
-						glm::value_ptr((*boneMatrices)[i])
-					);
-			}
-			else
-			{
-				for (size_t i = 0; i < boneMatrices->size(); i++)
-					glUniformMatrix4fv(
-						glGetUniformLocation(shaderId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-						1,
-						GL_FALSE,
-						glm::value_ptr(glm::mat4(1.0f))
-					);
-			}
-		}
-
-		currentBoneMatrices = boneMatrices;
-	}
-
+	Material::resetFlag = false;
 }
 
 
@@ -84,9 +57,9 @@ Material::Material(unsigned int myShaderId, unsigned int albedoMap, unsigned int
 	Material::tilingAndOffset = offsetTiling;
 }
 
-void Material::applyTextureUniforms(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Material::applyTextureUniforms(const glm::mat4& modelMatrix)
 {
-	setupShader(myShaderId, &modelMatrix, boneMatrices);
+	setupShader(myShaderId, &modelMatrix);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, albedoMap);
@@ -146,9 +119,9 @@ ZellyMaterial::ZellyMaterial(glm::vec3 color) :
 	ZellyMaterial::color = color;
 }
 
-void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix)
 {
-	setupShader(myShaderId, &modelMatrix, boneMatrices);
+	setupShader(myShaderId, &modelMatrix);
 
 	glUniform3fv(glGetUniformLocation(myShaderId, "zellyColor"), 1, &color.x);
 }

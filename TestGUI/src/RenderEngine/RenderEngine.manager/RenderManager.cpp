@@ -44,6 +44,7 @@ RenderManager::RenderManager()
 	createHDRSkybox();
 	createHDRBuffer();
 	createFonts();
+	createSkeletalAnimationUBO();
 }
 
 RenderManager::~RenderManager()
@@ -568,9 +569,9 @@ void RenderManager::renderScene()
 	//		glm::translate(textPosition);
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
-	
-	// Pre-real rendering setup
-	setupSceneLights();
+
+	// Reset materials at the start of every frame
+	Material::resetFlag = true;
 
 	//
 	// Draw objects but cull them
@@ -608,26 +609,26 @@ void RenderManager::renderScene()
 
 
 const size_t MAX_LIGHTS = 8;			// @Hardcode: hopefully this limit goes away in the future if we wanna do forward+ rendering
-void RenderManager::setupSceneLights()
+void RenderManager::setupSceneLights(GLuint programId)
 {
-	glUseProgram(pbrShaderProgramId);
+	glUseProgram(programId);
 
 	//
 	// Reset shadow maps
 	//
 	for (size_t i = 0; i < MAX_LIGHTS; i++)
 	{
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), 100);
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(programId, "csmShadowMap"), 100);
+		glUniform1i(glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
+		glUniform1i(glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
 	}
 
 	//
 	// Setup lights and shadows
 	//
 	const size_t numLights = std::min(MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
-	glUniform1i(glGetUniformLocation(pbrShaderProgramId, "numLights"), (GLint)numLights);
-	glUniform3fv(glGetUniformLocation(pbrShaderProgramId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
+	glUniform1i(glGetUniformLocation(programId, "numLights"), (GLint)numLights);
+	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
 	const GLuint baseOffset = 7;											// @Hardcode: Bc GL_TEXTURE6 is the highest being used rn
 	GLuint shadowMapTextureIndex = 0;
@@ -637,7 +638,7 @@ void RenderManager::setupSceneLights()
 		//
 		// Figures out casting shadows
 		//
-		glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
+		glUniform1i(glGetUniformLocation(programId, ("hasShadow[" + std::to_string(i) + "]").c_str()), MainLoop::getInstance().lightObjects[i]->castsShadows);
 		if (MainLoop::getInstance().lightObjects[i]->castsShadows)
 		{
 			glActiveTexture(GL_TEXTURE0 + baseOffset + shadowMapTextureIndex);
@@ -645,22 +646,22 @@ void RenderManager::setupSceneLights()
 			if (!setupCSM && MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
 			{
 				glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
+				glUniform1i(glGetUniformLocation(programId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
 
 				// DirectionalLight: Setup for csm rendering
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+				glUniform1i(glGetUniformLocation(programId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
 				for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
 				{
-					glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
+					glUniform1f(glGetUniformLocation(programId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
 				}
 				glUniformMatrix4fv(
-					glGetUniformLocation(pbrShaderProgramId, "cameraView"),
+					glGetUniformLocation(programId, "cameraView"),
 					1,
 					GL_FALSE,
 					glm::value_ptr(MainLoop::getInstance().camera.calculateViewMatrix())
 				);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "nearPlane"), MainLoop::getInstance().camera.zNear);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
+				glUniform1f(glGetUniformLocation(programId, "nearPlane"), MainLoop::getInstance().camera.zNear);
+				glUniform1f(glGetUniformLocation(programId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
 
 				// Set flag
 				setupCSM = true;
@@ -668,13 +669,13 @@ void RenderManager::setupSceneLights()
 			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::SPOT)
 			{
 				glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1i(glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
 			}
 			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::POINT)
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-				glUniform1i(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
-				glUniform1f(glGetUniformLocation(pbrShaderProgramId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
+				glUniform1i(glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
+				glUniform1f(glGetUniformLocation(programId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
 			}
 
 			shadowMapTextureIndex++;
@@ -698,6 +699,17 @@ void RenderManager::setupSceneLights()
 	}
 
 	glActiveTexture(GL_TEXTURE0);
+}
+
+
+void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>& boneTransforms)
+{
+	glBindBuffer(GL_UNIFORM_BUFFER, skeletalAnimationUBO);
+	for (size_t i = 0; i < boneTransforms.size(); i++)
+	{
+		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &boneTransforms[i]);
+	}
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 
@@ -1438,6 +1450,15 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderManager::createSkeletalAnimationUBO()
+{
+	glGenBuffers(1, &skeletalAnimationUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, skeletalAnimationUBO);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4x4) * 100, nullptr, GL_STATIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, skeletalAnimationUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 

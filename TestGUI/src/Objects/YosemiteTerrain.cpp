@@ -85,7 +85,7 @@ void YosemiteTerrainRender::render()
 	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 	//model->render(pbrShaderProgramId);
 
-	model->render(renderTransform, nullptr);
+	model->render(renderTransform, true);
 }
 
 void YosemiteTerrainRender::renderShadow(GLuint programId)
@@ -98,7 +98,8 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 	//);
 	//model->render(programId);
 
-	model->render(renderTransform, nullptr);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	model->render(renderTransform, false);
 }
 
 void YosemiteTerrainImGui::propertyPanelImGui()

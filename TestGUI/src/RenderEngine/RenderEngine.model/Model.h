@@ -22,7 +22,7 @@ public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
 	Model(const char* path, std::vector<int> animationIndices);
-	void render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices);
+	void render(const glm::mat4& modelMatrix, bool changeMaterial);
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
 	int& getBoneCount() { return boneCounter; }

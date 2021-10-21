@@ -6,6 +6,7 @@
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "Components/PhysicsComponents.h"
 #include "../MainLoop/MainLoop.h"
+#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
@@ -430,8 +431,13 @@ void PlayerRender::render()
 	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
 	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
 
-	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->render(renderTransform, transforms);
+
+	//
+	// Update the animation bones in the render manager
+	//
+	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
+	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
+	model->render(renderTransform, true);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -454,8 +460,10 @@ void PlayerRender::renderShadow(GLuint programId)
 	//// TODO: add skeletal stuff too eh!
 	//model->render(programId);
 
-	std::vector<glm::mat4>* transforms = animator.getFinalBoneMatrices();
-	model->render(renderTransform, transforms);
+	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
+	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	model->render(renderTransform, false);
 }
 
 void PlayerImGui::propertyPanelImGui()

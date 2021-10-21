@@ -24,11 +24,11 @@ Model::Model(const char* path, std::vector<int> animationIndices)
 }
 
 
-void Model::render(const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneMatrices)
+void Model::render(const glm::mat4& modelMatrix, bool changeMaterial)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].render(modelMatrix, boneMatrices);
+		meshes[i].render(modelMatrix, changeMaterial);
 	}
 }
 

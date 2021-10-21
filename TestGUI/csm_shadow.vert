@@ -10,7 +10,7 @@ uniform mat4 modelMatrix;
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
-uniform mat4 finalBoneMatrices[MAX_BONES];
+layout (std140, binding = 1) uniform FinalBoneMatrices { mat4 finalBoneMatrices[MAX_BONES]; };
 
 void main()
 {
