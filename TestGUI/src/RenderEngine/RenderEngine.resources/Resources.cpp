@@ -21,7 +21,7 @@ void* loadTexture2D(const std::string& textureName, bool isUnloading, const std:
 void* loadHDRTexture2D(const std::string& textureName, bool isUnloading, const std::string& fname, GLuint fromTexture, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, bool flipVertical);
 
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path);
-void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<int> animationIndices);
+void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<std::string> animationNames);
 
 void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName);
 void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
@@ -322,11 +322,11 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	}
 }
 
-void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<int> animationIndices)
+void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<std::string> animationNames)
 {
 	if (!isUnloading)
 	{
-		Model* model = new Model(path, animationIndices);
+		Model* model = new Model(path, animationNames);
 		return model;
 	}
 	else
@@ -404,7 +404,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { /*0, 1, 2, 3, 4,*/ 6, 9});
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Running" });
 	if (resourceName == "model;yosemiteTerrain")						return loadModel(resourceName, isUnloading, "res/cube.glb");
 	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/house_w_interior.glb");
 

@@ -21,7 +21,7 @@ class Model
 public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
-	Model(const char* path, std::vector<int> animationIndices);
+	Model(const char* path, std::vector<std::string> animationNames);
 	void render(const glm::mat4& modelMatrix, bool changeMaterial);
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
@@ -42,7 +42,7 @@ private:
 
 	const aiScene* scene;
 
-	void loadModel(std::string path, std::vector<int> animationIndices);
+	void loadModel(std::string path, std::vector<std::string> animationNames);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 	std::vector<Texture> loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName);

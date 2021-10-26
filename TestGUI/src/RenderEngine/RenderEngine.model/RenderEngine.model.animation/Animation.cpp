@@ -5,11 +5,23 @@
 #include <algorithm>
 
 
-Animation::Animation(const aiScene* scene, Model* model, unsigned int animationIndex)
+Animation::Animation(const aiScene* scene, Model* model, std::string animationName)
 {
 	assert(scene && scene->mRootNode);
 
-	auto animation = scene->mAnimations[animationIndex];		// #5 is idle for slime girl btw; #14 is the capoeira for slime_capoeira.fbx
+	aiAnimation* animation = nullptr;
+	for (size_t i = 0; i < scene->mNumAnimations; i++)
+	{
+		if (scene->mAnimations[i]->mName.C_Str() == animationName)
+		{
+			animation = scene->mAnimations[i];
+			break;
+		}
+	}
+
+	// Make sure that the animation exists
+	assert(animation != nullptr);
+
 	duration = (float)animation->mDuration;
 	ticksPerSecond = (int)animation->mTicksPerSecond;
 

@@ -18,9 +18,9 @@ Model::Model(const char* path)
 }
 
 
-Model::Model(const char* path, std::vector<int> animationIndices)
+Model::Model(const char* path, std::vector<std::string> animationNames)
 {
-	loadModel(path, animationIndices);
+	loadModel(path, animationNames);
 }
 
 
@@ -41,7 +41,7 @@ void Model::setMaterials(std::map<std::string, Material*> materialMap)
 }
 
 
-void Model::loadModel(std::string path, std::vector<int> animationIndices)
+void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
@@ -61,10 +61,9 @@ void Model::loadModel(std::string path, std::vector<int> animationIndices)
 	//
 	// Load in animations
 	//
-	for (unsigned int i = 0; i < animationIndices.size(); i++)
+	for (unsigned int i = 0; i < animationNames.size(); i++)
 	{
-		int animationIndex = animationIndices[i];
-		Animation newAnimation(scene, this, animationIndex);
+		Animation newAnimation(scene, this, animationNames[i]);
 		animations.push_back(newAnimation);
 	}
 }
