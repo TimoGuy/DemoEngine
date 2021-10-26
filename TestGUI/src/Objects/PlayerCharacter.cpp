@@ -376,7 +376,11 @@ void PlayerRender::processAnimation()
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);		// Correction: this adds more than 10ms consistently
+	if (isMoving)
+		animationSpeed = 65.0f;
+	else
+		animationSpeed = PhysicsUtils::moveTowards(animationSpeed, 42.0f, 2.0f * MainLoop::getInstance().deltaTime);
+	animator.updateAnimation(MainLoop::getInstance().deltaTime * animationSpeed);		// Correction: this adds more than 10ms consistently
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
@@ -499,6 +503,7 @@ void PlayerImGui::propertyPanelImGui()
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
+	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
 }
 
 void PlayerImGui::renderImGui()

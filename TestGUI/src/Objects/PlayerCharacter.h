@@ -55,6 +55,8 @@ public:
 	float leanLerpTime = 10.0f;
 	float modelOffsetY = -3.35f;
 
+	float animationSpeed = 42.0f;
+
 private:
 	void refreshResources();
 
