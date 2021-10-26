@@ -68,9 +68,14 @@ private:
 
 	VirtualCamera playerCamera;
 
+	//
+	// Animation Variables
+	//
 	float targetCharacterLeanValue = 0.0f;
 	float characterLeanValue = 0.0f;		// [-1, 1], where 0 is no lean
 	bool isMoving = false;
+	bool waitUntilAnimationFinished = false;
+	bool prevIsGrounded;
 };
 
 class PlayerCharacter : public BaseObject

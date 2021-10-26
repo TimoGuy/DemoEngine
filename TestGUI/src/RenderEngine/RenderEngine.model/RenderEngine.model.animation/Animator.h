@@ -16,6 +16,9 @@ public:
 
 	std::vector<glm::mat4>* getFinalBoneMatrices() { return &finalBoneMatrices; }
 
+	inline float getCurrentTime() { return currentTime; }
+	inline Animation* getCurrentAnimation() { return currentAnimation; }
+
 private:
 	std::vector<glm::mat4> finalBoneMatrices;
 	Animation* currentAnimation, *nextAnimation;

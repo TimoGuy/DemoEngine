@@ -370,22 +370,45 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 void PlayerRender::processAnimation()
 {
-	animator.playAnimation((unsigned int)isMoving, 6.0f);
+	if (!waitUntilAnimationFinished)
+	{
+		if (prevIsGrounded && !((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		{
+			// Jump
+			animator.playAnimation(2);
+		}
+		else if (!prevIsGrounded && ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		{
+			// Land
+			animator.playAnimation(4);
+			waitUntilAnimationFinished = true;
+		}
+		else
+		{
+			// Idle/Move
+			animator.playAnimation((unsigned int)isMoving, 6.0f);
+			if (isMoving)
+				animationSpeed = 65.0f;
+			else
+				animationSpeed = PhysicsUtils::moveTowards(animationSpeed, 42.0f, 2.0f * MainLoop::getInstance().deltaTime);
+		}
+	}
+
+	float time = animator.getCurrentTime() + MainLoop::getInstance().deltaTime * animationSpeed;
+	if (time >= animator.getCurrentAnimation()->getDuration())
+		waitUntilAnimationFinished = false;
 
 	//
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
-	if (isMoving)
-		animationSpeed = 65.0f;
-	else
-		animationSpeed = PhysicsUtils::moveTowards(animationSpeed, 42.0f, 2.0f * MainLoop::getInstance().deltaTime);
 	animator.updateAnimation(MainLoop::getInstance().deltaTime * animationSpeed);		// Correction: this adds more than 10ms consistently
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
 	
+	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
 }
 
 PlayerCharacter::~PlayerCharacter()
