@@ -36,7 +36,10 @@ void Animator::updateAnimation(float deltaTime)
 	if (currentAnimation)
 	{
 		currentTime += currentAnimation->getTicksPerSecond() * deltaTime;
-		currentTime = fmod(currentTime, currentAnimation->getDuration());
+		if (Animator::looping)
+			currentTime = fmod(currentTime, currentAnimation->getDuration());
+		else
+			currentTime = std::clamp(currentTime, 0.0f, currentAnimation->getDuration());
 		//std::cout << "----------------" << std::endl;
 	}
 
@@ -79,31 +82,27 @@ void Animator::updateAnimation(float deltaTime)
 }
 
 
-void Animator::playAnimation(unsigned int animationIndex)
+void Animator::playAnimation(unsigned int animationIndex, float mixTime, bool looping, bool force)
 {
-	if (currentAnimationIndex == animationIndex) return;
-	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
+	if (!force && currentAnimationIndex == animationIndex) return;
+	if (!force && nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
 	currentAnimationIndex = animationIndex;
 
-	currentTime = 0.0f;
-	currentAnimation = &(*animations)[animationIndex];
-	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
-}
+	Animator::looping = looping;
 
-
-void Animator::playAnimation(unsigned int animationIndex, float mixTime)
-{
-	if (currentAnimationIndex == animationIndex) return;
-	if (nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
-
-	assert(animationIndex < animations->size());
-	currentAnimationIndex = animationIndex;
-
-	nextTime = 0.0f;
-	nextAnimation = &(*animations)[animationIndex];
-	Animator::mixTime = Animator::totalMixTime = mixTime;
+	if (mixTime > 0.0f)
+	{
+		nextTime = 0.0f;
+		nextAnimation = &(*animations)[animationIndex];
+		Animator::mixTime = Animator::totalMixTime = mixTime;
+	}
+	else
+	{
+		currentTime = 0.0f;
+		currentAnimation = &(*animations)[animationIndex];
+	}
 	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
 }
 

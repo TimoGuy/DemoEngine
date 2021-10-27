@@ -334,6 +334,8 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	//
 	if (glm::length2(movementVector) > 0.001f)
 	{
+		isMoving = true;
+
 		float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 		float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
@@ -370,33 +372,69 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 void PlayerRender::processAnimation()
 {
-	if (!waitUntilAnimationFinished)
+	//
+	// Process movement into animationstates
+	//
+	if (animationState == 0)
 	{
-		if (prevIsGrounded && !((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
-		{
+		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
 			// Jump
-			animator.playAnimation(2);
-		}
-		else if (!prevIsGrounded && ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
-		{
-			// Land
-			animator.playAnimation(4);
-			waitUntilAnimationFinished = true;
-		}
+			animationState = 1;
+	}
+	else if (animationState == 1)
+	{
+		if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+			// Landing
+			animationState = 2;
+	}
+	else if (animationState == 2)
+	{
+		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+			// Jump
+			animationState = 1;
 		else
 		{
-			// Idle/Move
-			animator.playAnimation((unsigned int)isMoving, 6.0f);
-			if (isMoving)
-				animationSpeed = 65.0f;
-			else
-				animationSpeed = PhysicsUtils::moveTowards(animationSpeed, 42.0f, 2.0f * MainLoop::getInstance().deltaTime);
+			float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
+			float duration = animator.getCurrentAnimation()->getDuration();
+			if (time >= duration)
+				// Standing
+				animationState = 0;
 		}
 	}
 
-	float time = animator.getCurrentTime() + MainLoop::getInstance().deltaTime * animationSpeed;
-	if (time >= animator.getCurrentAnimation()->getDuration())
-		waitUntilAnimationFinished = false;
+	//
+	// Update Animation State
+	//
+	if (prevAnimState != animationState)
+	{
+		switch (animationState)
+		{
+		case 0:
+			// Idle/Move
+			animator.playAnimation((unsigned int)isMoving);
+			break;
+
+		case 1:
+			// Jump
+			animator.playAnimation(2 + isMoving, 0.0f, false, true);
+			break;
+
+		case 2:
+			// Land
+			animator.playAnimation(4 + isMoving, 0.0f, false);
+			break;
+
+		default:
+			std::cout << "Animation State " << animationState << " not recognized." << std::endl;
+			break;
+		}
+	}
+	else if (animationState == 0)
+		// Idle/Move
+		animator.playAnimation((unsigned int)isMoving, 6.0f);
+
+	prevAnimState = animationState;
+
 
 	//
 	// Mesh Skinning

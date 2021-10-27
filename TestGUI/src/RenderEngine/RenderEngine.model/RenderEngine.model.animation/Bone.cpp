@@ -50,7 +50,7 @@ int Bone::getPositionIndex(float animationTime)
 {
 	for (unsigned int i = 0; i < numPositions - 1; i++)
 	{
-		if (animationTime < positions[i + 1].timeStamp)
+		if (animationTime <= positions[i + 1].timeStamp)
 			return i;
 	}
 	assert(0);
@@ -62,7 +62,7 @@ int Bone::getRotationIndex(float animationTime)
 {
 	for (unsigned int i = 0; i < numRotations - 1; i++)
 	{
-		if (animationTime < rotations[i + 1].timeStamp)
+		if (animationTime <= rotations[i + 1].timeStamp)
 			return i;
 	}
 	assert(0);
@@ -74,7 +74,7 @@ int Bone::getScaleIndex(float animationTime)
 {
 	for (unsigned int i = 0; i < numScales - 1; i++)
 	{
-		if (animationTime < scales[i + 1].timeStamp)
+		if (animationTime <= scales[i + 1].timeStamp)
 			return i;
 	}
 	assert(0);
