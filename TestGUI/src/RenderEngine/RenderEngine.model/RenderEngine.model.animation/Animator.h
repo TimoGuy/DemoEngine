@@ -25,7 +25,7 @@ private:
 	float currentTime, nextTime, mixTime, totalMixTime;
 	float deltaTime;
 
-	bool looping = true;
+	bool loopingCurrent = true, loopingNext = true;
 
 	unsigned int currentAnimationIndex = -1;		// This is nextAnimation's id when it's transitioning too btw.
 

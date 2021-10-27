@@ -411,7 +411,7 @@ void PlayerRender::processAnimation()
 		{
 		case 0:
 			// Idle/Move
-			animator.playAnimation((unsigned int)isMoving);
+			animator.playAnimation((unsigned int)isMoving, 6.0f);
 			break;
 
 		case 1:

@@ -36,7 +36,7 @@ void Animator::updateAnimation(float deltaTime)
 	if (currentAnimation)
 	{
 		currentTime += currentAnimation->getTicksPerSecond() * deltaTime;
-		if (Animator::looping)
+		if (Animator::loopingCurrent)
 			currentTime = fmod(currentTime, currentAnimation->getDuration());
 		else
 			currentTime = std::clamp(currentTime, 0.0f, currentAnimation->getDuration());
@@ -47,7 +47,10 @@ void Animator::updateAnimation(float deltaTime)
 	if (nextAnimation)
 	{
 		nextTime += nextAnimation->getTicksPerSecond() * deltaTime;
-		nextTime = fmod(nextTime, nextAnimation->getDuration());
+		if (Animator::loopingCurrent)
+			nextTime = fmod(nextTime, nextAnimation->getDuration());
+		else
+			nextTime = std::clamp(nextTime, 0.0f, nextAnimation->getDuration());
 		mixTime -= deltaTime;
 	
 		if (mixTime <= 0.0f)
@@ -55,6 +58,7 @@ void Animator::updateAnimation(float deltaTime)
 			// Switch over to primary animation only
 			currentTime = nextTime;
 			currentAnimation = nextAnimation;
+			loopingCurrent = loopingNext;
 			nextTime = totalMixTime = -1.0f;
 			nextAnimation = nullptr;
 
@@ -90,18 +94,22 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime, bool lo
 	assert(animationIndex < animations->size());
 	currentAnimationIndex = animationIndex;
 
-	Animator::looping = looping;
-
 	if (mixTime > 0.0f)
 	{
+		Animator::loopingNext = looping;
 		nextTime = 0.0f;
 		nextAnimation = &(*animations)[animationIndex];
 		Animator::mixTime = Animator::totalMixTime = mixTime;
 	}
 	else
 	{
+		Animator::loopingCurrent = looping;
 		currentTime = 0.0f;
 		currentAnimation = &(*animations)[animationIndex];
+
+		// @Bugfix: Could be @HACK, but it's to undo mixing animation if doing an animation interrupt
+		nextTime = 0.0f;
+		nextAnimation = nullptr;
 	}
 	invalidateCache(&currentAnimation->getRootNode());		// Invalidate the cache for the bone bc the animation changed.
 }
