@@ -49,10 +49,11 @@ public:
 	float immediateTurningRequiredSpeed = 0.1f;			// The maximum velocity you can have to keep the ability to immediately turn (while grounded)
 
 	glm::vec2 facingDirection = glm::vec2(0, 1);		// NOTE: this is assumed to always be normalized
-	float facingTurnSpeed = 575.0f;
+	float facingTurnSpeed = 400.0f;
 	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
 
 	float leanLerpTime = 10.0f;
+	float leanMultiplier = 0.1f;							// NOTE: this is one over the number of degrees of delta required to get the maximum lean (e.g. 1/90degrees = 0.011f)
 	float modelOffsetY = -3.35f;
 
 	float animationSpeed = 42.0f;

@@ -218,7 +218,7 @@ void PlayerRender::processMovement()
 
 	renderTransform =
 		glm::translate(glm::mat4(1.0f), modelPosition) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 10.0f)) *
+		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
 }
 
@@ -260,18 +260,16 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 
 			//
-			// Calculate lean amount
+			// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
 			//
-			float deltaFacingDirectionAngle = glm::degrees(newFacingDirectionAngle) - facingDirectionAngle;
+			float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
 			
 			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
 			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
 
 			const float deadZoneDeltaAngle = 0.1f;
-			if (deltaFacingDirectionAngle < -deadZoneDeltaAngle)
-				targetCharacterLeanValue = 1.0f;
-			else if (deltaFacingDirectionAngle > deadZoneDeltaAngle)
-				targetCharacterLeanValue = -1.0f;
+			if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
+				targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
 			else
 				targetCharacterLeanValue = 0.0f;
 		}
@@ -416,7 +414,7 @@ void PlayerRender::processAnimation()
 
 		case 1:
 			// Jump
-			animator.playAnimation(2 + isMoving, 0.0f, false, true);
+			animator.playAnimation(2 + isMoving, 3.0f, false, true);
 			break;
 
 		case 2:
@@ -559,6 +557,7 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed, 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
 	ImGui::DragFloat("Leaning Lerp Time", &((PlayerRender*)baseObject->getRenderComponent())->leanLerpTime);
+	ImGui::DragFloat("Lean Multiplier", &((PlayerRender*)baseObject->getRenderComponent())->leanMultiplier, 0.05f);
 	ImGui::DragFloat("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed, 0.1f);
 	ImGui::DragFloat("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed, 0.1f);
 
