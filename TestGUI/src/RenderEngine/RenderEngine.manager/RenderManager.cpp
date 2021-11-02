@@ -316,7 +316,6 @@ void RenderManager::createShaderPrograms()
 	this->model_program_id = *(GLuint*)Resources::getResource("shader;blinnPhongSkinned");
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
 	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
-	cascaded_shadow_program_id = *(GLuint*)Resources::getResource("shader;csmShadowPass");
 	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
 	text_program_id = *(GLuint*)Resources::getResource("shader;text");
 	hdri_program_id = *(GLuint*)Resources::getResource("shader;hdriGeneration");

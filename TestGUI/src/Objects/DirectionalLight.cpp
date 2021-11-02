@@ -203,7 +203,12 @@ void DirectionalLightLight::renderPassShadowMap()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	//glCullFace(GL_FRONT);  // peter panning
 
+	// NOTE: enabling depth clamping causes the fragments that are too far behind
+	// the clip space to actually just get clamped. This forces things to stay inside
+	// the shadowmap when creating it, especially with the CSM
+	glEnable(GL_DEPTH_CLAMP);
 	MainLoop::getInstance().renderManager->renderSceneShadowPass(cascadedShaderProgram);
+	glDisable(GL_DEPTH_CLAMP);
 
 	//glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
