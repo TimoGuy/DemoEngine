@@ -100,6 +100,11 @@ void PlayerRender::refreshResources()
 	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
 	materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
 
+	materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+	materials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+	materials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
+	materials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
+
 	materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
 	materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
 	materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));

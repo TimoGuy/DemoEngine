@@ -9,7 +9,7 @@ Bone::Bone(int id, const aiNodeAnim* channel) : id(id)
 		aiVector3D aiPosition = channel->mPositionKeys[i].mValue;
 		float timeStamp = (float)channel->mPositionKeys[i].mTime;
 		KeyPosition data;
-		data.position = glm::vec3(aiPosition.x, aiPosition.y, aiPosition.z);				// FIXME: For some reason the positioning of the models isn't quite right. It's like the bones are twice as long as they're supposed to be... like the bone moves twice in bone space...
+		data.position = glm::vec3(aiPosition.x, aiPosition.y, aiPosition.z);
 		data.timeStamp = timeStamp;
 		positions.push_back(data);
 	}
