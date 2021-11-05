@@ -19,6 +19,7 @@ struct AssimpNodeData
 	int cacheBoneInfo_id;
 	glm::mat4 cacheBoneInfo_offset;
 	bool cacheBoneInfoExists;
+	int cacheAnimatedRopeIndex;
 };
 
 class Animation

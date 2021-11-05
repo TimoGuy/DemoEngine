@@ -9,7 +9,7 @@
 #include <iomanip>
 
 
-Animator::Animator(std::vector<Animation>* animations) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
+Animator::Animator(std::vector<Animation>* animations, const std::vector<AnimatedRope>& animatedRopes) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr), animatedRopes(animatedRopes)
 {
 	playAnimation(0);
 
@@ -130,6 +130,20 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 			node->cacheBoneInfo_id = boneInfoMap[nodeName].id;
 			node->cacheBoneInfo_offset = boneInfoMap[nodeName].offset;
 			node->cacheBoneInfoExists = true;
+			node->cacheAnimatedRopeIndex = -1;
+
+			//
+			// Assign that to an ik thing
+			//
+			for (size_t i = 0; i < animatedRopes.size(); i++)
+			{
+				if (animatedRopes[i].rootBoneName == nodeName)
+				{
+					animatedRopes[i].cacheFinalBoneMatrixIndex = node->cacheBoneInfo_id;
+					node->cacheAnimatedRopeIndex = (int)i;
+					break;
+				}
+			}
 		}
 		else
 		{
@@ -186,6 +200,13 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 	{
 		// Populate bone matrices for shader
 		finalBoneMatrices[node->cacheBoneInfo_id] = globalRootInverseMatrix * globalTransformation * node->cacheBoneInfo_offset;
+
+		//if (node->cacheAnimatedRopeIndex >= 0)
+		//{
+		//	glm::vec4 position(0, 0, 0, 1);
+		//	position = globalTransformation * position;
+		//	std::cout << "Position of sideburn.L: " << position.x << ",\t" << position.y << ",\t" << position.z << std::endl;
+		//}
 	}
 
 	// Recursively find childrens' bone transformation

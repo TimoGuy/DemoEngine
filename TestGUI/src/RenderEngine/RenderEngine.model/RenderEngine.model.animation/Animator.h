@@ -3,11 +3,17 @@
 #include "Animation.h"
 
 
+struct AnimatedRope
+{
+	std::string rootBoneName;
+	int cacheFinalBoneMatrixIndex;
+};
+
 class Animator
 {
 public:
 	Animator() { }		// NOTE: Creation of the default constructor is just to appease the compiler
-	Animator(std::vector<Animation>* animations);
+	Animator(std::vector<Animation>* animations, const std::vector<AnimatedRope>& animatedRopes = {});
 	
 	void updateAnimation(float deltaTime);
 	void playAnimation(unsigned int animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
@@ -30,5 +36,10 @@ private:
 	unsigned int currentAnimationIndex = -1;		// This is nextAnimation's id when it's transitioning too btw.
 
 	void invalidateCache(AssimpNodeData* node);
+
+	//
+	// For hair or other interactions
+	//
+	std::vector<AnimatedRope> animatedRopes;
 };
 

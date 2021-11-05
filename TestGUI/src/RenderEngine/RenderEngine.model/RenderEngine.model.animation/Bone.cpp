@@ -1,4 +1,5 @@
 #include "Bone.h"
+#include <iostream>
 
 
 Bone::Bone(int id, const aiNodeAnim* channel) : id(id)

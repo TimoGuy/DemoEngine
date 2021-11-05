@@ -82,7 +82,7 @@ void PlayerRender::refreshResources()
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
 	model = (Model*)Resources::getResource("model;slimeGirl");
-	animator = Animator(&model->getAnimations());
+	animator = Animator(&model->getAnimations(), { { "Hair Sideburn1.R" }, { "Hair Sideburn1.L" }});			// TODO: continue from here
 
 	materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
 	materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
@@ -471,35 +471,6 @@ void PlayerRender::render()
 	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
 #endif
 
-	//if (MainLoop::getInstance().playMode)
-	//{
-	//	;			// @Copypasta
-	//	for (size_t i = 0; i < transforms.size(); i++)
-	//		glUniformMatrix4fv(
-	//			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-	//			1,
-	//			GL_FALSE,
-	//			glm::value_ptr(transforms[i])
-	//		);
-	//}
-	//else
-	//{
-	//	for (size_t i = 0; i < 100; i++)
-	//		glUniformMatrix4fv(
-	//			glGetUniformLocation(pbrShaderProgramId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-	//			1,
-	//			GL_FALSE,
-	//			glm::value_ptr(glm::mat4(1.0f))
-	//		);
-	//}
-	//
-	////
-	//// Setup the transformation matrices and lights
-	////
-	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
-	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
-
-
 	//
 	// Update the animation bones in the render manager
 	//
@@ -510,24 +481,6 @@ void PlayerRender::render()
 
 void PlayerRender::renderShadow(GLuint programId)
 {
-	//auto transforms = animator.getFinalBoneMatrices();			// @Copypasta
-	//for (size_t i = 0; i < transforms.size(); i++)
-	//	glUniformMatrix4fv(
-	//		glGetUniformLocation(programId, ("finalBoneMatrices[" + std::to_string(i) + "]").c_str()),
-	//		1,
-	//		GL_FALSE,
-	//		glm::value_ptr(transforms[i])
-	//	);
-	//
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(programId, "modelMatrix"),
-	//	1,
-	//	GL_FALSE,
-	//	glm::value_ptr(renderTransform)
-	//);
-	//// TODO: add skeletal stuff too eh!
-	//model->render(programId);
-
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
