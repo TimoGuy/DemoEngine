@@ -6,6 +6,9 @@
 struct AnimatedRope
 {
 	glm::mat4 globalTransformation;
+	size_t boneId;
+	glm::mat4 boneOffset;
+	glm::mat4 parentTransform;
 };
 
 class Animator
@@ -24,6 +27,7 @@ public:
 	inline Animation* getCurrentAnimation() { return currentAnimation; }
 
 	inline const AnimatedRope& getBoneTransformation(const std::string& boneName) { return boneTransformationsToKeepTrackOfMap[boneName]; }
+	inline const void setBoneTransformation(const std::string& boneName, const glm::mat4& transformation) { finalBoneMatrices[boneTransformationsToKeepTrackOfMap[boneName].boneId] = currentAnimation->getGlobalRootInverseMatrix() * transformation * boneTransformationsToKeepTrackOfMap[boneName].boneOffset; }
 
 private:
 	std::vector<glm::mat4> finalBoneMatrices;

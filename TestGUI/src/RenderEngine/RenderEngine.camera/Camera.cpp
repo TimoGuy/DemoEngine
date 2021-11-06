@@ -121,7 +121,7 @@ void Camera::removeVirtualCamera(VirtualCamera* virtualCamera)
 
 void Camera::updateToVirtualCameras()
 {
-	if (!MainLoop::getInstance().playMode)
+	if (!MainLoop::getInstance().playMode || !lockedCursor)
 		return;
 
 	//

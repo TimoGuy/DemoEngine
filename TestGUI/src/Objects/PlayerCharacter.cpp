@@ -110,7 +110,8 @@ void PlayerRender::refreshResources()
 	materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
 	materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
 	materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
+	//materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
+	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
 	materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
 	materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
 	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
@@ -346,6 +347,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
+glm::vec3 amazingChounoUryoku = glm::vec3(0, 1, 0);
+
 physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 {
 	//
@@ -464,39 +467,73 @@ void PlayerRender::processAnimation()
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
-	static bool firstTime = true;
-	if (firstTime)
+	if (MainLoop::getInstance().playMode)
 	{
-		//
-		// Setup Rope simulations
-		//
-		std::vector<glm::vec3> rightSideburnPoints;
-		const glm::vec4 neutralPosition(0, 0, 0, 1);
-		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
-		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
-		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
-		rightSideburn.initializePoints(rightSideburnPoints);
+		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime)
+		{
+			//
+			// Setup Rope simulations
+			//
+			std::vector<glm::vec3> rightSideburnPoints;
+			const glm::vec4 neutralPosition(0, 0, 0, 1);
+			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
+			rightSideburn.initializePoints(rightSideburnPoints);
 
-		std::vector<glm::vec3> leftSideburnPoints;
-		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
-		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
-		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
-		leftSideburn.initializePoints(leftSideburnPoints);
+			std::vector<glm::vec3> leftSideburnPoints;
+			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
+			leftSideburn.initializePoints(leftSideburnPoints);
 
-		firstTime = false;
-	}
-	else
-	{
-		//
-		// Just reset/lock the first bone
-		//
-		static const glm::vec4 neutralPosition(0, 0, 0, 1);
-		leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-		leftSideburn.simulateRope();
-		rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-		rightSideburn.simulateRope();
+			rightSideburn.isFirstTime = false;
+			leftSideburn.isFirstTime = false;
+		}
+		else
+		{
+			//
+			// Just reset/lock the first bone
+			//
+			static const glm::vec4 neutralPosition(0, 0, 0, 1);
+			leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			
+			leftSideburn.simulateRope();
+			rightSideburn.simulateRope();
+
+			const glm::mat4 inverseRenderTransform = glm::inverse(getRenderTransform());
+
+			const glm::vec3 r0 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(0), 1);
+			const glm::vec3 r1 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(1), 1);
+			const glm::vec3 r2 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(2), 1);
+			const glm::vec3 r3 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(3), 1);
+			const glm::vec3 l0 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(0), 1);
+			const glm::vec3 l1 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(1), 1);
+			const glm::vec3 l2 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(2), 1);
+			const glm::vec3 l3 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(3), 1);
+
+			const glm::quat rotation180(glm::radians(glm::vec3(180, 0, 0)));
+
+			glm::quat rotation;
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r1 - r0));
+			animator.setBoneTransformation("Hair Sideburn1.R", glm::translate(glm::mat4(1.0f), r0) * glm::toMat4(rotation * rotation180));
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r2 - r1));
+			animator.setBoneTransformation("Hair Sideburn2.R", glm::translate(glm::mat4(1.0f), r1)* glm::toMat4(rotation * rotation180));
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r3 - r2));
+			animator.setBoneTransformation("Hair Sideburn3.R", glm::translate(glm::mat4(1.0f), r2)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn4.R", glm::translate(glm::mat4(1.0f), r3)* glm::toMat4(rotation * rotation180));
+
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l1 - l0));
+			animator.setBoneTransformation("Hair Sideburn1.L", glm::translate(glm::mat4(1.0f), l0)* glm::toMat4(rotation * rotation180));
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l2 - l1));
+			animator.setBoneTransformation("Hair Sideburn2.L", glm::translate(glm::mat4(1.0f), l1)* glm::toMat4(rotation * rotation180));
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l3 - l2));
+			animator.setBoneTransformation("Hair Sideburn3.L", glm::translate(glm::mat4(1.0f), l2)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn4.L", glm::translate(glm::mat4(1.0f), l3)* glm::toMat4(rotation * rotation180));
+		}
 	}
 
 	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
@@ -572,6 +609,8 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
 	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
+
+	ImGui::DragFloat3("Euler for hair", &amazingChounoUryoku.x);
 }
 
 void PlayerImGui::renderImGui()
@@ -600,17 +639,20 @@ void PlayerImGui::renderImGui()
 	//
 	// Draw the ik rope parts
 	//
-	PlayerRender* pr = (PlayerRender*)baseObject->getRenderComponent();
+	if (MainLoop::getInstance().playMode)
+	{
+		PlayerRender* pr = (PlayerRender*)baseObject->getRenderComponent();
 
-	static physx::PxSphereGeometry debugSphere(0.25f);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(0)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(1)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(2)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(3)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(0)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(1)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(2)), debugSphere);
-	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(3)), debugSphere);
+		static physx::PxSphereGeometry debugSphere(0.25f);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(0)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(1)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(2)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(3)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(0)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(1)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(2)), debugSphere);
+		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(3)), debugSphere);
+	}
 
 	ImGuiComponent::renderImGui();
 }
@@ -623,6 +665,8 @@ void PlayerImGui::renderImGui()
 void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
 {
 	RopeSimulation::points = RopeSimulation::prevPoints = points;
+
+	size_t counter = 0;
 	for (size_t i = 0; i < points.size() - 1; i++)
 	{
 		distances.push_back(glm::length(points[i] - points[i + 1]));
@@ -656,6 +700,21 @@ void RopeSimulation::simulateRope()
 	{
 		for (size_t j = 0; j < distances.size(); j++)
 		{
+			if (glm::length(points[j] - points[j + 1]) < distances[j])
+				continue;
+
+			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;
+			glm::vec3 direction = glm::normalize(points[j] - points[j + 1]);
+			if (j > 0)
+				points[j] = midpoint + direction * distances[j] / 2.0f;
+			points[j + 1] = midpoint - direction * distances[j] / 2.0f;
+		}
+		for (int j = (int)distances.size() - 1; j >= 0; j--)
+		{
+			if (glm::length(points[j] - points[j + 1]) < distances[j])
+				continue;
+
+			// NOTE: ignore dumb warnings
 			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;
 			glm::vec3 direction = glm::normalize(points[j] - points[j + 1]);
 			if (j > 0)

@@ -204,7 +204,12 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 
 		// Insert the globalTransformation into a bone (if it's in boneTransformationsToKeepTrackOfMap)
 		if (node->cacheAnimatedRope != nullptr)
+		{
 			node->cacheAnimatedRope->globalTransformation = globalTransformation;
+			node->cacheAnimatedRope->boneId = node->cacheBoneInfo_id;
+			node->cacheAnimatedRope->boneOffset = node->cacheBoneInfo_offset;
+			node->cacheAnimatedRope->parentTransform = parentTransform;
+		}
 	}
 
 	// Recursively find childrens' bone transformation

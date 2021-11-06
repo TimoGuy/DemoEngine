@@ -19,6 +19,8 @@ public:
 
 	glm::vec3 getPoint(size_t index) { return points[index]; }
 
+	bool isFirstTime = true;
+
 private:
 	std::vector<glm::vec3> points;
 	std::vector<glm::vec3> prevPoints;
