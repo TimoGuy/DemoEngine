@@ -3,6 +3,8 @@
 #include "Bone.h"
 
 
+struct AnimatedRope;
+
 struct AssimpNodeData
 {
 	glm::mat4 transformation;
@@ -19,7 +21,7 @@ struct AssimpNodeData
 	int cacheBoneInfo_id;
 	glm::mat4 cacheBoneInfo_offset;
 	bool cacheBoneInfoExists;
-	int cacheAnimatedRopeIndex;
+	AnimatedRope* cacheAnimatedRope;
 };
 
 class Animation

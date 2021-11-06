@@ -6,6 +6,25 @@
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
 
+//
+// TODO: place this class inside of somewhere!!!
+//
+class RopeSimulation
+{
+public:
+	void initializePoints(const std::vector<glm::vec3>& points);
+	void setPointPosition(size_t index, const glm::vec3& position);
+
+	void simulateRope();
+
+	glm::vec3 getPoint(size_t index) { return points[index]; }
+
+private:
+	std::vector<glm::vec3> points;
+	std::vector<glm::vec3> prevPoints;
+	std::vector<float> distances;
+};
+
 
 struct VirtualCamera;
 
@@ -80,6 +99,12 @@ private:
 	bool isMoving = false;
 	bool waitUntilAnimationFinished = false;
 	bool prevIsGrounded;
+
+public:		// TODO: make this private (delete this!!!!!!)
+	//
+	// Rope Simulations
+	//
+	RopeSimulation leftSideburn, rightSideburn;
 };
 
 class PlayerCharacter : public BaseObject

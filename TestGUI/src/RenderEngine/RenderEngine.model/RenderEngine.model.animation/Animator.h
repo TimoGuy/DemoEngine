@@ -5,15 +5,14 @@
 
 struct AnimatedRope
 {
-	std::string rootBoneName;
-	int cacheFinalBoneMatrixIndex;
+	glm::mat4 globalTransformation;
 };
 
 class Animator
 {
 public:
 	Animator() { }		// NOTE: Creation of the default constructor is just to appease the compiler
-	Animator(std::vector<Animation>* animations, const std::vector<AnimatedRope>& animatedRopes = {});
+	Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf = {});
 	
 	void updateAnimation(float deltaTime);
 	void playAnimation(unsigned int animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
@@ -23,6 +22,8 @@ public:
 
 	inline float getCurrentTime() { return currentTime; }
 	inline Animation* getCurrentAnimation() { return currentAnimation; }
+
+	inline const AnimatedRope& getBoneTransformation(const std::string& boneName) { return boneTransformationsToKeepTrackOfMap[boneName]; }
 
 private:
 	std::vector<glm::mat4> finalBoneMatrices;
@@ -40,6 +41,6 @@ private:
 	//
 	// For hair or other interactions
 	//
-	std::vector<AnimatedRope> animatedRopes;
+	std::map<std::string, AnimatedRope> boneTransformationsToKeepTrackOfMap;
 };
 

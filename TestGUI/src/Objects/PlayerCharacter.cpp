@@ -82,8 +82,24 @@ void PlayerRender::refreshResources()
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
 	model = (Model*)Resources::getResource("model;slimeGirl");
-	animator = Animator(&model->getAnimations(), { { "Hair Sideburn1.R" }, { "Hair Sideburn1.L" }});			// TODO: continue from here
+	animator =
+		Animator(
+			&model->getAnimations(),
+			{
+				"Hair Sideburn1.R",
+				"Hair Sideburn2.R",
+				"Hair Sideburn3.R",
+				"Hair Sideburn4.R",
+				"Hair Sideburn1.L",
+				"Hair Sideburn2.L",
+				"Hair Sideburn3.L",
+				"Hair Sideburn4.L"
+			}
+		);
 
+	//
+	// Load materials
+	//
 	materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
 	materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
 	materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
@@ -268,7 +284,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 			// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
 			//
 			float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
-			
+
 			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
 			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
 
@@ -448,7 +464,41 @@ void PlayerRender::processAnimation()
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
-	
+	static bool firstTime = true;
+	if (firstTime)
+	{
+		//
+		// Setup Rope simulations
+		//
+		std::vector<glm::vec3> rightSideburnPoints;
+		const glm::vec4 neutralPosition(0, 0, 0, 1);
+		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
+		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
+		rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
+		rightSideburn.initializePoints(rightSideburnPoints);
+
+		std::vector<glm::vec3> leftSideburnPoints;
+		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
+		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
+		leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
+		leftSideburn.initializePoints(leftSideburnPoints);
+
+		firstTime = false;
+	}
+	else
+	{
+		//
+		// Just reset/lock the first bone
+		//
+		static const glm::vec4 neutralPosition(0, 0, 0, 1);
+		leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+		leftSideburn.simulateRope();
+		rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+		rightSideburn.simulateRope();
+	}
+
 	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
 }
 
@@ -525,7 +575,7 @@ void PlayerImGui::propertyPanelImGui()
 }
 
 void PlayerImGui::renderImGui()
-{	
+{
 	//
 	// Draw the velocity line
 	// TODO: add in a drawline function in physicsUtils.h
@@ -547,5 +597,70 @@ void PlayerImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
 
+	//
+	// Draw the ik rope parts
+	//
+	PlayerRender* pr = (PlayerRender*)baseObject->getRenderComponent();
+
+	static physx::PxSphereGeometry debugSphere(0.25f);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(0)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(1)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(2)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(3)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(0)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(1)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(2)), debugSphere);
+	PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(3)), debugSphere);
+
 	ImGuiComponent::renderImGui();
+}
+
+
+
+//
+// ROPESIMULATION
+//
+void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
+{
+	RopeSimulation::points = RopeSimulation::prevPoints = points;
+	for (size_t i = 0; i < points.size() - 1; i++)
+	{
+		distances.push_back(glm::length(points[i] - points[i + 1]));
+	}
+}
+
+void RopeSimulation::setPointPosition(size_t index, const glm::vec3& position)
+{
+	points[index] = position;
+}
+
+void RopeSimulation::simulateRope()
+{
+	const float deltaTime = MainLoop::getInstance().deltaTime;
+
+	//
+	// Part 1: cycle thru all points (except #0 is locked, so skip that one), and update their positions
+	//
+	for (size_t i = 1; i < points.size(); i++)
+	{
+		glm::vec3 savedPoint = points[i];
+		points[i] += (points[i] - prevPoints[i]) * 50.0f * deltaTime + glm::vec3(0, -9.8f * 50.0f * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
+		prevPoints[i] = savedPoint;
+	}
+
+	//
+	// Part 2: solve x times to try to get the distance correct again!
+	//
+	const int numIterations = 5;
+	for (int i = 0; i < numIterations; i++)
+	{
+		for (size_t j = 0; j < distances.size(); j++)
+		{
+			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;
+			glm::vec3 direction = glm::normalize(points[j] - points[j + 1]);
+			if (j > 0)
+				points[j] = midpoint + direction * distances[j] / 2.0f;
+			points[j + 1] = midpoint - direction * distances[j] / 2.0f;
+		}
+	}
 }
