@@ -347,7 +347,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
-glm::vec3 amazingChounoUryoku = glm::vec3(0, 1, 0);
+float ropeSimulationWeight = 10.0f;
 
 physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 {
@@ -504,6 +504,9 @@ void PlayerRender::processAnimation()
 			leftSideburn.simulateRope();
 			rightSideburn.simulateRope();
 
+			//
+			// Do ik calculations for sideburns
+			//
 			const glm::mat4 inverseRenderTransform = glm::inverse(getRenderTransform());
 
 			const glm::vec3 r0 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(0), 1);
@@ -610,7 +613,7 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
 	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
 
-	ImGui::DragFloat3("Euler for hair", &amazingChounoUryoku.x);
+	ImGui::DragFloat("Hair Rope Sim Weight", &ropeSimulationWeight, 0.1f);
 }
 
 void PlayerImGui::renderImGui()
@@ -636,24 +639,6 @@ void PlayerImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
 
-	//
-	// Draw the ik rope parts
-	//
-	if (MainLoop::getInstance().playMode)
-	{
-		PlayerRender* pr = (PlayerRender*)baseObject->getRenderComponent();
-
-		static physx::PxSphereGeometry debugSphere(0.25f);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(0)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(1)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(2)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->leftSideburn.getPoint(3)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(0)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(1)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(2)), debugSphere);
-		//PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), pr->rightSideburn.getPoint(3)), debugSphere);
-	}
-
 	ImGuiComponent::renderImGui();
 }
 
@@ -675,7 +660,13 @@ void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
 
 void RopeSimulation::setPointPosition(size_t index, const glm::vec3& position)
 {
+	glm::vec3 deltaMovement = position - points[index];
 	points[index] = position;
+
+	// NOTE: this is for alleviating glitchyness when point moves too much.
+	// This code propogates the movement from this new set operation to the other points of the rope
+	for (size_t i = 0; i < prevPoints.size(); i++)
+		prevPoints[i] += deltaMovement;
 }
 
 void RopeSimulation::simulateRope()
@@ -688,14 +679,14 @@ void RopeSimulation::simulateRope()
 	for (size_t i = 1; i < points.size(); i++)
 	{
 		glm::vec3 savedPoint = points[i];
-		points[i] += (points[i] - prevPoints[i]) * 50.0f * deltaTime + glm::vec3(0, -9.8f * 50.0f * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
+		points[i] += (points[i] - prevPoints[i]) * 60.0f * deltaTime + glm::vec3(0, -9.8f * ropeSimulationWeight * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
 		prevPoints[i] = savedPoint;
 	}
 
 	//
 	// Part 2: solve x times to try to get the distance correct again!
 	//
-	const int numIterations = 5;
+	const int numIterations = 10;
 	for (int i = 0; i < numIterations; i++)
 	{
 		for (size_t j = 0; j < distances.size(); j++)
