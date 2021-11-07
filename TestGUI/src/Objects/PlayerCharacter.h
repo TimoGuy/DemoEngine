@@ -61,7 +61,7 @@ public:
 
 	// TODO: tune these lol (jk jk)
 	// And then after, we can make these all consts!!!!
-	float jumpSpeed = 2.5f;
+	float jumpSpeed = 2.0f;								// Previously was 2.5f, however, after looking at it with a different camera angle, now we know that's way too much
 	float groundAcceleration = 4.2f;
 	float groundDecceleration = 9.0f;
 	float airAcceleration = 2.5f;
