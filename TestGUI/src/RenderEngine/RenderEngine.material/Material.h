@@ -37,6 +37,7 @@ public:
 	ZellyMaterial(glm::vec3 color);
 
 	void applyTextureUniforms(const glm::mat4& modelMatrix);
+	inline glm::vec3& getColor() { return color; }
 
 private:
 	glm::vec3 color;

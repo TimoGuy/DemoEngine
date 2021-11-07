@@ -124,4 +124,16 @@ void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix)
 	setupShader(myShaderId, &modelMatrix);
 
 	glUniform3fv(glGetUniformLocation(myShaderId, "zellyColor"), 1, &color.x);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
+	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 2);
 }

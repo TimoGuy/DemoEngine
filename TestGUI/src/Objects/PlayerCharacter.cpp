@@ -61,7 +61,7 @@ PlayerRender::~PlayerRender()
 {
 	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
 }
-
+bool firstTimeResources = true;
 void PlayerRender::refreshResources()
 {
 	//
@@ -82,22 +82,24 @@ void PlayerRender::refreshResources()
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
 	model = (Model*)Resources::getResource("model;slimeGirl");
-	animator =
-		Animator(
-			&model->getAnimations(),
-			{
-				"Hair Sideburn1.R",
-				"Hair Sideburn2.R",
-				"Hair Sideburn3.R",
-				"Hair Sideburn4.R",
-				"Hair Sideburn1.L",
-				"Hair Sideburn2.L",
-				"Hair Sideburn3.L",
-				"Hair Sideburn4.L",
+	if (firstTimeResources)
+		animator =
+			Animator(
+				&model->getAnimations(),
+				{
+					"Hair Sideburn1.R",
+					"Hair Sideburn2.R",
+					"Hair Sideburn3.R",
+					"Hair Sideburn4.R",
+					"Hair Sideburn1.L",
+					"Hair Sideburn2.L",
+					"Hair Sideburn3.L",
+					"Hair Sideburn4.L",
 
-				"Back Attachment"
-			}
-		);
+					"Back Attachment"
+				}
+			);
+	firstTimeResources = false;
 
 	//
 	// Load materials
@@ -112,8 +114,7 @@ void PlayerRender::refreshResources()
 	materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
 	materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
 	materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-	//materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
-	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
+	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
 	materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
 	materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
 	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
@@ -574,7 +575,7 @@ void PlayerRender::preRenderUpdate()
 void PlayerRender::render()
 {
 #ifdef _DEBUG
-	//refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
+	refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
 #endif
 
 	//
@@ -628,30 +629,34 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
 	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
+
+	ImGui::Separator();
+	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 }
 
 void PlayerImGui::renderImGui()
 {
+	////
+	//// Draw the velocity line
+	//// TODO: add in a drawline function in physicsUtils.h
+	////
+	//glm::vec3 pos1 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
+	//physx::PxVec3 velocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+	//glm::vec3 pos2 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(velocity.x, velocity.y, velocity.z));
 	//
-	// Draw the velocity line
-	// TODO: add in a drawline function in physicsUtils.h
+	//if (pos1.z > 0.0f && pos2.z > 0.0f)
+	//{
+	//	pos1 /= pos1.z;
+	//	pos1.x = pos1.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+	//	pos1.y = -pos1.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 	//
-	glm::vec3 pos1 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
-	physx::PxVec3 velocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
-	glm::vec3 pos2 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(velocity.x, velocity.y, velocity.z));
-
-	if (pos1.z > 0.0f && pos2.z > 0.0f)
-	{
-		pos1 /= pos1.z;
-		pos1.x = pos1.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-		pos1.y = -pos1.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
-
-		pos2 /= pos2.z;
-		pos2.x = pos2.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-		pos2.y = -pos2.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
-
-		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
-	}
+	//	pos2 /= pos2.z;
+	//	pos2.x = pos2.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+	//	pos2.y = -pos2.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+	//
+	//	ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
+	//}
 
 	ImGuiComponent::renderImGui();
 }
