@@ -15,11 +15,12 @@ public:
 	void initializePoints(const std::vector<glm::vec3>& points);
 	void setPointPosition(size_t index, const glm::vec3& position);
 
-	void simulateRope();
+	void simulateRope(float gravityMultiplier);
 
 	glm::vec3 getPoint(size_t index) { return points[index]; }
 
 	bool isFirstTime = true;
+	bool limitTo45degrees = false;
 
 private:
 	std::vector<glm::vec3> points;
@@ -106,7 +107,7 @@ public:		// TODO: make this private (delete this!!!!!!)
 	//
 	// Rope Simulations
 	//
-	RopeSimulation leftSideburn, rightSideburn;
+	RopeSimulation leftSideburn, rightSideburn, backAttachment;
 };
 
 class PlayerCharacter : public BaseObject

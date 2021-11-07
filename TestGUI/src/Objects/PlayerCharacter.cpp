@@ -93,7 +93,9 @@ void PlayerRender::refreshResources()
 				"Hair Sideburn1.L",
 				"Hair Sideburn2.L",
 				"Hair Sideburn3.L",
-				"Hair Sideburn4.L"
+				"Hair Sideburn4.L",
+
+				"Back Attachment"
 			}
 		);
 
@@ -347,8 +349,6 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
-float ropeSimulationWeight = 10.0f;
-
 physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 {
 	//
@@ -469,7 +469,7 @@ void PlayerRender::processAnimation()
 	//
 	if (MainLoop::getInstance().playMode)
 	{
-		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime)
+		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime || backAttachment.isFirstTime)
 		{
 			//
 			// Setup Rope simulations
@@ -489,8 +489,15 @@ void PlayerRender::processAnimation()
 			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
 			leftSideburn.initializePoints(leftSideburnPoints);
 
+			std::vector<glm::vec3> backAttachmentPoints;
+			backAttachmentPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			backAttachmentPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
+			backAttachment.initializePoints(backAttachmentPoints);
+			backAttachment.limitTo45degrees = true;
+			
 			rightSideburn.isFirstTime = false;
 			leftSideburn.isFirstTime = false;
+			backAttachment.isFirstTime = false;
 		}
 		else
 		{
@@ -500,9 +507,11 @@ void PlayerRender::processAnimation()
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
 			leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
 			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			backAttachment.setPointPosition(0, getRenderTransform()* animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 			
-			leftSideburn.simulateRope();
-			rightSideburn.simulateRope();
+			leftSideburn.simulateRope(10.0f);
+			rightSideburn.simulateRope(10.0f);
+			backAttachment.simulateRope(850.0f);
 
 			//
 			// Do ik calculations for sideburns
@@ -513,10 +522,14 @@ void PlayerRender::processAnimation()
 			const glm::vec3 r1 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(1), 1);
 			const glm::vec3 r2 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(2), 1);
 			const glm::vec3 r3 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(3), 1);
+
 			const glm::vec3 l0 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(0), 1);
 			const glm::vec3 l1 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(1), 1);
 			const glm::vec3 l2 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(2), 1);
 			const glm::vec3 l3 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(3), 1);
+
+			const glm::vec3 b0 = inverseRenderTransform * glm::vec4(backAttachment.getPoint(0), 1);
+			const glm::vec3 b1 = inverseRenderTransform * glm::vec4(backAttachment.getPoint(1), 1);
 
 			const glm::quat rotation180(glm::radians(glm::vec3(180, 0, 0)));
 
@@ -524,18 +537,21 @@ void PlayerRender::processAnimation()
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r1 - r0));
 			animator.setBoneTransformation("Hair Sideburn1.R", glm::translate(glm::mat4(1.0f), r0) * glm::toMat4(rotation * rotation180));
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r2 - r1));
-			animator.setBoneTransformation("Hair Sideburn2.R", glm::translate(glm::mat4(1.0f), r1)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn2.R", glm::translate(glm::mat4(1.0f), r1) * glm::toMat4(rotation * rotation180));
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(r3 - r2));
-			animator.setBoneTransformation("Hair Sideburn3.R", glm::translate(glm::mat4(1.0f), r2)* glm::toMat4(rotation * rotation180));
-			animator.setBoneTransformation("Hair Sideburn4.R", glm::translate(glm::mat4(1.0f), r3)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn3.R", glm::translate(glm::mat4(1.0f), r2) * glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn4.R", glm::translate(glm::mat4(1.0f), r3) * glm::toMat4(rotation * rotation180));
 
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l1 - l0));
-			animator.setBoneTransformation("Hair Sideburn1.L", glm::translate(glm::mat4(1.0f), l0)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn1.L", glm::translate(glm::mat4(1.0f), l0) * glm::toMat4(rotation * rotation180));
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l2 - l1));
-			animator.setBoneTransformation("Hair Sideburn2.L", glm::translate(glm::mat4(1.0f), l1)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn2.L", glm::translate(glm::mat4(1.0f), l1) * glm::toMat4(rotation * rotation180));
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l3 - l2));
-			animator.setBoneTransformation("Hair Sideburn3.L", glm::translate(glm::mat4(1.0f), l2)* glm::toMat4(rotation * rotation180));
-			animator.setBoneTransformation("Hair Sideburn4.L", glm::translate(glm::mat4(1.0f), l3)* glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn3.L", glm::translate(glm::mat4(1.0f), l2) * glm::toMat4(rotation * rotation180));
+			animator.setBoneTransformation("Hair Sideburn4.L", glm::translate(glm::mat4(1.0f), l3) * glm::toMat4(rotation * rotation180));
+
+			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(b1 - b0));
+			animator.setBoneTransformation("Back Attachment", glm::translate(glm::mat4(1.0f), b0) * glm::toMat4(rotation * rotation180));
 		}
 	}
 
@@ -612,8 +628,6 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
 	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
-
-	ImGui::DragFloat("Hair Rope Sim Weight", &ropeSimulationWeight, 0.1f);
 }
 
 void PlayerImGui::renderImGui()
@@ -669,7 +683,7 @@ void RopeSimulation::setPointPosition(size_t index, const glm::vec3& position)
 		prevPoints[i] += deltaMovement;
 }
 
-void RopeSimulation::simulateRope()
+void RopeSimulation::simulateRope(float gravityMultiplier)
 {
 	const float deltaTime = MainLoop::getInstance().deltaTime;
 
@@ -679,7 +693,15 @@ void RopeSimulation::simulateRope()
 	for (size_t i = 1; i < points.size(); i++)
 	{
 		glm::vec3 savedPoint = points[i];
-		points[i] += (points[i] - prevPoints[i]) * 60.0f * deltaTime + glm::vec3(0, -9.8f * ropeSimulationWeight * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
+		points[i] += (points[i] - prevPoints[i]) * 60.0f * deltaTime + glm::vec3(0, -9.8f * gravityMultiplier * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
+		
+		// Limit to 45 degrees
+		if (limitTo45degrees)
+		{
+			const float sin45deg = 0.707106781f;
+			points[i].y = std::min(points[i].y, points[i - 1].y - distances[i - 1] * sin45deg);
+		}
+		
 		prevPoints[i] = savedPoint;
 	}
 
@@ -691,8 +713,8 @@ void RopeSimulation::simulateRope()
 	{
 		for (size_t j = 0; j < distances.size(); j++)
 		{
-			if (glm::length(points[j] - points[j + 1]) < distances[j])
-				continue;
+			//if (glm::length(points[j] - points[j + 1]) < distances[j])
+			//	continue;
 
 			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;
 			glm::vec3 direction = glm::normalize(points[j] - points[j + 1]);
@@ -702,8 +724,8 @@ void RopeSimulation::simulateRope()
 		}
 		for (int j = (int)distances.size() - 1; j >= 0; j--)
 		{
-			if (glm::length(points[j] - points[j + 1]) < distances[j])
-				continue;
+			//if (glm::length(points[j] - points[j + 1]) < distances[j])
+			//	continue;
 
 			// NOTE: ignore dumb warnings
 			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;
