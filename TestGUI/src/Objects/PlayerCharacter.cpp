@@ -698,7 +698,7 @@ void RopeSimulation::simulateRope(float gravityMultiplier)
 	for (size_t i = 1; i < points.size(); i++)
 	{
 		glm::vec3 savedPoint = points[i];
-		points[i] += (points[i] - prevPoints[i]) * 0.0166666667f / deltaTime + glm::vec3(0, -9.8f * gravityMultiplier * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
+		points[i] += (points[i] - prevPoints[i]) + glm::vec3(0, -9.8f * gravityMultiplier * deltaTime * deltaTime, 0);		// TODO: figure out why the gravity term requires deltaTime * deltaTime instead of regular stuff huh
 		
 		// Limit to 45 degrees
 		if (limitTo45degrees)
