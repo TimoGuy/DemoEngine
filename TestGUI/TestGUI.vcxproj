@@ -108,6 +108,7 @@
     <ClCompile Include="src\TinyFileDialogs\tinyfiledialogs.c" />
     <ClCompile Include="src\Utils\FileLoading.cpp" />
     <ClCompile Include="src\Utils\GameState.cpp" />
+    <ClCompile Include="src\Utils\Messages.cpp" />
     <ClCompile Include="src\Utils\PhysicsUtils.cpp" />
     <ClCompile Include="src\Objects\DirectionalLight.cpp" />
     <ClCompile Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="src\RenderEngine\RenderEngine.resources\Resources.h" />
     <ClInclude Include="src\TinyFileDialogs\tinyfiledialogs.h" />
     <ClInclude Include="src\Utils\FileLoading.h" />
+    <ClInclude Include="src\Utils\Messages.h" />
     <ClInclude Include="src\Utils\PhysicsTypes.h" />
     <ClInclude Include="src\Utils\PhysicsUtils.h" />
     <ClInclude Include="src\Objects\DirectionalLight.h" />

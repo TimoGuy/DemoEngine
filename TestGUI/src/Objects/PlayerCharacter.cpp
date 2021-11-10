@@ -9,6 +9,7 @@
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
+#include "../Utils/Messages.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
@@ -417,12 +418,27 @@ void PlayerRender::processAnimation()
 			animationState = 1;
 		else
 		{
+			// Wait until land animation is finished
 			float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
 			float duration = animator.getCurrentAnimation()->getDuration();
 			if (time >= duration)
 				// Standing
 				animationState = 0;
 		}
+	}
+	else if (animationState == 3)
+	{
+		// Wait until draw water animation is finished
+		float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
+		float duration = animator.getCurrentAnimation()->getDuration();
+		if (time >= duration)
+			// Standing
+			animationState = 0;
+	}
+
+	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
+	{
+		animationState = 3;
 	}
 
 	//
@@ -445,6 +461,11 @@ void PlayerRender::processAnimation()
 		case 2:
 			// Land
 			animator.playAnimation(4 + isMoving, 0.0f, false);
+			break;
+
+		case 3:
+			// Draw water
+			animator.playAnimation(6, false, true);
 			break;
 
 		default:

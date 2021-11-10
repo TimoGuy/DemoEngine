@@ -3,6 +3,7 @@
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
+#include "../Utils/Messages.h"
 #include "Components/PhysicsComponents.h"
 
 
@@ -76,6 +77,7 @@ void WaterPuddle::collectWaterPuddle()
 	GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 	std::cout << "Collected!!!!" << std::endl;
+	Messages::getInstance().postMessage("PlayerCollectWater");
 	MainLoop::getInstance().destroyObject(this);
 }
 
