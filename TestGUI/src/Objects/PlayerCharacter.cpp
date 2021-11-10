@@ -465,7 +465,7 @@ void PlayerRender::processAnimation()
 
 		case 3:
 			// Draw water
-			animator.playAnimation(6, false, true);
+			animator.playAnimation(8, false, true);
 			break;
 
 		default:

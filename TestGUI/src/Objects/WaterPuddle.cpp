@@ -72,12 +72,12 @@ void WaterPuddle::collectWaterPuddle()
 	//
 	// Collect and log the puddle
 	//
+	Messages::getInstance().postMessage("PlayerCollectWater");
 	GameState::getInstance().playerIsHoldingWater = true;
 	GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
 	GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 	std::cout << "Collected!!!!" << std::endl;
-	Messages::getInstance().postMessage("PlayerCollectWater");
 	MainLoop::getInstance().destroyObject(this);
 }
 

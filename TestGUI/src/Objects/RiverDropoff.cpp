@@ -3,6 +3,7 @@
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
+#include "../Utils/Messages.h"
 #include "Components/PhysicsComponents.h"
 
 
@@ -69,6 +70,7 @@ void RiverDropoff::dropoffWater()
 		return;
 
 	std::cout << "Dropped Off!!!!" << std::endl;
+	Messages::getInstance().postMessage("PlayerCollectWater");
 	GameState::getInstance().playerIsHoldingWater = false;
 }
 
