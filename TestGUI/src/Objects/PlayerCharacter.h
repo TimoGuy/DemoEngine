@@ -50,8 +50,6 @@ public:
 	void render();
 	void renderShadow(GLuint programId);
 
-	unsigned int pbrShaderProgramId;
-
 	Model* model;
 	Animator animator;
 	std::map<std::string, Material*> materials;
@@ -102,6 +100,9 @@ private:
 	bool isMoving = false;
 	bool waitUntilAnimationFinished = false;
 	bool prevIsGrounded;
+
+	bool lockFacingDirection = false;
+	bool lockJumping = false;
 
 public:		// TODO: make this private (delete this!!!!!!)
 	//

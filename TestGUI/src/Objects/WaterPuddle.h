@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
+#include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
 class WaterPuddleImgui : public ImGuiComponent
@@ -21,6 +22,19 @@ public:
 	void preRenderUpdate();
 	void render();
 	void renderShadow(GLuint programId);
+
+	inline glm::mat4& getOffsetModelMatrix() { return offsetModelMatrix; }
+
+private:
+	void refreshResources();
+
+	Model* model;
+	Animator animator;
+	std::map<std::string, Material*> materials;
+
+	glm::mat4 offsetModelMatrix;
+
+	bool importedAnims = false;		// TODO: this should not be here.... it's only here bc of debug mode wanting to hot reload animations. THERE NEEDS TO BE A BETTER WAY!!!
 };
 
 class WaterPuddle : public BaseObject
@@ -46,6 +60,7 @@ public:
 	void onTrigger(const physx::PxTriggerPair& pair);
 
 	void collectWaterPuddle();
+	bool isWaterPuddleCollected;
 
 	Bounds* bounds;
 

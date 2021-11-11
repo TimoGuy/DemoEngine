@@ -1,0 +1,9 @@
+WASD 		/	leftstick		- move
+space 		/	A				- jump
+leftclick 	/	X				- attack
+E 			/	B				- interact
+rightclick 	/	RightBumper		- transform
+movemouse	/	rightstick		- adjust camera
+middleclick	/	lefttrigger		- reset camera
+tab			/	backbtn			- open inventory (does not pause)
+esc			/	start			- pause (only option is to exit game)

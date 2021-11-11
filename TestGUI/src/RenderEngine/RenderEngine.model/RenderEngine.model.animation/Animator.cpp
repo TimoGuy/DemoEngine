@@ -93,7 +93,7 @@ void Animator::updateAnimation(float deltaTime)
 
 
 void Animator::playAnimation(unsigned int animationIndex, float mixTime, bool looping, bool force)
-{
+{		// TODO: fix the forcing. It can be overridden somehow
 	if (!force && currentAnimationIndex == animationIndex) return;
 	if (!force && nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 

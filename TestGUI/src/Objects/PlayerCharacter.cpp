@@ -75,8 +75,6 @@ void PlayerRender::refreshResources()
 	// - Do the screen space refraction (this is only slight, so if it's not worth it don't do it)
 	//
 
-	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
-
 	//
 	// Model and animation loading
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
@@ -261,43 +259,46 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		//
 		// Update facing direction
 		//
-		physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
-		velocityCopy.y = 0.0f;
-		float mvtDotFacing = glm::dot(movementVector, facingDirection);
-		if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed ||			// NOTE: not using magnitudeSquared() could defs be an inefficiency yo
-			mvtDotFacing < -0.707106781f)
+		if (!lockFacingDirection)
 		{
-			//
-			// "Skid stop" state
-			//
-			facingDirection = movementVector;
-			currentRunSpeed *= mvtDotFacing;		// If moving in the opposite direction than the facingDirection was, then the dot product will be negative, making the speed look like a skid
-		}
-		else
-		{
-			//
-			// Slowly face towards the targetfacingdirection
-			//
-			float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-			float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
-
-			float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
-
-			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
-
-			//
-			// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
-			//
-			float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
-
-			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
-			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
-
-			const float deadZoneDeltaAngle = 0.1f;
-			if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
-				targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
+			physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+			velocityCopy.y = 0.0f;
+			float mvtDotFacing = glm::dot(movementVector, facingDirection);
+			if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed ||			// NOTE: not using magnitudeSquared() could defs be an inefficiency yo
+				mvtDotFacing < -0.707106781f)
+			{
+				//
+				// "Skid stop" state
+				//
+				facingDirection = movementVector;
+				currentRunSpeed *= mvtDotFacing;		// If moving in the opposite direction than the facingDirection was, then the dot product will be negative, making the speed look like a skid
+			}
 			else
-				targetCharacterLeanValue = 0.0f;
+			{
+				//
+				// Slowly face towards the targetfacingdirection
+				//
+				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+
+				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
+
+				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+
+				//
+				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
+				//
+				float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
+
+				if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
+				else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
+
+				const float deadZoneDeltaAngle = 0.1f;
+				if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
+					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
+				else
+					targetCharacterLeanValue = 0.0f;
+			}
 		}
 	}
 
@@ -344,7 +345,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
 
 	// Jump (but not if sliding)
-	if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
+	if (!lockJumping &&
+		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		velocity.y = jumpSpeed;
 
@@ -428,12 +430,21 @@ void PlayerRender::processAnimation()
 	}
 	else if (animationState == 3)
 	{
+		// Lock movement
+		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		lockFacingDirection = true;
+		lockJumping = true;
+
 		// Wait until draw water animation is finished
 		float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
 		float duration = animator.getCurrentAnimation()->getDuration();
 		if (time >= duration)
+		{
 			// Standing
 			animationState = 0;
+			lockFacingDirection = false;
+			lockJumping = false;
+		}
 	}
 
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
@@ -611,7 +622,7 @@ void PlayerRender::renderShadow(GLuint programId)
 {
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
+	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
 	model->render(renderTransform, false);
 }
 

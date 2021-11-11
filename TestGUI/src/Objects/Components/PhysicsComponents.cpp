@@ -161,6 +161,17 @@ PlayerPhysics::~PlayerPhysics()
 	controller->release();
 }
 
+void PlayerPhysics::lockVelocity(bool yAlso)
+{
+	if (yAlso)
+		velocity = physx::PxVec3(0);
+	else
+	{
+		velocity.x = 0;
+		velocity.z = 0;
+	}
+}
+
 void PlayerPhysics::physicsUpdate()
 {
 	//

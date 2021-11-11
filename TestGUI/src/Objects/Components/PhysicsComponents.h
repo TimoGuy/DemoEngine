@@ -48,6 +48,8 @@ public:
 	PlayerPhysics(BaseObject* bo);
 	~PlayerPhysics();
 
+	void lockVelocity(bool yAlso);
+
 	void physicsUpdate();
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();

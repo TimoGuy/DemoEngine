@@ -67,7 +67,10 @@ void RiverDropoff::onTrigger(const physx::PxTriggerPair& pair)
 void RiverDropoff::dropoffWater()
 {
 	if (!GameState::getInstance().playerIsHoldingWater)
+	{
+		std::cout << "This is where you drop off water to send off to your sister (make this a textbox)" << std::endl;
 		return;
+	}
 
 	std::cout << "Dropped Off!!!!" << std::endl;
 	Messages::getInstance().postMessage("PlayerCollectWater");
