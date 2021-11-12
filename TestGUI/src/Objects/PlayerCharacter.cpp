@@ -214,6 +214,7 @@ void PlayerRender::processMovement()
 		// Do raycast to see what the camera distance should be
 		physx::PxRaycastBuffer hitInfo;
 		const float hitDistancePadding = 0.75f;
+
 		// @PHYSXWARNING: This causes a race condition for some reason
 		MainLoop::getInstance().physicsScene->lockRead();
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))

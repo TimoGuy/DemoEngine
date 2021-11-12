@@ -101,9 +101,6 @@ void MainLoop::run()
 {
 	loopRunning = true;
 
-	std::thread physicsThread(physicsUpdate);			// NOTE: the reason for dispatching a thread to handle the pre-physics handling is to have frame-rate independence. This way, there can be a deltatime calculation happening.
-	physicsThread.detach();
-
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 #if SINGLE_BUFFERED_MODE
@@ -112,6 +109,8 @@ void MainLoop::run()
 #endif
 
 	float lastFrame = (float)glfwGetTime();
+	float nextPhysicsCalc = (float)glfwGetTime();
+	MainLoop::physicsDeltaTime = 1.0f / 50.0f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -150,8 +149,25 @@ void MainLoop::run()
 		//if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
 		//	animator.playAnimation(5, 12.0f);
 
-		// Update deltatime (NOTE: render thread only!!!)
+		//
+		// Run Physics intermittently
+		//
 		float currentFrame = (float)glfwGetTime();
+		if (nextPhysicsCalc < currentFrame)
+		{
+			nextPhysicsCalc += physicsDeltaTime;
+			if (nextPhysicsCalc < currentFrame)
+			{
+				nextPhysicsCalc = (float)glfwGetTime() + physicsDeltaTime;		// Allows to get caught up so that physics isn't run every single frame
+			}
+
+			physicsUpdate();
+		}
+
+		//
+		// Update deltaTime for rendering
+		//
+		currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
@@ -457,42 +473,34 @@ void setupPhysx()
 
 void physicsUpdate()
 {
-	MainLoop::getInstance().physicsDeltaTime = 1.0f / 50.0f;
-	float deltaTime1000 = MainLoop::getInstance().physicsDeltaTime * 1000.0f;
-
-	while (loopRunning)
+	// Don't run unless if play mode
+	if (!MainLoop::getInstance().playMode)
+		return;
+	
+	for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 	{
-		float startFrameTime = (float)glfwGetTime();
+		MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
+	}
 
-		if (MainLoop::getInstance().playMode)
-		{
-			for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
-			{
-				MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
-			}
-
-			MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
-			MainLoop::getInstance().physicsScene->fetchResults(true);
+	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
+	MainLoop::getInstance().physicsScene->fetchResults(true);
 			
 #if PHYSX_VISUALIZATION
-			if (RenderManager::renderPhysicsDebug)
-			{
 
-				const physx::PxRenderBuffer& rb = MainLoop::getInstance().physicsScene->getRenderBuffer();
-				const physx::PxU32 numLines = rb.getNbLines();
-				std::vector<physx::PxDebugLine>* lineList = new std::vector<physx::PxDebugLine>();
+	// Don't visualize unless enabled
+	if (!RenderManager::renderPhysicsDebug)
+		return;
+	
+	const physx::PxRenderBuffer& rb = MainLoop::getInstance().physicsScene->getRenderBuffer();
+	const physx::PxU32 numLines = rb.getNbLines();
+	std::vector<physx::PxDebugLine>* lineList = new std::vector<physx::PxDebugLine>();
 
-				for (physx::PxU32 i = 0; i < numLines; i++)
-				{
-					const physx::PxDebugLine& line = rb.getLines()[i];
-					lineList->push_back(line);
-				}
-				MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
-			}
-#endif
-		}
-
-		// Sleep until next chance to do physics
-		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));
+	for (physx::PxU32 i = 0; i < numLines; i++)
+	{
+		const physx::PxDebugLine& line = rb.getLines()[i];
+		lineList->push_back(line);
 	}
+	MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
+
+#endif
 }
