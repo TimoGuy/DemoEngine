@@ -50,7 +50,7 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	return j;
 }
 
-PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
+PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
 {
 	refreshResources();
 
@@ -95,9 +95,12 @@ void PlayerRender::refreshResources()
 					"Hair Sideburn3.L",
 					"Hair Sideburn4.L",
 
-					"Back Attachment"
+					"Back Attachment",
+					"Hand Attachment"
 				}
 			);
+
+	bottleModel = (Model*)Resources::getResource("model;weaponBottle");
 	firstTimeResources = false;
 
 	//
@@ -118,17 +121,20 @@ void PlayerRender::refreshResources()
 	materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
 	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
 	materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
-
 	materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-	materials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-	materials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-	materials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
 
 	materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
 	materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
 	materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
 	model->setMaterials(materials);
+
+	// Now for the bottle model!
+	bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+	bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+	bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
+	bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
+	bottleModel->setMaterials(bottleModelMaterials);
 }
 
 void PlayerRender::processMovement()
@@ -540,7 +546,7 @@ void PlayerRender::processAnimation()
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
 			leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
 			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			backAttachment.setPointPosition(0, getRenderTransform()* animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			backAttachment.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 			
 			leftSideburn.simulateRope(10.0f);
 			rightSideburn.simulateRope(10.0f);
@@ -616,6 +622,11 @@ void PlayerRender::render()
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	model->render(renderTransform, true);
+
+	if (animationState == 3)
+		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix, true);
+	else
+		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix, true);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -624,6 +635,11 @@ void PlayerRender::renderShadow(GLuint programId)
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
 	model->render(renderTransform, false);
+
+	if (animationState == 3)
+		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix, false);
+	else
+		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix, false);
 }
 
 void PlayerImGui::propertyPanelImGui()
@@ -665,6 +681,12 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+
+	ImGui::Separator();
+	ImGui::Text("Bottle Model Matrix");
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleModelMatrix));
+	ImGui::Text("Bottle Hand Model Matrix");
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleHandModelMatrix));
 }
 
 void PlayerImGui::renderImGui()

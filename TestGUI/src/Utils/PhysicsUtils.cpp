@@ -26,6 +26,14 @@ namespace PhysicsUtils
 		return glm::vec3(in.x, in.y, in.z);
 	}
 
+	glm::mat4 createGLMTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees, glm::vec3 scale)
+	{
+		return
+			glm::translate(glm::mat4(1.0f), position) *
+			glm::toMat4(glm::quat(glm::radians(eulerAnglesDegrees))) *
+			glm::scale(glm::mat4(1.0f), scale);
+	}
+
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles)
 	{
 		//
@@ -229,9 +237,9 @@ namespace PhysicsUtils
 	{
 		float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 		ImGuizmo::DecomposeMatrixToComponents(matrixPtr, matrixTranslation, matrixRotation, matrixScale);
-		ImGui::DragFloat3("Position", matrixTranslation);
-		ImGui::DragFloat3("Rotation", matrixRotation);
-		ImGui::DragFloat3("Scale", matrixScale);
+		ImGui::DragFloat3("Position", matrixTranslation, 0.025f);
+		ImGui::DragFloat3("Rotation", matrixRotation, 0.025f);
+		ImGui::DragFloat3("Scale", matrixScale, 0.025f);
 		ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrixPtr);
 	}
 

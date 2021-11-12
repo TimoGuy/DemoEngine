@@ -54,6 +54,10 @@ public:
 	Animator animator;
 	std::map<std::string, Material*> materials;
 
+	Model* bottleModel;
+	std::map<std::string, Material*> bottleModelMaterials;
+	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
+
 	glm::vec3 playerCamOffset = glm::vec3(0, 3, -30);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis
 	glm::vec2 lookingSensitivity = glm::vec2(0.5f, 0.0025f);	// Sensitivity for how much the amount moves
