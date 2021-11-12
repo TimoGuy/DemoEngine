@@ -56,7 +56,7 @@ public:
 
 	Model* bottleModel;
 	std::map<std::string, Material*> bottleModelMaterials;
-	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
+	glm::mat4 bottleModelMatrix, bottleHandModelMatrix, finalBottleTransformMatrix;
 
 	glm::vec3 playerCamOffset = glm::vec3(0, 3, -30);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis

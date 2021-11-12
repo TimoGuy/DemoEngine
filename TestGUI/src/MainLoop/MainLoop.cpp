@@ -473,20 +473,24 @@ void physicsUpdate()
 
 			MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 			MainLoop::getInstance().physicsScene->fetchResults(true);
-		}
-
+			
 #if PHYSX_VISUALIZATION
-		const physx::PxRenderBuffer& rb = MainLoop::getInstance().physicsScene->getRenderBuffer();
-		const physx::PxU32 numLines = rb.getNbLines();
-		std::vector<physx::PxDebugLine>* lineList = new std::vector<physx::PxDebugLine>();
+			if (RenderManager::renderPhysicsDebug)
+			{
 
-		for (physx::PxU32 i = 0; i < numLines; i++)
-		{
-			const physx::PxDebugLine& line = rb.getLines()[i];
-			lineList->push_back(line);
-		}
-		MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
+				const physx::PxRenderBuffer& rb = MainLoop::getInstance().physicsScene->getRenderBuffer();
+				const physx::PxU32 numLines = rb.getNbLines();
+				std::vector<physx::PxDebugLine>* lineList = new std::vector<physx::PxDebugLine>();
+
+				for (physx::PxU32 i = 0; i < numLines; i++)
+				{
+					const physx::PxDebugLine& line = rb.getLines()[i];
+					lineList->push_back(line);
+				}
+				MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
+			}
 #endif
+		}
 
 		// Sleep until next chance to do physics
 		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, deltaTime1000 - (glfwGetTime() - startFrameTime))));

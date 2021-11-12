@@ -214,10 +214,13 @@ void PlayerRender::processMovement()
 		// Do raycast to see what the camera distance should be
 		physx::PxRaycastBuffer hitInfo;
 		const float hitDistancePadding = 0.75f;
+		// @PHYSXWARNING: This causes a race condition for some reason
+		MainLoop::getInstance().physicsScene->lockRead();
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
 			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
+		MainLoop::getInstance().physicsScene->unlockRead();
 	}
 
 	const glm::vec3 depthOffset(0, 0, cameraDistance);
@@ -594,6 +597,14 @@ void PlayerRender::processAnimation()
 		}
 	}
 
+	//
+	// Calculate the bottle transformation matrix
+	//
+	if (animationState == 3)
+		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+	else
+		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+
 	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
 }
 
@@ -622,11 +633,7 @@ void PlayerRender::render()
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	model->render(renderTransform, true);
-
-	if (animationState == 3)
-		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix, true);
-	else
-		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix, true);
+	bottleModel->render(finalBottleTransformMatrix, true);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -635,11 +642,8 @@ void PlayerRender::renderShadow(GLuint programId)
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
 	model->render(renderTransform, false);
-
-	if (animationState == 3)
-		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix, false);
-	else
-		bottleModel->render(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix, false);
+	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(finalBottleTransformMatrix));
+	bottleModel->render(finalBottleTransformMatrix, false);
 }
 
 void PlayerImGui::propertyPanelImGui()

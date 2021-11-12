@@ -36,6 +36,7 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static bool showShadowMapView = false;
+bool RenderManager::renderPhysicsDebug = true;
 
 
 RenderManager::RenderManager()
@@ -771,8 +772,6 @@ void RenderManager::renderImGuiContents()
 	static bool showLoadedResourcesWindow = true;
 	static bool showMaterialsManager = true;
 
-	static bool renderPhysicsDebug = true;
-
 	static bool showShadowMap = false;
 
 	//
@@ -1004,16 +1003,17 @@ void RenderManager::renderImGuiContents()
 	physx::PxRigidActor* triggerHoldActor = GameState::getInstance().getCurrentTriggerHold();
 	if (triggerHoldActor != nullptr)
 	{
-		glm::vec3 actorPosition = PhysicsUtils::toGLMVec3(triggerHoldActor->getGlobalPose().p);
-		actorPosition.y += 1.0f;
-		PhysicsUtils::imguiRenderCircle(
-			glm::translate(glm::mat4(1.0f), actorPosition),
-			1.0f,
-			glm::vec3(0.0f),
-			glm::vec3(0.0f),
-			8,
-			ImColor(75, 227, 98)
-		);
+		// @PHYSXWARNING: this causes a race condition with getGlobalPose() bc it's a read condition that runs more often than the physx simulate() function.
+		//glm::vec3 actorPosition = PhysicsUtils::toGLMVec3(triggerHoldActor->getGlobalPose().p);
+		//actorPosition.y += 1.0f;
+		//PhysicsUtils::imguiRenderCircle(
+		//	glm::translate(glm::mat4(1.0f), actorPosition),
+		//	1.0f,
+		//	glm::vec3(0.0f),
+		//	glm::vec3(0.0f),
+		//	8,
+		//	ImColor(75, 227, 98)
+		//);
 	}
 
 
