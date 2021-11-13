@@ -22,7 +22,7 @@ struct PhysicsTransformState
 	glm::mat4 currentTransform;
 
 	void updateTransform(glm::mat4 newTransform, float timeOffset);		// NOTE: if you wanna interpolate, add fixedDeltaTime for the timeOffset
-	glm::mat4 getInterpolatedTransform();
+	glm::mat4 getInterpolatedTransform(float alpha);
 };
 
 class BaseObject
@@ -56,7 +56,7 @@ public:
 	// INTERNAL FUNCTIONS (for physics)
 	//
 	void INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform);
-	void INTERNALfetchInterpolatedPhysicsTransform();
+	void INTERNALfetchInterpolatedPhysicsTransform(float alpha);
 
 private:
 	glm::mat4 transform;

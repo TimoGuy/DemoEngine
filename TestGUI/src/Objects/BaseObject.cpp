@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include <random>
-#include <glm/gtx/matrix_interpolation.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
@@ -109,9 +109,9 @@ void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
 	physicsTransformState.updateTransform(newTransform, MainLoop::getInstance().physicsDeltaTime);
 }
 
-void BaseObject::INTERNALfetchInterpolatedPhysicsTransform()
+void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
 {
-	transform = physicsTransformState.getInterpolatedTransform();		// Do this without propagating transforms
+	transform = physicsTransformState.getInterpolatedTransform(alpha);		// Do this without propagating transforms
 }
 
 ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
@@ -298,15 +298,30 @@ void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOf
 	currentTransform = newTransform;
 }
 
-glm::mat4 PhysicsTransformState::getInterpolatedTransform()
+glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
 {
-	float time = (float)glfwGetTime();
-	if (time >= currentUpdateTime)
+	if (alpha >= 1.0f)
 		return currentTransform;
-	if (time <= previousUpdateTime)
+	if (alpha <= 0.0f)
 		return previousTransform;
 
-	float interpolationValue = std::clamp((time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime), 0.0f, 1.0f);
-	//std::cout << interpolationValue << std::endl;			// @Debug
-	return glm::interpolate(previousTransform, currentTransform, interpolationValue);				// TODO: rotation doesn't seem to like this function, so maybe decompose and recompose matrix??
+	glm::vec3 scale1;
+	glm::quat rotation1;
+	glm::vec3 translation1;
+	glm::vec3 skew1;
+	glm::vec4 perspective1;
+	glm::decompose(currentTransform, scale1, rotation1, translation1, skew1, perspective1);				// NOTE: I'm banking that this is faster than using my algorithms bc of SIMD
+	glm::vec3 scale2;
+	glm::quat rotation2;
+	glm::vec3 translation2;
+	glm::vec3 skew2;
+	glm::vec4 perspective2;
+	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
+
+	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
+	glm::quat rotation = glm::slerp(rotation2, rotation1, alpha);
+	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
+
+	// Compose all these together (trans * rot * scale)
+	return glm::scale(glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation), scale);
 }

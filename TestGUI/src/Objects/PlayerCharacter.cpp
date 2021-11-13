@@ -405,7 +405,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 	return currentVelocity;
 }
-
+float hairWeightMult = 10.0f;
 void PlayerRender::processAnimation()
 {
 	//
@@ -552,8 +552,8 @@ void PlayerRender::processAnimation()
 			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
 			backAttachment.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 			
-			leftSideburn.simulateRope(10.0f);
-			rightSideburn.simulateRope(10.0f);
+			leftSideburn.simulateRope(hairWeightMult);
+			rightSideburn.simulateRope(hairWeightMult);
 			backAttachment.simulateRope(850.0f);
 
 			//
@@ -653,12 +653,12 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::Separator();
 
 	// @Broken: The commented out lines below are apparently illegal operations towards the physics component
-	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
-	//glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
-	//((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
-	//ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
-	//((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
+	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
+	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
@@ -688,35 +688,18 @@ void PlayerImGui::propertyPanelImGui()
 	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
-	ImGui::Text("Bottle Model Matrix");
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleModelMatrix));
-	ImGui::Text("Bottle Hand Model Matrix");
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleHandModelMatrix));
+	ImGui::DragFloat("Hair Weight", &hairWeightMult);
+
+	// @Tune: these will mess up the matrices bc of how the imguiTransformMatrixProps() func works
+	//ImGui::Separator();
+	//ImGui::Text("Bottle Model Matrix");
+	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleModelMatrix));
+	//ImGui::Text("Bottle Hand Model Matrix");
+	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleHandModelMatrix));
 }
 
 void PlayerImGui::renderImGui()
 {
-	////
-	//// Draw the velocity line
-	//// TODO: add in a drawline function in physicsUtils.h
-	////
-	//glm::vec3 pos1 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
-	//physx::PxVec3 velocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
-	//glm::vec3 pos2 = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(velocity.x, velocity.y, velocity.z));
-	//
-	//if (pos1.z > 0.0f && pos2.z > 0.0f)
-	//{
-	//	pos1 /= pos1.z;
-	//	pos1.x = pos1.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-	//	pos1.y = -pos1.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
-	//
-	//	pos2 /= pos2.z;
-	//	pos2.x = pos2.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-	//	pos2.y = -pos2.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
-	//
-	//	ImGui::GetBackgroundDrawList()->AddLine(ImVec2(pos1.x, pos1.y), ImVec2(pos2.x, pos2.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
-	//}
-
 	ImGuiComponent::renderImGui();
 }
 
@@ -788,8 +771,6 @@ void RopeSimulation::simulateRope(float gravityMultiplier)
 		}
 		for (int j = (int)distances.size() - 1; j >= 0; j--)
 		{
-			//if (glm::length(points[j] - points[j + 1]) < distances[j])
-			//	continue;
 
 			// NOTE: ignore dumb warnings
 			glm::vec3 midpoint = (points[j] + points[j + 1]) / 2.0f;

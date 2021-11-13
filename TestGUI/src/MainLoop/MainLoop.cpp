@@ -13,6 +13,7 @@
 #include "../Utils/FileLoading.h"
 
 #define PHYSX_VISUALIZATION 1
+#define FULLSCREEN_MODE 0
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
@@ -97,8 +98,6 @@ void MainLoop::initialize()
 	FileLoading::getInstance().loadFileWithPrompt();
 }
 
-float prevPhysicsCalc;
-
 void MainLoop::run()
 {
 	loopRunning = true;
@@ -111,9 +110,8 @@ void MainLoop::run()
 #endif
 
 	float lastFrame = (float)glfwGetTime();
-	float nextPhysicsCalc = (float)glfwGetTime();
-	prevPhysicsCalc = (float)glfwGetTime();
-	MainLoop::physicsDeltaTime = 0.02f;
+	float accumulatedTimeForPhysics = 0.0f;		// NOTE: https://gafferongames.com/post/fix_your_timestep/
+	this->physicsDeltaTime = 0.02f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -138,32 +136,32 @@ void MainLoop::run()
 			camera.Inputs(window);
 
 		//
-		// Run Physics intermittently
-		//
-		float currentFrame = (float)glfwGetTime();
-		if (nextPhysicsCalc < currentFrame)
-		{
-			physicsCalcTimeAnchor = nextPhysicsCalc;
-			nextPhysicsCalc += physicsDeltaTime;
-			if (nextPhysicsCalc < currentFrame)
-				nextPhysicsCalc = (float)glfwGetTime();		// Allows to get caught up so that physics isn't run every single frame
-
-			physicsUpdate();
-		}
-
-		//
 		// Update deltaTime for rendering
 		//
-		currentFrame = (float)glfwGetTime();
+		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
+		if (deltaTime > 0.25f)
+			deltaTime = 0.25f;		// Clamp it if it's too big! (4 fps btw)
 		lastFrame = currentFrame;
 
 		//
-		// Take all physics objects and update their transforms
+		// Run Physics intermittently
 		//
+		accumulatedTimeForPhysics += deltaTime;
+		while (accumulatedTimeForPhysics >= this->physicsDeltaTime)
+		{
+			physicsUpdate();
+			accumulatedTimeForPhysics -= this->physicsDeltaTime;
+		}
+
+		//
+		// Take all physics objects and update their transforms (interpolation)
+		//
+		float interpolationAlpha = accumulatedTimeForPhysics / this->physicsDeltaTime;
+		//std::cout << interpolationAlpha << std::endl;				// @Debug
 		for (size_t i = 0; i < physicsObjects.size(); i++)
 		{
-			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform();
+			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
 			
 		//
@@ -236,10 +234,14 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+#else
+	glfwSwapInterval(1);
+#endif
+
+#if FULLSCREEN_MODE
+	MainLoop::getInstance().window = glfwCreateWindow(3440, 1440, windowName, glfwGetPrimaryMonitor(), NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
-	glfwSwapInterval(1);
 #endif
 
 	if (!MainLoop::getInstance().window)
