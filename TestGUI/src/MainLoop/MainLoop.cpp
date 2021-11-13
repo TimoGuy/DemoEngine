@@ -143,10 +143,11 @@ void MainLoop::run()
 		float currentFrame = (float)glfwGetTime();
 		if (nextPhysicsCalc < currentFrame)
 		{
+			physicsCalcTimeAnchor = nextPhysicsCalc;
 			nextPhysicsCalc += physicsDeltaTime;
 			if (nextPhysicsCalc < currentFrame)
 				nextPhysicsCalc = (float)glfwGetTime();		// Allows to get caught up so that physics isn't run every single frame
-		
+
 			physicsUpdate();
 		}
 
@@ -465,20 +466,14 @@ void physicsUpdate()
 	// Don't run unless if play mode
 	if (!MainLoop::getInstance().playMode)
 		return;
-	
-	float oldDeltaTime = MainLoop::getInstance().physicsDeltaTime;
-	MainLoop::getInstance().physicsDeltaTime = glfwGetTime() - prevPhysicsCalc;
-	prevPhysicsCalc = (float)glfwGetTime();
-	{
-		for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
-		{
-			MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
-		}
 
-		MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
-		MainLoop::getInstance().physicsScene->fetchResults(true);
+	for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
+	{
+		MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
 	}
-	MainLoop::getInstance().physicsDeltaTime = oldDeltaTime;
+
+	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
+	MainLoop::getInstance().physicsScene->fetchResults(true);
 			
 #if PHYSX_VISUALIZATION
 

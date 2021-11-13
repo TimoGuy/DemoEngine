@@ -293,7 +293,7 @@ const glm::mat4& RenderComponent::getRenderTransform()
 void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOffset)
 {
 	previousUpdateTime = currentUpdateTime;
-	currentUpdateTime = (float)glfwGetTime() + timeOffset;
+	currentUpdateTime = MainLoop::getInstance().physicsCalcTimeAnchor + timeOffset;
 	previousTransform = currentTransform;
 	currentTransform = newTransform;
 }
@@ -307,5 +307,6 @@ glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 		return previousTransform;
 
 	float interpolationValue = std::clamp((time - previousUpdateTime) / (currentUpdateTime - previousUpdateTime), 0.0f, 1.0f);
+	//std::cout << interpolationValue << std::endl;			// @Debug
 	return glm::interpolate(previousTransform, currentTransform, interpolationValue);				// TODO: rotation doesn't seem to like this function, so maybe decompose and recompose matrix??
 }

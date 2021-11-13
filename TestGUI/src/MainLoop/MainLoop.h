@@ -37,6 +37,7 @@ public:
 
 	float deltaTime;			// To only be used on the rendering thread
 	float physicsDeltaTime;		// To only be used on the physics thread
+	float physicsCalcTimeAnchor;
 	bool playMode = false;
 
 	//
