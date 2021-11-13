@@ -28,9 +28,6 @@ void setupPhysx();
 void physicsUpdate();
 
 
-bool loopRunning = false;
-
-
 MainLoop& MainLoop::getInstance()
 {
 	static MainLoop instance;
@@ -100,8 +97,6 @@ void MainLoop::initialize()
 
 void MainLoop::run()
 {
-	loopRunning = true;
-
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 #if SINGLE_BUFFERED_MODE
@@ -197,9 +192,6 @@ void MainLoop::run()
 		glfwSwapBuffers(window);
 #endif
 	}
-
-	// Signal to physics engine that loop has ended
-	loopRunning = false;
 }
 
 void MainLoop::cleanup()
@@ -209,12 +201,6 @@ void MainLoop::cleanup()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
-
-	/*glDeleteTextures(1, &texture);
-	glDeleteVertexArrays(1, &vao);
-	glDeleteBuffers(1, &vbo);
-	glDeleteBuffers(1, &ebo);
-	glDeleteProgram(program_id);*/
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
