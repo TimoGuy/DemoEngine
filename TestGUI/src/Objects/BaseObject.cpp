@@ -300,6 +300,11 @@ void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOf
 
 glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
 {
+	// Easy out
+	if (currentTransform == previousTransform)
+		return currentTransform;
+
+	// Easy out2
 	if (alpha >= 1.0f)
 		return currentTransform;
 	if (alpha <= 0.0f)
