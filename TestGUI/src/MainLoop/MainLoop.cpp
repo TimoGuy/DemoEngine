@@ -97,6 +97,8 @@ void MainLoop::initialize()
 	FileLoading::getInstance().loadFileWithPrompt();
 }
 
+float prevPhysicsCalc;
+
 void MainLoop::run()
 {
 	loopRunning = true;
@@ -104,13 +106,14 @@ void MainLoop::run()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 #if SINGLE_BUFFERED_MODE
-	const float desiredFrameTime = 1000.0f / 80.0f;
+	const float desiredFrameTime = 1000.0f / 60.0f;
 	float startFrameTime = 0;
 #endif
 
 	float lastFrame = (float)glfwGetTime();
 	float nextPhysicsCalc = (float)glfwGetTime();
-	MainLoop::physicsDeltaTime = 1.0f / 50.0f;
+	prevPhysicsCalc = (float)glfwGetTime();
+	MainLoop::physicsDeltaTime = 0.02f;
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -134,21 +137,6 @@ void MainLoop::run()
 		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
 			camera.Inputs(window);
 
-
-		//// Update Animation
-		//if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-		//	animator.playAnimation(0, 12.0f);
-		//if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
-		//	animator.playAnimation(1, 12.0f);
-		//if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
-		//	animator.playAnimation(2, 12.0f);
-		//if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
-		//	animator.playAnimation(3, 12.0f);
-		//if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
-		//	animator.playAnimation(4, 12.0f);
-		//if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
-		//	animator.playAnimation(5, 12.0f);
-
 		//
 		// Run Physics intermittently
 		//
@@ -158,11 +146,16 @@ void MainLoop::run()
 			nextPhysicsCalc += physicsDeltaTime;
 			if (nextPhysicsCalc < currentFrame)
 			{
-				nextPhysicsCalc = (float)glfwGetTime() + physicsDeltaTime;		// Allows to get caught up so that physics isn't run every single frame
+				nextPhysicsCalc = (float)glfwGetTime();// currentFrame + physicsDeltaTime;		// Allows to get caught up so that physics isn't run every single frame
+				//std::cout << "\t\t3\n";
 			}
+			//else
+				//std::cout << "\t2\n";
 
 			physicsUpdate();
 		}
+		//else
+			//std::cout << "1\n";
 
 		//
 		// Update deltaTime for rendering
@@ -204,7 +197,7 @@ void MainLoop::run()
 
 #if SINGLE_BUFFERED_MODE
 		glFlush();
-		//std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));
+		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));		// TODO: comment this out if wanted
 #else
 		glfwSwapBuffers(window);
 #endif
@@ -477,6 +470,11 @@ void physicsUpdate()
 	if (!MainLoop::getInstance().playMode)
 		return;
 	
+	//float oldDeltaTime = MainLoop::getInstance().physicsDeltaTime;
+	//MainLoop::getInstance().physicsDeltaTime = glfwGetTime() - prevPhysicsCalc;
+	//prevPhysicsCalc = (float)glfwGetTime();
+	//MainLoop::getInstance().physicsDeltaTime = oldDeltaTime;
+
 	for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 	{
 		MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
@@ -484,6 +482,7 @@ void physicsUpdate()
 
 	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 	MainLoop::getInstance().physicsScene->fetchResults(true);
+
 			
 #if PHYSX_VISUALIZATION
 
