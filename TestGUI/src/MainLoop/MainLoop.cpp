@@ -145,17 +145,10 @@ void MainLoop::run()
 		{
 			nextPhysicsCalc += physicsDeltaTime;
 			if (nextPhysicsCalc < currentFrame)
-			{
-				nextPhysicsCalc = (float)glfwGetTime();// currentFrame + physicsDeltaTime;		// Allows to get caught up so that physics isn't run every single frame
-				//std::cout << "\t\t3\n";
-			}
-			//else
-				//std::cout << "\t2\n";
-
+				nextPhysicsCalc = (float)glfwGetTime();		// Allows to get caught up so that physics isn't run every single frame
+		
 			physicsUpdate();
 		}
-		//else
-			//std::cout << "1\n";
 
 		//
 		// Update deltaTime for rendering
@@ -197,7 +190,10 @@ void MainLoop::run()
 
 #if SINGLE_BUFFERED_MODE
 		glFlush();
-		std::this_thread::sleep_for(std::chrono::milliseconds((unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime))));		// TODO: comment this out if wanted
+		//float haha = (glfwGetTime() - startFrameTime) * 1000.0;
+		//unsigned int sleepAmount = (unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime) * 1000.0);
+		//std::this_thread::sleep_for(std::chrono::milliseconds(sleepAmount));		// TODO: comment this out if wanted
+		//std::cout << "jfjlskdjf\n";
 #else
 		glfwSwapBuffers(window);
 #endif
@@ -470,19 +466,19 @@ void physicsUpdate()
 	if (!MainLoop::getInstance().playMode)
 		return;
 	
-	//float oldDeltaTime = MainLoop::getInstance().physicsDeltaTime;
-	//MainLoop::getInstance().physicsDeltaTime = glfwGetTime() - prevPhysicsCalc;
-	//prevPhysicsCalc = (float)glfwGetTime();
-	//MainLoop::getInstance().physicsDeltaTime = oldDeltaTime;
-
-	for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
+	float oldDeltaTime = MainLoop::getInstance().physicsDeltaTime;
+	MainLoop::getInstance().physicsDeltaTime = glfwGetTime() - prevPhysicsCalc;
+	prevPhysicsCalc = (float)glfwGetTime();
 	{
-		MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
+		for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
+		{
+			MainLoop::getInstance().physicsObjects[i]->physicsUpdate();
+		}
+
+		MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
+		MainLoop::getInstance().physicsScene->fetchResults(true);
 	}
-
-	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
-	MainLoop::getInstance().physicsScene->fetchResults(true);
-
+	MainLoop::getInstance().physicsDeltaTime = oldDeltaTime;
 			
 #if PHYSX_VISUALIZATION
 

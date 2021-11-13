@@ -177,7 +177,7 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Add gravity (or sliding gravity if sliding)
 	//
-	velocity.y -= 9.8f * MainLoop::getInstance().physicsDeltaTime;
+	velocity.y -= 4.9f * MainLoop::getInstance().physicsDeltaTime;
 
 	physx::PxVec3 cookedVelocity = velocity;
 
