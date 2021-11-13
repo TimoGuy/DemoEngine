@@ -38,8 +38,9 @@ public:
 	void render();
 	void renderScene();
 	void renderSceneShadowPass(GLuint shaderProgramId);
+	void renderUI();
 
-	int debugNum = 0;
+	int debugCSMLayerNum = 0;
 	void requestSelectObject(bool isHoverEvent, ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation);
 
 	void recreateHDRBuffer();
@@ -59,7 +60,7 @@ public:
 	static bool renderPhysicsDebug;
 
 private:
-	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId;
+	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, debug_csm_program_id, text_program_id, hdri_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer;
 

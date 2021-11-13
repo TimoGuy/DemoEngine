@@ -12,6 +12,8 @@ public:
 
 	physx::PxRigidActor*		playerActorPointer				= nullptr;
 	bool						playerIsHoldingWater			= false;
+	int							maxPlayerStaminaAmount			= 100;
+	int							currentPlayerStaminaAmount		= 46;
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;
 

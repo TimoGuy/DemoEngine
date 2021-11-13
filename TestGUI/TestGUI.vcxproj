@@ -142,6 +142,8 @@
     <None Include="do_nothing.frag" />
     <None Include="fragment.frag" />
     <None Include="hdri_equirectangular.frag" />
+    <None Include="hudUI.frag" />
+    <None Include="hudUI.vert" />
     <None Include="irradiance_convolution.frag" />
     <None Include="cubemap.vert" />
     <None Include="model.frag" />

@@ -184,6 +184,8 @@
     <None Include="point_shadow.geom" />
     <None Include="point_shadow.vert" />
     <None Include="zelly.frag" />
+    <None Include="hudUI.frag" />
+    <None Include="hudUI.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\RenderEngine\RenderEngine.manager\RenderManager.h">

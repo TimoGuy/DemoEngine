@@ -326,6 +326,7 @@ void RenderManager::createShaderPrograms()
 	bloom_postprocessing_program_id = *(GLuint*)Resources::getResource("shader;bloom_postprocessing");
 	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
+	hudUIProgramId = *(GLuint*)Resources::getResource("shader;hudUI");
 }
 
 void RenderManager::createFonts()
@@ -450,10 +451,10 @@ void RenderManager::render()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
 	renderScene();
-	
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	renderUI();
 	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -599,7 +600,7 @@ void RenderManager::renderScene()
 	if (showShadowMapView)
 	{
 		glUseProgram(debug_csm_program_id);
-		glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugNum);
+		glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugCSMLayerNum);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
 		glUniform1i(glGetUniformLocation(debug_csm_program_id, "depthMap"), 0);
@@ -611,6 +612,7 @@ void RenderManager::renderScene()
 const size_t MAX_LIGHTS = 8;			// @Hardcode: hopefully this limit goes away in the future if we wanna do forward+ rendering
 void RenderManager::setupSceneLights(GLuint programId)
 {
+	// @TODO: make this connect up to a UBO in the future!
 	glUseProgram(programId);
 
 	//
@@ -722,6 +724,46 @@ void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 	{
 		MainLoop::getInstance().renderObjects[i]->renderShadow(shaderProgramId);
 	}
+}
+
+void RenderManager::renderUI()
+{
+	const float camWidth = MainLoop::getInstance().camera.width;
+	const float camHeight = MainLoop::getInstance().camera.height;
+
+	if (camWidth == 0.0f || camHeight == 0.0f)
+		return;
+
+	//
+	// Render Stamina Bar
+	//
+	const float referenceScreenHeight = 500.0f;
+	const float padding = 0.1f;
+	const float staminaBarWidth = 500.0f;
+	const float staminaBarHeight = 8.0f;
+	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+
+	const float cameraAspectRatio = camWidth / camHeight;
+	glm::mat4 viewMatrix =
+		glm::ortho(
+			-referenceScreenHeight * cameraAspectRatio / 2.0f,
+			referenceScreenHeight * cameraAspectRatio / 2.0f,
+			-referenceScreenHeight / 2.0f,
+			referenceScreenHeight / 2.0f,
+			-1.0f,
+			1.0f
+		);
+	glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(staminaBarWidth + padding * 2.0f, staminaBarHeight + padding * 2.0f, 1.0f));
+
+	glUseProgram(hudUIProgramId);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "referenceScreenHeight"), referenceScreenHeight);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "padding"), padding);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarWidth"), staminaBarWidth);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarHeight"), staminaBarHeight);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaAmountFilled"), staminaAmountFilled);
+	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "viewMatrix1"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "modelMatrix1"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	renderQuad();
 }
 
 std::vector<size_t> requestedListObjectIndices;

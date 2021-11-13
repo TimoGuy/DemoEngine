@@ -175,13 +175,6 @@ void MainLoop::run()
 		//
 		renderManager->render();
 
-		//
-		// Destroy everything in the destroy list
-		//
-		for (size_t i = 0; i < destroyObjectList.size(); i++)
-			delete destroyObjectList[i];
-		destroyObjectList.clear();
-
 #if SINGLE_BUFFERED_MODE
 		glFlush();
 		//float haha = (glfwGetTime() - startFrameTime) * 1000.0;
@@ -204,12 +197,6 @@ void MainLoop::cleanup()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
-}
-
-
-void MainLoop::destroyObject(BaseObject* object)
-{
-	destroyObjectList.push_back(object);
 }
 
 
