@@ -9,6 +9,7 @@
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
+#include "../Utils/GameState.h"
 #include "../Utils/Messages.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
@@ -242,7 +243,7 @@ void PlayerRender::processMovement()
 	characterLeanValue = PhysicsUtils::lerp(
 		characterLeanValue,
 		targetCharacterLeanValue,
-		leanLerpTime * MainLoop::getInstance().deltaTime
+		leanLerpTime[GameState::getInstance().playerIsHoldingWater] * MainLoop::getInstance().deltaTime
 	);
 
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
@@ -258,6 +259,8 @@ void PlayerRender::processMovement()
 
 physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVector)
 {
+	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
+
 	//
 	// Set Movement Vector
 	//
@@ -291,7 +294,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed * MainLoop::getInstance().deltaTime));
+				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeed[isCarryingWater] * MainLoop::getInstance().deltaTime));
 
 				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 
@@ -305,7 +308,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 
 				const float deadZoneDeltaAngle = 0.1f;
 				if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
-					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
+					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier[isCarryingWater], -1.0f, 1.0f);
 				else
 					targetCharacterLeanValue = 0.0f;
 			}
@@ -315,11 +318,11 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	//
 	// Update Running Speed
 	//
-	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
+	float targetRunningSpeed = movementVectorLength * groundRunSpeed[isCarryingWater];
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
-		(currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *
+		(currentRunSpeed < targetRunningSpeed ? groundAcceleration[isCarryingWater]: groundDecceleration[isCarryingWater]) *
 		MainLoop::getInstance().deltaTime
 	);
 
@@ -358,13 +361,15 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	if (!lockJumping &&
 		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
-		velocity.y = jumpSpeed;
+		velocity.y = jumpSpeed[isCarryingWater];
 
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
 physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 {
+	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
+
 	//
 	// Update facing direction
 	//
@@ -375,7 +380,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 		float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 		float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
+		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed[isCarryingWater] * MainLoop::getInstance().deltaTime));
 
 		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
 	}
@@ -389,8 +394,8 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	// Just add velocity in a flat way
 	//
 	float accelAmount = glm::length(movementVector);		// [0,1] range due to clamping before this function
-	currentVelocity.x += movementVector.x * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
-	currentVelocity.z += movementVector.y * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
+	currentVelocity.x += movementVector.x * accelAmount * airAcceleration[isCarryingWater] * MainLoop::getInstance().deltaTime;
+	currentVelocity.z += movementVector.y * accelAmount * airAcceleration[isCarryingWater] * MainLoop::getInstance().deltaTime;
 
 	//
 	// Clamp the velocity
@@ -398,7 +403,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	glm::vec2 flatNewVelocity(currentVelocity.x, currentVelocity.z);
 	if (glm::length2(flatNewVelocity) > 0.001f)
 	{
-		flatNewVelocity = PhysicsUtils::clampVector(flatNewVelocity, 0.0f, groundRunSpeed);		// NOTE: groundRunSpeed is simply a placeholder... I think.
+		flatNewVelocity = PhysicsUtils::clampVector(flatNewVelocity, 0.0f, groundRunSpeed[isCarryingWater]);		// NOTE: groundRunSpeed is simply a placeholder... I think.
 		currentVelocity.x = flatNewVelocity.x;
 		currentVelocity.z = flatNewVelocity.y;
 	}
@@ -668,16 +673,16 @@ void PlayerImGui::propertyPanelImGui()
 
 	ImGui::Separator();
 	ImGui::Text("Movement Properties");
-	ImGui::DragFloat("Running Acceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundAcceleration, 0.1f);
-	ImGui::DragFloat("Running Decceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundDecceleration, 0.1f);
-	ImGui::DragFloat("Running Acceleration (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airAcceleration, 0.1f);
-	ImGui::DragFloat("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed, 0.1f);
-	ImGui::DragFloat("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed, 0.1f);
+	ImGui::DragFloat2("Running Acceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Decceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundDecceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Acceleration (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed[0], 0.1f);
+	ImGui::DragFloat2("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed[0], 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
-	ImGui::DragFloat("Leaning Lerp Time", &((PlayerRender*)baseObject->getRenderComponent())->leanLerpTime);
-	ImGui::DragFloat("Lean Multiplier", &((PlayerRender*)baseObject->getRenderComponent())->leanMultiplier, 0.05f);
-	ImGui::DragFloat("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed, 0.1f);
-	ImGui::DragFloat("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed, 0.1f);
+	ImGui::DragFloat2("Leaning Lerp Time", &((PlayerRender*)baseObject->getRenderComponent())->leanLerpTime[0]);
+	ImGui::DragFloat2("Lean Multiplier", &((PlayerRender*)baseObject->getRenderComponent())->leanMultiplier[0], 0.05f);
+	ImGui::DragFloat2("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed[0], 0.1f);
+	ImGui::DragFloat2("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed[0], 0.1f);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);

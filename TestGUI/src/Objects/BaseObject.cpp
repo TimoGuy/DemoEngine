@@ -41,8 +41,8 @@ BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing 
 	guid = generate_hex(32);
 
 	// This is for physics realm of baseobject
-	physicsTransformState.updateTransform(getTransform(), 0.0f);
-	physicsTransformState.updateTransform(getTransform(), 0.0f);
+	physicsTransformState.updateTransform(getTransform());
+	physicsTransformState.updateTransform(getTransform());
 }
 
 BaseObject::~BaseObject()
@@ -98,15 +98,15 @@ void BaseObject::setTransform(glm::mat4 newTransform)
 	if (pc != nullptr)
 	{
 		// Reset the transform and propagate it
-		physicsTransformState.updateTransform(getTransform(), 0.0f);
-		physicsTransformState.updateTransform(getTransform(), 0.0f);
+		physicsTransformState.updateTransform(getTransform());
+		physicsTransformState.updateTransform(getTransform());
 		pc->propagateNewTransform(newTransform);
 	}
 }
 
 void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
 {
-	physicsTransformState.updateTransform(newTransform, MainLoop::getInstance().physicsDeltaTime);
+	physicsTransformState.updateTransform(newTransform);
 }
 
 void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
@@ -290,10 +290,8 @@ const glm::mat4& RenderComponent::getRenderTransform()
 	return renderTransform;
 }
 
-void PhysicsTransformState::updateTransform(glm::mat4 newTransform, float timeOffset)
+void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
 {
-	previousUpdateTime = currentUpdateTime;
-	currentUpdateTime = MainLoop::getInstance().physicsCalcTimeAnchor + timeOffset;
 	previousTransform = currentTransform;
 	currentTransform = newTransform;
 }

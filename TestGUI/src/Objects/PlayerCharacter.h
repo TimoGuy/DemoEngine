@@ -64,22 +64,23 @@ public:
 
 	// TODO: tune these lol (jk jk)
 	// And then after, we can make these all consts!!!!
-	float jumpSpeed = 1.4f;
-	float groundAcceleration = 1.4f;
-	float groundDecceleration = 10.0f;
-	float airAcceleration = 2.5f;
-	float groundRunSpeed = 0.75f;						// TODO: may wanna change that variable name eh
+	float groundAcceleration[2] = { 1.4f, 0.5f };
+	float groundDecceleration[2] = { 10.0f, 0.25f };
+	float airAcceleration[2] = { 2.5f, 2.5f };
+	float groundRunSpeed[2] = { 0.75f, 0.65f };						// TODO: may wanna change that variable name eh
+	float jumpSpeed[2] = { 1.4f, 1.2f };
+
 	float currentRunSpeed = 0.0f;						// This is the value that gets changed
 	float immediateTurningRequiredSpeed = 0.1f;			// The maximum velocity you can have to keep the ability to immediately turn (while grounded)
 
+	float leanLerpTime[2] = { 10.0f, 5.0f };
+	float leanMultiplier[2] = { 0.1f, 0.03f };							// NOTE: this is one over the number of degrees of delta required to get the maximum lean (e.g. 1/90degrees = 0.011f)
+
 	glm::vec2 facingDirection = glm::vec2(0, 1);		// NOTE: this is assumed to always be normalized
-	float facingTurnSpeed = 400.0f;
-	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
+	float facingTurnSpeed[2] = { 400.0f, 50.0f };
+	float airBourneFacingTurnSpeed[2] = { 100.0f, 50.0f };			// Much slower than facingTurnSpeed
 
-	float leanLerpTime = 10.0f;
-	float leanMultiplier = 0.1f;							// NOTE: this is one over the number of degrees of delta required to get the maximum lean (e.g. 1/90degrees = 0.011f)
 	float modelOffsetY = -3.35f;
-
 	float animationSpeed = 42.0f;
 
 private:

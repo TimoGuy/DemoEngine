@@ -16,12 +16,10 @@ class RenderComponent;
 
 struct PhysicsTransformState
 {
-	float previousUpdateTime;
-	float currentUpdateTime;
 	glm::mat4 previousTransform;
 	glm::mat4 currentTransform;
 
-	void updateTransform(glm::mat4 newTransform, float timeOffset);		// NOTE: if you wanna interpolate, add fixedDeltaTime for the timeOffset
+	void updateTransform(glm::mat4 newTransform);
 	glm::mat4 getInterpolatedTransform(float alpha);
 };
 
