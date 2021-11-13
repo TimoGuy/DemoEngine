@@ -8,6 +8,7 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
+#include "../Utils/GameState.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/Messages.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
@@ -26,7 +27,6 @@ PlayerCharacter::PlayerCharacter()
 	bounds->extents = glm::vec3(3.0f, 3.0f, 3.0f);		// NOTE: bc the renderTransform is different from the real transform, the bounds have to be thicker to account for when spinning
 
 	imguiComponent = new PlayerImGui(this, bounds);
-	physicsComponent = new PlayerPhysics(this);
 	renderComponent = new PlayerRender(this, bounds);
 }
 
@@ -56,11 +56,25 @@ PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo,
 
 	playerCamera.priority = 10;
 	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
+
+	// CC
+	controller =
+		PhysicsUtils::createCapsuleController(
+			MainLoop::getInstance().physicsControllerManager,
+			MainLoop::getInstance().defaultPhysicsMaterial,
+			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
+			1.0f,
+			4.5f,
+			this		// PxUserControllerHitReport
+		);
+
+	GameState::getInstance().playerActorPointer = controller->getActor();
 }
 
 PlayerRender::~PlayerRender()
 {
 	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
+	controller->release();
 }
 bool firstTimeResources = true;
 void PlayerRender::refreshResources()
@@ -202,39 +216,13 @@ void PlayerRender::processMovement()
 	}
 
 	//
-	// Update playercam pos
-	//
-	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
-	float cameraDistance = playerCamOffset.z;
-
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
-
-	{
-		// Do raycast to see what the camera distance should be
-		physx::PxRaycastBuffer hitInfo;
-		const float hitDistancePadding = 0.75f;
-
-		// @PHYSXWARNING: This causes a race condition for some reason
-		MainLoop::getInstance().physicsScene->lockRead();
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
-		{
-			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
-		}
-		MainLoop::getInstance().physicsScene->unlockRead();
-	}
-
-	const glm::vec3 depthOffset(0, 0, cameraDistance);
-	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
-
-	//
 	// Update movement
 	//
 	targetCharacterLeanValue = 0.0f;
 	isMoving = false;
 
 	physx::PxVec3 velocity(0.0f);
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+	if (getIsGrounded())
 		velocity = processGroundedMovement(movementVector);
 	else
 		velocity = processAirMovement(movementVector);
@@ -245,15 +233,72 @@ void PlayerRender::processMovement()
 		leanLerpTime * MainLoop::getInstance().deltaTime
 	);
 
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
+	this->velocity = velocity;
+}
 
-	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
-	modelPosition.y += modelOffsetY;
+void PlayerRender::kickoffCCMove()
+{
+	//
+	// Add gravity (or sliding gravity if sliding)
+	//
+	velocity.y -= 4.9f * MainLoop::getInstance().deltaTime;
 
-	renderTransform =
-		glm::translate(glm::mat4(1.0f), modelPosition) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
-		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
+	physx::PxVec3 cookedVelocity = velocity;
+
+	// (Last minute) convert -y to y along the face you're sliding down
+	if (isSliding)
+	{
+		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
+
+		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
+		cookedVelocity.y = 0.0f;
+		cookedVelocity += physx::PxVec3(
+			slidingVector.x * flatSlidingUmph,
+			slidingVector.y,
+			slidingVector.z * flatSlidingUmph
+		);
+	}
+
+	//
+	// Do the deed
+	//
+	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity * 60.0f * MainLoop::getInstance().deltaTime, 0.001f, MainLoop::getInstance().deltaTime, NULL, NULL);
+	isGrounded = false;
+	isSliding = false;
+
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
+	{
+		isGrounded = true;
+		if (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		{
+			velocity.y = 0.0f;		// Remove gravity
+		}
+		else
+		{
+			// Slide down!
+			isSliding = true;
+		}
+	}
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
+	{
+		//std::cout << "\tSide Collision";
+	}
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
+	{
+		//std::cout << "\tAbove Collision";
+		velocity.y = 0.0f;		// Hit your head on the ceiling
+	}
+	//std::cout << std::endl;
+
+	//
+	// Apply transform
+	//
+	physx::PxExtendedVec3 pos = controller->getPosition();
+	glm::mat4 trans = baseObject->getTransform();
+	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
+	baseObject->setTransform(trans);
 }
 
 physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVector)
@@ -271,7 +316,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		//
 		if (!lockFacingDirection)
 		{
-			physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+			physx::PxVec3 velocityCopy = this->velocity;
 			velocityCopy.y = 0.0f;
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
 			if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed ||			// NOTE: not using magnitudeSquared() could defs be an inefficiency yo
@@ -328,10 +373,10 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
 
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding())
+	if (getIsSliding())
 	{
 		// Cut off movement towards uphill if supposed to be sliding
-		glm::vec3 normal = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal();
+		glm::vec3 normal = getGroundedNormal();
 		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
 		velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
 	}
@@ -340,7 +385,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		// Add on a grounded rotation based on the ground you're standing on (!isSliding)
 		glm::quat slopeRotation = glm::rotation(
 			glm::vec3(0, 1, 0),
-			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
+			getGroundedNormal()
 		);
 		velocity = slopeRotation * velocity;
 	}
@@ -350,13 +395,13 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	// (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
 	//
 	if (velocity.y < 0.0f)
-		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
+		velocity.y = std::min(this->velocity.y, velocity.y);
 	else
-		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
+		velocity.y = this->velocity.y;
 
 	// Jump (but not if sliding)
 	if (!lockJumping &&
-		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
+		!getIsSliding() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		velocity.y = jumpSpeed;
 
@@ -383,7 +428,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	//
 	// Setup velocity manipulation
 	//
-	physx::PxVec3 currentVelocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+	physx::PxVec3 currentVelocity = this->velocity;
 
 	//
 	// Just add velocity in a flat way
@@ -406,6 +451,46 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	return currentVelocity;
 }
 
+void PlayerRender::afterMovementUpdates()
+{
+	//
+	// Update playercam pos
+	//
+	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
+	float cameraDistance = playerCamOffset.z;
+
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
+
+	{
+		// Do raycast to see what the camera distance should be
+		physx::PxRaycastBuffer hitInfo;
+		const float hitDistancePadding = 0.75f;
+
+		// @PHYSXWARNING: This causes a race condition for some reason
+		MainLoop::getInstance().physicsScene->lockRead();
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
+		{
+			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+		}
+		MainLoop::getInstance().physicsScene->unlockRead();
+	}
+
+	const glm::vec3 depthOffset(0, 0, cameraDistance);
+	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
+
+	//
+	// Update Rendertransform
+	//
+	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
+	modelPosition.y += modelOffsetY;
+
+	renderTransform =
+		glm::translate(glm::mat4(1.0f), modelPosition) *
+		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
+		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
+}
+
 void PlayerRender::processAnimation()
 {
 	//
@@ -413,19 +498,19 @@ void PlayerRender::processAnimation()
 	//
 	if (animationState == 0)
 	{
-		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (!getIsGrounded())
 			// Jump
 			animationState = 1;
 	}
 	else if (animationState == 1)
 	{
-		if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (getIsGrounded())
 			// Landing
 			animationState = 2;
 	}
 	else if (animationState == 2)
 	{
-		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (!getIsGrounded())
 			// Jump
 			animationState = 1;
 		else
@@ -441,7 +526,7 @@ void PlayerRender::processAnimation()
 	else if (animationState == 3)
 	{
 		// Lock movement
-		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		lockVelocity(false);
 		lockFacingDirection = true;
 		lockJumping = true;
 
@@ -499,8 +584,10 @@ void PlayerRender::processAnimation()
 		animator.playAnimation((unsigned int)isMoving, 6.0f);
 
 	prevAnimState = animationState;
+}
 
-
+void PlayerRender::meshSkinning()
+{
 	//
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
@@ -537,7 +624,7 @@ void PlayerRender::processAnimation()
 			backAttachmentPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
 			backAttachment.initializePoints(backAttachmentPoints);
 			backAttachment.limitTo45degrees = true;
-			
+
 			rightSideburn.isFirstTime = false;
 			leftSideburn.isFirstTime = false;
 			backAttachment.isFirstTime = false;
@@ -551,7 +638,7 @@ void PlayerRender::processAnimation()
 			leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
 			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
 			backAttachment.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			
+
 			leftSideburn.simulateRope(10.0f);
 			rightSideburn.simulateRope(10.0f);
 			backAttachment.simulateRope(850.0f);
@@ -606,13 +693,37 @@ void PlayerRender::processAnimation()
 	else
 		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
-	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
+	prevIsGrounded = getIsGrounded();
 }
+
+void PlayerRender::lockVelocity(bool yAlso)
+{
+	if (yAlso)
+		velocity = physx::PxVec3(0);
+	else
+	{
+		velocity.x = 0;
+		velocity.z = 0;
+	}
+}
+
+void PlayerRender::onShapeHit(const physx::PxControllerShapeHit& hit)
+{
+	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
+
+	//// @Checkin
+	if (hit.worldNormal.dot(physx::PxVec3(0, 1, 0)) <= 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+	{
+		physx::PxVec3 dtiith = hit.dir;
+		float jjjjj = hit.length;
+	}
+}
+void PlayerRender::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }
+void PlayerRender::onObstacleHit(const physx::PxControllerObstacleHit& hit) { PX_UNUSED(hit); }
 
 PlayerCharacter::~PlayerCharacter()
 {
 	delete renderComponent;
-	delete physicsComponent;
 	delete imguiComponent;
 }
 
@@ -620,6 +731,9 @@ void PlayerRender::preRenderUpdate()
 {
 	processMovement();
 	processAnimation();
+	kickoffCCMove();
+	afterMovementUpdates();
+	meshSkinning();
 }
 
 void PlayerRender::render()

@@ -147,7 +147,7 @@ void MainLoop::run()
 			nextPhysicsCalc += physicsDeltaTime;
 			if (nextPhysicsCalc < currentFrame)
 				nextPhysicsCalc = (float)glfwGetTime();		// Allows to get caught up so that physics isn't run every single frame
-
+		
 			physicsUpdate();
 		}
 
@@ -236,11 +236,10 @@ void createWindow(const char* windowName)
 
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #else
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 	glfwSwapInterval(1);
 #endif
+	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 
 	if (!MainLoop::getInstance().window)
 	{

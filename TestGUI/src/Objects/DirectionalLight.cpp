@@ -248,6 +248,9 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 bool doThis = false;
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
+	if (MainLoop::getInstance().camera.height == 0.0f)
+		return glm::mat4(1.0f);
+
 	//
 	// Getting the light viewproj matrix
 	//

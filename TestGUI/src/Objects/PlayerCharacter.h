@@ -40,7 +40,7 @@ public:
 	void renderImGui();
 };
 
-class PlayerRender : public RenderComponent
+class PlayerRender : public RenderComponent, public physx::PxUserControllerHitReport
 {
 public:
 	PlayerRender(BaseObject* bo, Bounds* bounds);
@@ -86,10 +86,14 @@ private:
 	void refreshResources();
 
 	void processMovement();
+	void kickoffCCMove();
 	physx::PxVec3 processGroundedMovement(const glm::vec2& movementVector);
 	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
+	void afterMovementUpdates();
 
 	void processAnimation();
+
+	void meshSkinning();
 
 	VirtualCamera playerCamera;
 
@@ -107,6 +111,28 @@ private:
 
 	bool lockFacingDirection = false;
 	bool lockJumping = false;
+
+	//
+	// Character Controller
+	//
+	physx::PxVec3 velocity;
+	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
+
+	physx::PxCapsuleController* controller;
+	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
+
+	bool isGrounded = false;
+	bool isSliding = false;
+	bool getIsGrounded() { return isGrounded; }
+	bool getIsSliding() { return isSliding; }
+	// NOTE: this should not be accessed while !isGrounded, bc it isn't updated unless if on ground <45degrees
+	glm::vec3 getGroundedNormal() { return currentHitNormal; }
+
+	void lockVelocity(bool yAlso);
+
+	virtual void onShapeHit(const physx::PxControllerShapeHit& hit);
+	virtual void onControllerHit(const physx::PxControllersHit& hit);
+	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
 
 public:		// TODO: make this private (delete this!!!!!!)
 	//
@@ -127,12 +153,11 @@ public:
 	nlohmann::json savePropertiesToJson();
 
 	ImGuiComponent* imguiComponent;
-	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
 	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
+	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	Bounds* bounds;
