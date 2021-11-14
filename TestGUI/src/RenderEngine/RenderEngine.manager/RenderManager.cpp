@@ -726,6 +726,13 @@ void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 	}
 }
 
+glm::vec3 staminaBarPosition{0, -200, 0};
+glm::vec3 staminaBarColor1{ 0.0588, 0.0588, 0.0588 };
+glm::vec3 staminaBarColor2{ 0.3216, 0.7765, 0.3647 };
+glm::vec3 staminaBarColor3{ 0.1686, 0.4275, 0.1922 };
+glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
+float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
+
 void RenderManager::renderUI()
 {
 	const float camWidth = MainLoop::getInstance().camera.width;
@@ -735,13 +742,15 @@ void RenderManager::renderUI()
 		return;
 
 	//
-	// Render Stamina Bar
+	// Render UI Stamina Bar
 	//
+	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
+
 	const float referenceScreenHeight = 500.0f;
-	const float padding = 0.1f;
-	const float staminaBarWidth = 500.0f;
-	const float staminaBarHeight = 8.0f;
-	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	const glm::vec2 staminaBarExtents{ 250.0f, 3.0f };
+	const float padding = 1.0f;
+	const float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
 
 	const float cameraAspectRatio = camWidth / camHeight;
 	glm::mat4 viewMatrix =
@@ -753,16 +762,22 @@ void RenderManager::renderUI()
 			-1.0f,
 			1.0f
 		);
-	glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(staminaBarWidth + padding * 2.0f, staminaBarHeight + padding * 2.0f, 1.0f));
+	glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), staminaBarPosition), glm::vec3(staminaBarExtents.x + padding, staminaBarExtents.y + padding, 1.0f));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
+
+	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(hudUIProgramId);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "referenceScreenHeight"), referenceScreenHeight);
 	glUniform1f(glGetUniformLocation(hudUIProgramId, "padding"), padding);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarWidth"), staminaBarWidth);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarHeight"), staminaBarHeight);
+	glUniform2fv(glGetUniformLocation(hudUIProgramId, "staminaBarExtents"), 1, &staminaBarExtents[0]);
 	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaAmountFilled"), staminaAmountFilled);
-	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "viewMatrix1"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "modelMatrix1"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaDepleteChaser"), staminaDepleteChaser);
+	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor1"), 1, &staminaBarColor1[0]);
+	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor2"), 1, &staminaBarColor2[0]);
+	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor3"), 1, &staminaBarColor3[0]);
+	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor4"), 1, &staminaBarColor4[0]);
+	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarDepleteColorIntensity"), staminaBarDepleteColorIntensity);
+	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	renderQuad();
 }
 
@@ -1038,27 +1053,6 @@ void RenderManager::renderImGuiContents()
 		MainLoop::getInstance().imguiObjects[i]->renderImGui();
 	}
 
-	//
-	// @TODO: This needs to be moved to a real ui production implmeentation
-	// Add small pointer indicating to interactable object
-	//
-	physx::PxRigidActor* triggerHoldActor = GameState::getInstance().getCurrentTriggerHold();
-	if (triggerHoldActor != nullptr)
-	{
-		// @PHYSXWARNING: this causes a race condition with getGlobalPose() bc it's a read condition that runs more often than the physx simulate() function.
-		//glm::vec3 actorPosition = PhysicsUtils::toGLMVec3(triggerHoldActor->getGlobalPose().p);
-		//actorPosition.y += 1.0f;
-		//PhysicsUtils::imguiRenderCircle(
-		//	glm::translate(glm::mat4(1.0f), actorPosition),
-		//	1.0f,
-		//	glm::vec3(0.0f),
-		//	glm::vec3(0.0f),
-		//	8,
-		//	ImColor(75, 227, 98)
-		//);
-	}
-
-
 	if (checkForRequestedObjects != 0)		// NOTE: 1=clickevent, 2=hoverevent
 	{
 		if (!ImGuizmo::IsOver() && !ImGuizmo::IsUsing() && !ImGui::GetIO().WantCaptureMouse)
@@ -1241,6 +1235,13 @@ void RenderManager::renderImGuiContents()
 			}
 
 			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
+
+			ImGui::Separator();
+			ImGui::DragFloat2("StaminaBarPosition", &staminaBarPosition[0]);
+			ImGui::ColorEdit3("StaminaBarColor1", &staminaBarColor1[0]);
+			ImGui::ColorEdit3("StaminaBarColor2", &staminaBarColor2[0]);
+			ImGui::ColorEdit3("StaminaBarColor3", &staminaBarColor3[0]);
+			ImGui::DragFloat("StaminaDepletecolorIntensity", &staminaBarDepleteColorIntensity);
 
 			//
 			// Render out the properties panels of selected object

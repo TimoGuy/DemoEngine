@@ -7,6 +7,7 @@
 #include "../ImGui/imgui.h"
 #include "PhysicsTypes.h"
 
+struct Bounds;
 
 namespace PhysicsUtils
 {

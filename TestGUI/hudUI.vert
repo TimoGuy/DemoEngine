@@ -4,17 +4,16 @@ layout (location=0) in vec3 aPosition;
 layout (location=1) in vec2 aTexCoords;
 
 out vec2 texCoord;
+out vec2 fragLocalPosition;
 
-uniform float referenceScreenHeight;
 uniform float padding;
-uniform float staminaBarWidth;
-uniform float staminaBarHeight;
-uniform float staminaAmountFilled;
-uniform mat4 viewMatrix1;
-uniform mat4 modelMatrix1;
+uniform vec2 staminaBarExtents;
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
 
 void main()
 {
-	gl_Position = viewMatrix1 * modelMatrix1 * vec4(aPosition, 1.0);
+	gl_Position = viewMatrix * modelMatrix * vec4(aPosition, 1.0);
+	fragLocalPosition = aPosition.xy * (staminaBarExtents + vec2(padding));
 	texCoord = aTexCoords;
 }

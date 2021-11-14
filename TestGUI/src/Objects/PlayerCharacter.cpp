@@ -240,6 +240,9 @@ void PlayerRender::processMovement()
 	else
 		velocity = processAirMovement(movementVector);
 
+	if (isMoving)
+		GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
+
 	characterLeanValue = PhysicsUtils::lerp(
 		characterLeanValue,
 		targetCharacterLeanValue,
@@ -361,7 +364,10 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	if (!lockJumping &&
 		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
 		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	{
 		velocity.y = jumpSpeed[isCarryingWater];
+		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
+	}
 
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
