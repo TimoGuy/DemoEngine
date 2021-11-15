@@ -32,4 +32,6 @@ public:
 
 private:
 	std::vector<physx::PxRigidActor*> currentHeldTriggerActorQueue;
+	bool staminaWasDepletedThisFrame = false;
+	float staminaDepletionSpeed = 0.0f, staminaDepletionAccel = 0.5f;
 };

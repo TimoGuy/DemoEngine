@@ -48,9 +48,24 @@ void GameState::inputStaminaEvent(StaminaEvent staminaEvent, float deltaTime)
 		std::cout << "Stamina Event " << staminaEvent << " unknown." << std::endl;
 		break;
 	}
+
+	staminaWasDepletedThisFrame = true;
 }
 
 void GameState::updateStaminaDepletionChaser(float deltaTime)
 {
-	playerStaminaDepleteChaser = PhysicsUtils::moveTowards(playerStaminaDepleteChaser, currentPlayerStaminaAmount, deltaTime);
+	//
+	// Calculate the depletion speed (visual effect)
+	//
+	float lerpSpeed = std::abs(playerStaminaDepleteChaser - currentPlayerStaminaAmount) * 0.1f;
+	float speedingUpSpeed = staminaDepletionSpeed + staminaDepletionAccel * deltaTime;
+	staminaDepletionSpeed = std::min(lerpSpeed, speedingUpSpeed);
+
+	//
+	// Do the depletion calc
+	//
+	static const float barPadding = 0.25f;
+	playerStaminaDepleteChaser =
+		PhysicsUtils::moveTowards(playerStaminaDepleteChaser, currentPlayerStaminaAmount + (staminaWasDepletedThisFrame ? barPadding : 0.0f), staminaDepletionSpeed * 60.0f * deltaTime);
+	staminaWasDepletedThisFrame = false;
 }

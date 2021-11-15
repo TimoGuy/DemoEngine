@@ -744,8 +744,6 @@ void RenderManager::renderUI()
 	//
 	// Render UI Stamina Bar
 	//
-	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
-
 	const float referenceScreenHeight = 500.0f;
 	const glm::vec2 staminaBarExtents{ 250.0f, 3.0f };
 	const float padding = 1.0f;
@@ -779,6 +777,8 @@ void RenderManager::renderUI()
 	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
 	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 	renderQuad();
+
+	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
 }
 
 std::vector<size_t> requestedListObjectIndices;
