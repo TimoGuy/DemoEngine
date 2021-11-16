@@ -534,12 +534,12 @@ void PlayerRender::processAnimation()
 
 		case 1:
 			// Jump
-			animator.playAnimation(2 + isMoving, 3.0f, false, true);
+			animator.playAnimation(2 + (int)isMoving, 3.0f, false, true);
 			break;
 
 		case 2:
 			// Land
-			animator.playAnimation(4 + isMoving, 0.0f, false);
+			animator.playAnimation(4 + (int)isMoving, 0.0f, false);
 			break;
 
 		case 3:
@@ -554,7 +554,7 @@ void PlayerRender::processAnimation()
 
 		case 5:
 			// Pick up bottle
-			animator.playAnimation(10, 5.0f, false, true);
+			animator.playAnimation(10, 7.5f, false, true);
 			break;
 
 		default:
