@@ -62,6 +62,9 @@ void Animator::updateAnimation(float deltaTime)
 		if (mixTime <= 0.0f)
 		{
 			// Switch over to primary animation only
+			currentAnimationIndex = nextAnimationIndex;
+			nextAnimationIndex = -1;
+
 			currentTime = nextTime;
 			currentAnimation = nextAnimation;
 			loopingCurrent = loopingNext;
@@ -92,16 +95,22 @@ void Animator::updateAnimation(float deltaTime)
 }
 
 
-void Animator::playAnimation(unsigned int animationIndex, float mixTime, bool looping, bool force)
+void Animator::playAnimation(size_t animationIndex, float mixTime, bool looping, bool force)
 {		// TODO: fix the forcing. It can be overridden somehow
-	if (!force && currentAnimationIndex == animationIndex) return;
-	if (!force && nextAnimation) return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
+	if (!force &&
+		(currentAnimationIndex == (int)animationIndex ||
+			nextAnimationIndex == (int)animationIndex))
+		return;
+	if (!force &&
+		nextAnimation)
+		return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
 
 	assert(animationIndex < animations->size());
-	currentAnimationIndex = animationIndex;
 
 	if (mixTime > 0.0f)
 	{
+		nextAnimationIndex = (int)animationIndex;
+
 		Animator::loopingNext = looping;
 		nextTime = 0.0f;
 		nextAnimation = &(*animations)[animationIndex];
@@ -109,6 +118,8 @@ void Animator::playAnimation(unsigned int animationIndex, float mixTime, bool lo
 	}
 	else
 	{
+		currentAnimationIndex = (int)animationIndex;
+
 		Animator::loopingCurrent = looping;
 		currentTime = 0.0f;
 		currentAnimation = &(*animations)[animationIndex];
@@ -217,6 +228,16 @@ void Animator::calculateBoneTransform(AssimpNodeData* node, const glm::mat4& glo
 	{
 		calculateBoneTransform(&node->children[i], globalRootInverseMatrix, globalTransformation, boneInfoMap, useNextAnimation);
 	}
+}
+
+bool Animator::isAnimationFinished(size_t animationIndex, float deltaTime)
+{
+	if (currentAnimationIndex != animationIndex)
+		return false;
+
+	float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime;
+	float duration = getCurrentAnimation()->getDuration();
+	return time >= duration;
 }
 
 void Animator::invalidateCache(AssimpNodeData* node)

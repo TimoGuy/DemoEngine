@@ -18,7 +18,7 @@ public:
 	Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf = {});
 	
 	void updateAnimation(float deltaTime);
-	void playAnimation(unsigned int animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
+	void playAnimation(size_t animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
 	void calculateBoneTransform(AssimpNodeData* node, const glm::mat4& globalRootInverseMatrix, const glm::mat4& parentTransform, std::map<std::string, BoneInfo>& boneInfoMap, bool useNextAnimation);
 
 	std::vector<glm::mat4>* getFinalBoneMatrices() { return &finalBoneMatrices; }
@@ -29,6 +29,8 @@ public:
 	inline const AnimatedRope& getBoneTransformation(const std::string& boneName) { return boneTransformationsToKeepTrackOfMap[boneName]; }
 	inline const void setBoneTransformation(const std::string& boneName, const glm::mat4& transformation) { boneTransformationsToKeepTrackOfMap[boneName].globalTransformation = transformation; finalBoneMatrices[boneTransformationsToKeepTrackOfMap[boneName].boneId] = currentAnimation->getGlobalRootInverseMatrix() * transformation * boneTransformationsToKeepTrackOfMap[boneName].boneOffset; }
 
+	bool isAnimationFinished(size_t animationIndex, float deltaTime);
+
 private:
 	std::vector<glm::mat4> finalBoneMatrices;
 	Animation* currentAnimation, *nextAnimation;
@@ -38,7 +40,8 @@ private:
 
 	bool loopingCurrent = true, loopingNext = true;
 
-	unsigned int currentAnimationIndex = -1;		// This is nextAnimation's id when it's transitioning too btw.
+	int currentAnimationIndex = -1;
+	int nextAnimationIndex = -1;
 
 	void invalidateCache(AssimpNodeData* node);
 

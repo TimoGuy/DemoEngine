@@ -90,6 +90,8 @@ private:
 	physx::PxVec3 processGroundedMovement(const glm::vec2& movementVector);
 	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
 
+	void processActions();
+
 	void processAnimation();
 
 	VirtualCamera playerCamera;
@@ -108,6 +110,8 @@ private:
 
 	bool lockFacingDirection = false;
 	bool lockJumping = false;
+
+	bool triggerDrinkWaterAnimation = false;
 
 public:		// TODO: make this private (delete this!!!!!!)
 	//

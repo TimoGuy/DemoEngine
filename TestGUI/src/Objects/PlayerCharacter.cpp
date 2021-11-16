@@ -416,7 +416,22 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 
 	return currentVelocity;
 }
-float hairWeightMult = 10.0f;
+
+void PlayerRender::processActions()
+{
+	if (GameState::getInstance().playerIsHoldingWater &&
+		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F))
+	{
+		// Drink the water
+		GameState::getInstance().playerIsHoldingWater = false;
+		GameState::getInstance().currentPlayerStaminaAmount =
+			GameState::getInstance().maxPlayerStaminaAmount;
+
+		triggerDrinkWaterAnimation = true;
+	}
+}
+
+float hairWeightMult = 10.0f;				// @Debug
 void PlayerRender::processAnimation()
 {
 	//
@@ -457,9 +472,35 @@ void PlayerRender::processAnimation()
 		lockJumping = true;
 
 		// Wait until draw water animation is finished
-		float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
-		float duration = animator.getCurrentAnimation()->getDuration();
-		if (time >= duration)
+		if (animator.isAnimationFinished(8, MainLoop::getInstance().deltaTime * animationSpeed))
+		{
+			// Pick up bottle
+			animationState = 5;
+		}
+	}
+	else if (animationState == 4)
+	{
+		// Lock movement
+		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		lockFacingDirection = true;
+		lockJumping = true;
+
+		// Wait until drink-water animation is finished
+		if (animator.isAnimationFinished(9, MainLoop::getInstance().deltaTime * animationSpeed))
+		{
+			// Pick up bottle
+			animationState = 5;
+		}
+	}
+	else if (animationState == 5)
+	{
+		// Lock movement
+		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		lockFacingDirection = true;
+		lockJumping = true;
+
+		// Wait until pick-up-bottle animation is finished
+		if (animator.isAnimationFinished(10, MainLoop::getInstance().deltaTime * animationSpeed))
 		{
 			// Standing
 			animationState = 0;
@@ -471,6 +512,12 @@ void PlayerRender::processAnimation()
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
 	{
 		animationState = 3;
+	}
+
+	if (triggerDrinkWaterAnimation)
+	{
+		triggerDrinkWaterAnimation = false;
+		animationState = 4;
 	}
 
 	//
@@ -497,7 +544,17 @@ void PlayerRender::processAnimation()
 
 		case 3:
 			// Draw water
-			animator.playAnimation(8, false, true);
+			animator.playAnimation(8, 1.0f, false, true);
+			break;
+
+		case 4:
+			// Drink water
+			animator.playAnimation(9, 1.0f, false, true);
+			break;
+
+		case 5:
+			// Pick up bottle
+			animator.playAnimation(10, 5.0f, false, true);
 			break;
 
 		default:
@@ -612,7 +669,7 @@ void PlayerRender::processAnimation()
 	//
 	// Calculate the bottle transformation matrix
 	//
-	if (animationState == 3)
+	if (animationState == 3 || animationState == 4 || animationState == 5)
 		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 	else
 		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
@@ -630,6 +687,7 @@ PlayerCharacter::~PlayerCharacter()
 void PlayerRender::preRenderUpdate()
 {
 	processMovement();
+	processActions();
 	processAnimation();
 }
 
