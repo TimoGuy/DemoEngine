@@ -63,7 +63,7 @@ PlayerRender::~PlayerRender()
 {
 	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
 }
-bool firstTimeResources = true;
+
 void PlayerRender::refreshResources()
 {
 	//
@@ -81,8 +81,10 @@ void PlayerRender::refreshResources()
 	// (NOTE: it's highly recommended to only use the glTF2 format for 3d models,
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
-	model = (Model*)Resources::getResource("model;slimeGirl");
-	if (firstTimeResources)
+	bool recreateAnimations;
+	model = (Model*)Resources::getResource("model;slimeGirl", model, &recreateAnimations);
+	if (recreateAnimations)
+	{
 		animator =
 			Animator(
 				&model->getAnimations(),
@@ -99,43 +101,43 @@ void PlayerRender::refreshResources()
 					"Back Attachment",
 					"Hand Attachment"
 				}
-			);
+		);
 
-	bottleModel = (Model*)Resources::getResource("model;weaponBottle");
-	firstTimeResources = false;
+		materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
+		materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
+		materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
+		materials["Sweater"] = (Material*)Resources::getResource("material;pbrSlimeSweater");
+		materials["Sweater2"] = (Material*)Resources::getResource("material;pbrSlimeSweater2");
+		materials["Vest"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+		materials["Shorts"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
+		materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
+		materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
+		materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+		materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
+		materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
+		materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
+		materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
+		materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
+		materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
 
-	//
-	// Load materials
-	//
-	materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
-	materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
-	materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-	materials["Sweater"] = (Material*)Resources::getResource("material;pbrSlimeSweater");
-	materials["Sweater2"] = (Material*)Resources::getResource("material;pbrSlimeSweater2");
-	materials["Vest"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-	materials["Shorts"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
-	materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
-	materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
-	materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-	materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
-	materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
-	materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
-	materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
-	materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
-	materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+		materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
+		materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
+		materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
-	materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
-	materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
-	materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
+		model->setMaterials(materials);
+	}
 
-	model->setMaterials(materials);
+	bottleModel = (Model*)Resources::getResource("model;weaponBottle", bottleModel, &recreateAnimations);
+	if (recreateAnimations)
+	{
+		// Now for the bottle model!
+		bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
+		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
 
-	// Now for the bottle model!
-	bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-	bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-	bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-	bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-	bottleModel->setMaterials(bottleModelMaterials);
+		bottleModel->setMaterials(bottleModelMaterials);
+	}
 }
 
 void PlayerRender::processMovement()
@@ -694,7 +696,7 @@ void PlayerRender::preRenderUpdate()
 void PlayerRender::render()
 {
 #ifdef _DEBUG
-	refreshResources();			// @Broken: animator = Animator(&model.getAnimations()); ::: This line will recreate the animator every frame, which resets the animator's timer. Zannnen
+	refreshResources();
 #endif
 
 	//
@@ -708,6 +710,10 @@ void PlayerRender::render()
 
 void PlayerRender::renderShadow(GLuint programId)
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!

@@ -43,6 +43,8 @@ void Model::setMaterials(std::map<std::string, Material*> materialMap)
 
 void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 {
+	std::cout << "MODEL::" << path << "::Import Started" << std::endl;
+
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
 
@@ -53,7 +55,6 @@ void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
 		return;
 	}
-	std::cout << "Nope everything's all good" << std::endl;
 
 	directory = path.substr(0, path.find_last_of('/'));
 	processNode(scene->mRootNode, scene);		// This starts the recursive process of loading in the model as vertices!
@@ -66,6 +67,8 @@ void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 		Animation newAnimation(scene, this, animationNames[i]);
 		animations.push_back(newAnimation);
 	}
+
+	std::cout << "MODEL::" << path << "::Import Fimished" << std::endl;
 }
 
 

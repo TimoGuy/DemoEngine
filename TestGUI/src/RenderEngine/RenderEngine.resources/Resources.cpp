@@ -38,14 +38,23 @@ namespace Resources
 	// ---------------------------------------
 	//   The almighty getResource() Function
 	// ---------------------------------------
-	void* getResource(const std::string& resourceName)
+	void* getResource(const std::string& resourceName, const void* compareResource, bool* resourceDiffersAnswer)
 	{
 		void* resource = findResource(resourceName);
 		if (resource != NULL)
+		{
+			if (resourceDiffersAnswer != nullptr)
+				*resourceDiffersAnswer = (resource != compareResource);
+
 			return resource;
+		}
 
 		resource = loadResource(resourceName, false);
 		registerResource(resourceName, resource);
+
+		if (resourceDiffersAnswer != nullptr)
+			*resourceDiffersAnswer = (resource != compareResource);
+
 		return resource;
 	}
 
@@ -398,28 +407,41 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "postprocessing.vert", "postprocessing.frag");
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "hudUI.vert", "hudUI.frag");
 
+	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+	//
+	// Rusty metal pbr
+	//
+	if (resourceName == "material;pbrRustyMetal")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
+
 	if (resourceName == "texture;pbrAlbedo")							return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/rustediron2_basecolor.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrNormal")							return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/rustediron2_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrMetalness")							return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/rustediron2_metallic.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrRoughness")							return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+
+	//
+	// Commons
+	//
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Running", "Jumping_From_Idle", "Jumping_From_Run", "Land_From_Jumping_From_Idle", "Land_From_Jumping_From_Run", "Land_Hard", "Get_Up_From_Land_Hard", "Draw_Water", "Drink_From_Bottle", "Pick_Up_Bottle"});
-	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
-	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/water_pool.glb", { "Idle", "No_Water" });
-	if (resourceName == "model;yosemiteTerrain")						return loadModel(resourceName, isUnloading, "res/cube.glb");
-	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/house_w_interior.glb");
-
-	if (resourceName == "material;pbrRustyMetal")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrAlbedo", "texture;pbrNormal", "texture;pbrMetalness", "texture;pbrRoughness");
-
 	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/shared_textures/default_normal.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/shared_textures/0_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/shared_textures/0.5_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	
 	//
-	// Slime Girl Materials
+	// Set pieces
 	//
+	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/water_pool.glb", { "Idle", "No_Water" });
+	if (resourceName == "model;cube")									return loadModel(resourceName, isUnloading, "res/cube.glb");
+	// TODO: make a .startsWith("model;custommodel;") to make a custom model using the filename of the model as the id (i.e. "model;custommodel;res/islands/bigger_one.glb")
+	if (resourceName == "model;")
+	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/house_w_interior.glb");
+
+	//
+	// Slime Girl Model and Materials
+	//
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Running", "Jumping_From_Idle", "Jumping_From_Run", "Land_From_Jumping_From_Idle", "Land_From_Jumping_From_Run", "Land_Hard", "Get_Up_From_Land_Hard", "Draw_Water", "Drink_From_Bottle", "Pick_Up_Bottle"});
+	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
+
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");
 	if (resourceName == "texture;pbrSlimeBeltAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeBeltNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_NormalGL.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);

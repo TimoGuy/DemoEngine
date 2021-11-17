@@ -13,7 +13,7 @@
 #include "../Utils/FileLoading.h"
 
 #define PHYSX_VISUALIZATION 1
-#define FULLSCREEN_MODE 1
+#define FULLSCREEN_MODE 0
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
