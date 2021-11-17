@@ -17,7 +17,7 @@ public:
 class YosemiteTerrainRender : public RenderComponent
 {
 public:
-	YosemiteTerrainRender(BaseObject* bo, Bounds* bounds);
+	YosemiteTerrainRender(BaseObject* bo, Bounds* bounds, std::string modelResourceName);
 
 	void preRenderUpdate();
 	void render();
@@ -25,6 +25,7 @@ public:
 
 	unsigned int pbrShaderProgramId, shadowPassProgramId;
 
+	std::string modelResourceName;
 	Model* model;
 	std::map<std::string, Material*> materials;
 
@@ -37,7 +38,7 @@ class YosemiteTerrain : public BaseObject
 public:
 	static const std::string TYPE_NAME;
 
-	YosemiteTerrain();
+	YosemiteTerrain(std::string modelResourceName = "model;cube");
 	~YosemiteTerrain();
 
 	void loadPropertiesFromJson(nlohmann::json& object);

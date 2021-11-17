@@ -11,7 +11,7 @@
 #include "../ImGui/imgui_stdlib.h"
 
 
-YosemiteTerrain::YosemiteTerrain()
+YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 {
 	bounds = new Bounds();
 	bounds->center = glm::vec3(0.0f);
@@ -19,10 +19,10 @@ YosemiteTerrain::YosemiteTerrain()
 
 	imguiComponent = new YosemiteTerrainImGui(this, bounds);
 	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC);
-	renderComponent = new YosemiteTerrainRender(this, bounds);
+	renderComponent = new YosemiteTerrainRender(this, bounds, modelResourceName);
 }
 
-YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
+YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, Bounds* bounds, std::string modelResourceName) : RenderComponent(bo, bounds), modelResourceName(modelResourceName)
 {
 	refreshResources();
 }
@@ -32,7 +32,7 @@ void YosemiteTerrainRender::refreshResources()
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 
-	model = (Model*)Resources::getResource("model;yosemiteTerrain");
+	model = (Model*)Resources::getResource(modelResourceName);
 
 	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 	model->setMaterials(materials);
@@ -52,8 +52,12 @@ void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Overri
 	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
-	// I'll take the leftover tokens then
+	// Check if there's an explicit model name
 	//
+	if (object.contains("modelResourceName"))
+	{
+		((YosemiteTerrainRender*)getRenderComponent())->modelResourceName = object["modelResourceName"];
+	}
 }
 
 nlohmann::json YosemiteTerrain::savePropertiesToJson()
@@ -62,6 +66,9 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
+
+	// Explicit model resource name
+	j["modelResourceName"] = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
 
 	return j;
 }

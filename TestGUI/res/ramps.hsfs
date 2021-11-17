@@ -66,19 +66,20 @@
                     -176.7280731201172
                 ],
                 "rotation": [
-                    1.706686354741027e-11,
+                    1.517054364075232e-11,
                     -30.824617385864258,
                     -179.99989318847656
                 ],
                 "scale": [
-                    30.89866828918457,
-                    0.9999997615814209,
+                    30.898666381835938,
+                    0.9999996423721313,
                     56.577781677246094
                 ]
             },
             "imguiComponent": {
                 "name": "Yosemite Terrain"
             },
+            "modelResourceName": "model;cube",
             "type": "ground"
         },
         {
@@ -103,6 +104,7 @@
             "imguiComponent": {
                 "name": "Yosemite Terrain"
             },
+            "modelResourceName": "model;cube",
             "type": "ground"
         },
         {
@@ -160,6 +162,7 @@
             "imguiComponent": {
                 "name": "Yosemite Terrain"
             },
+            "modelResourceName": "model;cube",
             "type": "ground"
         },
         {
@@ -176,14 +179,15 @@
                     -179.99989318847656
                 ],
                 "scale": [
-                    99.99995422363281,
-                    42.03998565673828,
+                    99.99993896484375,
+                    42.039981842041016,
                     1.6721558570861816
                 ]
             },
             "imguiComponent": {
                 "name": "Yosemite Terrain"
             },
+            "modelResourceName": "model;cube",
             "type": "ground"
         },
         {
@@ -196,7 +200,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    30.470096588134766,
+                    30.4700927734375,
                     0.0
                 ],
                 "scale": [
@@ -281,6 +285,31 @@
                 "name": "Water Puddle"
             },
             "type": "water_puddle"
+        },
+        {
+            "baseObject": {
+                "guid": "f1561828c3a9b16b71beb4e5b4fbb192d32d8e9f53f241d24a1c16a8c845cb35",
+                "position": [
+                    -110.94586181640625,
+                    0.0,
+                    -45.8763313293457
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "imguiComponent": {
+                "name": "Experimental Object"
+            },
+            "modelResourceName": "model;outdoorTerrain",
+            "type": "ground"
         }
     ]
 }
