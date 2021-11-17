@@ -70,8 +70,11 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
 
 	//
+	// Create the rigidbody actor!
 	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
 	//
+	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
+	body->attachShape(*triMesh);
 }
 
 TriangleMeshCollider::~TriangleMeshCollider()
