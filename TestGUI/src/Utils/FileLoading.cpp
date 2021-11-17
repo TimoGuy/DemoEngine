@@ -86,6 +86,13 @@ void FileLoading::createObjectWithJson(nlohmann::json& object)
 	if (object["type"] == WaterPuddle::TYPE_NAME)		buildingObject = new WaterPuddle();
 	if (object["type"] == RiverDropoff::TYPE_NAME)		buildingObject = new RiverDropoff();
 
+	//
+	// @@@@TODO: Because the properties are getting loaded after the constructor has run, then
+	// it ends up becoming stale. If a large model is created for YosemiteTerrain(), then you'd have
+	// to look at it to allow the render function to run, and then only then does the resource see that
+	// the model name has changed, so then it'd reload the model. This won't work in release mode, when there
+	// isn't hot-swapping in the models. HEY! Fix this
+	//
 	buildingObject->loadPropertiesFromJson(object);
 
 	assert(buildingObject != nullptr);

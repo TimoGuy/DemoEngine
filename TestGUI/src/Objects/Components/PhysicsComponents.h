@@ -16,11 +16,9 @@ public:
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
-	physx::PxTriangleMeshGeometry getTriMeshGeometry();
-
 private:
 	Bounds* bounds;
-	physx::PxTriangleMesh* triMesh;
+	physx::PxShape* shape;
 	ShapeTypes shapeType;
 };
 
