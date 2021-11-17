@@ -4,6 +4,26 @@
 #include "../../Utils/PhysicsTypes.h"
 
 
+class Model;
+
+class TriangleMeshCollider : public PhysicsComponent
+{
+public:
+	TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
+	~TriangleMeshCollider();
+
+	void physicsUpdate();
+	void propagateNewTransform(const glm::mat4& newTransform);
+	physx::PxTransform getGlobalPose();
+
+	physx::PxTriangleMeshGeometry getTriMeshGeometry();
+
+private:
+	Bounds* bounds;
+	physx::PxTriangleMesh* triMesh;
+	ShapeTypes shapeType;
+};
+
 class BoxCollider : public PhysicsComponent
 {
 public:

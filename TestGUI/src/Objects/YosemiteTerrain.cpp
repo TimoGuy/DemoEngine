@@ -18,7 +18,7 @@ YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	imguiComponent = new YosemiteTerrainImGui(this, bounds);
-	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC);
+	INTERNALrecreatePhysicsComponent(modelResourceName);
 	renderComponent = new YosemiteTerrainRender(this, bounds, modelResourceName);
 }
 
@@ -32,7 +32,12 @@ void YosemiteTerrainRender::refreshResources()
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
 
-	model = (Model*)Resources::getResource(modelResourceName);
+	bool isNewModel;
+	model = (Model*)Resources::getResource(modelResourceName, model, &isNewModel);
+	if (isNewModel)
+	{
+		((YosemiteTerrain*)baseObject)->INTERNALrecreatePhysicsComponent(modelResourceName);
+	}
 
 	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 	model->setMaterials(materials);
@@ -71,6 +76,22 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 	j["modelResourceName"] = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
 
 	return j;
+}
+
+void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResourceName)
+{
+	if (physicsComponent != nullptr)
+		delete physicsComponent;
+
+	if (modelResourceName == "model;cube")
+	{
+		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC);
+	}
+	else
+	{
+		Model* fetchedModel = (Model*)Resources::getResource(modelResourceName);
+		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::STATIC);
+	}
 }
 
 void YosemiteTerrainRender::preRenderUpdate()

@@ -30,6 +30,8 @@ public:
 
 	void setMaterials(std::map<std::string, Material*> materialMap);
 
+	const std::vector<Mesh>& getMeshes() { return meshes; }
+
 private:
 	std::vector<Texture> loadedTextures;
 	std::vector<Mesh> meshes;

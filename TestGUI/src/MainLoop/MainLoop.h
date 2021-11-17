@@ -29,6 +29,7 @@ public:
 
 	physx::PxScene* physicsScene;
 	physx::PxPhysics* physicsPhysics;
+	physx::PxCooking* physicsCooking;
 	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
 

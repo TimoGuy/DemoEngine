@@ -34,12 +34,15 @@ public:
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 
+	const std::vector<Vertex>& getVertices() const { return vertices; }
+	const std::vector<uint32_t>& getIndices() const { return indices; }
+
 private:
 	unsigned int VAO, VBO, EBO;
 	void setupMesh();
 
 	std::vector<Vertex>			vertices;
-	std::vector<unsigned int>	indices;
+	std::vector<uint32_t>		indices;
 	Material*					material;
 	std::string					materialName;
 };

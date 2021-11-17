@@ -3,7 +3,98 @@
 #include "../../MainLoop/MainLoop.h"
 #include "../../Utils/PhysicsUtils.h"
 #include "../../Utils/GameState.h"
+#include "../../RenderEngine/RenderEngine.model/Model.h"
 
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// TriangleMeshCollider Class
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo)
+{
+	physx::PxU32 nbVerts = 0;
+	physx::PxU32 nbIndices = 0;
+	uint32_t baseIndex = 0;
+
+	std::vector<physx::PxVec3> verts;
+	std::vector<physx::PxU32> indices32;
+
+	//
+	// Extract meshes from model and conform to physx trianglemeshdesc
+	//
+	const std::vector<Mesh>& modelMeshes = model->getMeshes();
+	for (size_t i = 0; i < modelMeshes.size(); i++)
+	{
+		const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
+		const std::vector<uint32_t>& indices = modelMeshes[i].getIndices();
+
+		nbVerts += (physx::PxU32)vertices.size();
+		nbIndices += (physx::PxU32)indices.size();
+
+		//
+		// Add in vertices
+		//
+		for (size_t j = 0; j < vertices.size(); j++)
+		{
+			const glm::vec3 vec = vertices[j].position;
+			verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
+		}
+
+		//
+		// Add in indices
+		//
+		for (size_t j = 0; j < indices.size(); j++)
+		{
+			indices32.push_back(indices[j] + baseIndex);
+		}
+
+		// Bump counter
+		baseIndex += (uint32_t)indices.size();
+	}
+
+	physx::PxTriangleMeshDesc meshDesc;
+	meshDesc.points.count = nbVerts;
+	meshDesc.points.stride = sizeof(physx::PxVec3);
+	meshDesc.points.data = &verts[0];
+	
+	meshDesc.triangles.count = nbIndices / 3;
+	meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
+	meshDesc.triangles.data = &indices32[0];
+
+	physx::PxDefaultMemoryOutputStream writeBuffer;
+	physx::PxTriangleMeshCookingResult::Enum result;
+	bool status = MainLoop::getInstance().physicsCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
+	if (!status)
+		return;
+
+	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+	triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
+
+	//
+	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
+	//
+}
+
+TriangleMeshCollider::~TriangleMeshCollider()
+{
+}
+
+void TriangleMeshCollider::physicsUpdate()
+{
+}
+
+void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
+{
+}
+
+physx::PxTransform TriangleMeshCollider::getGlobalPose()
+{
+	return physx::PxTransform();
+}
+
+physx::PxTriangleMeshGeometry TriangleMeshCollider::getTriMeshGeometry()
+{
+	return physx::PxTriangleMeshGeometry();
+}
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // BoxCollider Class

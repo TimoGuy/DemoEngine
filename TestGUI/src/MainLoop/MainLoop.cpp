@@ -382,7 +382,6 @@ physx::PxDefaultCpuDispatcher* gDispatcher = NULL;
 physx::PxTolerancesScale tolerancesScale;
 
 physx::PxFoundation* gFoundation = NULL;
-physx::PxCooking* gCooking = NULL;
 
 physx::PxRigidStatic* gTriangleMeshActor = NULL;
 physx::PxRigidDynamic* gSphereActor = NULL;
@@ -410,6 +409,10 @@ void setupPhysx()
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
 	sceneDesc.ccdMaxPasses = 4;
+
+	MainLoop::getInstance().physicsCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, physx::PxCookingParams(tolerancesScale));
+	if (!MainLoop::getInstance().physicsCooking)
+		std::cerr << "FATAL ERROR::::PxCreateCooking failed!" << std::endl;
 
 	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	MainLoop::getInstance().defaultPhysicsMaterial = MainLoop::getInstance().physicsPhysics->createMaterial(0.5f, 0.5f, 1.0f);

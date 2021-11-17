@@ -53,6 +53,8 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
+	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
+
 	Bounds* bounds;
 };
 
