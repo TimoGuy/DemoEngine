@@ -58,5 +58,5 @@ void main()
 	fragPosition = vec3(modelMatrix * boneTransform * vec4(vertexPosition, 1.0));
 	texCoord = uvCoordinate;
 
-	gl_Position = cameraMatrix * vec4(fragPosition, 1.0);
+	gl_Position = cameraMatrix * modelMatrix * boneTransform * vec4(vertexPosition, 1.0);			// @ShowCaitlin
 }

@@ -48,7 +48,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 		}
 
 		// Bump counter
-		baseIndex += (uint32_t)indices.size();
+		baseIndex += (uint32_t)vertices.size();			// @ShowCaitlin
 	}
 
 	physx::PxTriangleMeshDesc meshDesc;

@@ -541,7 +541,7 @@ void PlayerRender::processAnimation()
 
 		case 2:
 			// Land
-			animator.playAnimation(4 + (int)isMoving, 0.0f, false);
+			animator.playAnimation(4 + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 3:
