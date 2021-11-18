@@ -82,25 +82,23 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	triGeom.triangleMesh = triMesh;
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);
+	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: @MemLeak: @Kakunin: This may be a mem leak... but it appears that exclusive shapes should not get released bc when the actor is released that's when the shape gets released.
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
 		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
 		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 	}
-	body->attachShape(*shape);
 
 	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
 
 	MainLoop::getInstance().physicsScene->addActor(*body);
-	shape->release();
 	triMesh->release();
 }
 
 TriangleMeshCollider::~TriangleMeshCollider()
 {
-	shape->release();
+	
 	MainLoop::getInstance().physicsScene->removeActor(*body);
 	body->release();
 }

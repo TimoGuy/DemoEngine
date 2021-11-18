@@ -440,6 +440,7 @@ void RenderManager::render()
 	{
 		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
 			continue;
+
 		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
 	}
 
