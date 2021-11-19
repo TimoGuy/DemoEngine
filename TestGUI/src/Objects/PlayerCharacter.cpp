@@ -506,7 +506,8 @@ void PlayerRender::processAnimation()
 
 		case 1:
 			// Jump
-			animator.playAnimation(2 + (int)isMoving, 3.0f, false, true);
+			//animator.playAnimation(2 + (int)isMoving, 3.0f, false, true);
+			animator.playAnimation(2 + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 2:

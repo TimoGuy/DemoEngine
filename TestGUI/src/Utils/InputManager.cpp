@@ -60,8 +60,7 @@ void joystickCallback(int jid, int event)
 	}
 	else if (event == GLFW_DISCONNECTED)
 	{
-		const char* name = glfwGetJoystickName(GLFW_JOYSTICK_1);
-		std::cout << "JOYSTICK:: Joystick \"" << name << "\" was disconnected :(" << std::endl;
+		std::cout << "JOYSTICK:: Joystick_1 was disconnected :(" << std::endl;
 
 		InputManager::getInstance().INTERNALSetIJ1CAIG(false);
 	}
@@ -109,19 +108,20 @@ void InputManager::updateInputState()
 			float _tempRightStickX = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
-			const float deadzone = 0.1f;
+			const float deadzoneLeftStick = 0.5f;
+			const float deadzoneRightStickX = 0.1f;
+			const float deadzoneRightStickY = 0.5f;
 			const float rightStickSensitivity = 5.0f;
 
-			if (abs(_tempLeftStickX) > deadzone || abs(_tempLeftStickY) > deadzone)
+			if (abs(_tempLeftStickX) > deadzoneLeftStick || abs(_tempLeftStickY) > deadzoneLeftStick)
 			{
 				leftStickX += _tempLeftStickX;
 				leftStickY += _tempLeftStickY * -1.0f;
 			}
-			if (abs(_tempRightStickX) > deadzone || abs(_tempRightStickY) > deadzone)
-			{
+			if (abs(_tempRightStickX) > deadzoneRightStickX)
 				rightStickX += _tempRightStickX * rightStickSensitivity;
+			if (abs(_tempRightStickY) > deadzoneRightStickY)
 				rightStickY += _tempRightStickY * rightStickSensitivity;
-			}
 		}
 	}
 
