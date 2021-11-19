@@ -10,6 +10,7 @@
 #include "../ImGui/imgui_impl_opengl3.h"
 #include "../ImGui/ImGuizmo.h"
 
+#include "../Utils/InputManager.h"
 #include "../Utils/FileLoading.h"
 
 #define PHYSX_VISUALIZATION 1
@@ -129,6 +130,11 @@ void MainLoop::run()
 
 		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
 			camera.Inputs(window);
+
+		//
+		// Update the input manager
+		//
+		InputManager::getInstance().updateInputState();
 
 		//
 		// Update deltaTime for rendering

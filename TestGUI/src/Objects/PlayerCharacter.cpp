@@ -10,6 +10,7 @@
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
+#include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
 #include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
@@ -17,8 +18,6 @@
 
 #include <cmath>
 
-
-double previousMouseX, previousMouseY;
 
 PlayerCharacter::PlayerCharacter()
 {
@@ -143,34 +142,9 @@ void PlayerRender::refreshResources()
 void PlayerRender::processMovement()
 {
 	//
-	// Update Camera position based off new mousex/y pos's
-	//
-	double mouseX, mouseY;
-	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);					// TODO: make this a centralized input update that occurs
-	double deltaX = mouseX - previousMouseX;
-	double deltaY = mouseY - previousMouseY;
-
-	if (MainLoop::getInstance().camera.getLockedCursor())
-	{
-		//
-		// Lock the cursor
-		// @Refactor: this code should not be here. It should probs be in mainloop ya think????
-		//
-		previousMouseX = (int)MainLoop::getInstance().camera.width / 2;		// NOTE: when setting cursor position as a double, the getCursorPos() function is slightly off, making the camera slowly move upwards
-		previousMouseY = (int)MainLoop::getInstance().camera.height / 2;
-		glfwSetCursorPos(MainLoop::getInstance().window, previousMouseX, previousMouseY);
-	}
-	else
-	{
-		// Regular update the previousMouse position
-		previousMouseX = mouseX;
-		previousMouseY = mouseY;
-	}
-
-	//
 	// Get looking input
 	//
-	lookingInput += glm::vec2(deltaX, deltaY) * lookingSensitivity;
+	lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
 	lookingInput.x = fmodf(lookingInput.x, 360.0f);
 	if (lookingInput.x < 0.0f)
 		lookingInput.x += 360.0f;
@@ -179,11 +153,7 @@ void PlayerRender::processMovement()
 	//
 	// Movement
 	//
-	glm::vec2 movementVector(0.0f);
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_W) == GLFW_PRESS) movementVector.y += 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_A) == GLFW_PRESS) movementVector.x -= 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_S) == GLFW_PRESS) movementVector.y -= 1.0f;
-	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_D) == GLFW_PRESS) movementVector.x += 1.0f;
+	glm::vec2 movementVector(InputManager::getInstance().leftStickX, InputManager::getInstance().leftStickY);
 
 	// Change input vector to camera view
 	glm::vec3 ThreeDMvtVector =
@@ -365,7 +335,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	// Jump (but not if sliding)
 	if (!lockJumping &&
 		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
-		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_SPACE) == GLFW_PRESS)
+		InputManager::getInstance().jumpPressed)
 	{
 		velocity.y = jumpSpeed[isCarryingWater];
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
@@ -422,7 +392,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 void PlayerRender::processActions()
 {
 	if (GameState::getInstance().playerIsHoldingWater &&
-		glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F))
+		InputManager::getInstance().useItemPressed)
 	{
 		// Drink the water
 		GameState::getInstance().playerIsHoldingWater = false;

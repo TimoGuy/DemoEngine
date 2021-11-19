@@ -3,6 +3,7 @@
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
+#include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
 #include "Components/PhysicsComponents.h"
 
@@ -88,7 +89,7 @@ void RiverDropoffRender::preRenderUpdate()
 		return;
 
 	static bool prevEBtnPressed = GLFW_RELEASE;
-	bool EBtnpressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_E);
+	bool EBtnpressed = InputManager::getInstance().interactPressed;
 	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
 	{
 		//

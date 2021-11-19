@@ -3,6 +3,7 @@
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
+#include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
 #include "Components/PhysicsComponents.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
@@ -118,7 +119,7 @@ void WaterPuddleRender::preRenderUpdate()
 	{
 		animator.playAnimation(1, 1.5f);
 	}
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * 42.0f);
+	animator.updateAnimation(MainLoop::getInstance().deltaTime);
 
 	//
 	// Do trigger-related stuff
@@ -127,8 +128,8 @@ void WaterPuddleRender::preRenderUpdate()
 		baseObject->getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
-	static bool prevEBtnPressed = GLFW_RELEASE;		// @TODO: have a separate input system that I can query!!! (Or else bugs will ensue if you keep the E button pressed in this example eh
-	bool EBtnpressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_E);
+	static bool prevEBtnPressed = GLFW_RELEASE;
+	bool EBtnpressed = InputManager::getInstance().interactPressed;
 	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
 	{
 		//

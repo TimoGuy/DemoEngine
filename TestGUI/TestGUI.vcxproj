@@ -108,6 +108,7 @@
     <ClCompile Include="src\TinyFileDialogs\tinyfiledialogs.c" />
     <ClCompile Include="src\Utils\FileLoading.cpp" />
     <ClCompile Include="src\Utils\GameState.cpp" />
+    <ClCompile Include="src\Utils\InputManager.cpp" />
     <ClCompile Include="src\Utils\Messages.cpp" />
     <ClCompile Include="src\Utils\PhysicsUtils.cpp" />
     <ClCompile Include="src\Objects\DirectionalLight.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="src\Objects\WaterPuddle.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.material\Material.h" />
     <ClInclude Include="src\Utils\GameState.h" />
+    <ClInclude Include="src\Utils\InputManager.h" />
     <ClInclude Include="src\Utils\json.hpp" />
     <ClInclude Include="src\Objects\BaseObject.h" />
     <ClInclude Include="src\MainLoop\MainLoop.h" />
