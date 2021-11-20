@@ -265,7 +265,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
 			1.0f,
 			4.5f,
-			this		// PxUserControllerHitReport
+			this,		// PxUserControllerHitReport
+			this		// PxBehaviorCallbackWhatevs
 		);
 
 	GameState::getInstance().playerActorPointer = controller->getActor();
@@ -377,3 +378,22 @@ void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 }
 void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }
 void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit) { PX_UNUSED(hit); }
+
+// https://github.com/NVIDIAGameWorks/PhysX-3.4/blob/master/PhysX_3.4/Samples/SampleBridges/SampleBridgesCCT.cpp
+physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxShape& shape, const physx::PxActor& actor)
+{
+	// PT: ride & slide on platforms
+	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;// | physx::PxControllerBehaviorFlag::eCCT_SLIDE;
+
+	//return PxControllerBehaviorFlags(0);
+}
+
+physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxController&)
+{
+	return physx::PxControllerBehaviorFlags(0);
+}
+
+physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxObstacle&)
+{
+	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT | physx::PxControllerBehaviorFlag::eCCT_SLIDE;
+}

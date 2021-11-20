@@ -60,7 +60,7 @@ private:
 };
 
 
-class PlayerPhysics : public PhysicsComponent, public physx::PxUserControllerHitReport
+class PlayerPhysics : public PhysicsComponent, public physx::PxUserControllerHitReport, public physx::PxControllerBehaviorCallback
 {
 public:
 	PlayerPhysics(BaseObject* bo);
@@ -89,6 +89,10 @@ public:
 	virtual void onShapeHit(const physx::PxControllerShapeHit& hit);
 	virtual void onControllerHit(const physx::PxControllersHit& hit);
 	virtual void onObstacleHit(const physx::PxControllerObstacleHit& hit);
+
+	virtual physx::PxControllerBehaviorFlags getBehaviorFlags(const physx::PxShape& shape, const physx::PxActor& actor);
+	virtual physx::PxControllerBehaviorFlags getBehaviorFlags(const physx::PxController&);
+	virtual physx::PxControllerBehaviorFlags getBehaviorFlags(const physx::PxObstacle&);
 
 private:
 	bool isGrounded = false;
