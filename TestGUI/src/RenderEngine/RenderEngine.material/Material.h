@@ -19,6 +19,8 @@ public:
 
 	static bool resetFlag;
 
+	bool isTransparent = false;
+
 protected:
 	unsigned int
 		albedoMap,

@@ -147,7 +147,7 @@ void WaterPuddleRender::render()
 #endif
 
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
+	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
 	model->render(renderTransform, true);
 }
 
@@ -158,7 +158,7 @@ void WaterPuddleRender::renderShadow(GLuint programId)
 #endif
 
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(*boneTransforms);
+	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
 	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
 	model->render(renderTransform, false);
 }

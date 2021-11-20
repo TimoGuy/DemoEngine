@@ -12,8 +12,8 @@
 
 #include "../../Objects/BaseObject.h"
 
-
 #include "../RenderEngine.camera/Camera.h"
+
 
 namespace PhysicsUtils
 {
@@ -28,6 +28,8 @@ struct TextCharacter
 	unsigned int advance;
 };
 
+class Mesh;
+
 
 class RenderManager
 {
@@ -39,6 +41,7 @@ public:
 	void renderScene();
 	void renderSceneShadowPass(GLuint shaderProgramId);
 	void renderUI();
+
 
 	int debugCSMLayerNum = 0;
 	void requestSelectObject(bool isHoverEvent, ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation);
@@ -53,7 +56,10 @@ public:
 
 	void setupSceneLights(GLuint programId);
 
-	void updateSkeletalBonesUBO(const std::vector<glm::mat4>& boneTransforms);
+	void updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms);
+
+	// Transparent rendering
+	void INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix);
 
 	// @PHYSX_VISUALIZATION
 	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
@@ -87,6 +93,11 @@ private:
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
+	// Transparency rendering stuff
+	std::vector<Mesh*> transparentMeshesToRender;
+	std::vector<glm::mat4> transparentModelMatrices;
+	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
+
 	// ImGui Debug stuff
 	bool isWireFrameMode;
 	void renderImGuiPass();
@@ -99,4 +110,5 @@ private:
 	// Skeletal Animation UBO
 	GLuint skeletalAnimationUBO;
 	void createSkeletalAnimationUBO();
+	const std::vector<glm::mat4>* assignedBoneMatricesMemAddr = nullptr;
 };

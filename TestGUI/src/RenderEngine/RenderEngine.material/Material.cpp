@@ -20,7 +20,7 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 	//
 	// Only update whatever is necessary (when shader changes, the uniforms need to be rewritten fyi)
 	//
-	bool changeAll = Material::resetFlag;
+	bool changeAll = Material::resetFlag;			// NOTE: at the start of every frame (RenderManager: renderScene()), Material::resetFlag is set to true
 	if (changeAll || currentShaderId != shaderId)
 	{
 		changeAll = true;
@@ -117,6 +117,7 @@ ZellyMaterial::ZellyMaterial(glm::vec3 color) :
 	Material(*(unsigned int*)Resources::getResource("shader;zelly"), 0, 0, 0, 0, glm::vec4(0.0f))
 {
 	ZellyMaterial::color = color;
+	isTransparent = true;
 }
 
 void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix)

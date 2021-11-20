@@ -28,7 +28,7 @@ void Model::render(const glm::mat4& modelMatrix, bool changeMaterial)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].render(modelMatrix, changeMaterial);
+		meshes[i].render(modelMatrix, changeMaterial, false);			// NOTE: at this stage, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
 	}
 }
 

@@ -576,6 +576,7 @@ void RenderManager::renderScene()
 	Material::resetFlag = true;
 
 	//
+	// OPAQUE RENDER QUEUE (slash pull out transparent objects and defer them while rendering out the opaque ones lol)
 	// Draw objects but cull them
 	// (NOTE: the culling step doesn't happen in the shadowmaps)
 	//
@@ -593,6 +594,18 @@ void RenderManager::renderScene()
 	}
 	//std::cout << "Drawing after culled: \t" << succ << std::endl;				// @Debug: How many objects are culled
 
+	//
+	// TRANSPARENT RENDER QUEUE
+	// Take the developed transparent render queue and render it out!
+	//
+	for (size_t i = 0; i < transparentMeshesToRender.size(); i++)
+	{
+		updateSkeletalBonesUBO(transparentBoneMatrixMemAddrs[i]);
+		transparentMeshesToRender[i]->render(transparentModelMatrices[i], true, true);
+	}
+	transparentMeshesToRender.clear();
+	transparentModelMatrices.clear();
+	transparentBoneMatrixMemAddrs.clear();
 
 	//
 	// Draw the shadowmaps
@@ -705,16 +718,27 @@ void RenderManager::setupSceneLights(GLuint programId)
 }
 
 
-void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>& boneTransforms)
+void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms)
 {
+	if (boneTransforms == assignedBoneMatricesMemAddr)
+		return;
+
+	assignedBoneMatricesMemAddr = boneTransforms;
+
 	glBindBuffer(GL_UNIFORM_BUFFER, skeletalAnimationUBO);
-	for (size_t i = 0; i < boneTransforms.size(); i++)
+	for (size_t i = 0; i < boneTransforms->size(); i++)
 	{
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &boneTransforms[i]);
+		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &(*boneTransforms)[i]);
 	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
+void RenderManager::INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix)
+{
+	transparentMeshesToRender.push_back(mesh);
+	transparentModelMatrices.push_back(modelMatrix);
+	transparentBoneMatrixMemAddrs.push_back(assignedBoneMatricesMemAddr);		// NOTE: This is to save the bone matrix so that we can render in the transparent queue with it (maybe that was self explanatory baaaaka)
+}
 
 void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
 {

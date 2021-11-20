@@ -13,12 +13,21 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     setupMesh();
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, bool changeMaterial)
+void Mesh::render(const glm::mat4& modelMatrix, bool changeMaterial, bool isTransparentQueue)
 {
     if (changeMaterial)
     {
         if (material != nullptr)
+        {
+            // Ignore this if statement if it's actually the transparent renderqueue
+            if (!isTransparentQueue && material->isTransparent)
+            {
+                // Bail early so that rendermanager can take care of transparents l8r
+                MainLoop::getInstance().renderManager->INTERNALaddTransparentMeshToDeferRender(this, modelMatrix);
+                return;
+            }
             material->applyTextureUniforms(modelMatrix);
+        }
     }
 
     //
