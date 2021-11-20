@@ -592,24 +592,34 @@ void RenderManager::renderScene()
 		succ++;
 		MainLoop::getInstance().renderObjects[i]->render();
 	}
-	//std::cout << "Drawing after culled: \t" << succ << std::endl;				// @Debug: How many objects are culled
+	// @Debug: How many objects are culled
+	//std::cout << "Drawing after culled: \t" << succ << std::endl;
 
 	//
 	// TRANSPARENT RENDER QUEUE
 	// Take the developed transparent render queue and render it out!
 	//
-	for (size_t i = 0; i < transparentMeshesToRender.size(); i++)
+	std::sort(
+		transparentCommandingIndices.begin(),
+		transparentCommandingIndices.end(),
+		[this](const size_t& index1, const size_t& index2)
+		{
+			return transparentDistancesToCamera[index1] > transparentDistancesToCamera[index2];
+		}
+	);
+	for (size_t& index : transparentCommandingIndices)
 	{
-		updateSkeletalBonesUBO(transparentBoneMatrixMemAddrs[i]);
-		transparentMeshesToRender[i]->render(transparentModelMatrices[i], true, true);
+		updateSkeletalBonesUBO(transparentBoneMatrixMemAddrs[index]);
+		transparentMeshesToRender[index]->render(transparentModelMatrices[index], true, true);
 	}
+	transparentCommandingIndices.clear();
 	transparentMeshesToRender.clear();
 	transparentModelMatrices.clear();
 	transparentBoneMatrixMemAddrs.clear();
+	transparentDistancesToCamera.clear();
 
 	//
-	// Draw the shadowmaps
-	// (NOTE: this is for debugging purposes)
+	// @DEBUG: Draw the shadowmaps on a quad on top of everything else
 	//
 	if (showShadowMapView)
 	{
@@ -735,9 +745,13 @@ void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTra
 
 void RenderManager::INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix)
 {
+	transparentCommandingIndices.push_back(transparentMeshesToRender.size());
 	transparentMeshesToRender.push_back(mesh);
 	transparentModelMatrices.push_back(modelMatrix);
 	transparentBoneMatrixMemAddrs.push_back(assignedBoneMatricesMemAddr);		// NOTE: This is to save the bone matrix so that we can render in the transparent queue with it (maybe that was self explanatory baaaaka)
+
+	float distanceToCamera = (cameraProjection * cameraView * modelMatrix * glm::vec4(0, 0, 0, 1)).z;
+	transparentDistancesToCamera.push_back(distanceToCamera);
 }
 
 void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)

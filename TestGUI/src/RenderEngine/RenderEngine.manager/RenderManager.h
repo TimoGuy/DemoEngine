@@ -94,9 +94,11 @@ private:
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
 	// Transparency rendering stuff
+	std::vector<size_t> transparentCommandingIndices;
 	std::vector<Mesh*> transparentMeshesToRender;
 	std::vector<glm::mat4> transparentModelMatrices;
 	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
+	std::vector<float> transparentDistancesToCamera;
 
 	// ImGui Debug stuff
 	bool isWireFrameMode;
