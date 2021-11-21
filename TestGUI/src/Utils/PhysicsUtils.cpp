@@ -26,21 +26,13 @@ namespace PhysicsUtils
 		return glm::vec3(in.x, in.y, in.z);
 	}
 
-	glm::mat4 createGLMTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees, glm::vec3 scale)
-	{
-		return
-			glm::translate(glm::mat4(1.0f), position) *
-			glm::toMat4(glm::quat(glm::radians(eulerAnglesDegrees))) *
-			glm::scale(glm::mat4(1.0f), scale);
-	}
-
-	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAngles)
+	physx::PxQuat createQuatFromEulerDegrees(glm::vec3 eulerAnglesDegrees)
 	{
 		//
 		// Do this freaky long conversion that I copied off the interwebs
 		// @Broken: the transform created from this could possibly be not isSane()
 		//
-		glm::vec3 angles = glm::radians(eulerAngles);
+		glm::vec3 angles = glm::radians(eulerAnglesDegrees);
 
 		physx::PxReal cos_x = cosf(angles.x);
 		physx::PxReal cos_y = cosf(angles.y);
@@ -56,7 +48,20 @@ namespace PhysicsUtils
 		quat.y = cos_x * sin_y * cos_z + sin_x * cos_y * sin_z;
 		quat.z = cos_x * cos_y * sin_z - sin_x * sin_y * cos_z;
 
-		return physx::PxTransform(position.x, position.y, position.z, quat);
+		return quat;
+	}
+
+	glm::mat4 createGLMTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees, glm::vec3 scale)
+	{
+		return
+			glm::translate(glm::mat4(1.0f), position) *
+			glm::toMat4(glm::quat(glm::radians(eulerAnglesDegrees))) *
+			glm::scale(glm::mat4(1.0f), scale);
+	}
+
+	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees)
+	{
+		return physx::PxTransform(position.x, position.y, position.z, createQuatFromEulerDegrees(eulerAnglesDegrees));
 	}
 
 	physx::PxTransform createTransform(glm::mat4 transform)

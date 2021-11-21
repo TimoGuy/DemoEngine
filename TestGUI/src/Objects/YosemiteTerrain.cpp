@@ -45,9 +45,9 @@ void YosemiteTerrainRender::refreshResources()
 
 YosemiteTerrain::~YosemiteTerrain()
 {
-delete renderComponent;
-delete physicsComponent;
-delete imguiComponent;
+	delete renderComponent;
+	delete physicsComponent;
+	delete imguiComponent;
 }
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -81,6 +81,19 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 	return j;
 }
 
+void YosemiteTerrain::physicsUpdate()
+{
+	if (velocity.isZero() && angularVelocity.isZero())
+		return;
+
+	physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)getPhysicsComponent()->getActor();
+	physx::PxTransform trans = body->getGlobalPose();
+	trans.p += velocity;
+	trans.q *= PhysicsUtils::createQuatFromEulerDegrees(PhysicsUtils::toGLMVec3(angularVelocity));
+	body->setKinematicTarget(trans);
+	INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
+}
+
 void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResourceName)
 {
 	if (physicsComponent != nullptr)
@@ -88,12 +101,12 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 
 	if (modelResourceName == "model;cube")
 	{
-		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC);
+		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::KINEMATIC);
 	}
 	else
 	{
 		Model* fetchedModel = (Model*)Resources::getResource(modelResourceName);
-		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::STATIC);
+		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::KINEMATIC);
 	}
 }
 
@@ -151,4 +164,9 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 			((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName = tempModelResourceName;
 		}
 	}
+
+	ImGui::Separator();
+
+	ImGui::DragFloat3("Velocity", &((YosemiteTerrain*)baseObject)->velocity[0], 0.01f);
+	ImGui::DragFloat3("Ang Velocity", &((YosemiteTerrain*)baseObject)->angularVelocity[0], 0.01f);
 }

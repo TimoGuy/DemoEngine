@@ -103,10 +103,7 @@ TriangleMeshCollider::~TriangleMeshCollider()
 	body->release();
 }
 
-void TriangleMeshCollider::physicsUpdate()
-{
-	baseObject->physicsUpdate();
-}
+void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 {

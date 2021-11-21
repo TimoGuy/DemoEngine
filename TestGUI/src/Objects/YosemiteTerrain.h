@@ -45,6 +45,8 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
+	void physicsUpdate();
+
 	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
@@ -57,5 +59,8 @@ public:
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
 
 	Bounds* bounds;
+
+	// TODO: this should be private, with all the components just referring back to the single main one
+	physx::PxVec3 velocity, angularVelocity;
 };
 
