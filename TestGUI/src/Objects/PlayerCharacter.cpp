@@ -249,11 +249,8 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		//
 		if (!lockFacingDirection)
 		{
-			physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
-			velocityCopy.y = 0.0f;
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-			if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed ||			// NOTE: not using magnitudeSquared() could defs be an inefficiency yo
-				mvtDotFacing < -0.707106781f)
+			if (mvtDotFacing < -0.707106781f)
 			{
 				//
 				// "Skid stop" state
@@ -297,7 +294,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
-		(currentRunSpeed < targetRunningSpeed ? groundAcceleration[isCarryingWater]: groundDecceleration[isCarryingWater]) *
+		(currentRunSpeed < targetRunningSpeed ? groundAcceleration[isCarryingWater] : groundDecceleration[isCarryingWater]) *
 		MainLoop::getInstance().deltaTime
 	);
 

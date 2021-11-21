@@ -92,16 +92,16 @@ void InputManager::updateInputState()
 	if (isJoystick1ConnectedAndIsGamepad)
 	{
 		GLFWgamepadstate state;
-		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state) == GLFW_TRUE)
 		{
-			jumpPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_A];
-			attackPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_X];
-			interactPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_B];
-			useItemPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_Y];
-			transformPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
-			resetCamPressed |= state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f;
-			inventoryPressed |= state.buttons[GLFW_GAMEPAD_BUTTON_BACK];
-			pausePressed |= state.buttons[GLFW_GAMEPAD_BUTTON_START];
+			jumpPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_A];
+			attackPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			interactPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_B];
+			useItemPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_Y];
+			transformPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
+			resetCamPressed |= (bool)state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f;
+			inventoryPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_BACK];
+			pausePressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_START];
 
 			float _tempLeftStickX = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
 			float _tempLeftStickY = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
@@ -109,7 +109,7 @@ void InputManager::updateInputState()
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
 			const float deadzoneLeftStick = 0.5f;
-			const float deadzoneRightStickX = 0.1f;
+			const float deadzoneRightStickX = 0.3f;
 			const float deadzoneRightStickY = 0.5f;
 			const float rightStickSensitivity = 5.0f;
 
@@ -119,9 +119,9 @@ void InputManager::updateInputState()
 				leftStickY += _tempLeftStickY * -1.0f;
 			}
 			if (abs(_tempRightStickX) > deadzoneRightStickX)
-				rightStickX += _tempRightStickX * rightStickSensitivity;
+				rightStickX += (_tempRightStickX + (_tempRightStickX < 0 ? deadzoneRightStickX : -deadzoneRightStickX)) / (1.0f - deadzoneRightStickX) * rightStickSensitivity;
 			if (abs(_tempRightStickY) > deadzoneRightStickY)
-				rightStickY += _tempRightStickY * rightStickSensitivity;
+				rightStickY += (_tempRightStickY + (_tempRightStickY < 0 ? deadzoneRightStickY : -deadzoneRightStickY)) / (1.0f - deadzoneRightStickY) * rightStickSensitivity;
 		}
 	}
 
