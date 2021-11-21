@@ -29,8 +29,9 @@ public:
 	Model* model;
 	std::map<std::string, Material*> materials;
 
-private:
+	// TODO: This needs to stop (having a bad loading function) bc this function should be private, but it's not. Kuso.
 	void refreshResources();
+private:
 };
 
 class YosemiteTerrain : public BaseObject

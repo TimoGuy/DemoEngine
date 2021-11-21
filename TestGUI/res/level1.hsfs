@@ -308,7 +308,7 @@
             "imguiComponent": {
                 "name": "Experimental Object"
             },
-            "modelResourceName": "model;outdoorTerrain",
+            "modelResourceName": "model;custommodel;res/outdoor_terrain.glb",
             "type": "ground"
         },
         {

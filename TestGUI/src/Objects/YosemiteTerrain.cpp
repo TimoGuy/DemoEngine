@@ -45,9 +45,9 @@ void YosemiteTerrainRender::refreshResources()
 
 YosemiteTerrain::~YosemiteTerrain()
 {
-	delete renderComponent;
-	delete physicsComponent;
-	delete imguiComponent;
+delete renderComponent;
+delete physicsComponent;
+delete imguiComponent;
 }
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -63,6 +63,9 @@ void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Overri
 	{
 		((YosemiteTerrainRender*)getRenderComponent())->modelResourceName = object["modelResourceName"];
 	}
+
+	// TODO: make it so that you don't have to retrigger this every time you load
+	((YosemiteTerrainRender*)getRenderComponent())->refreshResources();
 }
 
 nlohmann::json YosemiteTerrain::savePropertiesToJson()
@@ -135,4 +138,17 @@ void YosemiteTerrainImGui::propertyPanelImGui()
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+
+	ImGui::Separator();
+
+	// Changing the model resource name
+	static std::string tempModelResourceName = ((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName;
+	ImGui::InputText("Model Resource", &tempModelResourceName);
+	if (tempModelResourceName != ((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName)
+	{
+		if (ImGui::Button("Apply Resource Name"))
+		{
+			((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName = tempModelResourceName;
+		}
+	}
 }

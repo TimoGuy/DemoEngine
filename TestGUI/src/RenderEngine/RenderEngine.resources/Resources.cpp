@@ -432,9 +432,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/water_pool.glb", { "Idle", "No_Water" });
 	if (resourceName == "model;cube")									return loadModel(resourceName, isUnloading, "res/cube.glb");
-	// TODO: make a .startsWith("model;custommodel;") to make a custom model using the filename of the model as the id (i.e. "model;custommodel;res/islands/bigger_one.glb")
-	if (resourceName == "model;outdoorTerrain")							return loadModel(resourceName, isUnloading, "res/outdoor_terrain.glb");
 	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/house_w_interior.glb");
+	// Custom models vvv
+	if (resourceName.rfind("model;custommodel;", 0) == 0)				return loadModel(resourceName, isUnloading, resourceName.substr(18).c_str());
 
 	//
 	// Slime Girl Model and Materials
