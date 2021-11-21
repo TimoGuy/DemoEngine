@@ -249,15 +249,22 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		//
 		if (!lockFacingDirection)
 		{
+			physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+			velocityCopy.y = 0.0f;
+
+			// Skid stop behavior:
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-			if (mvtDotFacing < -0.707106781f)
+			if (velocityCopy.magnitude() > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
 			{
-				//
-				// "Skid stop" state
-				//
 				facingDirection = movementVector;
-				currentRunSpeed *= mvtDotFacing;		// If moving in the opposite direction than the facingDirection was, then the dot product will be negative, making the speed look like a skid
+				currentRunSpeed = 0;
 			}
+			// Immediate facing direction when moving slowly:
+			else if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed)
+			{
+				facingDirection = movementVector;
+			}
+			// Normal facing behavior:
 			else
 			{
 				//

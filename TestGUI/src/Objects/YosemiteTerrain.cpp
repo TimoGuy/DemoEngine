@@ -101,12 +101,13 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 
 	if (modelResourceName == "model;cube")
 	{
-		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::KINEMATIC);
+		// TODO: Figure out how to get camera zoom in to work with kinematic types too!!!!
+		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 	}
 	else
 	{
 		Model* fetchedModel = (Model*)Resources::getResource(modelResourceName);
-		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::KINEMATIC);
+		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 	}
 }
 
