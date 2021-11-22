@@ -544,6 +544,15 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 	RenderManager::cameraView = cameraView;
 }
 
+float sunRadius = 0.025f;
+float horizonFresnelLength = 0.05f;
+glm::vec3 sunColor{ 1, 1, 1 };
+glm::vec3 skyColor1{ 0.29 , 0.69 ,0.95 };
+glm::vec3 skyColor2{ 0.02,0.07, 0.094 };
+glm::vec3 groundColor{ 0.51,0.27, 0.11 };
+float sunIntensity = 25;
+float globalExposure = 1;
+float rimLightfresnelPower = 2;
 
 void RenderManager::renderScene()
 {
@@ -552,10 +561,27 @@ void RenderManager::renderScene()
 	//
 	glDepthMask(GL_FALSE);
 
+	glm::vec3 sunOrientation(0, 1, 0);
+	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
+	{
+		if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
+		{
+			sunOrientation = MainLoop::getInstance().lightObjects[i]->getLight().facingDirection;		// NOTE: this is normalized already!!!
+			break;
+		}
+	}
+
 	glUseProgram(skybox_program_id);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	glUniform1i(glGetUniformLocation(this->skybox_program_id, "skyboxTex"), 0);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), sunRadius);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "horizonFresnelLength"), horizonFresnelLength);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &sunColor[0]);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyColor1[0]);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor2"), 1, &skyColor2[0]);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &groundColor[0]);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), sunIntensity);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), globalExposure);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "rimLightfresnelPower"), rimLightfresnelPower);
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
 	renderCube();
 
@@ -1281,6 +1307,18 @@ void RenderManager::renderImGuiContents()
 			ImGui::ColorEdit3("StaminaBarColor2", &staminaBarColor2[0]);
 			ImGui::ColorEdit3("StaminaBarColor3", &staminaBarColor3[0]);
 			ImGui::DragFloat("StaminaDepletecolorIntensity", &staminaBarDepleteColorIntensity);
+
+			ImGui::Separator();
+			ImGui::Text("Skybox properties");
+			ImGui::DragFloat("Sun Radius", &sunRadius, 0.01f);
+			ImGui::DragFloat("Horizon Fresnel", &horizonFresnelLength, 0.01f);
+			ImGui::ColorEdit3("sunColor", &sunColor[0]);
+			ImGui::ColorEdit3("skyColor1", &skyColor1[0]);
+			ImGui::ColorEdit3("skyColor2", &skyColor2[0]);
+			ImGui::ColorEdit3("groundColor", &groundColor[0]);
+			ImGui::DragFloat("Sun Intensity", &sunIntensity, 0.01f);
+			ImGui::DragFloat("Global Exposure", &globalExposure, 0.01f);
+			ImGui::DragFloat("Rim Light Power", &rimLightfresnelPower, 0.01f);
 
 			//
 			// Render out the properties panels of selected object
