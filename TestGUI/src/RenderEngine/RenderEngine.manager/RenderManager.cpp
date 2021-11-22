@@ -545,14 +545,17 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 }
 
 float sunRadius = 0.025f;
-float horizonFresnelLength = 0.05f;
+float horizonFresnelLength = 15;
 glm::vec3 sunColor{ 1, 1, 1 };
-glm::vec3 skyColor1{ 0.29 , 0.69 ,0.95 };
-glm::vec3 skyColor2{ 0.02,0.07, 0.094 };
+glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
+glm::vec3 skyColor2{ 0.013, 0.025, 0.063 };
 glm::vec3 groundColor{ 0.51,0.27, 0.11 };
 float sunIntensity = 25;
 float globalExposure = 1;
-float rimLightfresnelPower = 2;
+float rimLightfresnelPower = 3;
+float cloudHeight = -50;
+float perlinDim = 2;
+float perlinTime = 0;
 
 void RenderManager::renderScene()
 {
@@ -582,7 +585,11 @@ void RenderManager::renderScene()
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), sunIntensity);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), globalExposure);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "rimLightfresnelPower"), rimLightfresnelPower);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), cloudHeight);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), perlinDim);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), perlinTime);
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
+	perlinTime += MainLoop::getInstance().deltaTime;
 	renderCube();
 
 	glDepthMask(GL_TRUE);
@@ -1319,6 +1326,9 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Sun Intensity", &sunIntensity, 0.01f);
 			ImGui::DragFloat("Global Exposure", &globalExposure, 0.01f);
 			ImGui::DragFloat("Rim Light Power", &rimLightfresnelPower, 0.01f);
+			ImGui::DragFloat("Cloud Height", &cloudHeight, 0.01f);
+			ImGui::DragFloat("perlinDim", &perlinDim, 0.01f);
+			ImGui::DragFloat("perlinTime", &perlinTime, 0.01f);
 
 			//
 			// Render out the properties panels of selected object
