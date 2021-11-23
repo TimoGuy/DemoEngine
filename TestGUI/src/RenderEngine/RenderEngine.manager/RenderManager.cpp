@@ -458,6 +458,7 @@ void RenderManager::createFonts()
 	glBindVertexArray(0);
 }
 
+int counterffffff = 0;
 
 void RenderManager::render()
 {
@@ -483,8 +484,11 @@ void RenderManager::render()
 	// Recreate the hdr skybox
 	//
 	static glm::vec3 cacheSunOrientation = sunOrientation;
+	counterffffff++;
 	//if (cacheSunOrientation != sunOrientation)
+	if (counterffffff > 3)
 	{
+		counterffffff = 0;
 		cacheSunOrientation = sunOrientation;
 		createHDRSkybox(false);
 	}
