@@ -42,7 +42,7 @@ bool RenderManager::renderPhysicsDebug = true;
 RenderManager::RenderManager()
 {
 	createShaderPrograms();
-	createHDRSkybox();
+	createHDRSkybox(true);
 	createHDRBuffer();
 	createFonts();
 	createSkeletalAnimationUBO();
@@ -53,39 +53,63 @@ RenderManager::~RenderManager()
 	// TODO: add a destructor ya dingus
 }
 
-void RenderManager::createHDRSkybox()
+glm::vec3 sunOrientation(0, 1, 0);			// NOTE: if sunOrientation changes, then the skybox is recalculated!
+float sunRadius = 0.015f;
+glm::vec3 sunColor{ 1, 1, 1 };
+glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
+glm::vec3 groundColor{ 0.51,0.27, 0.11 };
+float sunIntensity = 25;
+float globalExposure = 1;
+float cloudHeight = -50;
+float perlinDim = 2;
+float perlinTime = 0;
+
+bool part1, part2, part3;
+
+void RenderManager::createHDRSkybox(bool first)
 {
+	if (!first && part1)
+		return;
+
 	const int renderTextureSize = 512;
-	hdriSkyboxTexture = *(GLuint*)Resources::getResource("texture;hdrEnvironmentMap");
 
 	//
 	// Create the framebuffer and renderbuffer to capture the hdr skybox
 	//
-	unsigned int captureFBO, captureRBO;
-	glGenFramebuffers(1, &captureFBO);
-	glGenRenderbuffers(1, &captureRBO);
+	if (first)
+	{
+		glGenFramebuffers(1, &hdrPBRGenCaptureFBO);
+		glGenRenderbuffers(1, &hdrPBRGenCaptureRBO);
+	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, renderTextureSize, renderTextureSize);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+	if (first)
+	{
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
+	}
 
 	//
 	// Create cubemap for the framebuffer and renderbuffer
 	//
-	glGenTextures(1, &envCubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
+	if (first)
 	{
-		// note that we store each face with 16 bit floating point values
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
-			renderTextureSize, renderTextureSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		glGenTextures(1, &envCubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		for (unsigned int i = 0; i < 6; ++i)
+		{
+			// note that we store each face with 16 bit floating point values
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F,
+				renderTextureSize, renderTextureSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	//
 	// Render out the hdr skybox to the framebuffer
@@ -102,17 +126,25 @@ void RenderManager::createHDRSkybox()
 	};
 		
 	// convert HDR equirectangular environment map to cubemap equivalent
-	glUseProgram(hdri_program_id);
-	glUniform1i(glGetUniformLocation(this->hdri_program_id, "equirectangularMap"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(this->hdri_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdriSkyboxTexture);
+
+	glUseProgram(skybox_program_id);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), sunRadius);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &sunColor[0]);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyColor1[0]);
+	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &groundColor[0]);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), sunIntensity);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), globalExposure);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), cloudHeight);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), perlinDim);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), perlinTime);
+	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	for (unsigned int i = 0; i < 6; i++)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(this->hdri_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+		glUniformMatrix4fv(glGetUniformLocation(skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -120,25 +152,31 @@ void RenderManager::createHDRSkybox()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	if (!first && part2)
+		return;
+
 	//
 	// Create Irradiance Map
 	//
 	const int irradianceMapSize = 32;
 
-	glGenTextures(1, &irradianceMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-	for (unsigned int i = 0; i < 6; i++)
+	if (first)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		glGenTextures(1, &irradianceMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradianceMapSize, irradianceMapSize);
 
 	glUseProgram(irradiance_program_id);
@@ -149,7 +187,7 @@ void RenderManager::createHDRSkybox()
 
 	// Render out the irradiance map!
 	glViewport(0, 0, irradianceMapSize, irradianceMapSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		glUniformMatrix4fv(glGetUniformLocation(irradiance_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
@@ -160,26 +198,32 @@ void RenderManager::createHDRSkybox()
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+
+	if (!first && part3)
+		return;
+
 	//
 	// Create prefilter map for specular roughness
 	//
-	const int prefilterMapSize = 128;
-
-	//unsigned int prefilterMap;
-	glGenTextures(1, &prefilterMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-	for (unsigned int i = 0; i < 6; i++)
+	if (first)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilterMapSize, prefilterMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		const int prefilterMapSize = 128;
+
+		glGenTextures(1, &prefilterMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilterMapSize, prefilterMapSize, 0, GL_RGB, GL_FLOAT, nullptr);
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);		// Use mips to capture more "diffused" roughness
 	}
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);		// Use mips to capture more "diffused" roughness
 
 	//
 	// Run Monte-carlo simulation on the environment lighting
@@ -190,14 +234,14 @@ void RenderManager::createHDRSkybox()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	unsigned int maxMipLevels = 5;
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
 		// Resize to mip level size
 		unsigned int mipWidth = (unsigned int)(128.0 * std::pow(0.5, mip));
 		unsigned int mipHeight = (unsigned int)(128.0 * std::pow(0.5, mip));
-		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
 
@@ -213,6 +257,9 @@ void RenderManager::createHDRSkybox()
 		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	if (!first)
+		return;
 
 	//
 	// Create PBR BRDF LUT
@@ -231,8 +278,8 @@ void RenderManager::createHDRSkybox()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// Redo the render buffer to create the brdf texture
-	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, brdfLUTSize, brdfLUTSize);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
@@ -319,7 +366,6 @@ void RenderManager::createShaderPrograms()
 	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
 	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
 	text_program_id = *(GLuint*)Resources::getResource("shader;text");
-	hdri_program_id = *(GLuint*)Resources::getResource("shader;hdriGeneration");
 	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
 	prefilter_program_id = *(GLuint*)Resources::getResource("shader;pbrPrefilterGeneration");
 	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
@@ -434,6 +480,16 @@ void RenderManager::render()
 	}
 
 	//
+	// Recreate the hdr skybox
+	//
+	static glm::vec3 cacheSunOrientation = sunOrientation;
+	//if (cacheSunOrientation != sunOrientation)
+	{
+		cacheSunOrientation = sunOrientation;
+		createHDRSkybox(false);
+	}
+
+	//
 	// Render shadow map(s) to depth framebuffer(s)
 	//
 	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
@@ -544,16 +600,6 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 	RenderManager::cameraView = cameraView;
 }
 
-float sunRadius = 0.015f;
-glm::vec3 sunColor{ 1, 1, 1 };
-glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
-glm::vec3 groundColor{ 0.51,0.27, 0.11 };
-float sunIntensity = 25;
-float globalExposure = 1;
-float cloudHeight = -50;
-float perlinDim = 2;
-float perlinTime = 0;
-
 void RenderManager::renderScene()
 {
 	//
@@ -561,7 +607,6 @@ void RenderManager::renderScene()
 	//
 	glDepthMask(GL_FALSE);
 
-	glm::vec3 sunOrientation(0, 1, 0);
 	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
 	{
 		if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
@@ -582,8 +627,9 @@ void RenderManager::renderScene()
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), perlinTime);
-	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "skyboxProjViewMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * glm::mat4(glm::mat3(cameraView))));
-	perlinTime += MainLoop::getInstance().deltaTime;
+	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
+	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
+	//perlinTime += MainLoop::getInstance().deltaTime;
 	renderCube();
 
 	glDepthMask(GL_TRUE);
@@ -1282,13 +1328,6 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Scene Properties", &showScenePropterties, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			static bool showEnvironmentMap = false;
-			ImGui::Checkbox("Display Environ skybox map hdri", &showEnvironmentMap);
-			if (showEnvironmentMap)
-			{
-				ImGui::Image((void*)(intptr_t)hdriSkyboxTexture, ImVec2(512, 288));
-			}
-
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
 			static bool showBloomProcessingBuffers = false;
@@ -1320,6 +1359,10 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud Height", &cloudHeight, 0.01f);
 			ImGui::DragFloat("perlinDim", &perlinDim, 0.01f);
 			ImGui::DragFloat("perlinTime", &perlinTime, 0.01f);
+
+			ImGui::Checkbox("Parts1", &part1);
+			ImGui::Checkbox("Parts2", &part2);
+			ImGui::Checkbox("Parts3", &part3);
 
 			//
 			// Render out the properties panels of selected object

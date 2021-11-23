@@ -392,14 +392,14 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "zelly.frag");
 	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "vertex.vert", "fragment.frag");
 	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "model.vert", "model.frag");
-	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "skybox.vert", "skybox.frag");
+	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "skybox.frag");
 	if (resourceName == "shader;shadowPass")							return loadShaderProgramVF(resourceName, isUnloading, "shadow.vert", "do_nothing.frag");
 	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "csm_shadow.vert", "csm_shadow.geom", "do_nothing.frag");
 	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "point_shadow.vert", "point_shadow.geom", "point_shadow.frag");
 	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "debug_csm.vert", "debug_csm.frag");
 	if (resourceName == "shader;shadowPassSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "shadow_skinned.vert", "do_nothing.frag");
 	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "text.vert", "text.frag");
-	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "hdri_equirectangular.frag");
+	//if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "hdri_equirectangular.frag");
 	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "irradiance_convolution.frag");
 	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "prefilter.frag");
 	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "brdf.vert", "brdf.frag");
