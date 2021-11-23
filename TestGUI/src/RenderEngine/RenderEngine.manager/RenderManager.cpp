@@ -544,15 +544,12 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 	RenderManager::cameraView = cameraView;
 }
 
-float sunRadius = 0.025f;
-float horizonFresnelLength = 15;
+float sunRadius = 0.015f;
 glm::vec3 sunColor{ 1, 1, 1 };
 glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
-glm::vec3 skyColor2{ 0.013, 0.025, 0.063 };
 glm::vec3 groundColor{ 0.51,0.27, 0.11 };
 float sunIntensity = 25;
 float globalExposure = 1;
-float rimLightfresnelPower = 3;
 float cloudHeight = -50;
 float perlinDim = 2;
 float perlinTime = 0;
@@ -577,14 +574,11 @@ void RenderManager::renderScene()
 	glUseProgram(skybox_program_id);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), sunRadius);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "horizonFresnelLength"), horizonFresnelLength);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &sunColor[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyColor1[0]);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor2"), 1, &skyColor2[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &groundColor[0]);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), sunIntensity);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), globalExposure);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "rimLightfresnelPower"), rimLightfresnelPower);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), perlinTime);
@@ -1318,14 +1312,11 @@ void RenderManager::renderImGuiContents()
 			ImGui::Separator();
 			ImGui::Text("Skybox properties");
 			ImGui::DragFloat("Sun Radius", &sunRadius, 0.01f);
-			ImGui::DragFloat("Horizon Fresnel", &horizonFresnelLength, 0.01f);
 			ImGui::ColorEdit3("sunColor", &sunColor[0]);
 			ImGui::ColorEdit3("skyColor1", &skyColor1[0]);
-			ImGui::ColorEdit3("skyColor2", &skyColor2[0]);
 			ImGui::ColorEdit3("groundColor", &groundColor[0]);
 			ImGui::DragFloat("Sun Intensity", &sunIntensity, 0.01f);
 			ImGui::DragFloat("Global Exposure", &globalExposure, 0.01f);
-			ImGui::DragFloat("Rim Light Power", &rimLightfresnelPower, 0.01f);
 			ImGui::DragFloat("Cloud Height", &cloudHeight, 0.01f);
 			ImGui::DragFloat("perlinDim", &perlinDim, 0.01f);
 			ImGui::DragFloat("perlinTime", &perlinTime, 0.01f);

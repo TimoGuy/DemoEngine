@@ -6,15 +6,12 @@ in vec3 localPos;
 uniform vec3 sunOrientation;
 uniform float sunRadius;
 
-uniform float horizonFresnelLength;
 uniform vec3 sunColor;
 uniform vec3 skyColor1;
-uniform vec3 skyColor2;
 uniform vec3 groundColor;
 
 uniform float sunIntensity;
 uniform float globalExposure;
-uniform float rimLightfresnelPower;
 
 uniform float cloudHeight;
 uniform float perlinDim;
@@ -63,7 +60,7 @@ void main()
     // Short circuit if the sun orientation is in the way lol
     //
     float lengthFromSunPos = length(v - -sunOrientation);
-    if (step(sunRadius, lengthFromSunPos) == 0)
+    if (step(sunRadius, lengthFromSunPos) == 0 && v.y > 0)
     {
         fragColor = vec4(sunColor, 1) * sunIntensity * globalExposure;
         return;
@@ -72,28 +69,52 @@ void main()
     vec3 color = vec3(1, 0, 1);
 
     // Base: color based off blue params
-    color = mix(skyColor1, skyColor2, v.y);
-
-    // Add on: sky rim
-    //float skyRim = horizonFresnelLength - ;
-    //if (skyRim > 0)
     {
-        float addonAmount = 1 / pow(v.y * horizonFresnelLength + 1, rimLightfresnelPower);
-        color += vec3(addonAmount) * 2;
+        // Complex funk that took me a bunch of time to figger out ahhh
+        color = skyColor1 * (vec3(pow(1 - clamp(v.y, 0, 1), 1 / clamp(-sunOrientation.y, 0, 1))) * 0.95 + 0.05);
     }
 
-    // Add on: cloud level
-    if (v.y <= 0)
+    // Add on: mie scattering (sunset/rise)
+    if (v.y > 0)
     {
-        // Calculate what the cloud height would be
-        float mult = cloudHeight / v.y;
-        vec2 samplePos = vec2(v.x, v.z) * mult;
+        vec3 stretchedView1 = normalize(vec3(v.x, v.y * 10, v.z));
+        float vDotSun1 = clamp(1 - pow(1 - dot(-sunOrientation, stretchedView1), 0.2), 0, 1);
+        
+        vec3 stretchedView2 = normalize(vec3(v.x, v.y * 20, v.z));
+        float vDotSun2 = clamp(1 - pow(1 - dot(-sunOrientation, stretchedView2), 0.2), 0, 1);
+        
+        float influence = pow(1 - clamp(-sunOrientation.y, 0, 1), 2.5);
+        
+        float value1 = vDotSun1 * influence;
+        float value2 = vDotSun2 * influence;
 
-        float perlin = perlin(samplePos, perlinDim, 0);
-        perlin = perlin + 1;
-
-        color = mix(groundColor, vec3(1, 1, 1), perlin);
+        color += vec3(.9 * value1, .6 * value2, 0);
     }
+
+    // Turn down exposure if (neg)sunOrientation.y is below 0
+    {
+        float amount = 1 - clamp(sunOrientation.y, 0.0, 0.125) * (1 / 0.125);
+        //color = vec3(0, amount, 0);
+        color *= amount;
+    }
+
+    // Ground underneath is black???!?!??
+    if (v.y < 0)
+        color = vec3(0);
+
+
+    //// Add on: cloud level
+    //if (v.y <= 0)
+    //{
+    //    // Calculate what the cloud height would be
+    //    float mult = cloudHeight / v.y;
+    //    vec2 samplePos = vec2(v.x, v.z) * mult;
+    //
+    //    float perlin = perlin(samplePos, perlinDim, 0);
+    //    perlin = perlin + 1;
+    //
+    //    color = mix(groundColor, vec3(1, 1, 1), perlin);
+    //}
 
     // Add on: global exposure
     color *= globalExposure;
