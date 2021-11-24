@@ -51,9 +51,13 @@ public:
 	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
 
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
-	inline GLuint getIrradianceMap() { return irradianceMap[whichMap]; }
-	inline GLuint getPrefilterMap() { return prefilterMap[whichMap]; }
 	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
+
+	inline GLuint getIrradianceMap() { return irradianceMap[whichMap]; }
+	inline GLuint getIrradianceMap2() { return irradianceMap[std::clamp(whichMap + 1, (size_t)0, numIrrAndPreFilterMaps)]; }
+	inline GLuint getPrefilterMap() { return prefilterMap[whichMap]; }
+	inline GLuint getPrefilterMap2() { return prefilterMap[std::clamp(whichMap + 1, (size_t)0, numIrrAndPreFilterMaps)]; }
+	inline float getMapInterpolationAmt() { return mapInterpolationAmt; }
 
 	void setupSceneLights(GLuint programId);
 
@@ -77,9 +81,11 @@ private:
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
-	GLuint envCubemap, brdfLUTTexture, irradianceMap[5], prefilterMap[5];		// NOTE:::: 0: 90deg, 1: 45deg, 2: 10deg, 3: 5deg, 4: -10deg
-	int whichMap = 0;		// Supposed to be size_t
+	static const size_t numIrrAndPreFilterMaps = 5;
+	GLuint envCubemap, brdfLUTTexture, irradianceMap[numIrrAndPreFilterMaps], prefilterMap[numIrrAndPreFilterMaps];		// NOTE:::: 0: 90deg, 1: 45deg, 2: 10deg, 3: 5deg, 4: -10deg
+	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
+	float mapInterpolationAmt;
 
 
 	glm::mat4 cameraProjection, cameraView;

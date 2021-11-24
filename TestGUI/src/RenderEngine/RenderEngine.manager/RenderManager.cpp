@@ -615,15 +615,35 @@ void RenderManager::renderScene()
 	// Choose which prefilter and irradiance maps to use
 	//
 	if (-sunOrientation.y < std::sinf(glm::radians(-10.0f)))
+	{
 		whichMap = 4;
+
+		mapInterpolationAmt = 0;
+	}
 	else if (-sunOrientation.y < std::sinf(glm::radians(0.0f)))
+	{
 		whichMap = 3;
+
+		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(-10.0f))) / (std::sinf(glm::radians(0.0f)) - std::sinf(glm::radians(-10.0f)));
+	}
 	else if (-sunOrientation.y < std::sinf(glm::radians(5.0f)))
+	{
 		whichMap = 2;
+
+		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(0.0f))) / (std::sinf(glm::radians(5.0f)) - std::sinf(glm::radians(0.0f)));
+	}
 	else if (-sunOrientation.y < std::sinf(glm::radians(10.0f)))
+	{
 		whichMap = 1;
+
+		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(5.0f))) / (std::sinf(glm::radians(10.0f)) - std::sinf(glm::radians(5.0f)));
+	}
 	else if (-sunOrientation.y < std::sinf(glm::radians(90.0f)))
+	{
 		whichMap = 0;
+
+		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(10.0f))) / (std::sinf(glm::radians(90.0f)) - std::sinf(glm::radians(10.0f)));
+	}
 
 	//
 	// Compute how much the prefilter and irradiance maps need to spin their input vectors
@@ -729,7 +749,7 @@ void RenderManager::setupSceneLights(GLuint programId)
 	glUniform1i(glGetUniformLocation(programId, "numLights"), (GLint)numLights);
 	glUniform3fv(glGetUniformLocation(programId, "viewPosition"), 1, &MainLoop::getInstance().camera.position[0]);
 
-	const GLuint baseOffset = 7;											// @Hardcode: Bc GL_TEXTURE6 is the highest being used rn
+	const GLuint baseOffset = 9;											// @Hardcode: Bc GL_TEXTURE8 is the highest being used rn		@TODO: FIX THIS HARDCODE!!!!!!!
 	GLuint shadowMapTextureIndex = 0;
 	bool setupCSM = false;					// NOTE: unfortunately, I can't figure out a way to have multiple directional light csm's, so here's to just one!
 	for (size_t i = 0; i < numLights; i++)
@@ -1360,7 +1380,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("perlinDim", &perlinDim, 0.01f);
 			ImGui::DragFloat("perlinTime", &perlinTime, 0.01f);
 
-			ImGui::DragInt("Which ibl map", &whichMap, 1.0f, 0, 3);
+			ImGui::DragInt("Which ibl map", (int*)&whichMap, 1.0f, 0, 4);
+			ImGui::DragFloat("Map Interpolation amount", &mapInterpolationAmt);
 
 			//
 			// Render out the properties panels of selected object

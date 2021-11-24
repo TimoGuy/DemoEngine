@@ -16,6 +16,7 @@ bool Material::resetFlag = false;
 GLuint currentShaderId = 0;
 const glm::mat4* currentModelMatrix = nullptr;
 glm::mat3 currentSunSpinAmount;
+float mapInterpolationAmt = -1;
 void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 {
 	//
@@ -46,6 +47,13 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 	{
 		glUniformMatrix3fv(glGetUniformLocation(shaderId, "sunSpinAmount"), 1, GL_FALSE, glm::value_ptr(sunSpinAmount));
 		currentSunSpinAmount = sunSpinAmount;
+	}
+
+	const float mapInterp= MainLoop::getInstance().renderManager->getMapInterpolationAmt();
+	if (changeAll || mapInterpolationAmt != mapInterp)
+	{
+		glUniform1f(glGetUniformLocation(shaderId, "mapInterpolationAmt"), mapInterp);
+		mapInterpolationAmt = mapInterp;
 	}
 
 	Material::resetFlag = false;
@@ -90,12 +98,20 @@ void Material::applyTextureUniforms(const glm::mat4& modelMatrix)
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 4);
 
 	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 5);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), 5);
 
 	glActiveTexture(GL_TEXTURE6);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 6);
+
+	glActiveTexture(GL_TEXTURE7);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), 7);
+
+	glActiveTexture(GL_TEXTURE8);
 	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 6);
+	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 8);
 
 	glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
 
@@ -139,10 +155,18 @@ void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix)
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 0);
 
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), 1);
 
 	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 2);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), 3);
+
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 2);
+	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
 }
