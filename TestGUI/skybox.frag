@@ -17,6 +17,8 @@ uniform float cloudHeight;
 uniform float perlinDim;
 uniform float perlinTime;
 
+uniform bool showSun;
+
 
 //
 // Perlin noise https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
@@ -60,7 +62,7 @@ void main()
     // Short circuit if the sun orientation is in the way lol
     //
     float lengthFromSunPos = length(v - -sunOrientation);
-    if (step(sunRadius, lengthFromSunPos) == 0 && v.y > 0)
+    if (showSun && step(sunRadius, lengthFromSunPos) == 0 && v.y > 0)
     {
         fragColor = vec4(sunColor, 1) * sunIntensity * globalExposure;
         return;

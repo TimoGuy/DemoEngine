@@ -15,6 +15,7 @@ bool Material::resetFlag = false;
 //
 GLuint currentShaderId = 0;
 const glm::mat4* currentModelMatrix = nullptr;
+glm::mat3 currentSunSpinAmount;
 void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 {
 	//
@@ -38,6 +39,13 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 		glUniformMatrix3fv(glGetUniformLocation(shaderId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(*modelMatrix)))));
 
 		currentModelMatrix = modelMatrix;
+	}
+
+	const glm::mat3 sunSpinAmount = MainLoop::getInstance().renderManager->getSunSpinAmount();
+	if (changeAll || currentSunSpinAmount != sunSpinAmount)
+	{
+		glUniformMatrix3fv(glGetUniformLocation(shaderId, "sunSpinAmount"), 1, GL_FALSE, glm::value_ptr(sunSpinAmount));
+		currentSunSpinAmount = sunSpinAmount;
 	}
 
 	Material::resetFlag = false;

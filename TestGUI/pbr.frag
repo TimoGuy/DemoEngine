@@ -17,6 +17,7 @@ uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offse
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D brdfLUT;
+uniform mat3 sunSpinAmount;
 
 // lights
 const int MAX_LIGHTS = 8;
@@ -373,14 +374,14 @@ void main()
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
 
-    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 irradiance = texture(irradianceMap, sunSpinAmount * N).rgb;
     vec3 diffuse = irradiance * albedo;
 
     //
     // Sample pre-filter map and BRDF LUT to combine via split-sum approximation to get specular ibl
     //
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    vec3 prefilteredColor = textureLod(prefilterMap, sunSpinAmount * R, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 

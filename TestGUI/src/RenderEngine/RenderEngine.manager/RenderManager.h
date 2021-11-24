@@ -50,9 +50,10 @@ public:
 
 	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
 
-	inline GLuint getIrradianceMap() { return irradianceMap; }
-	inline GLuint getPrefilterMap() { return prefilterMap; }
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
+	inline GLuint getIrradianceMap() { return irradianceMap[whichMap]; }
+	inline GLuint getPrefilterMap() { return prefilterMap[whichMap]; }
+	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
 
 	void setupSceneLights(GLuint programId);
 
@@ -76,13 +77,15 @@ private:
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
-	GLuint envCubemap, irradianceMap, prefilterMap, brdfLUTTexture;
+	GLuint envCubemap, brdfLUTTexture, irradianceMap[5], prefilterMap[5];		// NOTE:::: 0: 90deg, 1: 45deg, 2: 10deg, 3: 5deg, 4: -10deg
+	int whichMap = 0;		// Supposed to be size_t
+	glm::mat3 sunSpinAmount;
 
 
 	glm::mat4 cameraProjection, cameraView;
 
 	void createShaderPrograms();
-    void createHDRSkybox(bool first);
+    void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
 	void createHDRBuffer();
 	void destroyHDRBuffer();
 
