@@ -118,6 +118,7 @@ private:
 	std::vector<physx::PxDebugLine>* physxVisDebugLines;
 
 	// Skeletal Animation UBO
+	bool repopulateAnimationUBO = true;
 	GLuint skeletalAnimationUBO;
 	void createSkeletalAnimationUBO();
 	const std::vector<glm::mat4>* assignedBoneMatricesMemAddr = nullptr;

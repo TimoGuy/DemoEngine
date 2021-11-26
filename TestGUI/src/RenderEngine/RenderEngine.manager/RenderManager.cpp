@@ -667,6 +667,7 @@ void RenderManager::renderScene()
 
 	// Reset materials at the start of every frame
 	Material::resetFlag = true;
+	this->repopulateAnimationUBO = true;
 
 	//
 	// OPAQUE RENDER QUEUE (slash pull out transparent objects and defer them while rendering out the opaque ones lol)
@@ -823,7 +824,7 @@ void RenderManager::setupSceneLights(GLuint programId)
 
 void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms)
 {
-	if (boneTransforms == assignedBoneMatricesMemAddr)
+	if (!repopulateAnimationUBO && boneTransforms == assignedBoneMatricesMemAddr)
 		return;
 
 	assignedBoneMatricesMemAddr = boneTransforms;
