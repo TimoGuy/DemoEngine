@@ -42,11 +42,22 @@ bool RenderManager::renderPhysicsDebug = true;
 RenderManager::RenderManager()
 {
 	createShaderPrograms();
-	createHDRSkybox(true, 0, glm::vec3(std::cosf(glm::radians(90.0f)), -std::sinf(glm::radians(90.0f)), 0));
-	createHDRSkybox(false, 1, glm::vec3(std::cosf(glm::radians(10.0f)), -std::sinf(glm::radians(10.0f)), 0));
-	createHDRSkybox(false, 2, glm::vec3(std::cosf(glm::radians(5.0f)), -std::sinf(glm::radians(5.0f)), 0));
-	createHDRSkybox(false, 3, glm::vec3(std::cosf(glm::radians(0.0f)), -std::sinf(glm::radians(0.0f)), 0));
-	createHDRSkybox(false, 4, glm::vec3(std::cosf(glm::radians(-10.0f)), -std::sinf(glm::radians(-10.0f)), 0));
+
+	bool firstSkyMap = true;
+	for (size_t i = 0; i < numSkyMaps; i++)
+	{
+		createHDRSkybox(
+			firstSkyMap,
+			i,
+			glm::vec3(
+				std::cosf(glm::radians(preBakedSkyMapAngles[i])),
+				-std::sinf(glm::radians(preBakedSkyMapAngles[i])),
+				0.0f
+			)
+		);
+		firstSkyMap = false;
+	}
+
 	createHDRBuffer();
 	createFonts();
 	createSkeletalAnimationUBO();

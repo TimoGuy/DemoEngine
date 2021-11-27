@@ -54,9 +54,9 @@ public:
 	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
 
 	inline GLuint getIrradianceMap() { return irradianceMap[whichMap]; }
-	inline GLuint getIrradianceMap2() { return irradianceMap[std::clamp(whichMap + 1, (size_t)0, numIrrAndPreFilterMaps)]; }
+	inline GLuint getIrradianceMap2() { return irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps)]; }
 	inline GLuint getPrefilterMap() { return prefilterMap[whichMap]; }
-	inline GLuint getPrefilterMap2() { return prefilterMap[std::clamp(whichMap + 1, (size_t)0, numIrrAndPreFilterMaps)]; }
+	inline GLuint getPrefilterMap2() { return prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps)]; }
 	inline float getMapInterpolationAmt() { return mapInterpolationAmt; }
 
 	void setupSceneLights(GLuint programId);
@@ -81,8 +81,9 @@ private:
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
-	static const size_t numIrrAndPreFilterMaps = 5;
-	GLuint envCubemap, brdfLUTTexture, irradianceMap[numIrrAndPreFilterMaps], prefilterMap[numIrrAndPreFilterMaps];		// NOTE:::: 0: 90deg, 1: 45deg, 2: 10deg, 3: 5deg, 4: -10deg
+	static const size_t numSkyMaps = 5;
+	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
+	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f };			// NOTE: these values must be listed in descending order
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
 	float mapInterpolationAmt;
