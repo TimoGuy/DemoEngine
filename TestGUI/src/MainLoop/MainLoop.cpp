@@ -159,8 +159,8 @@ void MainLoop::run()
 		//
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		if (deltaTime > 0.25f)
-			deltaTime = 0.25f;		// Clamp it if it's too big! (4 fps btw)
+		if (deltaTime > 0.1f)
+			deltaTime = 0.1f;		// Clamp it if it's too big! (10 fps btw) (1/10 = 0.1)
 		lastFrame = currentFrame;
 
 		//
@@ -202,8 +202,8 @@ void MainLoop::run()
 #if SINGLE_BUFFERED_MODE
 		glFlush();
 		//float haha = (glfwGetTime() - startFrameTime) * 1000.0;
-		//unsigned int sleepAmount = (unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime) * 1000.0);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(sleepAmount));		// TODO: comment this out if wanted
+		unsigned int sleepAmount = (unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime) * 1000.0);
+		std::this_thread::sleep_for(std::chrono::milliseconds(sleepAmount));		// TODO: comment this out if wanted
 		//std::cout << "jfjlskdjf\n";
 #else
 		glfwSwapBuffers(window);
@@ -232,6 +232,7 @@ void createWindow(const char* windowName)
 #if SINGLE_BUFFERED_MODE
 	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
 #else
+	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
 	glfwSwapInterval(1);
 #endif
 

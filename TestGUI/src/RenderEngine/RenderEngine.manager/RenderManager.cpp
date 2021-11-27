@@ -575,7 +575,7 @@ void RenderManager::render()
 	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
 	glUniform1i(glGetUniformLocation(postprocessing_program_id, "hdrColorBuffer"), 0);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom			TODO: for some reason it's not taking this as the right color buffer.... hmmmm
+	glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
 	glUniform1i(glGetUniformLocation(postprocessing_program_id, "bloomColorBuffer"), 1);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
