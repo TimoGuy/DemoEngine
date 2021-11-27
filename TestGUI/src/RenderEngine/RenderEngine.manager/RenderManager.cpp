@@ -55,6 +55,7 @@ RenderManager::RenderManager()
 RenderManager::~RenderManager()
 {
 	// TODO: add a destructor ya dingus
+	destroyHDRBuffer();
 }
 
 glm::vec3 sunOrientation(0, 1, 0);
@@ -343,6 +344,9 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteTextures(1, &hdrColorBuffer);
 	glDeleteRenderbuffers(1, &hdrDepthRBO);
 	glDeleteFramebuffers(1, &hdrFBO);
+
+	glDeleteTextures(bloomBufferCount, bloomColorBuffers);
+	glDeleteFramebuffers(bloomBufferCount, bloomFBOs);
 }
 
 void RenderManager::createShaderPrograms()

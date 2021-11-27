@@ -28,6 +28,20 @@ void setupPhysx();
 
 void physicsUpdate();
 
+#ifdef _DEBUG
+void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	fprintf(
+		stderr,
+		"GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+		type,
+		severity,
+		message
+	);
+}
+#endif
+
 
 MainLoop& MainLoop::getInstance()
 {
@@ -70,6 +84,9 @@ void MainLoop::initialize()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(openglMessageCallback, 0);
+
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
@@ -96,6 +113,8 @@ void MainLoop::initialize()
 	FileLoading::getInstance().loadFileWithPrompt();
 }
 
+
+bool flagRecreateHDRBuffer = false;
 void MainLoop::run()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -190,6 +209,13 @@ void MainLoop::run()
 #else
 		glfwSwapBuffers(window);
 #endif
+
+		// Recreate HDR buffer if flagged (i.e. window was resized)
+		if (flagRecreateHDRBuffer)
+		{
+			flagRecreateHDRBuffer = false;
+			renderManager->recreateHDRBuffer();
+		}
 	}
 }
 
@@ -235,11 +261,14 @@ void createWindow(const char* windowName)
 
 void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
+	if (width == 0 || height == 0)
+		return;
+
 	MainLoop::getInstance().camera.width = (float)width;
 	MainLoop::getInstance().camera.height = (float)height;
 
 	if (MainLoop::getInstance().renderManager != nullptr)
-		MainLoop::getInstance().renderManager->recreateHDRBuffer();
+		flagRecreateHDRBuffer = true;
 }
 
 
@@ -257,7 +286,7 @@ void setupImGui()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	ImGui::StyleColorsLight();
+	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.FrameBorderSize = 1;
 	style.FrameRounding = 1;

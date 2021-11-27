@@ -95,6 +95,7 @@ private:
 	void createHDRBuffer();
 	void destroyHDRBuffer();
 
+
 	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
 	void createFonts();
