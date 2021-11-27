@@ -220,7 +220,7 @@ void createWindow(const char* windowName)
 #if FULLSCREEN_MODE
 	MainLoop::getInstance().window = glfwCreateWindow(3440, 1440, windowName, glfwGetPrimaryMonitor(), NULL);
 #else
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
 #endif
 
 	if (!MainLoop::getInstance().window)

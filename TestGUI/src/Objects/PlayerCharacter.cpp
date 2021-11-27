@@ -421,7 +421,7 @@ void PlayerRender::processAnimation()
 	}
 	else if (animationState == 1)
 	{
-		if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding())
 			// Landing
 			animationState = 2;
 	}
@@ -433,11 +433,13 @@ void PlayerRender::processAnimation()
 		else
 		{
 			// Wait until land animation is finished
-			float time = animator.getCurrentTime() + animator.getCurrentAnimation()->getTicksPerSecond() * MainLoop::getInstance().deltaTime * animationSpeed;
-			float duration = animator.getCurrentAnimation()->getDuration();
-			if (time >= duration)
+			if (animator.isAnimationFinished(4, MainLoop::getInstance().deltaTime * animationSpeed) ||
+				animator.isAnimationFinished(5, MainLoop::getInstance().deltaTime * animationSpeed))
+			{
 				// Standing
 				animationState = 0;
+				//std::cout << "Switched to standing" << std::endl;
+			}
 		}
 	}
 	else if (animationState == 3)
@@ -505,7 +507,7 @@ void PlayerRender::processAnimation()
 		{
 		case 0:
 			// Idle/Move
-			animator.playAnimation((unsigned int)isMoving, 6.0f);
+			animator.playAnimation((unsigned int)isMoving, 6.0f, true, true);
 			break;
 
 		case 1:
