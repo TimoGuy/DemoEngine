@@ -114,7 +114,6 @@ void MainLoop::initialize()
 }
 
 
-bool flagRecreateHDRBuffer = false;
 void MainLoop::run()
 {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -209,13 +208,6 @@ void MainLoop::run()
 #else
 		glfwSwapBuffers(window);
 #endif
-
-		// Recreate HDR buffer if flagged (i.e. window was resized)
-		if (flagRecreateHDRBuffer)
-		{
-			flagRecreateHDRBuffer = false;
-			renderManager->recreateHDRBuffer();
-		}
 	}
 }
 
@@ -268,7 +260,7 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 	MainLoop::getInstance().camera.height = (float)height;
 
 	if (MainLoop::getInstance().renderManager != nullptr)
-		flagRecreateHDRBuffer = true;
+		MainLoop::getInstance().renderManager->recreateHDRBuffer();
 }
 
 
