@@ -104,7 +104,7 @@ void DirectionalLightLight::refreshRenderBuffers()
 		destroyCSMBuffers();
 }
 
-constexpr unsigned int depthMapResolution = 4096;
+constexpr GLsizei depthMapResolution = 4096;
 void DirectionalLightLight::createCSMBuffers()
 {
 	if (shadowMapsCreated) return;
@@ -198,7 +198,7 @@ void DirectionalLightLight::renderPassShadowMap()
 
 	// Render depth of scene
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_TEXTURE_2D_ARRAY, shadowMapTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMapTexture, 0);
 	glViewport(0, 0, depthMapResolution, depthMapResolution);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	//glCullFace(GL_FRONT);  // peter panning
