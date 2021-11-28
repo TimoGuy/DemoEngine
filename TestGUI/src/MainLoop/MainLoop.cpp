@@ -229,17 +229,10 @@ void createWindow(const char* windowName)
 	if (!glfwInit())
 		glfwTerminate();
 
-#if SINGLE_BUFFERED_MODE
-	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-#else
-	glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-	glfwSwapInterval(1);
-#endif
-
 #if FULLSCREEN_MODE
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, glfwGetPrimaryMonitor(), NULL);
 #else
-	MainLoop::getInstance().window = glfwCreateWindow(1280, 720, windowName, NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #endif
 
 	if (!MainLoop::getInstance().window)
@@ -248,6 +241,14 @@ void createWindow(const char* windowName)
 	}
 
 	glfwMakeContextCurrent(MainLoop::getInstance().window);
+
+	// NOTE: glfwswapinterval() needs to be executed after glfwmakecontextcurrent()
+#if SINGLE_BUFFERED_MODE
+	glfwSwapInterval(0);
+#else
+	glfwSwapInterval(1);
+#endif
+
 	gladLoadGL();
 }
 
