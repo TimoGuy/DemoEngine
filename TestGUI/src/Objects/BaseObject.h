@@ -103,7 +103,7 @@ class LightComponent
 {
 public:
 	BaseObject* baseObject;
-	bool castsShadows;
+	bool castsShadows;						// NOTE: when this is false, for some reason when you resize the window (or if it's off on startup), then the whole GL app just... crashes and goes into accum buffer mode and has a black screen except for imgui stuff
 	float shadowFarPlane;
 	GLuint shadowMapTexture;
 
