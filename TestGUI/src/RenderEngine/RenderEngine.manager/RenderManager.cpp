@@ -503,8 +503,6 @@ void RenderManager::render()
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	renderUI();
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
 	// Do bloom: breakdown-preprocessing
@@ -563,13 +561,13 @@ void RenderManager::render()
 
 		firstReconstruction = false;
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
 	//
 	// Do tonemapping and post-processing
 	// with the fbo and render to a quad
 	//
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(postprocessing_program_id);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);

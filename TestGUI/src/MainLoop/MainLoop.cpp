@@ -31,6 +31,9 @@ void physicsUpdate();
 #ifdef _DEBUG
 void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
+	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+		return;
+
 	fprintf(
 		stderr,
 		"GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
