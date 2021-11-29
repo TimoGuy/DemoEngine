@@ -53,7 +53,7 @@
                 "name": "Directional Light"
             },
             "lightComponent": {
-                "casts_shadows": false
+                "casts_shadows": true
             },
             "type": "dir_light"
         },
@@ -136,7 +136,7 @@
                 "name": "Point Light"
             },
             "lightComponent": {
-                "casts_shadows": false
+                "casts_shadows": true
             },
             "type": "pt_light"
         },
