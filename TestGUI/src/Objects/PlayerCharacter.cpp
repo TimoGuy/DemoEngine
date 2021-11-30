@@ -180,24 +180,43 @@ void PlayerRender::processMovement()
 	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
 	float cameraDistance = playerCamOffset.z;
 
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
-
+	// Do raycast to see what the camera distance should be
 	{
-		// Do raycast to see what the camera distance should be
 		physx::PxRaycastBuffer hitInfo;
 		const float hitDistancePadding = 0.75f;
 
-		// @PHYSXWARNING: This causes a race condition for some reason
-		MainLoop::getInstance().physicsScene->lockRead();
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
 			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
-		MainLoop::getInstance().physicsScene->unlockRead();
+
+		//
+		// Update max distance member var
+		//
+		if (currentMaxCamDistance <= cameraDistance)
+		{
+			// Reset timer
+			currentMaxCamDistance = cameraDistance;
+			maxCamDistanceHoldTimer = maxCamDistanceHoldTime;
+		}
+		else
+		{
+			// Slowly move back once timer is down
+			maxCamDistanceHoldTimer -= MainLoop::getInstance().deltaTime;
+			if (maxCamDistanceHoldTimer < 0)
+			{
+				currentMaxCamDistance =
+					PhysicsUtils::moveTowards(currentMaxCamDistance, cameraDistance, maxCamDistanceShiftSpeed * MainLoop::getInstance().deltaTime);
+			}
+		}
 	}
 
-	const glm::vec3 depthOffset(0, 0, cameraDistance);
+	// Setup camera orientation
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
+
+
+	const glm::vec3 depthOffset(0, 0, currentMaxCamDistance);
 	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
 
 	//
