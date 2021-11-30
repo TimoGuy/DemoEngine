@@ -5,6 +5,8 @@
 #include "../Utils/GameState.h"
 #include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
+#include "../RenderEngine/RenderEngine.model/Model.h"
 #include "Components/PhysicsComponents.h"
 
 
@@ -80,6 +82,7 @@ void RiverDropoff::dropoffWater()
 
 RiverDropoffRender::RiverDropoffRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
 {
+	refreshResources();
 }
 
 void RiverDropoffRender::preRenderUpdate()
@@ -102,10 +105,24 @@ void RiverDropoffRender::preRenderUpdate()
 
 void RiverDropoffRender::render()
 {
+#ifdef _DEBUG
+	refreshResources();
+#endif
+
+	model->render(baseObject->getTransform(), true);
 }
 
 void RiverDropoffRender::renderShadow(GLuint programId)
 {
+	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
+	model->render(baseObject->getTransform(), false);
+}
+
+void RiverDropoffRender::refreshResources()
+{
+	model = (Model*)Resources::getResource("model;custommodel;res/debug/trigger_repr_cube.glb");
+	materials["Material"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+	model->setMaterials(materials);
 }
 
 void RiverDropoffImgui::propertyPanelImGui()

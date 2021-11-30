@@ -34,6 +34,7 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 		currentShaderId = shaderId;
 	}
 
+	// TODO: Get the modelMatrix setup stuff moved so that render(changeMaterial=true) doesn't have to set the model matrix... but it's a little more complicated, bc now you need the ref to the shaderid to grab the uniform location yo.
 	if (changeAll || currentModelMatrix != modelMatrix)
 	{
 		glUniformMatrix4fv(glGetUniformLocation(shaderId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(*modelMatrix));

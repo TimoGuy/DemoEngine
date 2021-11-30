@@ -3,6 +3,9 @@
 #include "BaseObject.h"
 
 
+class Material;
+class Model;
+
 class RiverDropoffImgui : public ImGuiComponent
 {
 public:
@@ -21,6 +24,11 @@ public:
 	void preRenderUpdate();
 	void render();
 	void renderShadow(GLuint programId);
+
+private:
+	void refreshResources();
+	Model* model;
+	std::map<std::string, Material*> materials;
 };
 
 class RiverDropoff : public BaseObject

@@ -23,7 +23,7 @@ uniform bool showSun;
 //
 // Perlin noise https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
 //
-#define M_PI 3.14159265358979323846
+/*#define M_PI 3.14159265358979323846
 
 float rand(vec2 co) { return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453); }
 float rand (vec2 co, float l) { return rand(vec2(rand(co), l)); }
@@ -49,7 +49,7 @@ float perlin(vec2 p, float dim, float time)
 	float center = mix(ccx, cycxy, d.y);
 	
 	return center * 2.0 - 1.0;
-}
+}*/
 
 //
 // Let's get funcy
@@ -96,27 +96,12 @@ void main()
     // Turn down exposure if (neg)sunOrientation.y is below 0
     {
         float amount = 1 - clamp(sunOrientation.y, 0.0, 0.125) * (1 / 0.125);
-        //color = vec3(0, amount, 0);
         color *= amount;
     }
 
-    // Ground underneath is black???!?!??
+    // Ground underneath
     if (v.y < 0)
-        color = vec3(0);
-
-
-    //// Add on: cloud level
-    //if (v.y <= 0)
-    //{
-    //    // Calculate what the cloud height would be
-    //    float mult = cloudHeight / v.y;
-    //    vec2 samplePos = vec2(v.x, v.z) * mult;
-    //
-    //    float perlin = perlin(samplePos, perlinDim, 0);
-    //    perlin = perlin + 1;
-    //
-    //    color = mix(groundColor, vec3(1, 1, 1), perlin);
-    //}
+        color = groundColor;
 
     // Add on: global exposure
     color *= globalExposure;
