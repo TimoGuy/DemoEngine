@@ -114,7 +114,7 @@ void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
 	transform = physicsTransformState.getInterpolatedTransform(alpha);		// Do this without propagating transforms
 }
 
-ImGuiComponent::ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
+ImGuiComponent::ImGuiComponent(BaseObject* baseObject, RenderAABB* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
 {
 	MainLoop::getInstance().imguiObjects.push_back(this);
 }
@@ -149,7 +149,7 @@ void ImGuiComponent::renderImGui()
 	if (bounds == nullptr || MainLoop::getInstance().playMode)
 		return;
 	
-	Bounds cookedBounds =
+	RenderAABB cookedBounds =
 		PhysicsUtils::fitAABB(
 			*bounds,
 			baseObject->getTransform()
@@ -268,7 +268,7 @@ void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 	baseObject->onTrigger(pair);
 }
 
-RenderComponent::RenderComponent(BaseObject* baseObject, Bounds* bounds) : baseObject(baseObject), bounds(bounds)
+RenderComponent::RenderComponent(BaseObject* baseObject, RenderAABB* bounds) : baseObject(baseObject), bounds(bounds)
 {
 	MainLoop::getInstance().renderObjects.push_back(this);
 }

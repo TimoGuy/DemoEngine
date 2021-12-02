@@ -7,7 +7,7 @@
 #include "../ImGui/imgui.h"
 #include "PhysicsTypes.h"
 
-struct Bounds;
+struct RenderAABB;
 
 namespace PhysicsUtils
 {
@@ -90,8 +90,8 @@ namespace PhysicsUtils
 		float distance;
 	};
 
-	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix);
-	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds);
+	RenderAABB fitAABB(RenderAABB bounds, glm::mat4 modelMatrix);
+	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, RenderAABB bounds);
 
 	float lerp(float a, float b, float t);
 	float lerpAngleDegrees(float a, float b, float t);

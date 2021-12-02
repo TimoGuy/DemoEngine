@@ -11,7 +11,7 @@
 class DirectionalLightImGui : public ImGuiComponent
 {
 public:
-	DirectionalLightImGui(BaseObject* bo, Bounds* bounds);
+	DirectionalLightImGui(BaseObject* bo, RenderAABB* bounds);
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -74,5 +74,5 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 };

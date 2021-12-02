@@ -13,7 +13,7 @@
 
 WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)
 {
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(4.0f, 4.0f, 4.0f);
 
@@ -94,7 +94,7 @@ void WaterPuddle::collectWaterPuddle()
 	isWaterPuddleCollected = true;
 }
 
-WaterPuddleRender::WaterPuddleRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds), offsetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0)))
+WaterPuddleRender::WaterPuddleRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds), offsetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0)))
 {
 	// Always load up the resources first dawg!
 	refreshResources();

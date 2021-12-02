@@ -17,7 +17,7 @@ public:
 	physx::PxTransform getGlobalPose();
 
 private:
-	Bounds* bounds;
+	RenderAABB* bounds;
 	physx::PxShape* shape;
 	ShapeTypes shapeType;
 };
@@ -25,7 +25,7 @@ private:
 class BoxCollider : public PhysicsComponent
 {
 public:
-	BoxCollider(BaseObject* bo, Bounds* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
+	BoxCollider(BaseObject* bo, RenderAABB* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
 	~BoxCollider();
 
 	void physicsUpdate();
@@ -35,7 +35,7 @@ public:
 	physx::PxBoxGeometry getBoxGeometry();
 
 private:
-	Bounds* bounds;
+	RenderAABB* bounds;
 	physx::PxShape* shape;
 	ShapeTypes shapeType;
 };

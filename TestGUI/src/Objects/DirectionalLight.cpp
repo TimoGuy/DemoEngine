@@ -19,7 +19,7 @@ static int followCascade = -1;				// NOTE: this is so that it's off by default
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
 
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(0.5f);
 
@@ -65,7 +65,7 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	return j;
 }
 
-DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
+DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
 {
 	refreshResources();
 }

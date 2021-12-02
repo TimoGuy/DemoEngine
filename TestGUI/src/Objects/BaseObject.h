@@ -65,7 +65,7 @@ private:
 //
 // @Cleanup: Random util struct of an AABB that's useful for object selection for imgui and frustum culling
 //
-struct Bounds
+struct RenderAABB
 {
 	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
 	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
@@ -78,10 +78,10 @@ class ImGuiComponent
 {
 public:
 	BaseObject* baseObject;
-	Bounds* bounds;
+	RenderAABB* bounds;
 	std::string name;
 
-	ImGuiComponent(BaseObject* baseObject, Bounds* bounds, std::string name);
+	ImGuiComponent(BaseObject* baseObject, RenderAABB* bounds, std::string name);
 	virtual ~ImGuiComponent();
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui();
@@ -149,9 +149,9 @@ class RenderComponent
 {
 public:
 	BaseObject* baseObject;
-	Bounds* bounds = nullptr;
+	RenderAABB* bounds = nullptr;
 
-	RenderComponent(BaseObject* baseObject, Bounds* bounds);
+	RenderComponent(BaseObject* baseObject, RenderAABB* bounds);
 	virtual ~RenderComponent();
 
 	virtual void preRenderUpdate() = 0;

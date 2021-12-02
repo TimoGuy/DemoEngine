@@ -9,7 +9,7 @@ class Model;
 class RiverDropoffImgui : public ImGuiComponent
 {
 public:
-	RiverDropoffImgui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "River Dropoff Area") {}
+	RiverDropoffImgui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "River Dropoff Area") {}
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -19,7 +19,7 @@ public:
 class RiverDropoffRender : public RenderComponent
 {
 public:
-	RiverDropoffRender(BaseObject* bo, Bounds* bounds);
+	RiverDropoffRender(BaseObject* bo, RenderAABB* bounds);
 
 	void preRenderUpdate();
 	void render();
@@ -55,7 +55,7 @@ public:
 
 	void dropoffWater();
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 

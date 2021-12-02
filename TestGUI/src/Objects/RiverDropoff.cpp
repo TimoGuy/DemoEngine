@@ -12,7 +12,7 @@
 
 RiverDropoff::RiverDropoff()
 {
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -80,7 +80,7 @@ void RiverDropoff::dropoffWater()
 	GameState::getInstance().playerIsHoldingWater = false;
 }
 
-RiverDropoffRender::RiverDropoffRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds)
+RiverDropoffRender::RiverDropoffRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds)
 {
 	refreshResources();
 }

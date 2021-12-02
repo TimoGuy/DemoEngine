@@ -14,7 +14,7 @@
 
 PointLight::PointLight(bool castsShadows)
 {
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(0.5f);
 
@@ -59,7 +59,7 @@ nlohmann::json PointLight::savePropertiesToJson()
 	return j;
 }
 
-PointLightImGui::PointLightImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Point Light")			// tODO: create bounds for here
+PointLightImGui::PointLightImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Point Light")			// tODO: create bounds for here
 {
 	refreshResources();
 }

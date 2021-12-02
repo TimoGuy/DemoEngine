@@ -21,7 +21,7 @@
 
 PlayerCharacter::PlayerCharacter()
 {
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(3.0f, 3.0f, 3.0f);		// NOTE: bc the renderTransform is different from the real transform, the bounds have to be thicker to account for when spinning
 
@@ -50,7 +50,7 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	return j;
 }
 
-PlayerRender::PlayerRender(BaseObject* bo, Bounds* bounds) : RenderComponent(bo, bounds), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
+PlayerRender::PlayerRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
 {
 	refreshResources();
 

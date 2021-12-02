@@ -34,7 +34,7 @@ struct VirtualCamera;
 class PlayerImGui : public ImGuiComponent
 {
 public:
-	PlayerImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Player Controller") {}
+	PlayerImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Player Controller") {}
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -43,7 +43,7 @@ public:
 class PlayerRender : public RenderComponent
 {
 public:
-	PlayerRender(BaseObject* bo, Bounds* bounds);
+	PlayerRender(BaseObject* bo, RenderAABB* bounds);
 	~PlayerRender();
 
 	void preRenderUpdate();
@@ -143,5 +143,5 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 };

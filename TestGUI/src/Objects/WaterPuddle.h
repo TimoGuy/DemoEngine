@@ -7,7 +7,7 @@
 class WaterPuddleImgui : public ImGuiComponent
 {
 public:
-	WaterPuddleImgui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Water Puddle") {}
+	WaterPuddleImgui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Water Puddle") {}
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -17,7 +17,7 @@ public:
 class WaterPuddleRender : public RenderComponent
 {
 public:
-	WaterPuddleRender(BaseObject* bo, Bounds* bounds);
+	WaterPuddleRender(BaseObject* bo, RenderAABB* bounds);
 
 	void preRenderUpdate();
 	void render();
@@ -60,7 +60,7 @@ public:
 	void collectWaterPuddle();
 	bool isWaterPuddleCollected;
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 

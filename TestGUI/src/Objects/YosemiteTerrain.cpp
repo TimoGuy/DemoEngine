@@ -13,7 +13,7 @@
 
 YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 {
-	bounds = new Bounds();
+	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
@@ -22,7 +22,7 @@ YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 	renderComponent = new YosemiteTerrainRender(this, bounds, modelResourceName);
 }
 
-YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, Bounds* bounds, std::string modelResourceName) : RenderComponent(bo, bounds), modelResourceName(modelResourceName)
+YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, RenderAABB* bounds, std::string modelResourceName) : RenderComponent(bo, bounds), modelResourceName(modelResourceName)
 {
 	refreshResources();
 }

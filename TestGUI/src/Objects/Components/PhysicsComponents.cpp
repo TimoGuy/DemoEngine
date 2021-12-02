@@ -119,7 +119,7 @@ physx::PxTransform TriangleMeshCollider::getGlobalPose()
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // BoxCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-BoxCollider::BoxCollider(BaseObject* bo, Bounds* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), bounds(bounds), shapeType(shapeType)
+BoxCollider::BoxCollider(BaseObject* bo, RenderAABB* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), bounds(bounds), shapeType(shapeType)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 

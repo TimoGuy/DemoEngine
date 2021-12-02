@@ -8,7 +8,7 @@
 class PointLightImGui : public ImGuiComponent
 {
 public:
-	PointLightImGui(BaseObject* bo, Bounds* bounds);
+	PointLightImGui(BaseObject* bo, RenderAABB* bounds);
 
 	void propertyPanelImGui();
 	void renderImGui();
@@ -66,5 +66,5 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 };

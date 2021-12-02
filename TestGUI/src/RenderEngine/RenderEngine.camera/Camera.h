@@ -10,7 +10,7 @@
 #include <vector>
 
 
-struct Bounds;
+struct RenderAABB;
 class Camera;
 
 struct ViewPlane
@@ -18,7 +18,7 @@ struct ViewPlane
 	glm::vec3 normal;
 	glm::vec3 position;
 
-	bool checkIfInViewPlane(const Bounds& cookedBounds);
+	bool checkIfInViewPlane(const RenderAABB& cookedBounds);
 	float getSignedDistance(const glm::vec3& point);
 };
 
@@ -34,7 +34,7 @@ struct ViewFrustum
 	ViewPlane nearFace;
 
 	static ViewFrustum createFrustumFromCamera(const Camera& camera);
-	bool checkIfInViewFrustum(const Bounds& bounds, const glm::mat4& modelMatrix);
+	bool checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix);
 };
 
 struct VirtualCamera

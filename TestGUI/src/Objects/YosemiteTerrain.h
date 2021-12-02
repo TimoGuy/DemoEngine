@@ -9,7 +9,7 @@
 class YosemiteTerrainImGui : public ImGuiComponent
 {
 public:
-	YosemiteTerrainImGui(BaseObject* bo, Bounds* bounds) : ImGuiComponent(bo, bounds, "Yosemite Terrain") {}
+	YosemiteTerrainImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Yosemite Terrain") {}
 
 	void propertyPanelImGui();
 };
@@ -17,7 +17,7 @@ public:
 class YosemiteTerrainRender : public RenderComponent
 {
 public:
-	YosemiteTerrainRender(BaseObject* bo, Bounds* bounds, std::string modelResourceName);
+	YosemiteTerrainRender(BaseObject* bo, RenderAABB* bounds, std::string modelResourceName);
 
 	void preRenderUpdate();
 	void render();
@@ -58,7 +58,7 @@ public:
 
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
 
-	Bounds* bounds;
+	RenderAABB* bounds;
 
 	// TODO: this should be private, with all the components just referring back to the single main one
 	physx::PxVec3 velocity, angularVelocity;

@@ -437,7 +437,7 @@ namespace PhysicsUtils
 
 #pragma endregion
 
-	Bounds fitAABB(Bounds bounds, glm::mat4 modelMatrix)
+	RenderAABB fitAABB(RenderAABB bounds, glm::mat4 modelMatrix)
 	{
 		const glm::vec3 globalCenter{ modelMatrix * glm::vec4(bounds.center, 1.0f) };
 
@@ -461,13 +461,13 @@ namespace PhysicsUtils
 			std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, up)) +
 			std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, forward));
 
-		Bounds newConstructedAABB;
+		RenderAABB newConstructedAABB;
 		newConstructedAABB.center = globalCenter;
 		newConstructedAABB.extents = glm::vec3(newIi, newIj, newIk);
 		return newConstructedAABB;
 	}
 
-	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, Bounds bounds)
+	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, RenderAABB bounds)
 	{
 		const glm::vec3 delta = end - start;
 		constexpr float paddingX = 0.0f;

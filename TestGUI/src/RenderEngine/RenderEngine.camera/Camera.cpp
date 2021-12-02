@@ -9,7 +9,7 @@
 #include <iostream>
 
 
-bool ViewPlane::checkIfInViewPlane(const Bounds& cookedBounds)
+bool ViewPlane::checkIfInViewPlane(const RenderAABB& cookedBounds)
 {
 	// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
 	// (This ACTUALLY works if you think about it... it's pretty cool yo)
@@ -49,9 +49,9 @@ ViewFrustum ViewFrustum::createFrustumFromCamera(const Camera& camera)
 	return frustum;
 }
 
-bool ViewFrustum::checkIfInViewFrustum(const Bounds& bounds, const glm::mat4& modelMatrix)
+bool ViewFrustum::checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix)
 {
-	Bounds cookedBounds = PhysicsUtils::fitAABB(bounds, modelMatrix);
+	RenderAABB cookedBounds = PhysicsUtils::fitAABB(bounds, modelMatrix);
 	return topFace.checkIfInViewPlane(cookedBounds) &&
 		bottomFace.checkIfInViewPlane(cookedBounds) &&
 		rightFace.checkIfInViewPlane(cookedBounds) &&
