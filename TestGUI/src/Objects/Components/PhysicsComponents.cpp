@@ -48,7 +48,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 		}
 
 		// Bump counter
-		baseIndex += (uint32_t)vertices.size();			// @ShowCaitlin
+		baseIndex += (uint32_t)vertices.size();
 	}
 
 	physx::PxTriangleMeshDesc meshDesc;
@@ -98,7 +98,6 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 
 TriangleMeshCollider::~TriangleMeshCollider()
 {
-	
 	MainLoop::getInstance().physicsScene->removeActor(*body);
 	body->release();
 }
@@ -365,13 +364,6 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
 	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
-
-	//// @Checkin
-	if (hit.worldNormal.dot(physx::PxVec3(0, 1, 0)) <= 0.707106781f)		// NOTE: 0.7... is cos(45deg)
-	{
-		physx::PxVec3 dtiith = hit.dir;
-		float jjjjj = hit.length;
-	}
 }
 void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }
 void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit) { PX_UNUSED(hit); }
