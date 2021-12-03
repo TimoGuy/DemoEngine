@@ -82,7 +82,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	triGeom.triangleMesh = triMesh;
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: @MemLeak: @Kakunin: This may be a mem leak... but it appears that exclusive shapes should not get released bc when the actor is released that's when the shape gets released.
+	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -299,7 +299,7 @@ void PlayerPhysics::physicsUpdate()
 		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
 		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
 		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
-
+	
 		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
 		cookedVelocity.y = 0.0f;
 		cookedVelocity += physx::PxVec3(
@@ -329,6 +329,7 @@ void PlayerPhysics::physicsUpdate()
 			isSliding = true;
 		}
 	}
+
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
 	{
 		//std::cout << "\tSide Collision";
@@ -371,10 +372,7 @@ void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit) { P
 // https://github.com/NVIDIAGameWorks/PhysX-3.4/blob/master/PhysX_3.4/Samples/SampleBridges/SampleBridgesCCT.cpp
 physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxShape& shape, const physx::PxActor& actor)
 {
-	// PT: ride & slide on platforms
-	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;// | physx::PxControllerBehaviorFlag::eCCT_SLIDE;
-
-	//return PxControllerBehaviorFlags(0);
+	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;		// NOTE: the sliding feature doesn't work so well eh.
 }
 
 physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxController&)
