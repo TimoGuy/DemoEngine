@@ -294,7 +294,7 @@ void PlayerPhysics::physicsUpdate()
 	physx::PxVec3 cookedVelocity = velocity;
 
 	// (Last minute) convert -y to y along the face you're sliding down
-	if (isSliding)
+	if (isSliding || (!isGrounded && isCeilingSliding))
 	{
 		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
 		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
@@ -315,6 +315,7 @@ void PlayerPhysics::physicsUpdate()
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
 	isSliding = false;
+	isCeilingSliding = false;
 
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
@@ -334,10 +335,20 @@ void PlayerPhysics::physicsUpdate()
 	{
 		//std::cout << "\tSide Collision";
 	}
+
+	//
+	// Check if head/ceiling sliding
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
 	{
-		//std::cout << "\tAbove Collision";
-		velocity.y = 0.0f;		// Hit your head on the ceiling
+		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		{
+			velocity.y = 0.0f;		// Hit your head on the ceiling
+		}
+		else
+		{
+			// Slide on ceiling!
+			isCeilingSliding = true;
+		}
 	}
 	//std::cout << std::endl;
 
@@ -372,7 +383,7 @@ void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit) { P
 // https://github.com/NVIDIAGameWorks/PhysX-3.4/blob/master/PhysX_3.4/Samples/SampleBridges/SampleBridgesCCT.cpp
 physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxShape& shape, const physx::PxActor& actor)
 {
-	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;		// NOTE: the sliding feature doesn't work so well eh.
+	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT;		// NOTE: the physx-provided sliding feature doesn't work so well eh.
 }
 
 physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxController&)
@@ -382,5 +393,5 @@ physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::Px
 
 physx::PxControllerBehaviorFlags PlayerPhysics::getBehaviorFlags(const physx::PxObstacle&)
 {
-	return physx::PxControllerBehaviorFlag::eCCT_CAN_RIDE_ON_OBJECT | physx::PxControllerBehaviorFlag::eCCT_SLIDE;
+	return physx::PxControllerBehaviorFlags(0);
 }

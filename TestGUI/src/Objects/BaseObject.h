@@ -98,10 +98,18 @@ private:
 // This indicates that a light is extractable
 // from this object. Will be placed in the lightobjects queue.
 //
-struct Light;
+enum LightType { DIRECTIONAL, POINT, SPOT };
 class LightComponent
 {
 public:
+	// LIGHT STRUCT
+	LightType lightType;
+
+	glm::vec3 facingDirection;
+	glm::vec3 color;
+	float colorIntensity;
+
+	// REGULAR STUFF
 	BaseObject* baseObject;
 	bool castsShadows;						// NOTE: when this is false, for some reason when you resize the window (or if it's off on startup), then the whole GL app just... crashes and goes into accum buffer mode and has a black screen except for imgui stuff
 	float shadowFarPlane;
@@ -109,7 +117,6 @@ public:
 
 	LightComponent(BaseObject* baseObject, bool castsShadows = false);
 	virtual ~LightComponent();
-	virtual Light& getLight() = 0;			// TODO: Refactor this so that instead of a getLight function it is actually just a light object;
 	virtual void renderPassShadowMap();
 
 	virtual void loadPropertiesFromJson(nlohmann::json& object);

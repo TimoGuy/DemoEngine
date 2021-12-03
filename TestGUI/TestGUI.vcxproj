@@ -193,7 +193,6 @@
     <ClInclude Include="src\Utils\PhysicsTypes.h" />
     <ClInclude Include="src\Utils\PhysicsUtils.h" />
     <ClInclude Include="src\Objects\DirectionalLight.h" />
-    <ClInclude Include="src\RenderEngine\RenderEngine.light\Light.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animation.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Animator.h" />
     <ClInclude Include="src\RenderEngine\RenderEngine.model\RenderEngine.model.animation\Bone.h" />

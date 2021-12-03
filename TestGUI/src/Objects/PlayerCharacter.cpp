@@ -329,7 +329,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
 
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding())
+	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() || ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsCeilingSliding())
 	{
 		// Cut off movement towards uphill if supposed to be sliding
 		glm::vec3 normal = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal();
