@@ -6,7 +6,6 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
-#include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
 

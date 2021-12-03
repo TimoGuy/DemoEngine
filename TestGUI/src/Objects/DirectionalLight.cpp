@@ -44,8 +44,8 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	//
 	// I'll take the leftover tokens then
 	//
-	lightComponent->getLight().color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
-	lightComponent->getLight().colorIntensity = object["color_multiplier"];
+	lightComponent->color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
+	lightComponent->colorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 	((DirectionalLightLight*)lightComponent)->refreshRenderBuffers();
@@ -59,8 +59,8 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 	j["lightComponent"] = lightComponent->savePropertiesToJson();
 
-	j["color"] = { lightComponent->getLight().color.r, lightComponent->getLight().color.g, lightComponent->getLight().color.b };
-	j["color_multiplier"] = lightComponent->getLight().colorIntensity;
+	j["color"] = { lightComponent->color.r, lightComponent->color.g, lightComponent->color.b };
+	j["color_multiplier"] = lightComponent->colorIntensity;
 
 	return j;
 }
@@ -79,10 +79,10 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 {
 	LightComponent::castsShadows = castsShadows;
 
-	light.lightType = LightType::DIRECTIONAL;
+	lightType = LightType::DIRECTIONAL;
 
-	light.color = glm::vec3(1.0f);
-	light.colorIntensity = 150.0f;
+	color = glm::vec3(1.0f);
+	colorIntensity = 150.0f;
 
 	// @Hardcode
 	shadowFarPlane = 200.0f;
@@ -270,7 +270,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	const auto lightView =
 		glm::lookAt(
 			center,
-			center + getLight().facingDirection,
+			center + facingDirection,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -364,7 +364,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	lookDirection = rotation * lookDirection;
 	lookDirection = glm::normalize(lookDirection);
 
-	lightComponent->getLight().facingDirection = lookDirection;
+	lightComponent->facingDirection = lookDirection;
 }
 
 
@@ -375,12 +375,12 @@ void DirectionalLightImGui::propertyPanelImGui()
 	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
 	((DirectionalLight*)baseObject)->setLookDirection(PhysicsUtils::getRotation(baseObject->getTransform()));
 
-	ImGui::ColorEdit3("Light base color", &((DirectionalLight*)baseObject)->lightComponent->getLight().color[0], ImGuiColorEditFlags_DisplayRGB);
-	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->getLight().colorIntensity);
+	ImGui::ColorEdit3("Light base color", &((DirectionalLight*)baseObject)->lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->colorIntensity);
 
 	ImGui::DragInt("Cascade Shadow Map Debug", &MainLoop::getInstance().renderManager->debugCSMLayerNum);
 
-	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection[0]);
+	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
 	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
 
@@ -424,7 +424,7 @@ void DirectionalLightImGui::renderImGui()
 	//
 	float gizmoSize1to1 = 30.0f;
 	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + ((DirectionalLight*)baseObject)->lightComponent->getLight().facingDirection);
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + ((DirectionalLight*)baseObject)->lightComponent->facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 

@@ -598,9 +598,9 @@ void RenderManager::renderScene()
 
 	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
 	{
-		if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
+		if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
 		{
-			sunOrientation = MainLoop::getInstance().lightObjects[i]->getLight().facingDirection;		// NOTE: this is normalized already!!!
+			sunOrientation = MainLoop::getInstance().lightObjects[i]->facingDirection;		// NOTE: this is normalized already!!!
 			break;
 		}
 	}
@@ -627,35 +627,24 @@ void RenderManager::renderScene()
 	//
 	// Choose which prefilter and irradiance maps to use
 	//
-	if (-sunOrientation.y < std::sinf(glm::radians(-10.0f)))
+	for (int i = (int)numSkyMaps - 1; i >= 0; i--)
 	{
-		whichMap = 4;
+		if (-sunOrientation.y < std::sinf(glm::radians(preBakedSkyMapAngles[i])))
+		{
+			whichMap = i;
 
-		mapInterpolationAmt = 0;
-	}
-	else if (-sunOrientation.y < std::sinf(glm::radians(0.0f)))
-	{
-		whichMap = 3;
+			if (i + 1 >= numSkyMaps)
+				mapInterpolationAmt = 0;
+			else
+			{
+				mapInterpolationAmt =
+					1 -
+					(-sunOrientation.y - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1]))) /
+					(std::sinf(glm::radians(preBakedSkyMapAngles[i])) - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1])));
+			}
 
-		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(-10.0f))) / (std::sinf(glm::radians(0.0f)) - std::sinf(glm::radians(-10.0f)));
-	}
-	else if (-sunOrientation.y < std::sinf(glm::radians(5.0f)))
-	{
-		whichMap = 2;
-
-		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(0.0f))) / (std::sinf(glm::radians(5.0f)) - std::sinf(glm::radians(0.0f)));
-	}
-	else if (-sunOrientation.y < std::sinf(glm::radians(10.0f)))
-	{
-		whichMap = 1;
-
-		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(5.0f))) / (std::sinf(glm::radians(10.0f)) - std::sinf(glm::radians(5.0f)));
-	}
-	else if (-sunOrientation.y < std::sinf(glm::radians(90.0f)))
-	{
-		whichMap = 0;
-
-		mapInterpolationAmt = 1 - (-sunOrientation.y - std::sinf(glm::radians(10.0f))) / (std::sinf(glm::radians(90.0f)) - std::sinf(glm::radians(10.0f)));
+			break;
+		}
 	}
 
 	//
@@ -776,7 +765,7 @@ void RenderManager::setupSceneLights(GLuint programId)
 		{
 			glActiveTexture(GL_TEXTURE0 + baseOffset + shadowMapTextureIndex);
 
-			if (!setupCSM && MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::DIRECTIONAL)
+			if (!setupCSM && MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
 			{
 				glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
 				glUniform1i(glGetUniformLocation(programId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
@@ -799,12 +788,12 @@ void RenderManager::setupSceneLights(GLuint programId)
 				// Set flag
 				setupCSM = true;
 			}
-			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::SPOT)
+			else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::SPOT)
 			{
 				glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
 				glUniform1i(glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
 			}
-			else if (MainLoop::getInstance().lightObjects[i]->getLight().lightType == LightType::POINT)
+			else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::POINT)
 			{
 				glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
 				glUniform1i(glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), baseOffset + shadowMapTextureIndex);
@@ -820,11 +809,11 @@ void RenderManager::setupSceneLights(GLuint programId)
 		LightComponent* light = MainLoop::getInstance().lightObjects[i];
 		glm::vec3 lightDirection = glm::vec3(0.0f);
 
-		if (light->getLight().lightType != LightType::POINT)
-			lightDirection = glm::normalize(light->getLight().facingDirection);																									// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
+		if (light->lightType != LightType::POINT)
+			lightDirection = glm::normalize(light->facingDirection);																									// NOTE: If there is no direction (magnitude: 0), then that means it's a spot light ... Check this first in the shader
 
-		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->getTransform()[3]), light->getLight().lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
-		glm::vec3 lightColorWithIntensity = light->getLight().color * light->getLight().colorIntensity;
+		glm::vec4 lightPosition = glm::vec4(glm::vec3(light->baseObject->getTransform()[3]), light->lightType == LightType::DIRECTIONAL ? 0.0f : 1.0f);					// NOTE: when a directional light, position doesn't matter, so that's indicated with the w of the vec4 to be 0
+		glm::vec3 lightColorWithIntensity = light->color * light->colorIntensity;
 
 		glUniform3fv(glGetUniformLocation(pbrShaderProgramId, ("lightDirections[" + std::to_string(i) + "]").c_str()), 1, &lightDirection[0]);
 		glUniform4fv(glGetUniformLocation(pbrShaderProgramId, ("lightPositions[" + std::to_string(i) + "]").c_str()), 1, &lightPosition[0]);

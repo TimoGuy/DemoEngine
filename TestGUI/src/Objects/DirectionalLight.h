@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 #include <vector>
@@ -28,13 +27,10 @@ public:
 	DirectionalLightLight(BaseObject* bo, bool castsShadows);
 	~DirectionalLightLight();
 
-	Light& getLight() { return light; }
-
 	void refreshRenderBuffers();
 
 	std::vector<float_t> shadowCascadeLevels;
 private:
-	Light light;
 	bool shadowMapsCreated = false;
 
 	void createCSMBuffers();

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 
@@ -25,15 +24,12 @@ public:
 	PointLightLight(BaseObject* bo, bool castsShadows);
 	~PointLightLight();
 
-	Light& getLight() { return light; }
-
 	void refreshShadowBuffers();
 
 	float nearPlane = 1.0f, farPlane = 25.0f;
 
 	GLuint pointLightShaderProgram, lightFBO;
 private:
-	Light light;
 	bool shadowMapsCreated = false;
 
 	std::vector<glm::mat4> shadowTransforms;

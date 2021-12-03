@@ -12,7 +12,6 @@
 #include "../Utils/GameState.h"
 #include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
-#include "../RenderEngine/RenderEngine.light/Light.h"
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
 
