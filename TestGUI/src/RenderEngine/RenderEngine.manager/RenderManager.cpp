@@ -10,10 +10,12 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#ifdef _DEBUG
 #include "../../ImGui/imgui.h"
 #include "../../ImGui/imgui_impl_glfw.h"
 #include "../../ImGui/imgui_impl_opengl3.h"
 #include "../../ImGui/ImGuizmo.h"
+#endif
 
 #include "../RenderEngine.resources/Resources.h"
 #include "../../Utils/FileLoading.h"
@@ -36,7 +38,7 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static bool showShadowMapView = false;
-bool RenderManager::renderPhysicsDebug = true;
+bool RenderManager::renderPhysicsDebug = false;
 
 
 RenderManager::RenderManager()
@@ -462,14 +464,33 @@ void RenderManager::createFonts()
 
 void RenderManager::render()
 {
+#ifdef _DEBUG
 	renderImGuiPass();
 
-#ifdef _DEBUG
 	//
 	// @Debug: reload shaders
 	//
 	createShaderPrograms();
 #endif
+
+	//
+	// Keyboard shortcuts for wireframe and physics debug
+	//
+	static bool prevF1Keypressed = GLFW_RELEASE;
+	bool f1Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F1);
+	if (prevF1Keypressed == GLFW_RELEASE && f1Keypressed == GLFW_PRESS)
+	{
+		isWireFrameMode = !isWireFrameMode;
+	}
+	prevF1Keypressed = f1Keypressed;
+
+	static bool prevF2Keypressed = GLFW_RELEASE;
+	bool f2Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F2);
+	if (prevF2Keypressed == GLFW_RELEASE && f2Keypressed == GLFW_PRESS)
+	{
+		renderPhysicsDebug = !renderPhysicsDebug;
+	}
+	prevF2Keypressed = f2Keypressed;
 
 	//
 	// Setup projection matrix for rendering
@@ -578,8 +599,10 @@ void RenderManager::render()
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
 
+#ifdef _DEBUG
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 
@@ -922,7 +945,7 @@ void RenderManager::renderUI()
 //	ImGuizmo::IsUsing())
 //	return;
 
-
+#ifdef _DEBUG
 void RenderManager::renderImGuiPass()
 {
 	renderImGuiContents();
@@ -1018,25 +1041,6 @@ void RenderManager::renderImGuiContents()
 			ImGui::EndMainMenuBar();
 		}
 	}
-
-	//
-	// Some keyboard shortcuts
-	//
-	static bool prevF1Keypressed = GLFW_RELEASE;
-	bool f1Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F1);
-	if (prevF1Keypressed == GLFW_RELEASE && f1Keypressed == GLFW_PRESS)
-	{
-		isWireFrameMode = !isWireFrameMode;
-	}
-	prevF1Keypressed = f1Keypressed;
-
-	static bool prevF2Keypressed = GLFW_RELEASE;
-	bool f2Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F2);
-	if (prevF2Keypressed == GLFW_RELEASE && f2Keypressed == GLFW_PRESS)
-	{
-		renderPhysicsDebug = !renderPhysicsDebug;
-	}
-	prevF2Keypressed = f2Keypressed;
 
 	//
 	// Analytics Overlay
@@ -1511,6 +1515,7 @@ void RenderManager::renderImGuiContents()
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }
+#endif
 
 void RenderManager::renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color)		// @Cleanup: this needs to go in some kind of text utils... it's super useful however, soooooo.
 {

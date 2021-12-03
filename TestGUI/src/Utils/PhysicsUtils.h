@@ -4,7 +4,10 @@
 #include <glm/glm.hpp>
 #include <PxPhysicsAPI.h>
 
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
+#endif
+
 #include "PhysicsTypes.h"
 
 struct RenderAABB;
@@ -61,6 +64,7 @@ namespace PhysicsUtils
 
 #pragma endregion
 
+#ifdef _DEBUG
 #pragma region imgui property panel functions
 
 	void imguiTransformMatrixProps(float* matrixPtr);
@@ -82,6 +86,7 @@ namespace PhysicsUtils
 	void imguiRenderSausage(glm::mat4 modelMatrix, float radius, float halfHeight, glm::vec3 eulerAngles, unsigned int numVertices);
 
 #pragma endregion
+#endif
 
 	struct RaySegmentHit
 	{

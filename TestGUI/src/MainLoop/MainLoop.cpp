@@ -5,10 +5,13 @@
 #include "../Objects/BaseObject.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
+
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_impl_glfw.h"
 #include "../ImGui/imgui_impl_opengl3.h"
 #include "../ImGui/ImGuizmo.h"
+#endif
 
 #include "../Utils/InputManager.h"
 #include "../Utils/FileLoading.h"
@@ -23,8 +26,11 @@
 
 void createWindow(const char* windowName);
 void setupViewPort();
-void setupImGui();
 void setupPhysx();
+
+#ifdef _DEBUG
+void setupImGui();
+#endif
 
 void physicsUpdate();
 
@@ -79,16 +85,21 @@ void MainLoop::initialize()
 
 	createWindow("Test Window");
 	setupViewPort();
-	setupImGui();
 	setupPhysx();
+
+#ifdef _DEBUG
+	setupImGui();
+#endif
 
 	std::cout << "OpenGL Version and Vendor:\t" << glGetString(GL_VERSION) << std::endl << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
+#ifdef _DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(openglMessageCallback, 0);
+#endif
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -119,7 +130,9 @@ void MainLoop::initialize()
 
 void MainLoop::run()
 {
+#ifdef _DEBUG
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+#endif
 
 #if SINGLE_BUFFERED_MODE
 	const float desiredFrameTime = 1000.0f / 60.0f;
@@ -138,6 +151,7 @@ void MainLoop::run()
 
 		glfwPollEvents();
 
+#ifdef _DEBUG
 		//
 		// ImGui render pass
 		//
@@ -150,7 +164,10 @@ void MainLoop::run()
 		ImGuizmo::BeginFrame();
 
 		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
+#endif
+		{
 			camera.Inputs(window);
+		}
 
 		//
 		// Update the input manager
@@ -218,9 +235,11 @@ void MainLoop::cleanup()
 {
 	delete renderManager;
 
+#ifdef _DEBUG
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+#endif
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -277,7 +296,7 @@ void setupViewPort()
 	frameBufferSizeChangedCallback(nullptr, width, height);
 }
 
-
+#ifdef _DEBUG
 void setupImGui()
 {
 	IMGUI_CHECKVERSION();
@@ -297,6 +316,7 @@ void setupImGui()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 }
+#endif
 
 
 physx::PxFilterFlags contactReportFilterShader(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
@@ -473,9 +493,11 @@ void setupPhysx()
 
 void physicsUpdate()
 {
+#ifdef _DEBUG
 	// Don't run unless if play mode
 	if (!MainLoop::getInstance().playMode)
 		return;
+#endif
 
 	for (unsigned int i = 0; i < MainLoop::getInstance().physicsObjects.size(); i++)
 	{

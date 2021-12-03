@@ -12,8 +12,11 @@
 #include "../Utils/GameState.h"
 #include "../Utils/InputManager.h"
 #include "../Utils/Messages.h"
+
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
+#endif
 
 #include <cmath>
 
@@ -163,6 +166,7 @@ void PlayerRender::processMovement()
 	if (glm::length2(movementVector) > 0.001f)
 		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
 
+#ifdef _DEBUG
 	// Remove input if not playmode
 	if (!MainLoop::getInstance().playMode)
 	{
@@ -171,6 +175,7 @@ void PlayerRender::processMovement()
 		facingDirection = glm::vec2(0, 1);
 		movementVector = glm::vec2(0, 0);
 	}
+#endif
 
 	//
 	// Update playercam pos
@@ -573,7 +578,9 @@ void PlayerRender::processAnimation()
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
+#ifdef _DEBUG
 	if (MainLoop::getInstance().playMode)
+#endif
 	{
 		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime || backAttachment.isFirstTime)
 		{
@@ -714,6 +721,7 @@ void PlayerRender::renderShadow(GLuint programId)
 	bottleModel->render(finalBottleTransformMatrix, false);
 }
 
+#ifdef _DEBUG
 void PlayerCharacter::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
@@ -768,7 +776,7 @@ void PlayerCharacter::propertyPanelImGui()
 void PlayerCharacter::renderImGui()
 {
 }
-
+#endif
 
 
 //

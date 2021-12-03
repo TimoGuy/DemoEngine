@@ -36,7 +36,10 @@ public:
 	float deltaTime;			// To only be used on the rendering thread
 	float physicsDeltaTime;		// To only be used on the physics thread
 	float physicsCalcTimeAnchor;
+
+#ifdef _DEBUG
 	bool playMode = false;
+#endif
 
 	//
 	// Debug mode flags

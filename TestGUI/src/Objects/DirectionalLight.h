@@ -55,9 +55,10 @@ public:
 
 	RenderAABB* bounds;
 
-
+#ifdef _DEBUG
 	void propertyPanelImGui();
 	void renderImGui();
+#endif
 
 private:
 	unsigned int lightGizmoTextureId;

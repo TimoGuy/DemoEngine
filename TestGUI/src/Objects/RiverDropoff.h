@@ -47,8 +47,10 @@ public:
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 
+#ifdef _DEBUG
 	void propertyPanelImGui();
 	void renderImGui();
+#endif
 
 private:
 	bool beingTriggeredByPlayer = false;

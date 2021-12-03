@@ -32,9 +32,11 @@ Animator::Animator(std::vector<Animation>* animations, const std::vector<std::st
 //size_t numCounts = 0;
 void Animator::updateAnimation(float deltaTime)
 {
+#ifdef _DEBUG
 	// Don't run the animation update unless in playmode
 	if (!MainLoop::getInstance().playMode)
 		return;
+#endif
 
 	//auto start_time = std::chrono::high_resolution_clock::now();
 

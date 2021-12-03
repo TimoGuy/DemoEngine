@@ -6,8 +6,11 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../Utils/PhysicsUtils.h"
+
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
+#endif
 
 
 YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
@@ -144,6 +147,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 	model->render(renderTransform, false);
 }
 
+#ifdef _DEBUG
 void YosemiteTerrain::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
@@ -168,3 +172,4 @@ void YosemiteTerrain::propertyPanelImGui()
 	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
 	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
 }
+#endif

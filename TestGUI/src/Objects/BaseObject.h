@@ -35,8 +35,10 @@ public:
 	virtual PhysicsComponent* getPhysicsComponent() = 0;
 	virtual RenderComponent* getRenderComponent() = 0;
 
+#ifdef _DEBUG
 	virtual void propertyPanelImGui() {}
 	virtual void renderImGui() {}
+#endif
 
 	glm::mat4& getTransform();
 	glm::mat4 getTransformWithoutScale();				// NOTE: this is not a getter; it computes the transform without the scale

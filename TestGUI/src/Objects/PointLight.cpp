@@ -6,9 +6,12 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
 #include "../ImGui/ImGuizmo.h"
+#endif
+
 #include "../Utils/PhysicsUtils.h"
 
 
@@ -194,6 +197,7 @@ void PointLightLight::refreshResources()
 	pointLightShaderProgram = *(GLuint*)Resources::getResource("shader;pointLightShadowPass");
 }
 
+#ifdef _DEBUG
 void PointLight::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
@@ -216,9 +220,7 @@ void PointLight::propertyPanelImGui()
 
 void PointLight::renderImGui()
 {
-#ifdef _DEBUG
 	refreshResources();
-#endif
 
 	//
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
@@ -254,3 +256,4 @@ void PointLight::renderImGui()
 
 	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }
+#endif

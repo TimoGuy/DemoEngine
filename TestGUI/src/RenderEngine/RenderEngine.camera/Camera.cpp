@@ -1,6 +1,9 @@
 #include "Camera.h"
 
+#ifdef _DEBUG
 #include "../../ImGui/imgui.h"
+#endif
+
 #include "../../Objects/BaseObject.h"
 #include "../../Utils/PhysicsUtils.h"
 
@@ -121,7 +124,12 @@ void Camera::removeVirtualCamera(VirtualCamera* virtualCamera)
 
 void Camera::updateToVirtualCameras()
 {
-	if (!MainLoop::getInstance().playMode || !lockedCursor)
+#ifdef _DEBUG
+	if (!MainLoop::getInstance().playMode)
+		return;
+#endif
+
+	if (!lockedCursor)
 		return;
 
 	//
@@ -152,6 +160,7 @@ void Camera::updateToVirtualCameras()
 bool prevF4Keypressed;
 void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
+#ifdef _DEBUG
 	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && prevF4Keypressed == GLFW_RELEASE)
 	{
 		//
@@ -160,9 +169,12 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		MainLoop::getInstance().playMode = !MainLoop::getInstance().playMode;
 	}
 	prevF4Keypressed = glfwGetKey(window, GLFW_KEY_F4);
+#endif
 
+#ifdef _DEBUG
 	// Don't do look around stuff unless if doing freecam mode
 	if (MainLoop::getInstance().playMode)
+#endif
 	{
 		if (!lockedCursor)
 		{
@@ -182,10 +194,12 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		}
 		return;
 	}
+#ifdef _DEBUG
 	else
 		lockedCursor = false;
+#endif
 
-
+#ifdef _DEBUG
 	//
 	// Look around
 	//
@@ -248,4 +262,5 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		if (!firstClicked) glfwSetCursorPos(window, width / 2, height / 2);
 		firstClicked = true;
 	}
+#endif
 }

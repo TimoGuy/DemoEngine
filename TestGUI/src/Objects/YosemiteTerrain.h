@@ -48,7 +48,9 @@ public:
 
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
 
+#ifdef _DEBUG
 	void propertyPanelImGui();
+#endif
 
 	RenderAABB* bounds;
 

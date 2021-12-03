@@ -109,10 +109,14 @@ private:
 	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
 	std::vector<float> transparentDistancesToCamera;
 
-	// ImGui Debug stuff
 	bool isWireFrameMode;
+
+#ifdef _DEBUG
+	// ImGui Debug stuff
 	void renderImGuiPass();
 	void renderImGuiContents();
+#endif
+
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
 	// @PHYSX_VISUALIZATION

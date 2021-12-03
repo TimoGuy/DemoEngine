@@ -6,9 +6,12 @@
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
 #include "../ImGui/ImGuizmo.h"
+#endif
+
 #include "../Utils/PhysicsUtils.h"
 #include <glm/glm.hpp>
 
@@ -361,7 +364,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	lightComponent->facingDirection = lookDirection;
 }
 
-
+#ifdef _DEBUG
 void DirectionalLight::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
@@ -409,9 +412,7 @@ void DirectionalLight::propertyPanelImGui()
 
 void DirectionalLight::renderImGui()
 {
-#ifdef _DEBUG
 	refreshResources();
-#endif
 
 	//
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
@@ -458,3 +459,4 @@ void DirectionalLight::renderImGui()
 
 	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }
+#endif

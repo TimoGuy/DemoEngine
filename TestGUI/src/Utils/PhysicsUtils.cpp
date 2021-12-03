@@ -1,9 +1,11 @@
 #include "../Objects/BaseObject.h"
+
+#ifdef _DEBUG
 #include "../ImGui/imgui.h"
+#include "../ImGui/ImGuizmo.h"
+#endif
 
 #include "PhysicsUtils.h"
-
-#include "../ImGui/ImGuizmo.h"
 #include "../MainLoop/MainLoop.h"
 
 
@@ -238,6 +240,7 @@ namespace PhysicsUtils
 
 #pragma endregion
 
+#ifdef _DEBUG
 #pragma region imgui property panel functions
 
 	void imguiTransformMatrixProps(float* matrixPtr)
@@ -436,6 +439,7 @@ namespace PhysicsUtils
 	}
 
 #pragma endregion
+#endif
 
 	RenderAABB fitAABB(RenderAABB bounds, glm::mat4 modelMatrix)
 	{

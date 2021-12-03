@@ -178,6 +178,7 @@ void WaterPuddleRender::refreshResources()
 	model->setMaterials(materials);
 }
 
+#ifdef _DEBUG
 void WaterPuddle::propertyPanelImGui()
 {
 	ImGui::Text("Model Offset ModelMatrix");
@@ -187,3 +188,4 @@ void WaterPuddle::propertyPanelImGui()
 void WaterPuddle::renderImGui()
 {
 }
+#endif
