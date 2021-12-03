@@ -6,16 +6,6 @@
 class Material;
 class Model;
 
-class RiverDropoffImgui : public ImGuiComponent
-{
-public:
-	RiverDropoffImgui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "River Dropoff Area") {}
-
-	void propertyPanelImGui();
-	void renderImGui();
-};
-
-
 class RiverDropoffRender : public RenderComponent
 {
 public:
@@ -42,11 +32,9 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	RiverDropoffImgui* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RiverDropoffRender* renderComponent;
 
-	virtual RiverDropoffImgui* getImguiComponent() override { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	virtual RiverDropoffRender* getRenderComponent() override { return renderComponent; }
@@ -58,6 +46,9 @@ public:
 	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
+
+	void propertyPanelImGui();
+	void renderImGui();
 
 private:
 	bool beingTriggeredByPlayer = false;

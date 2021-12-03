@@ -18,27 +18,27 @@ static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
+	name = "Directional Light";
 
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(0.5f);
 
-	imguiComponent = new DirectionalLightImGui(this, bounds);
 	lightComponent = new DirectionalLightLight(this, castsShadows);
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
+
+	refreshResources();
 }
 
 DirectionalLight::~DirectionalLight()			// TODO: when there are shadow maps, delete them too! When deleting the light, there is garbage shadow maps
 {
 	delete lightComponent;
-	delete imguiComponent;
 }
 
 void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 	lightComponent->loadPropertiesFromJson(object["lightComponent"]);
 
 	//
@@ -56,7 +56,6 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 	j["lightComponent"] = lightComponent->savePropertiesToJson();
 
 	j["color"] = { lightComponent->color.r, lightComponent->color.g, lightComponent->color.b };
@@ -65,12 +64,7 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	return j;
 }
 
-DirectionalLightImGui::DirectionalLightImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Directional Light")			// TODO: maybe add an aabb as the bounding box for selecting these lights eh???
-{
-	refreshResources();
-}
-
-void DirectionalLightImGui::refreshResources()
+void DirectionalLight::refreshResources()
 {
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
@@ -368,19 +362,19 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 }
 
 
-void DirectionalLightImGui::propertyPanelImGui()
+void DirectionalLight::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
-	((DirectionalLight*)baseObject)->setLookDirection(PhysicsUtils::getRotation(baseObject->getTransform()));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
+	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 
-	ImGui::ColorEdit3("Light base color", &((DirectionalLight*)baseObject)->lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
-	ImGui::DragFloat("Light color multiplier", &((DirectionalLight*)baseObject)->lightComponent->colorIntensity);
+	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::DragFloat("Light color multiplier", &lightComponent->colorIntensity);
 
 	ImGui::DragInt("Cascade Shadow Map Debug", &MainLoop::getInstance().renderManager->debugCSMLayerNum);
 
-	ImGui::InputFloat3("DEBUG", &((DirectionalLight*)baseObject)->lightComponent->facingDirection[0]);
+	ImGui::InputFloat3("DEBUG", &lightComponent->facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
 	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
 
@@ -405,15 +399,15 @@ void DirectionalLightImGui::propertyPanelImGui()
 	//
 	// Toggle shadows
 	//
-	std::string toggleShadowsLabel = "Turn " + std::string(((DirectionalLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
+	std::string toggleShadowsLabel = "Turn " + std::string(lightComponent->castsShadows ? "Off" : "On") + " Shadows";
 	if (ImGui::Button(toggleShadowsLabel.c_str()))
 	{
-		baseObject->getLightComponent()->castsShadows = !baseObject->getLightComponent()->castsShadows;
-		((DirectionalLightLight*)baseObject->getLightComponent())->refreshRenderBuffers();
+		getLightComponent()->castsShadows = !getLightComponent()->castsShadows;
+		((DirectionalLightLight*)getLightComponent())->refreshRenderBuffers();
 	}
 }
 
-void DirectionalLightImGui::renderImGui()
+void DirectionalLight::renderImGui()
 {
 #ifdef _DEBUG
 	refreshResources();
@@ -423,8 +417,8 @@ void DirectionalLightImGui::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
-	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()) + ((DirectionalLight*)baseObject)->lightComponent->facingDirection);
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(getTransform()));
+	glm::vec3 lightPointingDirection = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(getTransform()) + lightComponent->facingDirection);
 	float clipZ = lightPosOnScreen.z;
 	float clipZ2 = lightPointingDirection.z;
 
@@ -462,7 +456,5 @@ void DirectionalLightImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
 
-	PhysicsUtils::imguiRenderCircle(baseObject->getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
-
-	ImGuiComponent::renderImGui();
+	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }

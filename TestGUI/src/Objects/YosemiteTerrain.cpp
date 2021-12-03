@@ -12,11 +12,12 @@
 
 YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 {
+	name = "Yosemite Terrain";
+
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	imguiComponent = new YosemiteTerrainImGui(this, bounds);
 	INTERNALrecreatePhysicsComponent(modelResourceName);
 	renderComponent = new YosemiteTerrainRender(this, bounds, modelResourceName);
 }
@@ -46,14 +47,12 @@ YosemiteTerrain::~YosemiteTerrain()
 {
 	delete renderComponent;
 	delete physicsComponent;
-	delete imguiComponent;
 }
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
 {
 	// NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
 	// Check if there's an explicit model name
@@ -72,7 +71,6 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 
 	// Explicit model resource name
 	j["modelResourceName"] = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
@@ -146,27 +144,27 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 	model->render(renderTransform, false);
 }
 
-void YosemiteTerrainImGui::propertyPanelImGui()
+void YosemiteTerrain::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
 
 	ImGui::Separator();
 
 	// Changing the model resource name
-	static std::string tempModelResourceName = ((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName;
+	static std::string tempModelResourceName = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
 	ImGui::InputText("Model Resource", &tempModelResourceName);
-	if (tempModelResourceName != ((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName)
+	if (tempModelResourceName != ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName)
 	{
 		if (ImGui::Button("Apply Resource Name"))
 		{
-			((YosemiteTerrainRender*)baseObject->getRenderComponent())->modelResourceName = tempModelResourceName;
+			((YosemiteTerrainRender*)getRenderComponent())->modelResourceName = tempModelResourceName;
 		}
 	}
 
 	ImGui::Separator();
 
-	ImGui::DragFloat3("Velocity", &((YosemiteTerrain*)baseObject)->velocity[0], 0.01f);
-	ImGui::DragFloat3("Ang Velocity", &((YosemiteTerrain*)baseObject)->angularVelocity[0], 0.01f);
+	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
+	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
 }

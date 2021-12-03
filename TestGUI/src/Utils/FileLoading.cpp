@@ -47,9 +47,9 @@ void FileLoading::loadFileWithPrompt()
 	//
 	// Clear out the whole scene
 	//
-	for (int i = (int)MainLoop::getInstance().imguiObjects.size() - 1; i >= 0; i--)
+	for (int i = (int)MainLoop::getInstance().objects.size() - 1; i >= 0; i--)
 	{
-		delete MainLoop::getInstance().imguiObjects[i]->baseObject;
+		delete MainLoop::getInstance().objects[i];
 	}
 	MainLoop::getInstance().renderManager->currentSelectedObjectIndex = -1;
 	MainLoop::getInstance().renderManager->currentHoveringObjectIndex = -1;
@@ -128,9 +128,9 @@ void FileLoading::saveFile(bool withPrompt)
 	std::cout << "::Saving:: \"" << currentWorkingPath << "\" ..." << std::endl;
 
 	std::vector<nlohmann::json> objects;
-	for (ImGuiComponent* component : MainLoop::getInstance().imguiObjects)
+	for (BaseObject* bo : MainLoop::getInstance().objects)
 	{
-		objects.push_back(component->baseObject->savePropertiesToJson());
+		objects.push_back(bo->savePropertiesToJson());
 	}
 
 	nlohmann::json fullObject;

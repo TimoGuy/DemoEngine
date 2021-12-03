@@ -20,11 +20,12 @@
 
 PlayerCharacter::PlayerCharacter()
 {
+	name = "Player Controller";
+
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(3.0f, 3.0f, 3.0f);		// NOTE: bc the renderTransform is different from the real transform, the bounds have to be thicker to account for when spinning
 
-	imguiComponent = new PlayerImGui(this, bounds);
 	physicsComponent = new PlayerPhysics(this);
 	renderComponent = new PlayerRender(this, bounds);
 }
@@ -32,7 +33,6 @@ PlayerCharacter::PlayerCharacter()
 void PlayerCharacter::loadPropertiesFromJson(nlohmann::json& object)		// @Override
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
 	// I'll take the leftover tokens then
@@ -44,7 +44,6 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 
 	return j;
 }
@@ -677,7 +676,6 @@ PlayerCharacter::~PlayerCharacter()
 {
 	delete renderComponent;
 	delete physicsComponent;
-	delete imguiComponent;
 }
 
 void PlayerRender::preRenderUpdate()
@@ -716,45 +714,45 @@ void PlayerRender::renderShadow(GLuint programId)
 	bottleModel->render(finalBottleTransformMatrix, false);
 }
 
-void PlayerImGui::propertyPanelImGui()
+void PlayerCharacter::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
 
 	// @Broken: The commented out lines below are apparently illegal operations towards the physics component
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
-	glm::vec3 newPos = PhysicsUtils::getPosition(baseObject->getTransform());
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
+	glm::vec3 newPos = PhysicsUtils::getPosition(getTransform());
+	((PlayerPhysics*)getPhysicsComponent())->controller->setPosition(physx::PxExtendedVec3(newPos.x, newPos.y, newPos.z));
 
-	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp[0]);
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)baseObject->getPhysicsComponent())->tempUp.getNormalized());
+	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)getPhysicsComponent())->tempUp[0]);
+	((PlayerPhysics*)getPhysicsComponent())->controller->setUpDirection(((PlayerPhysics*)getPhysicsComponent())->tempUp.getNormalized());
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
-	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)baseObject->getRenderComponent())->playerCamOffset[0]);
-	ImGui::DragFloat2("Looking Input", &((PlayerRender*)baseObject->getRenderComponent())->lookingInput[0]);
-	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)baseObject->getRenderComponent())->lookingSensitivity[0]);
+	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)getRenderComponent())->playerCamOffset[0]);
+	ImGui::DragFloat2("Looking Input", &((PlayerRender*)getRenderComponent())->lookingInput[0]);
+	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)getRenderComponent())->lookingSensitivity[0]);
 
 	ImGui::Separator();
 	ImGui::Text("Movement Properties");
-	ImGui::DragFloat2("Running Acceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundAcceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Decceleration", &((PlayerRender*)baseObject->getRenderComponent())->groundDecceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Acceleration (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airAcceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Speed", &((PlayerRender*)baseObject->getRenderComponent())->groundRunSpeed[0], 0.1f);
-	ImGui::DragFloat2("Jump Speed", &((PlayerRender*)baseObject->getRenderComponent())->jumpSpeed[0], 0.1f);
-	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)baseObject->getRenderComponent())->facingDirection.y) + ")").c_str());
-	ImGui::DragFloat2("Leaning Lerp Time", &((PlayerRender*)baseObject->getRenderComponent())->leanLerpTime[0]);
-	ImGui::DragFloat2("Lean Multiplier", &((PlayerRender*)baseObject->getRenderComponent())->leanMultiplier[0], 0.05f);
-	ImGui::DragFloat2("Facing Movement Speed", &((PlayerRender*)baseObject->getRenderComponent())->facingTurnSpeed[0], 0.1f);
-	ImGui::DragFloat2("Facing Movement Speed (Air)", &((PlayerRender*)baseObject->getRenderComponent())->airBourneFacingTurnSpeed[0], 0.1f);
+	ImGui::DragFloat2("Running Acceleration", &((PlayerRender*)getRenderComponent())->groundAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Decceleration", &((PlayerRender*)getRenderComponent())->groundDecceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Acceleration (Air)", &((PlayerRender*)getRenderComponent())->airAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Speed", &((PlayerRender*)getRenderComponent())->groundRunSpeed[0], 0.1f);
+	ImGui::DragFloat2("Jump Speed", &((PlayerRender*)getRenderComponent())->jumpSpeed[0], 0.1f);
+	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)getRenderComponent())->facingDirection.y) + ")").c_str());
+	ImGui::DragFloat2("Leaning Lerp Time", &((PlayerRender*)getRenderComponent())->leanLerpTime[0]);
+	ImGui::DragFloat2("Lean Multiplier", &((PlayerRender*)getRenderComponent())->leanMultiplier[0], 0.05f);
+	ImGui::DragFloat2("Facing Movement Speed", &((PlayerRender*)getRenderComponent())->facingTurnSpeed[0], 0.1f);
+	ImGui::DragFloat2("Facing Movement Speed (Air)", &((PlayerRender*)getRenderComponent())->airBourneFacingTurnSpeed[0], 0.1f);
 
 	ImGui::Separator();
-	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)baseObject->getRenderComponent())->modelOffsetY, 0.05f);
-	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)baseObject->getRenderComponent())->animationSpeed);
+	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)getRenderComponent())->modelOffsetY, 0.05f);
+	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)getRenderComponent())->animationSpeed);
 
 	ImGui::Separator();
-	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)baseObject->getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)((PlayerRender*)getRenderComponent())->materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);
@@ -767,9 +765,8 @@ void PlayerImGui::propertyPanelImGui()
 	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleHandModelMatrix));
 }
 
-void PlayerImGui::renderImGui()
+void PlayerCharacter::renderImGui()
 {
-	ImGuiComponent::renderImGui();
 }
 
 

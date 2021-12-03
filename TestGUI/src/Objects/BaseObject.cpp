@@ -35,7 +35,7 @@ std::string generate_hex(const uint32_t len)
 	return ss.str();
 }
 
-BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing pointers of these in mainloop for scene cleanup!!!!!
+BaseObject::BaseObject()
 {
 	transform = glm::mat4(1.0f);
 	guid = generate_hex(32);
@@ -43,11 +43,20 @@ BaseObject::BaseObject()		// TODO: Make baseobject add into a vector containing 
 	// This is for physics realm of baseobject
 	physicsTransformState.updateTransform(getTransform());
 	physicsTransformState.updateTransform(getTransform());
+
+	MainLoop::getInstance().objects.push_back(this);
 }
 
 BaseObject::~BaseObject()
 {
-	// NOTE: I guess this needs to be created for linking errors that occur when this isn't, bc of how destructors work in c++ dang nabbit
+	MainLoop::getInstance().objects.erase(
+		std::remove(
+			MainLoop::getInstance().objects.begin(),
+			MainLoop::getInstance().objects.end(),
+			this
+		),
+		MainLoop::getInstance().objects.end()
+	);
 }
 
 void BaseObject::loadPropertiesFromJson(nlohmann::json& object)
@@ -55,6 +64,11 @@ void BaseObject::loadPropertiesFromJson(nlohmann::json& object)
 	// Pick up the guid
 	if (object.contains("guid"))
 		guid = object["guid"];
+
+	// Pick up the name
+	if (object.contains("name"))
+		name = object["name"];
+
 	glm::vec3 position = glm::vec3(object["position"][0], object["position"][1], object["position"][2]);
 	glm::vec3 eulerAngles = glm::vec3(object["rotation"][0], object["rotation"][1], object["rotation"][2]);
 	glm::vec3 scale = glm::vec3(object["scale"][0], object["scale"][1], object["scale"][2]);
@@ -68,6 +82,7 @@ nlohmann::json BaseObject::savePropertiesToJson()
 {
 	nlohmann::json j;
 	j["guid"] = guid;
+	j["name"] = name;
 
 	glm::vec3 position = PhysicsUtils::getPosition(transform);
 	glm::vec3 eulerAngles = glm::degrees(glm::eulerAngles(PhysicsUtils::getRotation(transform)));
@@ -112,101 +127,6 @@ void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
 void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
 {
 	transform = physicsTransformState.getInterpolatedTransform(alpha);		// Do this without propagating transforms
-}
-
-ImGuiComponent::ImGuiComponent(BaseObject* baseObject, RenderAABB* bounds, std::string name) : baseObject(baseObject), bounds(bounds), name(name)
-{
-	MainLoop::getInstance().imguiObjects.push_back(this);
-}
-
-ImGuiComponent::~ImGuiComponent()
-{
-	MainLoop::getInstance().imguiObjects.erase(
-		std::remove(
-			MainLoop::getInstance().imguiObjects.begin(),
-			MainLoop::getInstance().imguiObjects.end(),
-			this
-		),
-		MainLoop::getInstance().imguiObjects.end()
-	);
-}
-
-void ImGuiComponent::loadPropertiesFromJson(nlohmann::json& object)
-{
-	// Pick up the name
-	name = object["name"];
-}
-
-nlohmann::json ImGuiComponent::savePropertiesToJson()
-{
-	nlohmann::json j;
-	j["name"] = name;
-	return j;
-}
-
-void ImGuiComponent::renderImGui()
-{
-	if (bounds == nullptr || MainLoop::getInstance().playMode)
-		return;
-	
-	RenderAABB cookedBounds =
-		PhysicsUtils::fitAABB(
-			*bounds,
-			baseObject->getTransform()
-		);
-
-	double xpos, ypos;
-	glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
-	xpos /= MainLoop::getInstance().camera.width;
-	ypos /= MainLoop::getInstance().camera.height;
-	ypos = 1.0 - ypos;
-	xpos = xpos * 2.0f - 1.0f;
-	ypos = ypos * 2.0f - 1.0f;
-	glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
-	glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
-
-	PhysicsUtils::RaySegmentHit col = PhysicsUtils::raySegmentCollideWithAABB(
-		MainLoop::getInstance().camera.position,
-		worldSpacePosition,
-		cookedBounds
-	);
-
-	//
-	// Setup selection state color
-	//
-	ImU32 selectionStateColor = ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f);		// Nothing color
-	if (MainLoop::getInstance().renderManager->currentSelectedObjectIndex >= 0 &&
-		MainLoop::getInstance().renderManager->currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
-		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentSelectedObjectIndex] == this)
-		selectionStateColor = ImColor(0.921568627f, 0.423529412f, 0.901960784f);			// Selected color
-	else if (MainLoop::getInstance().renderManager->currentHoveringObjectIndex >= 0 &&
-		MainLoop::getInstance().renderManager->currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
-		MainLoop::getInstance().imguiObjects[MainLoop::getInstance().renderManager->currentHoveringObjectIndex] == this)
-		selectionStateColor = ImColor(0.980392157f, 0.631372549f, 0.223529412f);			// Hover color
-
-	physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);
-	PhysicsUtils::imguiRenderBoxCollider(
-		glm::translate(glm::mat4(1.0f), cookedBounds.center),
-		boxGeometry,
-		selectionStateColor
-	);			// @Cleanup: this seems inefficient... but I'm just a glm beginnner atm
-
-	//
-	// Check if wanting to click
-	//
-	const bool clickPressedCurrent =
-		(glfwGetMouseButton(MainLoop::getInstance().window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
-	if (!clickPressedPrevious && clickPressedCurrent)
-	{
-		// Request a click process
-		MainLoop::getInstance().renderManager->requestSelectObject(false, this, col);
-	}
-	else
-	{
-		// Request a hover process
-		MainLoop::getInstance().renderManager->requestSelectObject(true, this, col);
-	}
-	clickPressedPrevious = clickPressedCurrent;
 }
 
 LightComponent::LightComponent(BaseObject* baseObject, bool castsShadows) : baseObject(baseObject), castsShadows(castsShadows)

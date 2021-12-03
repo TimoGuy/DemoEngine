@@ -44,7 +44,6 @@ public:
 
 
 	int debugCSMLayerNum = 0;
-	void requestSelectObject(bool isHoverEvent, ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation);
 
 	void recreateHDRBuffer();
 

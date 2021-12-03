@@ -12,11 +12,12 @@
 
 RiverDropoff::RiverDropoff()
 {
+	name = "River Dropoff Area";
+
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	imguiComponent = new RiverDropoffImgui(this, bounds);
 	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
 	renderComponent = new RiverDropoffRender(this, bounds);
 }
@@ -25,7 +26,6 @@ RiverDropoff::~RiverDropoff()
 {
 	delete renderComponent;
 	delete physicsComponent;
-	delete imguiComponent;
 
 	delete bounds;
 }
@@ -33,7 +33,6 @@ RiverDropoff::~RiverDropoff()
 void RiverDropoff::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
 	// I'll take the leftover tokens then
@@ -45,7 +44,6 @@ nlohmann::json RiverDropoff::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 
 	return j;
 }
@@ -125,11 +123,10 @@ void RiverDropoffRender::refreshResources()
 	model->setMaterials(materials);
 }
 
-void RiverDropoffImgui::propertyPanelImGui()
+void RiverDropoff::propertyPanelImGui()
 {
 }
 
-void RiverDropoffImgui::renderImGui()
+void RiverDropoff::renderImGui()
 {
-	ImGuiComponent::renderImGui();
 }

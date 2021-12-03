@@ -4,20 +4,6 @@
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
 
 
-class PointLightImGui : public ImGuiComponent
-{
-public:
-	PointLightImGui(BaseObject* bo, RenderAABB* bounds);
-
-	void propertyPanelImGui();
-	void renderImGui();
-
-private:
-	unsigned int lightGizmoTextureId;
-
-	void refreshResources();
-};
-
 class PointLightLight : public LightComponent
 {
 public:
@@ -54,13 +40,19 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;
 
-	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return lightComponent; }
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
 	RenderAABB* bounds;
+
+	void propertyPanelImGui();
+	void renderImGui();
+
+private:
+	unsigned int lightGizmoTextureId;
+
+	void refreshResources();
 };

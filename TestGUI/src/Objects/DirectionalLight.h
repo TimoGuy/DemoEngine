@@ -5,21 +5,6 @@
 
 #include <vector>
 
-		// TODO: pull out this object and place in the objects folder
-
-class DirectionalLightImGui : public ImGuiComponent
-{
-public:
-	DirectionalLightImGui(BaseObject* bo, RenderAABB* bounds);
-
-	void propertyPanelImGui();
-	void renderImGui();
-
-private:
-	unsigned int lightGizmoTextureId;
-
-	void refreshResources();
-};
 
 class DirectionalLightLight : public LightComponent
 {
@@ -62,13 +47,20 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	ImGuiComponent* imguiComponent;
 	LightComponent* lightComponent;
 
-	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return lightComponent; }
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
 	RenderAABB* bounds;
+
+
+	void propertyPanelImGui();
+	void renderImGui();
+
+private:
+	unsigned int lightGizmoTextureId;
+
+	void refreshResources();
 };

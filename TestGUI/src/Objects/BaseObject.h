@@ -9,7 +9,6 @@
 #include "../Utils/json.hpp"
 
 
-class ImGuiComponent;
 class LightComponent;
 class PhysicsComponent;
 class RenderComponent;
@@ -32,17 +31,19 @@ public:
 	virtual void loadPropertiesFromJson(nlohmann::json& object);
 	virtual nlohmann::json savePropertiesToJson();
 
-	virtual ImGuiComponent* getImguiComponent() = 0;
 	virtual LightComponent* getLightComponent() = 0;
 	virtual PhysicsComponent* getPhysicsComponent() = 0;
 	virtual RenderComponent* getRenderComponent() = 0;
 
+	virtual void propertyPanelImGui() {}
+	virtual void renderImGui() {}
 
 	glm::mat4& getTransform();
 	glm::mat4 getTransformWithoutScale();				// NOTE: this is not a getter; it computes the transform without the scale
 	void setTransform(glm::mat4 newTransform);
 
 	std::string guid;
+	std::string name;
 
 	//
 	// Callback functions (optional)
@@ -69,28 +70,6 @@ struct RenderAABB
 {
 	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
 	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
-};
-
-//
-// This indicates that imgui stuff will be drawn from this.
-//
-class ImGuiComponent
-{
-public:
-	BaseObject* baseObject;
-	RenderAABB* bounds;
-	std::string name;
-
-	ImGuiComponent(BaseObject* baseObject, RenderAABB* bounds, std::string name);
-	virtual ~ImGuiComponent();
-	virtual void propertyPanelImGui() {}
-	virtual void renderImGui();
-
-	virtual void loadPropertiesFromJson(nlohmann::json& object);
-	virtual nlohmann::json savePropertiesToJson();
-
-private:
-	bool clickPressedPrevious;
 };
 
 

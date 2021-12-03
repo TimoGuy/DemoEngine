@@ -916,35 +916,11 @@ void RenderManager::renderUI()
 	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
 }
 
-std::vector<size_t> requestedListObjectIndices;
-std::vector<PhysicsUtils::RaySegmentHit> requestedListHitInformations;
-int checkForRequestedObjects = 0;		// 0: false, 1: click event, 2: hover event
-void RenderManager::requestSelectObject(bool isHoverEvent, ImGuiComponent* imguiObject, PhysicsUtils::RaySegmentHit hitInformation)
-{
-	// Mark this as true just in case the user isn't clicking anything
-	checkForRequestedObjects = isHoverEvent ? 2 : 1;
-	if (!hitInformation.hit) return;
-	if (currentSelectedObjectIndex >= 0 &&
-		currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
-		MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex] == imguiObject)
-		return;
-
-	if (ImGui::GetIO().WantCaptureMouse ||
-		ImGuizmo::IsOver() ||
-		ImGuizmo::IsUsing())
-		return;
-
-	// Check if same reference via mem addr
-	for (size_t i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
-	{
-		if (MainLoop::getInstance().imguiObjects[i] == imguiObject)
-		{
-			requestedListObjectIndices.push_back(i);
-			requestedListHitInformations.push_back(hitInformation);
-			return;
-		}
-	}
-}
+// TODO: REMEMBER THIS!!!!
+//if (ImGui::GetIO().WantCaptureMouse ||
+//	ImGuizmo::IsOver() ||
+//	ImGuizmo::IsUsing())
+//	return;
 
 
 void RenderManager::renderImGuiPass()
@@ -1004,19 +980,19 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size()))
+				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
 				{
 					// NOTE: copypasta
-					nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
+					nlohmann::json j = MainLoop::getInstance().objects[currentSelectedObjectIndex]->savePropertiesToJson();
 					j["baseObject"].erase("guid");
 					FileLoading::getInstance().createObjectWithJson(j);
 
-					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
+					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
 				}
-				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size()))
+				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
 				{
 					// NOTE: This is copypasta
-					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
+					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
 					currentSelectedObjectIndex = -1;
 					currentHoveringObjectIndex = -1;
 				}
@@ -1183,57 +1159,9 @@ void RenderManager::renderImGuiContents()
 	//
 	// Everything else
 	//
-	for (unsigned int i = 0; i < MainLoop::getInstance().imguiObjects.size(); i++)
+	for (unsigned int i = 0; i < MainLoop::getInstance().objects.size(); i++)
 	{
-		MainLoop::getInstance().imguiObjects[i]->renderImGui();
-	}
-
-	if (checkForRequestedObjects != 0)		// NOTE: 1=clickevent, 2=hoverevent
-	{
-		if (!ImGuizmo::IsOver() && !ImGuizmo::IsUsing() && !ImGui::GetIO().WantCaptureMouse)
-		{
-			//
-			// Compare Z-index and see which is closest and select that one here
-			//
-			float_t closest = MainLoop::getInstance().camera.zFar;		// Set to max value of a raysegcast possible lol
-			size_t closestIndex = -1;
-			for (size_t i = 0; i < requestedListHitInformations.size(); i++)
-			{
-				if (!requestedListHitInformations[i].hit)
-					continue;
-
-				//std::cout << "HitDistance: " << requestedListHitInformations[i].distance << std::endl;
-
-				if (closest > requestedListHitInformations[i].distance)
-				{
-					closest = requestedListHitInformations[i].distance;
-					closestIndex = i;
-				}
-			}
-			if (closestIndex != -1)
-			{
-				if (checkForRequestedObjects == 1)
-					// Click Event
-					currentSelectedObjectIndex = (int)requestedListObjectIndices[closestIndex];
-				else if (checkForRequestedObjects == 2)
-					// Hover Event
-					currentHoveringObjectIndex = (int)requestedListObjectIndices[closestIndex];
-			}
-			else
-			{
-				if (checkForRequestedObjects == 1)
-					// (Click Event): Deselect if nothing was hit raycast-wise
-					currentSelectedObjectIndex = -1;
-				else if (checkForRequestedObjects == 2)
-					// (Hover Event): Unhover if nothing was hit raycast-wise
-					currentHoveringObjectIndex = -1;
-			}
-		}
-
-		// Reset flag
-		checkForRequestedObjects = 0;
-		requestedListHitInformations.clear();
-		requestedListObjectIndices.clear();
+		MainLoop::getInstance().objects[i]->renderImGui();
 	}
 
 	//
@@ -1250,7 +1178,7 @@ void RenderManager::renderImGuiContents()
 
 			GLFWwindow* windowRef = MainLoop::getInstance().window;
 			if (currentSelectedObjectIndex >= 0 &&
-				currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size() &&
+				currentSelectedObjectIndex < MainLoop::getInstance().objects.size() &&
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
@@ -1267,7 +1195,7 @@ void RenderManager::renderImGuiContents()
 				if (glfwGetKey(windowRef, GLFW_KEY_DELETE))
 				{
 					// NOTE: This is copypasta
-					delete MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject;
+					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
 					currentSelectedObjectIndex = -1;
 					currentHoveringObjectIndex = -1;			// NOTE: there is a bug where an array index exception is thrown once something is deleted but the hovering object index isn't reset
 				}
@@ -1284,11 +1212,11 @@ void RenderManager::renderImGuiContents()
 							objectDupeKeyboardShortcutLock = true;
 
 							// NOTE: copypasta
-							nlohmann::json j = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->savePropertiesToJson();
+							nlohmann::json j = MainLoop::getInstance().objects[currentSelectedObjectIndex]->savePropertiesToJson();
 							j["baseObject"].erase("guid");
 							FileLoading::getInstance().createObjectWithJson(j);
 
-							currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
+							currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
 						}
 					}
 					else
@@ -1301,11 +1229,11 @@ void RenderManager::renderImGuiContents()
 				//
 				// Display all of the objects in the scene
 				//
-				for (int n = 0; n < MainLoop::getInstance().imguiObjects.size(); n++)
+				for (int n = 0; n < MainLoop::getInstance().objects.size(); n++)
 				{
 					const bool isSelected = (currentSelectedObjectIndex == n);
 					if (ImGui::Selectable(
-						(MainLoop::getInstance().imguiObjects[n]->name + "##" + MainLoop::getInstance().imguiObjects[n]->baseObject->guid).c_str(),
+						(MainLoop::getInstance().objects[n]->name + "##" + MainLoop::getInstance().objects[n]->guid).c_str(),
 						isSelected
 					))
 						currentSelectedObjectIndex = n;
@@ -1336,7 +1264,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
 
 				if (newObject != nullptr)
-					currentSelectedObjectIndex = (int)MainLoop::getInstance().imguiObjects.size() - 1;
+					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
 
 				ImGui::EndPopup();
 			}
@@ -1391,8 +1319,8 @@ void RenderManager::renderImGuiContents()
 			//
 			ImGui::Separator();
 			if (currentSelectedObjectIndex >= 0 &&
-				currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size())
-				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->propertyPanelImGui();
+				currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+				MainLoop::getInstance().objects[currentSelectedObjectIndex]->propertyPanelImGui();
 			else
 				ImGui::Text("No object is currently selected");
 
@@ -1531,7 +1459,7 @@ void RenderManager::renderImGuiContents()
 	ImVec2 work_size = viewport->WorkSize;
 
 	if (currentSelectedObjectIndex >= 0 &&
-		currentSelectedObjectIndex < MainLoop::getInstance().imguiObjects.size())
+		currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
 	{
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
 		ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
@@ -1562,7 +1490,7 @@ void RenderManager::renderImGuiContents()
 
 		if (!MainLoop::getInstance().playMode)
 		{
-			glm::mat4 transformCopy1 = MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->getTransform();
+			glm::mat4 transformCopy1 = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
 			glm::mat4 transformCopy2 = transformCopy1;
 			ImGuizmo::Manipulate(
 				glm::value_ptr(cameraView),
@@ -1576,7 +1504,7 @@ void RenderManager::renderImGuiContents()
 
 			if (transformCopy1 != transformCopy2)
 			{
-				MainLoop::getInstance().imguiObjects[currentSelectedObjectIndex]->baseObject->setTransform(transformCopy1);
+				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(transformCopy1);
 			}
 		}
 	}

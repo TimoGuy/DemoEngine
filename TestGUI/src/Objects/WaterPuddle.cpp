@@ -13,11 +13,12 @@
 
 WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)
 {
+	name = "Water Puddle";
+
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(4.0f, 4.0f, 4.0f);
 
-	imguiComponent = new WaterPuddleImgui(this, bounds);
 	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
 	renderComponent = new WaterPuddleRender(this, bounds);
 }
@@ -26,7 +27,6 @@ WaterPuddle::~WaterPuddle()
 {
 	delete renderComponent;
 	delete physicsComponent;
-	delete imguiComponent;
 
 	delete bounds;
 }
@@ -34,7 +34,6 @@ WaterPuddle::~WaterPuddle()
 void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 
 	//
 	// I'll take the leftover tokens then
@@ -46,7 +45,6 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 
 	return j;
 }
@@ -180,13 +178,12 @@ void WaterPuddleRender::refreshResources()
 	model->setMaterials(materials);
 }
 
-void WaterPuddleImgui::propertyPanelImGui()
+void WaterPuddle::propertyPanelImGui()
 {
 	ImGui::Text("Model Offset ModelMatrix");
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)baseObject->getRenderComponent())->getOffsetModelMatrix()));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)renderComponent)->getOffsetModelMatrix()));
 }
 
-void WaterPuddleImgui::renderImGui()
+void WaterPuddle::renderImGui()
 {
-	ImGuiComponent::renderImGui();
 }

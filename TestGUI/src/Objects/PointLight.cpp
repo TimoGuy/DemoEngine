@@ -14,26 +14,27 @@
 
 PointLight::PointLight(bool castsShadows)
 {
+	name = "Point Light";
+
 	bounds = new RenderAABB();
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(0.5f);
 
-	imguiComponent = new PointLightImGui(this, bounds);
 	lightComponent = new PointLightLight(this, castsShadows);
 
 	lightComponent->facingDirection = glm::vec3(0.0f);		// 0'd out facingdirection shows it's a point light in-shader
+
+	refreshResources();
 }
 
 PointLight::~PointLight()
 {
 	delete lightComponent;
-	delete imguiComponent;
 }
 
 void PointLight::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-	imguiComponent->loadPropertiesFromJson(object["imguiComponent"]);
 	lightComponent->loadPropertiesFromJson(object["lightComponent"]);
 
 	//
@@ -50,7 +51,6 @@ nlohmann::json PointLight::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
-	j["imguiComponent"] = imguiComponent->savePropertiesToJson();
 	j["lightComponent"] = lightComponent->savePropertiesToJson();
 
 	j["color"] = { lightComponent->color.r, lightComponent->color.g, lightComponent->color.b };
@@ -59,12 +59,7 @@ nlohmann::json PointLight::savePropertiesToJson()
 	return j;
 }
 
-PointLightImGui::PointLightImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Point Light")			// tODO: create bounds for here
-{
-	refreshResources();
-}
-
-void PointLightImGui::refreshResources()
+void PointLight::refreshResources()
 {
 	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
 }
@@ -199,27 +194,27 @@ void PointLightLight::refreshResources()
 	pointLightShaderProgram = *(GLuint*)Resources::getResource("shader;pointLightShadowPass");
 }
 
-void PointLightImGui::propertyPanelImGui()
+void PointLight::propertyPanelImGui()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(baseObject->getTransform()));
+	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
 
-	ImGui::ColorEdit3("Light base color", &((PointLight*)baseObject)->lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
-	ImGui::DragFloat("Light color multiplier", &((PointLight*)baseObject)->lightComponent->colorIntensity);
+	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::DragFloat("Light color multiplier", &lightComponent->colorIntensity);
 
 	//
 	// Toggle shadows
 	//
-	std::string toggleShadowsLabel = "Turn " + std::string(((PointLight*)baseObject)->lightComponent->castsShadows ? "Off" : "On") + " Shadows";
+	std::string toggleShadowsLabel = "Turn " + std::string(lightComponent->castsShadows ? "Off" : "On") + " Shadows";
 	if (ImGui::Button(toggleShadowsLabel.c_str()))
 	{
-		baseObject->getLightComponent()->castsShadows = !baseObject->getLightComponent()->castsShadows;
-		((PointLightLight*)baseObject->getLightComponent())->refreshShadowBuffers();
+		lightComponent->castsShadows = !lightComponent->castsShadows;
+		((PointLightLight*)lightComponent)->refreshShadowBuffers();
 	}
 }
 
-void PointLightImGui::renderImGui()
+void PointLight::renderImGui()
 {
 #ifdef _DEBUG
 	refreshResources();
@@ -229,7 +224,7 @@ void PointLightImGui::renderImGui()
 	// Draw Light position			(TODO: This needs to get extracted into its own function)
 	//
 	float gizmoSize1to1 = 30.0f;
-	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(baseObject->getTransform()));
+	glm::vec3 lightPosOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(PhysicsUtils::getPosition(getTransform()));
 	float clipZ = lightPosOnScreen.z;
 
 
@@ -257,7 +252,5 @@ void PointLightImGui::renderImGui()
 		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
-	PhysicsUtils::imguiRenderCircle(baseObject->getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
-
-	ImGuiComponent::renderImGui();
+	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }

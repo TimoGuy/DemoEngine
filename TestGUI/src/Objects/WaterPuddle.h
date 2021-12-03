@@ -4,16 +4,6 @@
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
-class WaterPuddleImgui : public ImGuiComponent
-{
-public:
-	WaterPuddleImgui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Water Puddle") {}
-
-	void propertyPanelImGui();
-	void renderImGui();
-};
-
-
 class WaterPuddleRender : public RenderComponent
 {
 public:
@@ -46,11 +36,9 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	WaterPuddleImgui* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	WaterPuddleRender* renderComponent;
 
-	virtual WaterPuddleImgui* getImguiComponent() override { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	virtual WaterPuddleRender* getRenderComponent() override { return renderComponent; }
@@ -63,6 +51,9 @@ public:
 	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
+
+	void propertyPanelImGui();
+	void renderImGui();
 
 private:
 	bool beingTriggeredByPlayer = false;

@@ -6,14 +6,6 @@
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
 
-class YosemiteTerrainImGui : public ImGuiComponent
-{
-public:
-	YosemiteTerrainImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Yosemite Terrain") {}
-
-	void propertyPanelImGui();
-};
-
 class YosemiteTerrainRender : public RenderComponent
 {
 public:
@@ -47,16 +39,16 @@ public:
 
 	void physicsUpdate();
 
-	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
-	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
+
+	void propertyPanelImGui();
 
 	RenderAABB* bounds;
 

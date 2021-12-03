@@ -31,15 +31,6 @@ private:
 
 struct VirtualCamera;
 
-class PlayerImGui : public ImGuiComponent
-{
-public:
-	PlayerImGui(BaseObject* bo, RenderAABB* bounds) : ImGuiComponent(bo, bounds, "Player Controller") {}
-
-	void propertyPanelImGui();
-	void renderImGui();
-};
-
 class PlayerRender : public RenderComponent
 {
 public:
@@ -134,14 +125,15 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	ImGuiComponent* imguiComponent;
 	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
-	ImGuiComponent* getImguiComponent() { return imguiComponent; }
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	RenderAABB* bounds;
+
+	void propertyPanelImGui();
+	void renderImGui();
 };

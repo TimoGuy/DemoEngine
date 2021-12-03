@@ -71,8 +71,8 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 
 	// Get the bounds of the mesh and pass on to the physical bounds
 	physx::PxBounds3 boundsFromMesh = triMesh->getLocalBounds();
-	baseObject->getImguiComponent()->bounds->center = PhysicsUtils::toGLMVec3(boundsFromMesh.getCenter());
-	baseObject->getImguiComponent()->bounds->extents = PhysicsUtils::toGLMVec3(boundsFromMesh.getExtents());
+	baseObject->getRenderComponent()->bounds->center = PhysicsUtils::toGLMVec3(boundsFromMesh.getCenter());
+	baseObject->getRenderComponent()->bounds->extents = PhysicsUtils::toGLMVec3(boundsFromMesh.getExtents());
 
 	//
 	// Create the rigidbody actor!
