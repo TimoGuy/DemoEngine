@@ -47,7 +47,6 @@ private:
 	void loadModel(std::string path, std::vector<std::string> animationNames);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	std::vector<Texture> loadMaterialTextures(aiMaterial* material, aiTextureType type, std::string typeName);
 
 	void setVertexBoneDataToDefault(Vertex& vertex);
 	void addVertexBoneData(Vertex& vertex, int boneId, float boneWeight);

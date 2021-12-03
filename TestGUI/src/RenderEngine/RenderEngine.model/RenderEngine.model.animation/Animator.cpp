@@ -3,10 +3,10 @@
 #include <glm/gtx/quaternion.hpp>
 #include "../../../MainLoop/MainLoop.h"
 
-// @Debug: for seeing how long matrix updates occur
-#include <chrono>
-#include <iostream>
-#include <iomanip>
+//// @Debug: for seeing how long matrix updates occur
+//#include <chrono>
+//#include <iostream>
+//#include <iomanip>
 
 
 Animator::Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
