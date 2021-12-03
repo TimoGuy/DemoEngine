@@ -1,5 +1,8 @@
 #include "Camera.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
+
 #ifdef _DEBUG
 #include "../../ImGui/imgui.h"
 #endif

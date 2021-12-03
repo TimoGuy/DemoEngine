@@ -2,12 +2,13 @@
 
 #include <iostream>
 #include <glm/glm.hpp>
-#include <glad/glad.h>
 #include <string>
 #include <vector>
 #include <PxPhysicsAPI.h>
 #include "../Utils/json.hpp"
 
+
+typedef unsigned int GLuint;
 
 class LightComponent;
 class PhysicsComponent;

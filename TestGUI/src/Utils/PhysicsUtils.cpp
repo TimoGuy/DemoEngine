@@ -1,5 +1,7 @@
 #include "../Objects/BaseObject.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 #ifdef _DEBUG
 #include "../ImGui/imgui.h"
 #include "../ImGui/ImGuizmo.h"

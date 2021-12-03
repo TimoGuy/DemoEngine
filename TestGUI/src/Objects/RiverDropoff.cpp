@@ -1,5 +1,7 @@
 #include "RiverDropoff.h"
 
+#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"

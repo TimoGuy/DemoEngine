@@ -1,6 +1,9 @@
 #include "PlayerCharacter.h"
 
+#include <cmath>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
@@ -17,8 +20,6 @@
 #include "../ImGui/imgui.h"
 #include "../ImGui/imgui_stdlib.h"
 #endif
-
-#include <cmath>
 
 
 PlayerCharacter::PlayerCharacter()

@@ -2,7 +2,6 @@
 
 #include <string>
 #include <map>
-#include <glad/glad.h>
 
 
 namespace Resources

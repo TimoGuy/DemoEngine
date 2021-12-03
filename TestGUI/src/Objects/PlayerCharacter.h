@@ -1,10 +1,12 @@
 #pragma once
 
-#include <glad/glad.h>
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 #include "../RenderEngine/RenderEngine.camera/Camera.h"
+
+
+typedef unsigned int GLuint;
 
 //
 // TODO: place this class inside of somewhere!!!

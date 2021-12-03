@@ -1,8 +1,10 @@
 #include "DirectionalLight.h"
 
 #include <glad/glad.h>
-#include "../RenderEngine/RenderEngine.resources/Resources.h"
+#include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../MainLoop/MainLoop.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
@@ -13,7 +15,6 @@
 #endif
 
 #include "../Utils/PhysicsUtils.h"
-#include <glm/glm.hpp>
 
 
 static float multiplier = 2.0f;

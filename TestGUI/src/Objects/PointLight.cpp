@@ -1,9 +1,10 @@
 #include "PointLight.h"
 
 #include <glad/glad.h>
-#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "../MainLoop/MainLoop.h"
+#include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
 
 #ifdef _DEBUG

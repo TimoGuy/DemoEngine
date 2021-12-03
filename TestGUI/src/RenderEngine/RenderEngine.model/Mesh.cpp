@@ -4,6 +4,7 @@
 #include "../../MainLoop/MainLoop.h"
 #include "../RenderEngine.manager/RenderManager.h"
 
+
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const std::string& materialName)
 {
     Mesh::vertices = vertices;

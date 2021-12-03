@@ -1,10 +1,11 @@
 #pragma once
 
-#include <glad/glad.h>
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
 
+
+typedef unsigned int GLuint;
 
 class YosemiteTerrainRender : public RenderComponent
 {

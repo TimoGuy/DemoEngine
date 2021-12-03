@@ -1,5 +1,7 @@
 #include "WaterPuddle.h"
 
+#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"
 #include "../Utils/GameState.h"
@@ -8,7 +10,6 @@
 #include "Components/PhysicsComponents.h"
 #include "../RenderEngine/RenderEngine.resources/Resources.h"
 #include "../RenderEngine/RenderEngine.manager/RenderManager.h"
-#include <glm/gtc/type_ptr.hpp>
 
 
 WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)

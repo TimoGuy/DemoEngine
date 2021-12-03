@@ -4,6 +4,9 @@
 
 #include <string>
 #include <cmath>
+#include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
@@ -24,7 +27,7 @@
 
 #include <assimp/matrix4x4.h>
 
-
+// Characters yo
 #include "../../Objects/PlayerCharacter.h"
 #include "../../Objects/YosemiteTerrain.h"
 #include "../../Objects/DirectionalLight.h"

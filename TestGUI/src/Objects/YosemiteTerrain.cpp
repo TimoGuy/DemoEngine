@@ -1,6 +1,8 @@
 #include "YosemiteTerrain.h"
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "Components/PhysicsComponents.h"
 #include "../MainLoop/MainLoop.h"

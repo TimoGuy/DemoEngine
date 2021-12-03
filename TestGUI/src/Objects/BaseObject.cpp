@@ -3,6 +3,7 @@
 #include <sstream>
 #include <random>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "../MainLoop/MainLoop.h"
 #include "../Utils/PhysicsUtils.h"

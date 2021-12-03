@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <glad/glad.h>
 #include <stb/stb_image.h>
 
 #include "../RenderEngine.model/RenderEngine.model.animation/Animation.h"
