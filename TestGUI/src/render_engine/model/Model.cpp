@@ -22,11 +22,11 @@ Model::Model(const char* path, std::vector<std::string> animationNames)
 }
 
 
-void Model::render(const glm::mat4& modelMatrix, bool changeMaterial)
+void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].render(modelMatrix, changeMaterial, false);			// NOTE: at this stage, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
+		meshes[i].render(modelMatrix * localTransform, shaderIdOverride, false);			// NOTE: at this stage, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
 	}
 }
 
@@ -37,7 +37,7 @@ void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 		RenderAABB cookedBounds =
 			PhysicsUtils::fitAABB(
 				meshes[i].bounds,
-				trans
+				trans * localTransform
 			);
 
 		physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);

@@ -14,10 +14,9 @@ bool Material::resetFlag = false;
 // Helper funks
 //
 GLuint currentShaderId = 0;
-const glm::mat4* currentModelMatrix = nullptr;
 glm::mat3 currentSunSpinAmount;
 float mapInterpolationAmt = -1;
-void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
+void setupShader(GLuint shaderId)
 {
 	//
 	// Only update whatever is necessary (when shader changes, the uniforms need to be rewritten fyi)
@@ -32,15 +31,6 @@ void setupShader(GLuint shaderId, const glm::mat4* modelMatrix)
 		MainLoop::getInstance().renderManager->setupSceneLights(shaderId);			// tODO: I'd really like to move to UBO's so we don't have to do this anymore
 		
 		currentShaderId = shaderId;
-	}
-
-	// TODO: Get the modelMatrix setup stuff moved so that render(changeMaterial=true) doesn't have to set the model matrix... but it's a little more complicated, bc now you need the ref to the shaderid to grab the uniform location yo.
-	if (changeAll || currentModelMatrix != modelMatrix)
-	{
-		glUniformMatrix4fv(glGetUniformLocation(shaderId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(*modelMatrix));
-		glUniformMatrix3fv(glGetUniformLocation(shaderId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(*modelMatrix)))));
-
-		currentModelMatrix = modelMatrix;
 	}
 
 	const glm::mat3 sunSpinAmount = MainLoop::getInstance().renderManager->getSunSpinAmount();
@@ -74,9 +64,9 @@ Material::Material(unsigned int myShaderId, unsigned int albedoMap, unsigned int
 	Material::tilingAndOffset = offsetTiling;
 }
 
-void Material::applyTextureUniforms(const glm::mat4& modelMatrix)
+void Material::applyTextureUniforms()
 {
-	setupShader(myShaderId, &modelMatrix);
+	setupShader(myShaderId);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, albedoMap);
@@ -145,9 +135,9 @@ ZellyMaterial::ZellyMaterial(glm::vec3 color) :
 	isTransparent = true;
 }
 
-void ZellyMaterial::applyTextureUniforms(const glm::mat4& modelMatrix)
+void ZellyMaterial::applyTextureUniforms()
 {
-	setupShader(myShaderId, &modelMatrix);
+	setupShader(myShaderId);
 
 	glUniform3fv(glGetUniformLocation(myShaderId, "zellyColor"), 1, &color.x);
 

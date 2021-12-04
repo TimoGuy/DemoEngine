@@ -51,7 +51,7 @@ public:
 
 	Model* bottleModel;
 	std::map<std::string, Material*> bottleModelMaterials;
-	glm::mat4 bottleModelMatrix, bottleHandModelMatrix, finalBottleTransformMatrix;
+	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	float currentMaxCamDistance = 0;
 	float maxCamDistanceHoldTime = 2.0f, maxCamDistanceHoldTimer = 0;

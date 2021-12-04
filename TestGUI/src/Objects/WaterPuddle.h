@@ -13,16 +13,12 @@ public:
 	void render();
 	void renderShadow(GLuint programId);
 
-	inline glm::mat4& getOffsetModelMatrix() { return offsetModelMatrix; }
-
 private:
 	void refreshResources();
 
 	Model* model;
 	Animator animator;
 	std::map<std::string, Material*> materials;
-
-	glm::mat4 offsetModelMatrix;
 };
 
 class WaterPuddle : public BaseObject

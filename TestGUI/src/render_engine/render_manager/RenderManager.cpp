@@ -733,7 +733,7 @@ void RenderManager::renderScene()
 	for (size_t& index : transparentCommandingIndices)
 	{
 		updateSkeletalBonesUBO(transparentBoneMatrixMemAddrs[index]);
-		transparentMeshesToRender[index]->render(transparentModelMatrices[index], true, true);
+		transparentMeshesToRender[index]->render(transparentModelMatrices[index], 0, true);
 	}
 	transparentCommandingIndices.clear();
 	transparentMeshesToRender.clear();

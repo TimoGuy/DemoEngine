@@ -103,13 +103,12 @@ void RiverDropoffRender::render()
 	refreshResources();
 #endif
 
-	model->render(baseObject->getTransform(), true);
+	model->render(baseObject->getTransform(), 0);
 }
 
 void RiverDropoffRender::renderShadow(GLuint programId)
 {
-	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
-	model->render(baseObject->getTransform(), false);
+	model->render(baseObject->getTransform(), programId);
 }
 
 void RiverDropoffRender::refreshResources()

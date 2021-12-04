@@ -206,11 +206,6 @@ RenderComponent::~RenderComponent()
 	);
 }
 
-const glm::mat4& RenderComponent::getRenderTransform()
-{
-	return renderTransform;
-}
-
 void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
 {
 	previousTransform = currentTransform;

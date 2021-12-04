@@ -87,19 +87,15 @@ void WaterPuddle::collectWaterPuddle()
 	isWaterPuddleCollected = true;
 }
 
-WaterPuddleRender::WaterPuddleRender(BaseObject* bo) : RenderComponent(bo), offsetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0)))
+WaterPuddleRender::WaterPuddleRender(BaseObject* bo) : RenderComponent(bo)
 {
 	// Always load up the resources first dawg!
 	refreshResources();
+	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
 }
 
 void WaterPuddleRender::preRenderUpdate()
 {
-	//
-	// Update rendertransform
-	//
-	renderTransform = baseObject->getTransform() * offsetModelMatrix;
-
 	//
 	// Process Animations
 	//
@@ -141,7 +137,7 @@ void WaterPuddleRender::render()
 
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(renderTransform, true);
+	model->render(baseObject->getTransform(), 0);
 }
 
 void WaterPuddleRender::renderShadow(GLuint programId)
@@ -152,8 +148,7 @@ void WaterPuddleRender::renderShadow(GLuint programId)
 
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
-	model->render(renderTransform, false);
+	model->render(baseObject->getTransform(), programId);
 }
 
 void WaterPuddleRender::refreshResources()
@@ -176,8 +171,8 @@ void WaterPuddleRender::refreshResources()
 #ifdef _DEBUG
 void WaterPuddle::propertyPanelImGui()
 {
-	ImGui::Text("Model Offset ModelMatrix");
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)renderComponent)->getOffsetModelMatrix()));
+	//ImGui::Text("Model Offset ModelMatrix");
+	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)renderComponent)->getOffsetModelMatrix()));
 }
 
 void WaterPuddle::renderImGui()

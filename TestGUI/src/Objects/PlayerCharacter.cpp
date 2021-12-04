@@ -242,11 +242,8 @@ void PlayerRender::processMovement()
 
 	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
 
-	glm::vec3 modelPosition = PhysicsUtils::getPosition(baseObject->getTransform());
-	modelPosition.y += modelOffsetY;
-
-	renderTransform =
-		glm::translate(glm::mat4(1.0f), modelPosition) *
+	model->localTransform =
+		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
 		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
 }
@@ -586,22 +583,22 @@ void PlayerRender::processAnimation()
 			//
 			std::vector<glm::vec3> rightSideburnPoints;
 			const glm::vec4 neutralPosition(0, 0, 0, 1);
-			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
 			rightSideburn.initializePoints(rightSideburnPoints);
 
 			std::vector<glm::vec3> leftSideburnPoints;
-			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
 			leftSideburn.initializePoints(leftSideburnPoints);
 
 			std::vector<glm::vec3> backAttachmentPoints;
-			backAttachmentPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			backAttachmentPoints.push_back(getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
+			backAttachmentPoints.push_back(model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			backAttachmentPoints.push_back(model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
 			backAttachment.initializePoints(backAttachmentPoints);
 			backAttachment.limitTo45degrees = true;
 			
@@ -615,9 +612,9 @@ void PlayerRender::processAnimation()
 			// Just reset/lock the first bone
 			//
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
-			leftSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-			rightSideburn.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			backAttachment.setPointPosition(0, getRenderTransform() * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			leftSideburn.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			rightSideburn.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			backAttachment.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 			
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
@@ -626,7 +623,7 @@ void PlayerRender::processAnimation()
 			//
 			// Do ik calculations for sideburns
 			//
-			const glm::mat4 inverseRenderTransform = glm::inverse(getRenderTransform());
+			const glm::mat4 inverseRenderTransform = glm::inverse(model->localTransform);
 
 			const glm::vec3 r0 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(0), 1);
 			const glm::vec3 r1 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(1), 1);
@@ -667,11 +664,11 @@ void PlayerRender::processAnimation()
 
 	//
 	// Calculate the bottle transformation matrix
-	//
+	// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
 	if (animationState == 3 || animationState == 4 || animationState == 5)
-		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+		bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 	else
-		finalBottleTransformMatrix = renderTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+		bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
 }
@@ -700,8 +697,8 @@ void PlayerRender::render()
 	//
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(renderTransform, true);
-	bottleModel->render(finalBottleTransformMatrix, true);
+	model->render(baseObject->getTransform(), 0);
+	bottleModel->render(baseObject->getTransform(), 0);
 }
 
 void PlayerRender::renderShadow(GLuint programId)
@@ -712,10 +709,8 @@ void PlayerRender::renderShadow(GLuint programId)
 
 	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
 	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));			// @TODO: this shouldn't be here, and model->render should automatically take care of the modelMatrix!
-	model->render(renderTransform, false);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(finalBottleTransformMatrix));
-	bottleModel->render(finalBottleTransformMatrix, false);
+	model->render(baseObject->getTransform(), programId);
+	bottleModel->render(baseObject->getTransform(), programId);
 }
 
 void PlayerRender::TEMPrenderImguiModelBounds()

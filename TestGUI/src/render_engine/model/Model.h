@@ -7,8 +7,10 @@
 #include <map>
 
 #include "Mesh.h"
-class Animation;
 
+
+class Animation;
+typedef unsigned int GLuint;
 
 struct BoneInfo
 {
@@ -22,7 +24,7 @@ public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
 	Model(const char* path, std::vector<std::string> animationNames);
-	void render(const glm::mat4& modelMatrix, bool changeMaterial);
+	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride);
 
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);
 
@@ -33,6 +35,8 @@ public:
 	void setMaterials(std::map<std::string, Material*> materialMap);
 
 	const std::vector<Mesh>& getMeshes() { return meshes; }
+
+	glm::mat4 localTransform = glm::mat4(1.0f);
 
 private:
 	std::vector<Texture> loadedTextures;

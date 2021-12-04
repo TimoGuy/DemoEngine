@@ -1,6 +1,7 @@
 #include "Mesh.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 #include "../../mainloop/MainLoop.h"
 #include "../render_manager/RenderManager.h"
 
@@ -52,9 +53,12 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, bool changeMaterial, bool isTransparentQueue)
+void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, bool isTransparentQueue)
 {
-    if (changeMaterial)
+    bool shaderOverriden = (shaderIdOverride != 0);
+
+    // Apply material
+    if (!shaderOverriden)
     {
         if (material != nullptr)
         {
@@ -65,9 +69,17 @@ void Mesh::render(const glm::mat4& modelMatrix, bool changeMaterial, bool isTran
                 MainLoop::getInstance().renderManager->INTERNALaddTransparentMeshToDeferRender(this, modelMatrix);
                 return;
             }
-            material->applyTextureUniforms(modelMatrix);
+            material->applyTextureUniforms();
+
+            // Apply shaderId
+            shaderIdOverride = material->getShaderId();
         }
     }
+
+    // Apply the model matrix
+    glUniformMatrix4fv(glGetUniformLocation(shaderIdOverride, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    if (!shaderOverriden)
+        glUniformMatrix3fv(glGetUniformLocation(shaderIdOverride, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix)))));
 
     //
     // Draw the mesh

@@ -8,6 +8,7 @@
 
 #define MAX_BONE_INFLUENCE 4
 
+typedef unsigned int GLuint;
 
 //
 // This is an AABB struct used for strictly frustum culling.
@@ -41,7 +42,7 @@ public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName);
 	~Mesh();
 
-	void render(const glm::mat4& modelMatrix, bool changeMaterial, bool isTransparentQueue);
+	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, bool isTransparentQueue);
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 
