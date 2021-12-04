@@ -5,6 +5,7 @@
 #include "WaterPuddle.h"
 #include "RiverDropoff.h"
 
+// @Palette: this is where you dictate the json type of the object
 const std::string PlayerCharacter::TYPE_NAME =		"player";
 const std::string YosemiteTerrain::TYPE_NAME =		"ground";
 const std::string DirectionalLight::TYPE_NAME =		"dir_light";
