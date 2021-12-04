@@ -679,7 +679,7 @@ PlayerCharacter::~PlayerCharacter()
 	delete physicsComponent;
 }
 
-void PlayerRender::preRenderUpdate()
+void PlayerCharacter::preRenderUpdate()
 {
 	processMovement();
 	processActions();
@@ -713,13 +713,8 @@ void PlayerRender::renderShadow(GLuint programId)
 	bottleModel->render(baseObject->getTransform(), programId);
 }
 
-void PlayerRender::TEMPrenderImguiModelBounds()
-{
-	model->TEMPrenderImguiModelBounds(baseObject->getTransform());
-}
-
 #ifdef _DEBUG
-void PlayerCharacter::propertyPanelImGui()
+void PlayerCharacter::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
@@ -770,9 +765,8 @@ void PlayerCharacter::propertyPanelImGui()
 	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((PlayerRender*)baseObject->getRenderComponent())->bottleHandModelMatrix));
 }
 
-void PlayerCharacter::renderImGui()
+void PlayerCharacter::imguiRender()
 {
-	((PlayerRender*)getRenderComponent())->TEMPrenderImguiModelBounds();
 }
 #endif
 

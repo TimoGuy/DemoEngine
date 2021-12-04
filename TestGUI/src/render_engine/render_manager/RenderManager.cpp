@@ -1169,8 +1169,18 @@ void RenderManager::renderImGuiContents()
 	//
 	for (unsigned int i = 0; i < MainLoop::getInstance().objects.size(); i++)
 	{
-		MainLoop::getInstance().objects[i]->renderImGui();
+		MainLoop::getInstance().objects[i]->imguiRender();
 	}
+
+#ifdef _DEBUG
+	//
+	// Render bounds of all renderobjects
+	//
+	for (size_t i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+	{
+		MainLoop::getInstance().renderObjects[i]->TEMPrenderImguiModelBounds();
+	}
+#endif
 
 	//
 	// Object Selection Window
@@ -1328,7 +1338,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::Separator();
 			if (currentSelectedObjectIndex >= 0 &&
 				currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
-				MainLoop::getInstance().objects[currentSelectedObjectIndex]->propertyPanelImGui();
+				MainLoop::getInstance().objects[currentSelectedObjectIndex]->imguiPropertyPanel();
 			else
 				ImGui::Text("No object is currently selected");
 

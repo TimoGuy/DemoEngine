@@ -169,13 +169,13 @@ void WaterPuddleRender::refreshResources()
 }
 
 #ifdef _DEBUG
-void WaterPuddle::propertyPanelImGui()
+void WaterPuddle::imguiPropertyPanel()
 {
 	//ImGui::Text("Model Offset ModelMatrix");
 	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)renderComponent)->getOffsetModelMatrix()));
 }
 
-void WaterPuddle::renderImGui()
+void WaterPuddle::imguiRender()
 {
 }
 #endif

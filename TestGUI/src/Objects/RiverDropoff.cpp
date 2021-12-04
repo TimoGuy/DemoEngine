@@ -119,11 +119,11 @@ void RiverDropoffRender::refreshResources()
 }
 
 #ifdef _DEBUG
-void RiverDropoff::propertyPanelImGui()
+void RiverDropoff::imguiPropertyPanel()
 {
 }
 
-void RiverDropoff::renderImGui()
+void RiverDropoff::imguiRender()
 {
 }
 #endif

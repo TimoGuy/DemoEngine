@@ -50,7 +50,7 @@ public:
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
 
 #ifdef _DEBUG
-	void propertyPanelImGui();
+	void imguiPropertyPanel();
 #endif
 
 	// TODO: this should be private, with all the components just referring back to the single main one

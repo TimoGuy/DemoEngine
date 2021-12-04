@@ -9,7 +9,7 @@
 //#include <iomanip>
 
 
-Animator::Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf) : deltaTime(0.0f), animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
+Animator::Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf) : animations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
 {
 	playAnimation(0);
 
@@ -32,6 +32,8 @@ Animator::Animator(std::vector<Animation>* animations, const std::vector<std::st
 //size_t numCounts = 0;
 void Animator::updateAnimation(float deltaTime)
 {
+	deltaTime *= animationSpeed;
+
 #ifdef _DEBUG
 	// Don't run the animation update unless in playmode
 	if (!MainLoop::getInstance().playMode)
@@ -40,7 +42,6 @@ void Animator::updateAnimation(float deltaTime)
 
 	//auto start_time = std::chrono::high_resolution_clock::now();
 
-	Animator::deltaTime = deltaTime;
 	if (currentAnimation)
 	{
 		currentTime += currentAnimation->getTicksPerSecond() * deltaTime;
@@ -237,7 +238,7 @@ bool Animator::isAnimationFinished(size_t animationIndex, float deltaTime)
 	if (currentAnimationIndex != animationIndex)
 		return false;
 
-	float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime;
+	float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime * animationSpeed;
 	float duration = getCurrentAnimation()->getDuration();
 	return time >= duration;
 }

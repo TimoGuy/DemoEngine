@@ -26,7 +26,9 @@ public:
 	Model(const char* path, std::vector<std::string> animationNames);
 	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride);
 
+#ifdef _DEBUG
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);
+#endif
 
 	auto& getBoneInfoMap() { return boneInfoMap; }
 	int& getBoneCount() { return boneCounter; }

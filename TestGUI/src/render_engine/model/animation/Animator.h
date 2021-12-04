@@ -31,12 +31,14 @@ public:
 
 	bool isAnimationFinished(size_t animationIndex, float deltaTime);
 
+	float animationSpeed = 42.0f;
+
 private:
 	std::vector<glm::mat4> finalBoneMatrices;
 	Animation* currentAnimation, *nextAnimation;
 	std::vector<Animation>* animations;
 	float currentTime, nextTime, mixTime, totalMixTime;
-	float deltaTime;
+	//float deltaTime;
 
 	bool loopingCurrent = true, loopingNext = true;
 

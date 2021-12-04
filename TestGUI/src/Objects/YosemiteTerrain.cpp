@@ -144,7 +144,7 @@ void YosemiteTerrainRender::renderShadow(GLuint programId)
 }
 
 #ifdef _DEBUG
-void YosemiteTerrain::propertyPanelImGui()
+void YosemiteTerrain::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();

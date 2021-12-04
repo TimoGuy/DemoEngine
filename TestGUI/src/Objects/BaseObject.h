@@ -29,16 +29,18 @@ public:
 	BaseObject();
 	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
-	virtual void loadPropertiesFromJson(nlohmann::json& object);
-	virtual nlohmann::json savePropertiesToJson();
+	virtual void refreshResources() = 0;		// NOTE: this inserts in models, materials, etc. into the various components. This doesn't recreate the physics shapes or anything.
+
+	virtual void loadPropertiesFromJson(nlohmann::json& object) = 0;
+	virtual nlohmann::json savePropertiesToJson() = 0;
 
 	virtual LightComponent* getLightComponent() = 0;
 	virtual PhysicsComponent* getPhysicsComponent() = 0;
 	virtual RenderComponent* getRenderComponent() = 0;
 
 #ifdef _DEBUG
-	virtual void propertyPanelImGui() {}
-	virtual void renderImGui() {}
+	virtual void imguiPropertyPanel() {}
+	virtual void imguiRender() {}
 #endif
 
 	glm::mat4& getTransform();
@@ -51,6 +53,7 @@ public:
 	//
 	// Callback functions (optional)
 	//
+	virtual void preRenderUpdate() {};
 	virtual void physicsUpdate() {}
 	virtual void onTrigger(const physx::PxTriggerPair& pair) {}
 
@@ -125,15 +128,33 @@ protected:
 // This indicates that the object wants to be rendered.
 // Will be added into the renderobjects queue.
 //
-class RenderComponent
+class Model;
+struct ModelWithMetadata
+{
+	Model* model;
+	bool renderModelInShadow;
+	Animator* modelAnimator;
+};
+
+class RenderComponent final
 {
 public:
 	BaseObject* baseObject;
 
 	RenderComponent(BaseObject* baseObject);
-	virtual ~RenderComponent();
+	~RenderComponent();
 
-	virtual void preRenderUpdate() = 0;
-	virtual void render() = 0;
-	virtual void renderShadow(GLuint programId) = 0;
+	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
+
+	void render();
+	void renderShadow(GLuint programId);
+
+#ifdef _DEBUG
+	void TEMPrenderImguiModelBounds();
+#endif
+
+private:
+	std::vector<ModelWithMetadata> modelsWithMetadata;
+
+	void refreshResources();
 };

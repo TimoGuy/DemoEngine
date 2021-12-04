@@ -195,7 +195,7 @@ void PointLightLight::refreshResources()
 }
 
 #ifdef _DEBUG
-void PointLight::propertyPanelImGui()
+void PointLight::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
@@ -215,7 +215,7 @@ void PointLight::propertyPanelImGui()
 	}
 }
 
-void PointLight::renderImGui()
+void PointLight::imguiRender()
 {
 	refreshResources();
 

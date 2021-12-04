@@ -9,6 +9,7 @@
 #include "../utils/PhysicsUtils.h"
 #include "../utils/Utils.h"
 #include "../render_engine/render_manager/RenderManager.h"
+#include "../render_engine/model/animation/Animator.h"
 
 
 //
@@ -34,6 +35,45 @@ std::string generate_hex(const uint32_t len)
 		ss << (hex.length() < 2 ? '0' + hex : hex);
 	}
 	return ss.str();
+}
+
+void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
+{
+	previousTransform = currentTransform;
+	currentTransform = newTransform;
+}
+
+glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
+{
+	// Easy out
+	if (currentTransform == previousTransform)
+		return currentTransform;
+
+	// Easy out2
+	if (alpha >= 1.0f)
+		return currentTransform;
+	if (alpha <= 0.0f)
+		return previousTransform;
+
+	glm::vec3 scale1;
+	glm::quat rotation1;
+	glm::vec3 translation1;
+	glm::vec3 skew1;
+	glm::vec4 perspective1;
+	glm::decompose(currentTransform, scale1, rotation1, translation1, skew1, perspective1);				// NOTE: I'm banking that this is faster than using my algorithms bc of SIMD
+	glm::vec3 scale2;
+	glm::quat rotation2;
+	glm::vec3 translation2;
+	glm::vec3 skew2;
+	glm::vec4 perspective2;
+	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
+
+	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
+	glm::quat rotation = glm::slerp(rotation2, rotation1, alpha);
+	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
+
+	// Compose all these together (trans * rot * scale)
+	return glm::scale(glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation), scale);
 }
 
 BaseObject::BaseObject()
@@ -191,6 +231,7 @@ void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 
 RenderComponent::RenderComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
+	refreshResources();
 	MainLoop::getInstance().renderObjects.push_back(this);
 }
 
@@ -206,41 +247,58 @@ RenderComponent::~RenderComponent()
 	);
 }
 
-void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
+void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadata)
 {
-	previousTransform = currentTransform;
-	currentTransform = newTransform;
+	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
-glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
+void RenderComponent::render()								// @Copypasta
 {
-	// Easy out
-	if (currentTransform == previousTransform)
-		return currentTransform;
+#ifdef _DEBUG
+	refreshResources();
+#endif
 
-	// Easy out2
-	if (alpha >= 1.0f)
-		return currentTransform;
-	if (alpha <= 0.0f)
-		return previousTransform;
+	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
+	{
+		ModelWithMetadata& mwmd = modelsWithMetadata[i];
+		if (mwmd.modelAnimator != nullptr)
+		{
+			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
+			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
+		}
+		mwmd.model->render(baseObject->getTransform(), 0);
+	}
+}
 
-	glm::vec3 scale1;
-	glm::quat rotation1;
-	glm::vec3 translation1;
-	glm::vec3 skew1;
-	glm::vec4 perspective1;
-	glm::decompose(currentTransform, scale1, rotation1, translation1, skew1, perspective1);				// NOTE: I'm banking that this is faster than using my algorithms bc of SIMD
-	glm::vec3 scale2;
-	glm::quat rotation2;
-	glm::vec3 translation2;
-	glm::vec3 skew2;
-	glm::vec4 perspective2;
-	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
+void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
+{
+#ifdef _DEBUG
+	refreshResources();
+#endif
 
-	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
-	glm::quat rotation = glm::slerp(rotation2, rotation1, alpha);
-	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
+	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
+	{
+		ModelWithMetadata& mwmd = modelsWithMetadata[i];
+		if (mwmd.modelAnimator != nullptr)
+		{
+			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
+			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
+		}
+		mwmd.model->render(baseObject->getTransform(), programId);
+	}
+}
 
-	// Compose all these together (trans * rot * scale)
-	return glm::scale(glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation), scale);
+#ifdef _DEBUG
+void RenderComponent::TEMPrenderImguiModelBounds()
+{
+	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
+	{
+		modelsWithMetadata[i].model->TEMPrenderImguiModelBounds(baseObject->getTransform());
+	}
+}
+#endif
+
+void RenderComponent::refreshResources()
+{
+	baseObject->refreshResources();
 }

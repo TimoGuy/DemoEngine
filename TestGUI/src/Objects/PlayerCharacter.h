@@ -39,11 +39,8 @@ public:
 	PlayerRender(BaseObject* bo);
 	~PlayerRender();
 
-	void preRenderUpdate();
 	void render();
 	void renderShadow(GLuint programId);
-
-	void TEMPrenderImguiModelBounds();
 
 	Model* model;
 	Animator animator;
@@ -136,8 +133,10 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
+	void preRenderUpdate();
+
 #ifdef _DEBUG
-	void propertyPanelImGui();
-	void renderImGui();
+	void imguiPropertyPanel();
+	void imguiRender();
 #endif
 };

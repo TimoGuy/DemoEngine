@@ -30,6 +30,7 @@ void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride)
 	}
 }
 
+#ifdef _DEBUG
 void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 {
 	for (size_t i = 0; i < meshes.size(); i++)
@@ -48,6 +49,7 @@ void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 		);
 	}
 }
+#endif
 
 void Model::setMaterials(std::map<std::string, Material*> materialMap)
 {

@@ -362,7 +362,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 }
 
 #ifdef _DEBUG
-void DirectionalLight::propertyPanelImGui()
+void DirectionalLight::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);
 	ImGui::Separator();
@@ -407,7 +407,7 @@ void DirectionalLight::propertyPanelImGui()
 	}
 }
 
-void DirectionalLight::renderImGui()
+void DirectionalLight::imguiRender()
 {
 	refreshResources();
 

@@ -47,8 +47,8 @@ public:
 	RenderComponent* getRenderComponent() { return nullptr; }
 
 #ifdef _DEBUG
-	void propertyPanelImGui();
-	void renderImGui();
+	void imguiPropertyPanel();
+	void imguiRender();
 #endif
 
 private:
