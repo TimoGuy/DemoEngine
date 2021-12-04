@@ -103,6 +103,8 @@
     <ClCompile Include="src\objects\WaterPuddle.cpp" />
     <ClCompile Include="src\objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\objects\PointLight.cpp" />
+    <ClCompile Include="src\render_engine\camera\Camera.cpp" />
+    <ClCompile Include="src\render_engine\light\LightManager.cpp" />
     <ClCompile Include="src\render_engine\material\Material.cpp" />
     <ClCompile Include="src\render_engine\resources\Resources.cpp" />
     <ClCompile Include="src\utils\tinyfiledialogs.c" />
@@ -126,7 +128,6 @@
     <ClCompile Include="src\render_engine\model\Mesh.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\render_engine\camera\Camera.cpp" />
     <ClCompile Include="src\render_engine\render_manager\RenderManager.cpp" />
     <ClCompile Include="src\stb.cpp" />
     <ClCompile Include="src\utils\Utils.cpp" />
@@ -177,6 +178,8 @@
     <ClInclude Include="src\objects\components\PhysicsComponents.h" />
     <ClInclude Include="src\objects\RiverDropoff.h" />
     <ClInclude Include="src\objects\WaterPuddle.h" />
+    <ClInclude Include="src\render_engine\camera\Camera.h" />
+    <ClInclude Include="src\render_engine\light\LightManager.h" />
     <ClInclude Include="src\render_engine\material\Material.h" />
     <ClInclude Include="src\utils\GameState.h" />
     <ClInclude Include="src\utils\InputManager.h" />
@@ -206,7 +209,6 @@
     <ClInclude Include="src\imgui\imstb_truetype.h" />
     <ClInclude Include="src\render_engine\model\Model.h" />
     <ClInclude Include="src\render_engine\model\Mesh.h" />
-    <ClInclude Include="src\render_engine\camera\Camera.h" />
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
     <ClInclude Include="src\utils\Utils.h" />

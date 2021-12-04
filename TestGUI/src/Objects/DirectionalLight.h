@@ -53,8 +53,6 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
-	RenderAABB* bounds;
-
 #ifdef _DEBUG
 	void propertyPanelImGui();
 	void renderImGui();

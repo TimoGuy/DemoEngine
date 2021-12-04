@@ -20,7 +20,7 @@ RiverDropoff::RiverDropoff()
 	bounds->center = glm::vec3(0.0f);
 	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
 
-	physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
+	physicsComponent = new BoxCollider(this, glm::vec3(1.0f), RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
 	renderComponent = new RiverDropoffRender(this, bounds);
 }
 

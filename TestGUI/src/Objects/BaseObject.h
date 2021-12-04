@@ -66,15 +66,6 @@ private:
 	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
-//
-// @Cleanup: Random util struct of an AABB that's useful for object selection for imgui and frustum culling
-//
-struct RenderAABB
-{
-	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
-	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
-};
-
 
 //
 // This indicates that a light is extractable
@@ -127,6 +118,16 @@ public:
 
 protected:
 	physx::PxRigidActor* body;
+};
+
+
+//
+// This is an AABB struct used for strictly frustum culling.
+//
+struct RenderAABB
+{
+	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
+	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
 };
 
 

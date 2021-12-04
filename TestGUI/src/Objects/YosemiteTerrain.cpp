@@ -104,7 +104,7 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 	if (modelResourceName == "model;cube")
 	{
 		// TODO: Figure out how to get camera zoom in to work with kinematic types too!!!!
-		physicsComponent = new BoxCollider(this, bounds, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
+		physicsComponent = new BoxCollider(this, bounds->extents, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 	}
 	else
 	{

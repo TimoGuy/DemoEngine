@@ -20,10 +20,6 @@ PointLight::PointLight(bool castsShadows)
 {
 	name = "Point Light";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(0.5f);
-
 	lightComponent = new PointLightLight(this, castsShadows);
 
 	lightComponent->facingDirection = glm::vec3(0.0f);		// 0'd out facingdirection shows it's a point light in-shader

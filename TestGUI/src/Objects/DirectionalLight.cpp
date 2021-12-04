@@ -24,10 +24,6 @@ DirectionalLight::DirectionalLight(bool castsShadows)
 {
 	name = "Directional Light";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(0.5f);
-
 	lightComponent = new DirectionalLightLight(this, castsShadows);
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));

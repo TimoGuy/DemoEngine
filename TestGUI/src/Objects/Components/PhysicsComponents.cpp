@@ -119,12 +119,12 @@ physx::PxTransform TriangleMeshCollider::getGlobalPose()
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // BoxCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-BoxCollider::BoxCollider(BaseObject* bo, RenderAABB* bounds, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), bounds(bounds), shapeType(shapeType)
+BoxCollider::BoxCollider(BaseObject* bo, const glm::vec3& extents, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), extents(extents), shapeType(shapeType)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(baseObject->getTransform());
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-	glm::vec3 realExtents = bounds->extents * scale;
+	glm::vec3 realExtents = extents * scale;
 
 	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
@@ -152,7 +152,7 @@ void BoxCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 {
 	glm::vec3 scale = PhysicsUtils::getScale(newTransform);
-	glm::vec3 realExtents = bounds->extents * scale;
+	glm::vec3 realExtents = extents * scale;
 
 	//
 	// TODO: change to: Get, then move shape
