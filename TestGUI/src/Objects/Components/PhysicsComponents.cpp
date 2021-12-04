@@ -1,9 +1,9 @@
 #include "PhysicsComponents.h"
 
-#include "../../MainLoop/MainLoop.h"
-#include "../../Utils/PhysicsUtils.h"
-#include "../../Utils/GameState.h"
-#include "../../RenderEngine/RenderEngine.model/Model.h"
+#include "../../mainloop/MainLoop.h"
+#include "../../utils/PhysicsUtils.h"
+#include "../../utils/GameState.h"
+#include "../../render_engine/model/Model.h"
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------

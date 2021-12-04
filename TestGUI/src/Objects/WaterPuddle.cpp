@@ -2,14 +2,14 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-#include "../MainLoop/MainLoop.h"
-#include "../Utils/PhysicsUtils.h"
-#include "../Utils/GameState.h"
-#include "../Utils/InputManager.h"
-#include "../Utils/Messages.h"
-#include "Components/PhysicsComponents.h"
-#include "../RenderEngine/RenderEngine.resources/Resources.h"
-#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
+#include "../mainloop/MainLoop.h"
+#include "../utils/PhysicsUtils.h"
+#include "../utils/GameState.h"
+#include "../utils/InputManager.h"
+#include "../utils/Messages.h"
+#include "components/PhysicsComponents.h"
+#include "../render_engine/resources/Resources.h"
+#include "../render_engine/render_manager/RenderManager.h"
 
 
 WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)

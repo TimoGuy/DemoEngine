@@ -4,14 +4,14 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
-#include "Components/PhysicsComponents.h"
-#include "../MainLoop/MainLoop.h"
-#include "../RenderEngine/RenderEngine.resources/Resources.h"
-#include "../Utils/PhysicsUtils.h"
+#include "components/PhysicsComponents.h"
+#include "../mainloop/MainLoop.h"
+#include "../render_engine/resources/Resources.h"
+#include "../utils/PhysicsUtils.h"
 
 #ifdef _DEBUG
-#include "../ImGui/imgui.h"
-#include "../ImGui/imgui_stdlib.h"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_stdlib.h"
 #endif
 
 

@@ -9,9 +9,9 @@
 #include <map>
 #include <vector>
 
-#include "../../Objects/BaseObject.h"
+#include "../../objects/BaseObject.h"
 
-#include "../RenderEngine.camera/Camera.h"
+#include "../camera/Camera.h"
 
 
 typedef unsigned int GLuint;

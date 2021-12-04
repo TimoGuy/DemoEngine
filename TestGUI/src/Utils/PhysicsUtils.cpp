@@ -1,14 +1,15 @@
-#include "../Objects/BaseObject.h"
+#include "../objects/BaseObject.h"
 
 #include <glm/gtx/quaternion.hpp>
 
 #ifdef _DEBUG
-#include "../ImGui/imgui.h"
-#include "../ImGui/ImGuizmo.h"
+#include "../imgui/imgui.h"
+#include "../imgui/ImGuizmo.h"
 #endif
 
 #include "PhysicsUtils.h"
-#include "../MainLoop/MainLoop.h"
+
+#include "../mainloop/MainLoop.h"
 
 
 namespace PhysicsUtils

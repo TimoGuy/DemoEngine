@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../BaseObject.h"
-#include "../../Utils/PhysicsTypes.h"
+#include "../../utils/PhysicsTypes.h"
 
 
 class Model;

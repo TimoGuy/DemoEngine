@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
-#include "../RenderEngine.model/RenderEngine.model.animation/Animation.h"
+#include "../model/animation/Animation.h"
 
 
 void* findResource(const std::string& resourceName);
@@ -389,24 +389,24 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// NOTE: this is gonna be a huge function btw
 	//
-	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "pbr.frag");
-	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "pbr.vert", "zelly.frag");
-	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "vertex.vert", "fragment.frag");
-	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "model.vert", "model.frag");
-	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "skybox.frag");
-	if (resourceName == "shader;shadowPass")							return loadShaderProgramVF(resourceName, isUnloading, "shadow.vert", "do_nothing.frag");
-	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "csm_shadow.vert", "csm_shadow.geom", "do_nothing.frag");
-	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "point_shadow.vert", "point_shadow.geom", "point_shadow.frag");
-	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "debug_csm.vert", "debug_csm.frag");
-	if (resourceName == "shader;shadowPassSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "shadow_skinned.vert", "do_nothing.frag");
-	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "text.vert", "text.frag");
-	//if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "hdri_equirectangular.frag");
-	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "irradiance_convolution.frag");
-	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "cubemap.vert", "prefilter.frag");
-	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "brdf.vert", "brdf.frag");
-	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "bloom_postprocessing.vert", "bloom_postprocessing.frag");
-	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "postprocessing.vert", "postprocessing.frag");
-	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "hudUI.vert", "hudUI.frag");
+	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/pbr.frag");
+	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/zelly.frag");
+	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "shaders/vertex.vert", "shaders/fragment.frag");
+	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/model.vert", "shaders/model.frag");
+	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shaders/cubemap.vert", "shaders/skybox.frag");
+	if (resourceName == "shader;shadowPass")							return loadShaderProgramVF(resourceName, isUnloading, "shaders/shadow.vert", "shaders/do_nothing.frag");
+	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shaders/csm_shadow.vert", "shaders/csm_shadow.geom", "shaders/do_nothing.frag");
+	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shaders/point_shadow.vert", "shaders/point_shadow.geom", "shaders/point_shadow.frag");
+	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shaders/debug_csm.vert", "shaders/debug_csm.frag");
+	if (resourceName == "shader;shadowPassSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/shadow_skinned.vert", "shaders/do_nothing.frag");
+	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/text.vert", "shaders/text.frag");
+	//if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/cubemap.vert", "shaders/hdri_equirectangular.frag");
+	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shaders/cubemap.vert", "shaders/irradiance_convolution.frag");
+	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shaders/cubemap.vert", "shaders/prefilter.frag");
+	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/brdf.vert", "shaders/brdf.frag");
+	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shaders/bloom_postprocessing.vert", "shaders/bloom_postprocessing.frag");
+	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/postprocessing.vert", "shaders/postprocessing.frag");
+	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/hudUI.vert", "shaders/hudUI.frag");
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 

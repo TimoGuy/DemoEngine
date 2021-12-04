@@ -2,9 +2,9 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-#include "../RenderEngine.resources/Resources.h"
-#include "../RenderEngine.manager/RenderManager.h"
-#include "../../MainLoop/MainLoop.h"
+#include "../resources/Resources.h"
+#include "../render_manager/RenderManager.h"
+#include "../../mainloop/MainLoop.h"
 
 #include <iostream>
 

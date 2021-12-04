@@ -1,7 +1,7 @@
 #include "Animator.h"
 
 #include <glm/gtx/quaternion.hpp>
-#include "../../../MainLoop/MainLoop.h"
+#include "../../../mainloop/MainLoop.h"
 
 //// @Debug: for seeing how long matrix updates occur
 //#include <chrono>

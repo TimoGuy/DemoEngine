@@ -1,6 +1,6 @@
 #include "RenderManager.h"
 
-#include "../../MainLoop/MainLoop.h"
+#include "../../mainloop/MainLoop.h"
 
 #include <string>
 #include <cmath>
@@ -14,26 +14,26 @@
 #include FT_FREETYPE_H
 
 #ifdef _DEBUG
-#include "../../ImGui/imgui.h"
-#include "../../ImGui/imgui_impl_glfw.h"
-#include "../../ImGui/imgui_impl_opengl3.h"
-#include "../../ImGui/ImGuizmo.h"
+#include "../../imgui/imgui.h"
+#include "../../imgui/imgui_impl_glfw.h"
+#include "../../imgui/imgui_impl_opengl3.h"
+#include "../../imgui/ImGuizmo.h"
 #endif
 
-#include "../RenderEngine.resources/Resources.h"
-#include "../../Utils/FileLoading.h"
-#include "../../Utils/PhysicsUtils.h"
-#include "../../Utils/GameState.h"
+#include "../resources/Resources.h"
+#include "../../utils/FileLoading.h"
+#include "../../utils/PhysicsUtils.h"
+#include "../../utils/GameState.h"
 
 #include <assimp/matrix4x4.h>
 
 // Characters yo
-#include "../../Objects/PlayerCharacter.h"
-#include "../../Objects/YosemiteTerrain.h"
-#include "../../Objects/DirectionalLight.h"
-#include "../../Objects/PointLight.h"
-#include "../../Objects/WaterPuddle.h"
-#include "../../Objects/RiverDropoff.h"
+#include "../../objects/PlayerCharacter.h"
+#include "../../objects/YosemiteTerrain.h"
+#include "../../objects/DirectionalLight.h"
+#include "../../objects/PointLight.h"
+#include "../../objects/WaterPuddle.h"
+#include "../../objects/RiverDropoff.h"
 
 
 void renderCube();

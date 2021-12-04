@@ -3,19 +3,19 @@
 #include <vector>
 #include <thread>
 #include <glad/glad.h>
-#include "../Objects/BaseObject.h"
-#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
-#include "../RenderEngine/RenderEngine.camera/Camera.h"
+#include "../objects/BaseObject.h"
+#include "../render_engine/render_manager/RenderManager.h"
+#include "../render_engine/camera/Camera.h"
 
 #ifdef _DEBUG
-#include "../ImGui/imgui.h"
-#include "../ImGui/imgui_impl_glfw.h"
-#include "../ImGui/imgui_impl_opengl3.h"
-#include "../ImGui/ImGuizmo.h"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_impl_glfw.h"
+#include "../imgui/imgui_impl_opengl3.h"
+#include "../imgui/ImGuizmo.h"
 #endif
 
-#include "../Utils/InputManager.h"
-#include "../Utils/FileLoading.h"
+#include "../utils/InputManager.h"
+#include "../utils/FileLoading.h"
 
 
 #define PHYSX_VISUALIZATION 1

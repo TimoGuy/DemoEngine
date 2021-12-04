@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <PxPhysicsAPI.h>
-#include "../Utils/json.hpp"
+#include "../utils/json.hpp"
 
 
 typedef unsigned int GLuint;

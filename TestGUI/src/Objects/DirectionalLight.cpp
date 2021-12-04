@@ -4,17 +4,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "../RenderEngine/RenderEngine.resources/Resources.h"
-#include "../MainLoop/MainLoop.h"
-#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
+#include "../mainloop/MainLoop.h"
+#include "../render_engine/resources/Resources.h"
+#include "../render_engine/render_manager/RenderManager.h"
 
 #ifdef _DEBUG
-#include "../ImGui/imgui.h"
-#include "../ImGui/imgui_stdlib.h"
-#include "../ImGui/ImGuizmo.h"
+#include "../imgui/imgui.h"
+#include "../imgui/imgui_stdlib.h"
+#include "../imgui/ImGuizmo.h"
 #endif
 
-#include "../Utils/PhysicsUtils.h"
+#include "../utils/PhysicsUtils.h"
 
 
 static float multiplier = 2.0f;

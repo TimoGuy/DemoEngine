@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
+#include "../render_engine/model/animation/Animator.h"
 
 
 class WaterPuddleRender : public RenderComponent

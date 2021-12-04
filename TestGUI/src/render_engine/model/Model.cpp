@@ -4,7 +4,7 @@
 #include <assimp/postprocess.h>
 #include <iostream>
 
-#include "RenderEngine.model.animation/Animation.h"
+#include "animation/Animation.h"
 
 
 Model::Model() { scene = nullptr; }

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "../RenderEngine.material/Material.h"
+#include "../material/Material.h"
 
 #define MAX_BONE_INFLUENCE 4
 

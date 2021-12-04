@@ -5,10 +5,10 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-#include "../MainLoop/MainLoop.h"
-#include "../Utils/PhysicsUtils.h"
-#include "../Utils/Utils.h"
-#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
+#include "../mainloop/MainLoop.h"
+#include "../utils/PhysicsUtils.h"
+#include "../utils/Utils.h"
+#include "../render_engine/render_manager/RenderManager.h"
 
 
 //

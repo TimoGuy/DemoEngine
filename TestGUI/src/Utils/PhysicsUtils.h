@@ -5,7 +5,7 @@
 #include <PxPhysicsAPI.h>
 
 #ifdef _DEBUG
-#include "../ImGui/imgui.h"
+#include "../imgui/imgui.h"
 #endif
 
 #include "PhysicsTypes.h"

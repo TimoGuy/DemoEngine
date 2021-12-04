@@ -2,8 +2,8 @@
 
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
-#include "../RenderEngine/RenderEngine.model/RenderEngine.model.animation/Animator.h"
-#include "../RenderEngine/RenderEngine.camera/Camera.h"
+#include "../render_engine/model/animation/Animator.h"
+#include "../render_engine/camera/Camera.h"
 
 
 typedef unsigned int GLuint;

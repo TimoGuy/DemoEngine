@@ -4,13 +4,13 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #ifdef _DEBUG
-#include "../../ImGui/imgui.h"
+#include "../../imgui/imgui.h"
 #endif
 
-#include "../../Objects/BaseObject.h"
-#include "../../Utils/PhysicsUtils.h"
+#include "../../objects/BaseObject.h"
+#include "../../utils/PhysicsUtils.h"
 
-#include "../../MainLoop/MainLoop.h"
+#include "../../mainloop/MainLoop.h"
 
 #include <iostream>
 

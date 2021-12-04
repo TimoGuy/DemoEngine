@@ -1,8 +1,8 @@
 #include "InputManager.h"
 
-#include "../MainLoop/MainLoop.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "../mainloop/MainLoop.h"
 
 
 void joystickCallback(int jid, int event);

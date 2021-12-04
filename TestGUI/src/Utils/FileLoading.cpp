@@ -1,22 +1,22 @@
 #include "FileLoading.h"
-#include "../TinyFileDialogs/tinyfiledialogs.h"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 
-#include "../MainLoop/MainLoop.h"
-#include "../RenderEngine/RenderEngine.manager/RenderManager.h"
+#include "../mainloop/MainLoop.h"
+#include "../render_engine/render_manager/RenderManager.h"
 
-#include "../Objects/BaseObject.h"
-#include "../Objects/YosemiteTerrain.h"
-#include "../Objects/PlayerCharacter.h"
-#include "../Objects/DirectionalLight.h"
-#include "../Objects/PointLight.h"
-#include "../Objects/WaterPuddle.h"
-#include "../Objects/RiverDropoff.h"
+#include "../objects/BaseObject.h"
+#include "../objects/YosemiteTerrain.h"
+#include "../objects/PlayerCharacter.h"
+#include "../objects/DirectionalLight.h"
+#include "../objects/PointLight.h"
+#include "../objects/WaterPuddle.h"
+#include "../objects/RiverDropoff.h"
 
-#include "../Utils/Utils.h"
+#include "tinyfiledialogs.h"
+#include "Utils.h"
 
 
 FileLoading& FileLoading::getInstance()

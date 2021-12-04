@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
-#include "../RenderEngine/RenderEngine.camera/Camera.h"
+#include "../render_engine/camera/Camera.h"
 
 
 class PointLightLight : public LightComponent

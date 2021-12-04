@@ -3,8 +3,8 @@
 #include <vector>
 #include <PxPhysicsAPI.h>
 
-#include "../Objects/BaseObject.h"
-#include "../RenderEngine/RenderEngine.camera/Camera.h"
+#include "../objects/BaseObject.h"
+#include "../render_engine/camera/Camera.h"
 
 class RenderManager;
 
