@@ -26,12 +26,8 @@ PlayerCharacter::PlayerCharacter()
 {
 	name = "Player Controller";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(3.0f, 3.0f, 3.0f);		// NOTE: bc the renderTransform is different from the real transform, the bounds have to be thicker to account for when spinning
-
 	physicsComponent = new PlayerPhysics(this);
-	renderComponent = new PlayerRender(this, bounds);
+	renderComponent = new PlayerRender(this);
 }
 
 void PlayerCharacter::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -52,7 +48,7 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	return j;
 }
 
-PlayerRender::PlayerRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
+PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
 {
 	refreshResources();
 
@@ -722,6 +718,11 @@ void PlayerRender::renderShadow(GLuint programId)
 	bottleModel->render(finalBottleTransformMatrix, false);
 }
 
+void PlayerRender::TEMPrenderImguiModelBounds()
+{
+	model->TEMPrenderImguiModelBounds(baseObject->getTransform());
+}
+
 #ifdef _DEBUG
 void PlayerCharacter::propertyPanelImGui()
 {
@@ -776,6 +777,7 @@ void PlayerCharacter::propertyPanelImGui()
 
 void PlayerCharacter::renderImGui()
 {
+	((PlayerRender*)getRenderComponent())->TEMPrenderImguiModelBounds();
 }
 #endif
 

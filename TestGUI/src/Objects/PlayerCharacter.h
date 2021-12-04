@@ -36,12 +36,14 @@ struct VirtualCamera;
 class PlayerRender : public RenderComponent
 {
 public:
-	PlayerRender(BaseObject* bo, RenderAABB* bounds);
+	PlayerRender(BaseObject* bo);
 	~PlayerRender();
 
 	void preRenderUpdate();
 	void render();
 	void renderShadow(GLuint programId);
+
+	void TEMPrenderImguiModelBounds();
 
 	Model* model;
 	Animator animator;
@@ -133,8 +135,6 @@ public:
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
-
-	RenderAABB* bounds;
 
 #ifdef _DEBUG
 	void propertyPanelImGui();

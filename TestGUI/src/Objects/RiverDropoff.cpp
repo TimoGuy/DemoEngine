@@ -16,20 +16,14 @@ RiverDropoff::RiverDropoff()
 {
 	name = "River Dropoff Area";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
-
 	physicsComponent = new BoxCollider(this, glm::vec3(1.0f), RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
-	renderComponent = new RiverDropoffRender(this, bounds);
+	renderComponent = new RiverDropoffRender(this);
 }
 
 RiverDropoff::~RiverDropoff()
 {
 	delete renderComponent;
 	delete physicsComponent;
-
-	delete bounds;
 }
 
 void RiverDropoff::loadPropertiesFromJson(nlohmann::json& object)
@@ -80,7 +74,7 @@ void RiverDropoff::dropoffWater()
 	GameState::getInstance().playerIsHoldingWater = false;
 }
 
-RiverDropoffRender::RiverDropoffRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds)
+RiverDropoffRender::RiverDropoffRender(BaseObject* bo) : RenderComponent(bo)
 {
 	refreshResources();
 }

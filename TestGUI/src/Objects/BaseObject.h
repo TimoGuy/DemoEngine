@@ -122,16 +122,6 @@ protected:
 
 
 //
-// This is an AABB struct used for strictly frustum culling.
-//
-struct RenderAABB
-{
-	glm::vec3 center;		// NOTE: multiply the baseObject->transform with this to get the world space
-	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
-};
-
-
-//
 // This indicates that the object wants to be rendered.
 // Will be added into the renderobjects queue.
 //
@@ -139,9 +129,8 @@ class RenderComponent
 {
 public:
 	BaseObject* baseObject;
-	RenderAABB* bounds = nullptr;
 
-	RenderComponent(BaseObject* baseObject, RenderAABB* bounds);
+	RenderComponent(BaseObject* baseObject);
 	virtual ~RenderComponent();
 
 	virtual void preRenderUpdate() = 0;

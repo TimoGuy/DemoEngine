@@ -9,6 +9,7 @@
 
 #include "PhysicsUtils.h"
 
+#include "../render_engine/model/Mesh.h"
 #include "../mainloop/MainLoop.h"
 
 
@@ -314,7 +315,7 @@ namespace PhysicsUtils
 				ImVec2(ssPoints[3].x, ssPoints[3].y),
 				ImVec2(ssPoints[2].x, ssPoints[2].y),
 				color,
-				3.0f
+				1.0f
 			);
 		}
 	}
@@ -383,7 +384,7 @@ namespace PhysicsUtils
 			(int)screenSpacePoints.size(),
 			color,
 			ImDrawFlags_Closed,
-			3.0f
+			1.0f
 		);
 	}
 
@@ -437,7 +438,7 @@ namespace PhysicsUtils
 			(int)screenSpacePoints.size(),
 			ImColor::HSV(0.39f, 0.88f, 0.92f),
 			ImDrawFlags_Closed,
-			3.0f
+			1.0f
 		);
 	}
 

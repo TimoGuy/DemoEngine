@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "animation/Animation.h"
+#include "../../utils/PhysicsUtils.h"
 
 
 Model::Model() { scene = nullptr; }
@@ -26,6 +27,25 @@ void Model::render(const glm::mat4& modelMatrix, bool changeMaterial)
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
 		meshes[i].render(modelMatrix, changeMaterial, false);			// NOTE: at this stage, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
+	}
+}
+
+void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
+{
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		RenderAABB cookedBounds =
+			PhysicsUtils::fitAABB(
+				meshes[i].bounds,
+				trans
+			);
+
+		physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);
+		PhysicsUtils::imguiRenderBoxCollider(
+			glm::translate(glm::mat4(1.0f), cookedBounds.center),
+			boxGeometry,
+			ImColor(0.9607843137f, 0.8666666667f, 0.1529411765f)
+		);
 	}
 }
 
@@ -92,6 +112,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 
+	glm::vec3* minAABBPoint = nullptr;
+	glm::vec3* maxAABBPoint = nullptr;
+
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
@@ -105,6 +128,25 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		vector.y = mesh->mVertices[i].y;
 		vector.z = mesh->mVertices[i].z;
 		vertex.position = vector;
+
+		// Mesh AABB
+		if (minAABBPoint == nullptr)
+			minAABBPoint = new glm::vec3(vector);
+		else
+		{
+			minAABBPoint->x = std::min(minAABBPoint->x, vector.x);
+			minAABBPoint->y = std::min(minAABBPoint->y, vector.y);
+			minAABBPoint->z = std::min(minAABBPoint->z, vector.z);
+		}
+
+		if (maxAABBPoint == nullptr)
+			maxAABBPoint = new glm::vec3(vector);
+		else
+		{
+			maxAABBPoint->x = std::max(maxAABBPoint->x, vector.x);
+			maxAABBPoint->y = std::max(maxAABBPoint->y, vector.y);
+			maxAABBPoint->z = std::max(maxAABBPoint->z, vector.z);
+		}
 
 		// normal
 		glm::vec3 normal;
@@ -154,7 +196,18 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	// Process Bones
 	extractBoneWeightForVertices(vertices, mesh, scene);
 
-	return Mesh(vertices, indices, materialName);
+	// Convert aiAABB to RenderAABB
+	RenderAABB modelRenderAABB;
+	if (minAABBPoint != nullptr && maxAABBPoint != nullptr)
+	{
+		modelRenderAABB.center = (*minAABBPoint + *maxAABBPoint) / 2.0f;
+		modelRenderAABB.extents = *maxAABBPoint - modelRenderAABB.center;
+
+		delete minAABBPoint;
+		delete maxAABBPoint;
+	}
+
+	return Mesh(vertices, indices, modelRenderAABB, materialName);
 }
 
 

@@ -9,7 +9,7 @@ class Model;
 class RiverDropoffRender : public RenderComponent
 {
 public:
-	RiverDropoffRender(BaseObject* bo, RenderAABB* bounds);
+	RiverDropoffRender(BaseObject* bo);
 
 	void preRenderUpdate();
 	void render();
@@ -42,8 +42,6 @@ public:
 	void onTrigger(const physx::PxTriggerPair& pair);
 
 	void dropoffWater();
-
-	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 

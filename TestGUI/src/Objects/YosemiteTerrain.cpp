@@ -19,15 +19,11 @@ YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
 {
 	name = "Yosemite Terrain";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(1.0f, 1.0f, 1.0f);
-
 	INTERNALrecreatePhysicsComponent(modelResourceName);
-	renderComponent = new YosemiteTerrainRender(this, bounds, modelResourceName);
+	renderComponent = new YosemiteTerrainRender(this, modelResourceName);
 }
 
-YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, RenderAABB* bounds, std::string modelResourceName) : RenderComponent(bo, bounds), modelResourceName(modelResourceName)
+YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, std::string modelResourceName) : RenderComponent(bo), modelResourceName(modelResourceName)
 {
 	refreshResources();
 }
@@ -104,7 +100,7 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 	if (modelResourceName == "model;cube")
 	{
 		// TODO: Figure out how to get camera zoom in to work with kinematic types too!!!!
-		physicsComponent = new BoxCollider(this, bounds->extents, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
+		physicsComponent = new BoxCollider(this, glm::vec3(1.0f)/* @GIANT: Fix this yo!!! bounds->extents*/, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 	}
 	else
 	{

@@ -24,6 +24,8 @@ public:
 	Model(const char* path, std::vector<std::string> animationNames);
 	void render(const glm::mat4& modelMatrix, bool changeMaterial);
 
+	void TEMPrenderImguiModelBounds(glm::mat4 trans);
+
 	auto& getBoneInfoMap() { return boneInfoMap; }
 	int& getBoneCount() { return boneCounter; }
 	auto& getAnimations() { return animations; }

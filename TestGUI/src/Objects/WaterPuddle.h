@@ -7,7 +7,7 @@
 class WaterPuddleRender : public RenderComponent
 {
 public:
-	WaterPuddleRender(BaseObject* bo, RenderAABB* bounds);
+	WaterPuddleRender(BaseObject* bo);
 
 	void preRenderUpdate();
 	void render();
@@ -47,8 +47,6 @@ public:
 
 	void collectWaterPuddle();
 	bool isWaterPuddleCollected;
-
-	RenderAABB* bounds;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 

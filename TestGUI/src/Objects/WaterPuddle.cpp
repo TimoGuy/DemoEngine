@@ -16,20 +16,14 @@ WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)
 {
 	name = "Water Puddle";
 
-	bounds = new RenderAABB();
-	bounds->center = glm::vec3(0.0f);
-	bounds->extents = glm::vec3(4.0f, 4.0f, 4.0f);
-
 	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
-	renderComponent = new WaterPuddleRender(this, bounds);
+	renderComponent = new WaterPuddleRender(this);
 }
 
 WaterPuddle::~WaterPuddle()
 {
 	delete renderComponent;
 	delete physicsComponent;
-
-	delete bounds;
 }
 
 void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
@@ -93,7 +87,7 @@ void WaterPuddle::collectWaterPuddle()
 	isWaterPuddleCollected = true;
 }
 
-WaterPuddleRender::WaterPuddleRender(BaseObject* bo, RenderAABB* bounds) : RenderComponent(bo, bounds), offsetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0)))
+WaterPuddleRender::WaterPuddleRender(BaseObject* bo) : RenderComponent(bo), offsetModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0)))
 {
 	// Always load up the resources first dawg!
 	refreshResources();

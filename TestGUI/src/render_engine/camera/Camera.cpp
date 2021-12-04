@@ -7,10 +7,9 @@
 #include "../../imgui/imgui.h"
 #endif
 
-#include "../../objects/BaseObject.h"
-#include "../../utils/PhysicsUtils.h"
-
 #include "../../mainloop/MainLoop.h"
+#include "../../render_engine/model/Mesh.h"
+#include "../../utils/PhysicsUtils.h"
 
 #include <iostream>
 

@@ -706,12 +706,13 @@ void RenderManager::renderScene()
 	int succ = 0;
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
-		if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
-			!cookedViewFrustum.checkIfInViewFrustum(
-				*MainLoop::getInstance().renderObjects[i]->bounds,
-				MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
-			continue;
-		succ++;
+		// @GIANT: fix this and make each render bounds correct yo!
+		//if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
+		//	!cookedViewFrustum.checkIfInViewFrustum(
+		//		*MainLoop::getInstance().renderObjects[i]->bounds,
+		//		MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
+		//	continue;
+		//succ++;
 		MainLoop::getInstance().renderObjects[i]->render();
 	}
 	// @Debug: How many objects are culled
@@ -1159,7 +1160,7 @@ void RenderManager::renderImGuiContents()
 
 			ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
 			ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
-			ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 3.0f);
+			ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 		}
 	}
 

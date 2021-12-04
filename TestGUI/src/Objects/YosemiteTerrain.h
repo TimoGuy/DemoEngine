@@ -10,7 +10,7 @@ typedef unsigned int GLuint;
 class YosemiteTerrainRender : public RenderComponent
 {
 public:
-	YosemiteTerrainRender(BaseObject* bo, RenderAABB* bounds, std::string modelResourceName);
+	YosemiteTerrainRender(BaseObject* bo, std::string modelResourceName);
 
 	void preRenderUpdate();
 	void render();
@@ -52,8 +52,6 @@ public:
 #ifdef _DEBUG
 	void propertyPanelImGui();
 #endif
-
-	RenderAABB* bounds;
 
 	// TODO: this should be private, with all the components just referring back to the single main one
 	physx::PxVec3 velocity, angularVelocity;

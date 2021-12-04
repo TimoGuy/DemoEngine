@@ -69,10 +69,11 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 	physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
 
-	// Get the bounds of the mesh and pass on to the physical bounds
-	physx::PxBounds3 boundsFromMesh = triMesh->getLocalBounds();
-	baseObject->getRenderComponent()->bounds->center = PhysicsUtils::toGLMVec3(boundsFromMesh.getCenter());
-	baseObject->getRenderComponent()->bounds->extents = PhysicsUtils::toGLMVec3(boundsFromMesh.getExtents());
+	// @GIANT: Figger this out!!!
+	//// Get the bounds of the mesh and pass on to the physical bounds
+	//physx::PxBounds3 boundsFromMesh = triMesh->getLocalBounds();
+	//baseObject->getRenderComponent()->bounds->center = PhysicsUtils::toGLMVec3(boundsFromMesh.getCenter());
+	//baseObject->getRenderComponent()->bounds->extents = PhysicsUtils::toGLMVec3(boundsFromMesh.getExtents());
 
 	//
 	// Create the rigidbody actor!

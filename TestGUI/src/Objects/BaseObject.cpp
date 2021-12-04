@@ -189,7 +189,7 @@ void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 	baseObject->onTrigger(pair);
 }
 
-RenderComponent::RenderComponent(BaseObject* baseObject, RenderAABB* bounds) : baseObject(baseObject), bounds(bounds)
+RenderComponent::RenderComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
 	MainLoop::getInstance().renderObjects.push_back(this);
 }
