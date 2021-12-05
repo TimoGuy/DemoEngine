@@ -18,7 +18,6 @@
 #include "../utils/FileLoading.h"
 
 
-#define PHYSX_VISUALIZATION 1
 #define FULLSCREEN_MODE 1
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
@@ -187,6 +186,8 @@ void MainLoop::run()
 
 		//
 		// Run Physics intermittently
+		// 
+		// NOTE: https://gafferongames.com/post/fix_your_timestep/
 		//
 		accumulatedTimeForPhysics += deltaTime;
 		while (accumulatedTimeForPhysics >= this->physicsDeltaTime)
@@ -482,7 +483,7 @@ void setupPhysx()
 	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	MainLoop::getInstance().defaultPhysicsMaterial = MainLoop::getInstance().physicsPhysics->createMaterial(0.5f, 0.5f, 1.0f);
 
-#if PHYSX_VISUALIZATION
+#ifdef _DEBUG
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_SHAPES, true);
@@ -520,8 +521,7 @@ void physicsUpdate()
 	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 	MainLoop::getInstance().physicsScene->fetchResults(true);
 			
-#if PHYSX_VISUALIZATION
-
+#ifdef _DEBUG
 	// Don't visualize unless enabled
 	if (!RenderManager::renderPhysicsDebug)
 		return;
@@ -536,6 +536,5 @@ void physicsUpdate()
 		lineList->push_back(line);
 	}
 	MainLoop::getInstance().renderManager->physxVisSetDebugLineList(lineList);
-
 #endif
 }

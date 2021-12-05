@@ -480,6 +480,8 @@ void RenderManager::render()
 
 	//
 	// Keyboard shortcuts for wireframe and physics debug
+	// 
+	// NOTE: the physics debug and mesh AABB debug views don't work in release mode bc imgui is deactivated completely in release mode
 	//
 	static bool prevF1Keypressed = GLFW_RELEASE;
 	bool f1Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F1);
@@ -538,6 +540,51 @@ void RenderManager::render()
 
 	renderUI();
 
+#ifdef _DEBUG
+	//
+	// @Debug: Render wireframe of selected object
+	//
+	static float selectedColorIntensityTime = -1.15f;
+	static int previousSelectedObjInd = -1;
+
+	if (previousSelectedObjInd != currentSelectedObjectIndex)
+	{
+		// Reset
+		previousSelectedObjInd = currentSelectedObjectIndex;
+		selectedColorIntensityTime = -1.15f;
+	}
+
+	if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+	{
+		RenderComponent* rc = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getRenderComponent();
+		if (rc != nullptr)
+		{
+			// Render that selected object!!!!
+			glDepthMask(GL_FALSE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			glFrontFace(GL_CCW);
+			{
+				float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
+				std::cout << evaluatedIntensityValue << std::endl;
+				GLuint selectionWireframeProgramId =
+					*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
+				glUseProgram(selectionWireframeProgramId);
+				glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "wireframeColor"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
+				glUniform1f(glGetUniformLocation(selectionWireframeProgramId, "colorIntensity"), evaluatedIntensityValue);
+				glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+				rc->renderShadow(selectionWireframeProgramId);
+			}
+			glDisable(GL_CULL_FACE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDepthMask(GL_TRUE);
+
+			selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 1.5f;
+		}
+	}
+#endif
+
 	//
 	// Do bloom: breakdown-preprocessing
 	//
@@ -552,6 +599,7 @@ void RenderManager::render()
 			GLint stageNumber = (GLint)j + 1;						// Needs to have a sequence of i(n):  1,2,3
 
 			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
+			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(bloom_postprocessing_program_id);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
@@ -582,6 +630,7 @@ void RenderManager::render()
 		size_t smallerColorBufferIndex = i + 3 - (firstReconstruction ? 1 : 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
+		glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(bloom_postprocessing_program_id);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[colorBufferIndex]);
@@ -1025,7 +1074,6 @@ void RenderManager::renderImGuiContents()
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
 					currentSelectedObjectIndex = -1;
-					currentHoveringObjectIndex = -1;
 				}
 
 				ImGui::EndMenu();
@@ -1120,6 +1168,7 @@ void RenderManager::renderImGuiContents()
 	if (show)
 		ImGui::ShowDemoWindow(&show);
 
+#ifdef _DEBUG
 	//
 	// @PHYSX_VISUALIZATION
 	//
@@ -1167,6 +1216,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 		}
 	}
+#endif
 
 	//
 	// Everything else
@@ -1222,7 +1272,6 @@ void RenderManager::renderImGuiContents()
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
 					currentSelectedObjectIndex = -1;
-					currentHoveringObjectIndex = -1;			// NOTE: there is a bug where an array index exception is thrown once something is deleted but the hovering object index isn't reset
 				}
 
 				//

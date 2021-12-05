@@ -48,7 +48,9 @@ public:
 
 	void recreateHDRBuffer();
 
-	int currentSelectedObjectIndex = -1, currentHoveringObjectIndex = -1;
+#ifdef _DEBUG
+	int currentSelectedObjectIndex = -1;
+#endif
 
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
 	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
@@ -66,9 +68,16 @@ public:
 	// Transparent rendering
 	void INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix);
 
+#ifdef _DEBUG
 	// @PHYSX_VISUALIZATION
 	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
+#endif
+
+	// @DEBUG: @WHEN_RELEASE: remove these when done with game.
+	// This should be in an #ifdef _DEBUG block...
+	static bool isWireFrameMode;
 	static bool renderPhysicsDebug;
+	static bool renderMeshRenderAABB;
 
 private:
 	GLuint program_id, skybox_program_id, model_program_id, shadow_program_id, debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
@@ -110,9 +119,6 @@ private:
 	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
 	std::vector<float> transparentDistancesToCamera;
 
-	static bool isWireFrameMode;
-	static bool renderMeshRenderAABB;
-
 #ifdef _DEBUG
 	// ImGui Debug stuff
 	void renderImGuiPass();
@@ -121,8 +127,10 @@ private:
 
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
+#ifdef _DEBUG
 	// @PHYSX_VISUALIZATION
 	std::vector<physx::PxDebugLine>* physxVisDebugLines;
+#endif
 
 	// Skeletal Animation UBO
 	bool repopulateAnimationUBO = true;

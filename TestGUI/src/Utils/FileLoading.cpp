@@ -52,7 +52,6 @@ void FileLoading::loadFileWithPrompt()
 		delete MainLoop::getInstance().objects[i];
 	}
 	MainLoop::getInstance().renderManager->currentSelectedObjectIndex = -1;
-	MainLoop::getInstance().renderManager->currentHoveringObjectIndex = -1;
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;
 	currentWorkingPath = fname;

@@ -407,6 +407,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shaders/bloom_postprocessing.vert", "shaders/bloom_postprocessing.frag");
 	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/postprocessing.vert", "shaders/postprocessing.frag");
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/hudUI.vert", "shaders/hudUI.frag");
+#ifdef _DEBUG
+	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/color.frag");
+#endif
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
@@ -510,6 +513,8 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
+	// Out of luck, bud. Try the custom resources yo
+	std::cout << "ERROR:: Resource \"" << resourceName << "\" was not found." << std::endl;
 	assert(false);
 	return nullptr;
 }
