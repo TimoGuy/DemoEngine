@@ -17,7 +17,11 @@ WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)
 	name = "Water Puddle";
 
 	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
-	renderComponent = new WaterPuddleRender(this);
+
+	refreshResources();
+	renderComponent = new RenderComponent(this);
+	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
+	renderComponent->addModelToRender({ model, true, &animator });
 }
 
 WaterPuddle::~WaterPuddle()
@@ -87,19 +91,11 @@ void WaterPuddle::collectWaterPuddle()
 	isWaterPuddleCollected = true;
 }
 
-WaterPuddleRender::WaterPuddleRender(BaseObject* bo) : RenderComponent(bo)
-{
-	// Always load up the resources first dawg!
-	refreshResources();
-	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
-}
-
-void WaterPuddleRender::preRenderUpdate()
+void WaterPuddle::preRenderUpdate()
 {
 	//
 	// Process Animations
 	//
-	const bool isWaterPuddleCollected = ((WaterPuddle*)baseObject)->isWaterPuddleCollected;
 	if (!isWaterPuddleCollected)
 	{
 		animator.playAnimation(0);
@@ -108,13 +104,14 @@ void WaterPuddleRender::preRenderUpdate()
 	{
 		animator.playAnimation(1, 1.5f);
 	}
+	animator.animationSpeed = 1.0f;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);
 
 	//
 	// Do trigger-related stuff
 	//
-	if (!((WaterPuddle*)baseObject)->isBeingTriggeredByPlayer() ||
-		baseObject->getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
+	if (!isBeingTriggeredByPlayer() ||
+		getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
 	static bool prevEBtnPressed = GLFW_RELEASE;
@@ -124,34 +121,12 @@ void WaterPuddleRender::preRenderUpdate()
 		//
 		// Collect this object!
 		//
-		((WaterPuddle*)baseObject)->collectWaterPuddle();
+		collectWaterPuddle();
 	}
 	prevEBtnPressed = EBtnpressed;
 }
 
-void WaterPuddleRender::render()
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(baseObject->getTransform(), 0);
-}
-
-void WaterPuddleRender::renderShadow(GLuint programId)
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(baseObject->getTransform(), programId);
-}
-
-void WaterPuddleRender::refreshResources()
+void WaterPuddle::refreshResources()
 {
 	bool recreateAnimations;
 	model = (Model*)Resources::getResource("model;waterPuddle", model, &recreateAnimations);

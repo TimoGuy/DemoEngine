@@ -22,12 +22,27 @@
 #endif
 
 
-PlayerCharacter::PlayerCharacter()
+PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
 {
 	name = "Player Controller";
 
 	physicsComponent = new PlayerPhysics(this);
-	renderComponent = new PlayerRender(this);
+
+	refreshResources();
+	renderComponent = new RenderComponent(this);
+	renderComponent->addModelToRender({ model, true, &animator });
+	renderComponent->addModelToRender({ bottleModel, true, nullptr });
+
+	playerCamera.priority = 10;
+	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
+}
+
+PlayerCharacter::~PlayerCharacter()
+{
+	delete renderComponent;
+	delete physicsComponent;
+
+	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
 }
 
 void PlayerCharacter::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -48,20 +63,7 @@ nlohmann::json PlayerCharacter::savePropertiesToJson()
 	return j;
 }
 
-PlayerRender::PlayerRender(BaseObject* bo) : RenderComponent(bo), bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
-{
-	refreshResources();
-
-	playerCamera.priority = 10;
-	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
-}
-
-PlayerRender::~PlayerRender()
-{
-	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
-}
-
-void PlayerRender::refreshResources()
+void PlayerCharacter::refreshResources()
 {
 	//
 	// @IMPLEMENTATION: NOTES FOR SLIME GIRL BODY SHADER IMPLEMENTATION
@@ -137,7 +139,7 @@ void PlayerRender::refreshResources()
 	}
 }
 
-void PlayerRender::processMovement()
+void PlayerCharacter::processMovement()
 {
 	//
 	// Get looking input
@@ -177,7 +179,7 @@ void PlayerRender::processMovement()
 	//
 	// Update playercam pos
 	//
-	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(baseObject->getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
+	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
 	float cameraDistance = playerCamOffset.z;
 
 	// Do raycast to see what the camera distance should be
@@ -226,7 +228,7 @@ void PlayerRender::processMovement()
 	isMoving = false;
 
 	physx::PxVec3 velocity(0.0f);
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+	if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
 		velocity = processGroundedMovement(movementVector);
 	else
 		velocity = processAirMovement(movementVector);
@@ -240,15 +242,15 @@ void PlayerRender::processMovement()
 		leanLerpTime[GameState::getInstance().playerIsHoldingWater] * MainLoop::getInstance().deltaTime
 	);
 
-	((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity = velocity;
+	((PlayerPhysics*)getPhysicsComponent())->velocity = velocity;
 
 	model->localTransform =
 		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
 		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
-		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(baseObject->getTransform()));
+		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform()));
 }
 
-physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVector)
+physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movementVector)
 {
 	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
 
@@ -265,7 +267,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		//
 		if (!lockFacingDirection)
 		{
-			physx::PxVec3 velocityCopy = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+			physx::PxVec3 velocityCopy = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 			velocityCopy.y = 0.0f;
 
 			// Skid stop behavior:
@@ -326,10 +328,10 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
 
-	if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() || ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsCeilingSliding())
+	if (((PlayerPhysics*)getPhysicsComponent())->getIsSliding() || ((PlayerPhysics*)getPhysicsComponent())->getIsCeilingSliding())
 	{
 		// Cut off movement towards uphill if supposed to be sliding
-		glm::vec3 normal = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal();
+		glm::vec3 normal = ((PlayerPhysics*)getPhysicsComponent())->getGroundedNormal();
 		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
 		velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
 	}
@@ -338,7 +340,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 		// Add on a grounded rotation based on the ground you're standing on (!isSliding)
 		glm::quat slopeRotation = glm::rotation(
 			glm::vec3(0, 1, 0),
-			((PlayerPhysics*)baseObject->getPhysicsComponent())->getGroundedNormal()
+			((PlayerPhysics*)getPhysicsComponent())->getGroundedNormal()
 		);
 		velocity = slopeRotation * velocity;
 	}
@@ -348,13 +350,13 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	// (HOWEVER, not if going down a slope's -y is lower than the reported y (ignore when going up/jumping))
 	//
 	if (velocity.y < 0.0f)
-		velocity.y = std::min(((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y, velocity.y);
+		velocity.y = std::min(((PlayerPhysics*)getPhysicsComponent())->velocity.y, velocity.y);
 	else
-		velocity.y = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity.y;
+		velocity.y = ((PlayerPhysics*)getPhysicsComponent())->velocity.y;
 
 	// Jump (but not if sliding)
 	if (!lockJumping &&
-		!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding() &&
+		!((PlayerPhysics*)getPhysicsComponent())->getIsSliding() &&
 		InputManager::getInstance().jumpPressed)
 	{
 		velocity.y = jumpSpeed[isCarryingWater];
@@ -364,7 +366,7 @@ physx::PxVec3 PlayerRender::processGroundedMovement(const glm::vec2& movementVec
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
 
-physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
+physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVector)
 {
 	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
 
@@ -386,7 +388,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	//
 	// Setup velocity manipulation
 	//
-	physx::PxVec3 currentVelocity = ((PlayerPhysics*)baseObject->getPhysicsComponent())->velocity;
+	physx::PxVec3 currentVelocity = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 
 	//
 	// Just add velocity in a flat way
@@ -409,7 +411,7 @@ physx::PxVec3 PlayerRender::processAirMovement(const glm::vec2& movementVector)
 	return currentVelocity;
 }
 
-void PlayerRender::processActions()
+void PlayerCharacter::processActions()
 {
 	if (GameState::getInstance().playerIsHoldingWater &&
 		InputManager::getInstance().useItemPressed)
@@ -417,40 +419,40 @@ void PlayerRender::processActions()
 		// Drink the water
 		GameState::getInstance().playerIsHoldingWater = false;
 		GameState::getInstance().currentPlayerStaminaAmount =
-			GameState::getInstance().maxPlayerStaminaAmount;
+			(float)GameState::getInstance().maxPlayerStaminaAmount;
 
 		triggerDrinkWaterAnimation = true;
 	}
 }
 
 float hairWeightMult = 10.0f;				// @Debug
-void PlayerRender::processAnimation()
+void PlayerCharacter::processAnimation()
 {
 	//
 	// Process movement into animationstates
 	//
 	if (animationState == 0)
 	{
-		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (!((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
 			// Jump
 			animationState = 1;
 	}
 	else if (animationState == 1)
 	{
-		if (((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsSliding())
+		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
 			// Landing
 			animationState = 2;
 	}
 	else if (animationState == 2)
 	{
-		if (!((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded())
+		if (!((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
 			// Jump
 			animationState = 1;
 		else
 		{
 			// Wait until land animation is finished
-			if (animator.isAnimationFinished(4, MainLoop::getInstance().deltaTime * animationSpeed) ||
-				animator.isAnimationFinished(5, MainLoop::getInstance().deltaTime * animationSpeed))
+			if (animator.isAnimationFinished(4, MainLoop::getInstance().deltaTime) ||
+				animator.isAnimationFinished(5, MainLoop::getInstance().deltaTime))
 			{
 				// Standing
 				animationState = 0;
@@ -461,12 +463,12 @@ void PlayerRender::processAnimation()
 	else if (animationState == 3)
 	{
 		// Lock movement
-		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
 		lockFacingDirection = true;
 		lockJumping = true;
 
 		// Wait until draw water animation is finished
-		if (animator.isAnimationFinished(8, MainLoop::getInstance().deltaTime * animationSpeed))
+		if (animator.isAnimationFinished(8, MainLoop::getInstance().deltaTime))
 		{
 			// Pick up bottle
 			animationState = 5;
@@ -475,12 +477,12 @@ void PlayerRender::processAnimation()
 	else if (animationState == 4)
 	{
 		// Lock movement
-		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
 		lockFacingDirection = true;
 		lockJumping = true;
 
 		// Wait until drink-water animation is finished
-		if (animator.isAnimationFinished(9, MainLoop::getInstance().deltaTime * animationSpeed))
+		if (animator.isAnimationFinished(9, MainLoop::getInstance().deltaTime))
 		{
 			// Pick up bottle
 			animationState = 5;
@@ -489,12 +491,12 @@ void PlayerRender::processAnimation()
 	else if (animationState == 5)
 	{
 		// Lock movement
-		((PlayerPhysics*)baseObject->getPhysicsComponent())->lockVelocity(false);
+		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
 		lockFacingDirection = true;
 		lockJumping = true;
 
 		// Wait until pick-up-bottle animation is finished
-		if (animator.isAnimationFinished(10, MainLoop::getInstance().deltaTime * animationSpeed))
+		if (animator.isAnimationFinished(10, MainLoop::getInstance().deltaTime))
 		{
 			// Standing
 			animationState = 0;
@@ -567,7 +569,8 @@ void PlayerRender::processAnimation()
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
-	animator.updateAnimation(MainLoop::getInstance().deltaTime * animationSpeed);		// Correction: this adds more than 10ms consistently
+	animator.animationSpeed = animationSpeed;
+	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
@@ -670,13 +673,7 @@ void PlayerRender::processAnimation()
 	else
 		bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
-	prevIsGrounded = ((PlayerPhysics*)baseObject->getPhysicsComponent())->getIsGrounded();
-}
-
-PlayerCharacter::~PlayerCharacter()
-{
-	delete renderComponent;
-	delete physicsComponent;
+	prevIsGrounded = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded();
 }
 
 void PlayerCharacter::preRenderUpdate()
@@ -684,33 +681,6 @@ void PlayerCharacter::preRenderUpdate()
 	processMovement();
 	processActions();
 	processAnimation();
-}
-
-void PlayerRender::render()
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	//
-	// Update the animation bones in the render manager
-	//
-	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(baseObject->getTransform(), 0);
-	bottleModel->render(baseObject->getTransform(), 0);
-}
-
-void PlayerRender::renderShadow(GLuint programId)
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	std::vector<glm::mat4>* boneTransforms = animator.getFinalBoneMatrices();
-	MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-	model->render(baseObject->getTransform(), programId);
-	bottleModel->render(baseObject->getTransform(), programId);
 }
 
 #ifdef _DEBUG
@@ -729,30 +699,30 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
-	ImGui::DragFloat3("VirtualCamPosition", &((PlayerRender*)getRenderComponent())->playerCamOffset[0]);
-	ImGui::DragFloat2("Looking Input", &((PlayerRender*)getRenderComponent())->lookingInput[0]);
-	ImGui::DragFloat2("Looking Sensitivity", &((PlayerRender*)getRenderComponent())->lookingSensitivity[0]);
+	ImGui::DragFloat3("VirtualCamPosition", &playerCamOffset[0]);
+	ImGui::DragFloat2("Looking Input", &lookingInput[0]);
+	ImGui::DragFloat2("Looking Sensitivity", &lookingSensitivity[0]);
 
 	ImGui::Separator();
 	ImGui::Text("Movement Properties");
-	ImGui::DragFloat2("Running Acceleration", &((PlayerRender*)getRenderComponent())->groundAcceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Decceleration", &((PlayerRender*)getRenderComponent())->groundDecceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Acceleration (Air)", &((PlayerRender*)getRenderComponent())->airAcceleration[0], 0.1f);
-	ImGui::DragFloat2("Running Speed", &((PlayerRender*)getRenderComponent())->groundRunSpeed[0], 0.1f);
-	ImGui::DragFloat2("Jump Speed", &((PlayerRender*)getRenderComponent())->jumpSpeed[0], 0.1f);
-	ImGui::Text(("Facing Direction: (" + std::to_string(((PlayerRender*)getRenderComponent())->facingDirection.x) + ", " + std::to_string(((PlayerRender*)getRenderComponent())->facingDirection.y) + ")").c_str());
-	ImGui::DragFloat2("Leaning Lerp Time", &((PlayerRender*)getRenderComponent())->leanLerpTime[0]);
-	ImGui::DragFloat2("Lean Multiplier", &((PlayerRender*)getRenderComponent())->leanMultiplier[0], 0.05f);
-	ImGui::DragFloat2("Facing Movement Speed", &((PlayerRender*)getRenderComponent())->facingTurnSpeed[0], 0.1f);
-	ImGui::DragFloat2("Facing Movement Speed (Air)", &((PlayerRender*)getRenderComponent())->airBourneFacingTurnSpeed[0], 0.1f);
+	ImGui::DragFloat2("Running Acceleration", &groundAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Decceleration", &groundDecceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Acceleration (Air)", &airAcceleration[0], 0.1f);
+	ImGui::DragFloat2("Running Speed", &groundRunSpeed[0], 0.1f);
+	ImGui::DragFloat2("Jump Speed", &jumpSpeed[0], 0.1f);
+	ImGui::Text(("Facing Direction: (" + std::to_string(facingDirection.x) + ", " + std::to_string(facingDirection.y) + ")").c_str());
+	ImGui::DragFloat2("Leaning Lerp Time", &leanLerpTime[0]);
+	ImGui::DragFloat2("Lean Multiplier", &leanMultiplier[0], 0.05f);
+	ImGui::DragFloat2("Facing Movement Speed", &facingTurnSpeed[0], 0.1f);
+	ImGui::DragFloat2("Facing Movement Speed (Air)", &airBourneFacingTurnSpeed[0], 0.1f);
 
 	ImGui::Separator();
-	ImGui::DragFloat("Model Offset Y", &((PlayerRender*)getRenderComponent())->modelOffsetY, 0.05f);
-	ImGui::DragFloat("Model Animation Speed", &((PlayerRender*)getRenderComponent())->animationSpeed);
+	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
+	ImGui::DragFloat("Model Animation Speed", &animationSpeed);
 
 	ImGui::Separator();
-	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)((PlayerRender*)getRenderComponent())->materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)((PlayerRender*)getRenderComponent())->materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);

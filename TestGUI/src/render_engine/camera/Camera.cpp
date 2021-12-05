@@ -14,7 +14,7 @@
 #include <iostream>
 
 
-bool ViewPlane::checkIfInViewPlane(const RenderAABB& cookedBounds)
+bool ViewPlane::checkIfInViewPlane(const RenderAABB& cookedBounds) const
 {
 	// Compute the projection interval radius of b onto L(t) = b.c + t * p.n
 	// (This ACTUALLY works if you think about it... it's pretty cool yo)
@@ -28,7 +28,7 @@ bool ViewPlane::checkIfInViewPlane(const RenderAABB& cookedBounds)
 	return -r <= getSignedDistance(cookedBounds.center);
 }
 
-float ViewPlane::getSignedDistance(const glm::vec3& testPoint)
+float ViewPlane::getSignedDistance(const glm::vec3& testPoint) const
 {
 	//std::cout << "\t\t\t" << glm::dot(normal, testPoint - position) << std::endl;
 	return glm::dot(normal, testPoint - position);
@@ -54,7 +54,7 @@ ViewFrustum ViewFrustum::createFrustumFromCamera(const Camera& camera)
 	return frustum;
 }
 
-bool ViewFrustum::checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix)
+bool ViewFrustum::checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix) const
 {
 	RenderAABB cookedBounds = PhysicsUtils::fitAABB(bounds, modelMatrix);
 	return topFace.checkIfInViewPlane(cookedBounds) &&
@@ -159,18 +159,18 @@ void Camera::updateToVirtualCameras()
 	up = currentVirtualCamera->up;
 }
 
-bool prevF4Keypressed;
+bool prevF11Keypressed;
 void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
 #ifdef _DEBUG
-	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS && prevF4Keypressed == GLFW_RELEASE)
+	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS && prevF11Keypressed == GLFW_RELEASE)
 	{
 		//
 		// Switch to game camera, free camera
 		//
 		MainLoop::getInstance().playMode = !MainLoop::getInstance().playMode;
 	}
-	prevF4Keypressed = glfwGetKey(window, GLFW_KEY_F4);
+	prevF11Keypressed = glfwGetKey(window, GLFW_KEY_F11);
 #endif
 
 #ifdef _DEBUG
@@ -188,8 +188,8 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		}
 		else
 		{
-			// Unlock cursor if press f3
-			if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+			// Unlock cursor if press F10		NOTE: Before this was F12, but F12 is reserved by Visual Studio to debug the application hahahahahahaha. WHY
+			if (glfwGetKey(window, GLFW_KEY_F10) == GLFW_PRESS)
 			{
 				lockedCursor = false;
 			}

@@ -19,7 +19,7 @@
 
 
 #define PHYSX_VISUALIZATION 1
-#define FULLSCREEN_MODE 0
+#define FULLSCREEN_MODE 1
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
@@ -199,18 +199,21 @@ void MainLoop::run()
 		// Take all physics objects and update their transforms (interpolation)
 		//
 		float interpolationAlpha = accumulatedTimeForPhysics / this->physicsDeltaTime;
-		//std::cout << interpolationAlpha << std::endl;				// @Debug
+#ifdef _DEBUG
+		if (!playMode)
+			interpolationAlpha = 1.0f;
+#endif
 		for (size_t i = 0; i < physicsObjects.size(); i++)
 		{
 			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
 			
 		//
-		// Commit to render everything
+		// Do all pre-render updates
 		//
-		for (size_t i = 0; i < renderObjects.size(); i++)
+		for (size_t i = 0; i < objects.size(); i++)
 		{
-			renderObjects[i]->preRenderUpdate();
+			objects[i]->preRenderUpdate();
 		}
 
 		// Update camera after all other updates
@@ -254,7 +257,7 @@ void createWindow(const char* windowName)
 		glfwTerminate();
 
 #if FULLSCREEN_MODE
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, glfwGetPrimaryMonitor(), NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(3440, 1440, windowName, glfwGetPrimaryMonitor(), NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #endif

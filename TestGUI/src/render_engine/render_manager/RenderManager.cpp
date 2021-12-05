@@ -41,7 +41,9 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static bool showShadowMapView = false;
+bool RenderManager::isWireFrameMode = false;
 bool RenderManager::renderPhysicsDebug = false;
+bool RenderManager::renderMeshRenderAABB = false;
 
 
 RenderManager::RenderManager()
@@ -495,6 +497,14 @@ void RenderManager::render()
 	}
 	prevF2Keypressed = f2Keypressed;
 
+	static bool prevF3Keypressed = GLFW_RELEASE;
+	bool f3Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F3);
+	if (prevF3Keypressed == GLFW_RELEASE && f3Keypressed == GLFW_PRESS)
+	{
+		renderMeshRenderAABB = !renderMeshRenderAABB;
+	}
+	prevF3Keypressed = f3Keypressed;
+
 	//
 	// Setup projection matrix for rendering
 	//
@@ -698,28 +708,22 @@ void RenderManager::renderScene()
 	this->repopulateAnimationUBO = true;
 
 	//
-	// OPAQUE RENDER QUEUE (slash pull out transparent objects and defer them while rendering out the opaque ones lol)
+	// OPAQUE RENDER QUEUE
+	// 
+	// (ALSO: pull out transparent objects here and defer them while rendering out the opaque ones lol)
 	// Draw objects but cull them
 	// (NOTE: the culling step doesn't happen in the shadowmaps)
 	//
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
-	int succ = 0;
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
-		// @GIANT: fix this and make each render bounds correct yo!
-		//if (MainLoop::getInstance().renderObjects[i]->bounds != nullptr &&
-		//	!cookedViewFrustum.checkIfInViewFrustum(
-		//		*MainLoop::getInstance().renderObjects[i]->bounds,
-		//		MainLoop::getInstance().renderObjects[i]->baseObject->getTransform()))
-		//	continue;
-		//succ++;
-		MainLoop::getInstance().renderObjects[i]->render();
+		// NOTE: viewfrustum culling is handled at the mesh level with some magic. Peek in if ya wanna. -Timo
+		MainLoop::getInstance().renderObjects[i]->render(&cookedViewFrustum);
 	}
-	// @Debug: How many objects are culled
-	//std::cout << "Drawing after culled: \t" << succ << std::endl;
 
 	//
 	// TRANSPARENT RENDER QUEUE
+	// 
 	// Take the developed transparent render queue and render it out!
 	//
 	std::sort(
@@ -1176,9 +1180,12 @@ void RenderManager::renderImGuiContents()
 	//
 	// Render bounds of all renderobjects
 	//
-	for (size_t i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+	if (renderMeshRenderAABB)
 	{
-		MainLoop::getInstance().renderObjects[i]->TEMPrenderImguiModelBounds();
+		for (size_t i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+		{
+			MainLoop::getInstance().renderObjects[i]->TEMPrenderImguiModelBounds();
+		}
 	}
 #endif
 

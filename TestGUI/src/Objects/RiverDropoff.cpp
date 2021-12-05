@@ -17,7 +17,10 @@ RiverDropoff::RiverDropoff()
 	name = "River Dropoff Area";
 
 	physicsComponent = new BoxCollider(this, glm::vec3(1.0f), RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
-	renderComponent = new RiverDropoffRender(this);
+	
+	refreshResources();
+	renderComponent = new RenderComponent(this);
+	renderComponent->addModelToRender({ model, false, nullptr });
 }
 
 RiverDropoff::~RiverDropoff()
@@ -74,15 +77,10 @@ void RiverDropoff::dropoffWater()
 	GameState::getInstance().playerIsHoldingWater = false;
 }
 
-RiverDropoffRender::RiverDropoffRender(BaseObject* bo) : RenderComponent(bo)
+void RiverDropoff::preRenderUpdate()
 {
-	refreshResources();
-}
-
-void RiverDropoffRender::preRenderUpdate()
-{
-	if (!((RiverDropoff*)baseObject)->isBeingTriggeredByPlayer() ||
-		baseObject->getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
+	if (!isBeingTriggeredByPlayer() ||
+		getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
 	static bool prevEBtnPressed = GLFW_RELEASE;
@@ -92,26 +90,12 @@ void RiverDropoffRender::preRenderUpdate()
 		//
 		// Drop off the water!
 		//
-		((RiverDropoff*)baseObject)->dropoffWater();
+		dropoffWater();
 	}
 	prevEBtnPressed = EBtnpressed;
 }
 
-void RiverDropoffRender::render()
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	model->render(baseObject->getTransform(), 0);
-}
-
-void RiverDropoffRender::renderShadow(GLuint programId)
-{
-	model->render(baseObject->getTransform(), programId);
-}
-
-void RiverDropoffRender::refreshResources()
+void RiverDropoff::refreshResources()
 {
 	model = (Model*)Resources::getResource("model;custommodel;res/debug/trigger_repr_cube.glb");
 	materials["Material"] = (Material*)Resources::getResource("material;pbrSlimeVest");

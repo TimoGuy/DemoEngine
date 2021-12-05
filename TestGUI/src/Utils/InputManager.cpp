@@ -99,7 +99,7 @@ void InputManager::updateInputState()
 			interactPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_B];
 			useItemPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_Y];
 			transformPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
-			resetCamPressed |= (bool)state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f;
+			resetCamPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f);
 			inventoryPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_BACK];
 			pausePressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_START];
 
@@ -142,8 +142,8 @@ void InputManager::updateInputState()
 		double deltaX = mouseX - previousMouseX;
 		double deltaY = mouseY - previousMouseY;
 
-		rightStickX += deltaX;
-		rightStickY += deltaY;
+		rightStickX += (float)deltaX;
+		rightStickY += (float)deltaY;
 
 		// KEYBOARD buttons
 		jumpPressed |= isKeyPressed(window, GLFW_KEY_SPACE);

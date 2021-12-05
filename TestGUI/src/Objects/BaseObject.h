@@ -129,6 +129,7 @@ protected:
 // Will be added into the renderobjects queue.
 //
 class Model;
+class Animator;
 struct ModelWithMetadata
 {
 	Model* model;
@@ -136,6 +137,7 @@ struct ModelWithMetadata
 	Animator* modelAnimator;
 };
 
+struct ViewFrustum;
 class RenderComponent final
 {
 public:
@@ -144,9 +146,12 @@ public:
 	RenderComponent(BaseObject* baseObject);
 	~RenderComponent();
 
-	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
+	// @TODO: @GIANT: You need to add a function to the main game loop to update the animator. This will finally use the modelAniamtor field...
 
-	void render();
+	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
+	void clearAllModels();
+
+	void render(const ViewFrustum* viewFrustum);
 	void renderShadow(GLuint programId);
 
 #ifdef _DEBUG
@@ -156,5 +161,7 @@ public:
 private:
 	std::vector<ModelWithMetadata> modelsWithMetadata;
 
+#ifdef _DEBUG
 	void refreshResources();
+#endif
 };

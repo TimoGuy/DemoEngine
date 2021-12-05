@@ -15,39 +15,35 @@
 #endif
 
 
-YosemiteTerrain::YosemiteTerrain(std::string modelResourceName)
+YosemiteTerrain::YosemiteTerrain(std::string modelResourceName) : modelResourceName(modelResourceName)
 {
 	name = "Yosemite Terrain";
 
 	INTERNALrecreatePhysicsComponent(modelResourceName);
-	renderComponent = new YosemiteTerrainRender(this, modelResourceName);
-}
 
-YosemiteTerrainRender::YosemiteTerrainRender(BaseObject* bo, std::string modelResourceName) : RenderComponent(bo), modelResourceName(modelResourceName)
-{
+	renderComponent = new RenderComponent(this);
 	refreshResources();
-}
-
-void YosemiteTerrainRender::refreshResources()
-{
-	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
-	shadowPassProgramId = *(GLuint*)Resources::getResource("shader;shadowPass");
-
-	bool isNewModel;
-	model = (Model*)Resources::getResource(modelResourceName, model, &isNewModel);
-	if (isNewModel)
-	{
-		((YosemiteTerrain*)baseObject)->INTERNALrecreatePhysicsComponent(modelResourceName);
-	}
-
-	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-	model->setMaterials(materials);
 }
 
 YosemiteTerrain::~YosemiteTerrain()
 {
 	delete renderComponent;
 	delete physicsComponent;
+}
+
+void YosemiteTerrain::refreshResources()
+{
+	bool isNewModel;
+	model = (Model*)Resources::getResource(modelResourceName, model, &isNewModel);
+	if (isNewModel)
+	{
+		INTERNALrecreatePhysicsComponent(modelResourceName);
+		renderComponent->clearAllModels();
+		renderComponent->addModelToRender({ model, true, nullptr });
+	}
+
+	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
+	model->setMaterials(materials);
 }
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -60,11 +56,11 @@ void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Overri
 	//
 	if (object.contains("modelResourceName"))
 	{
-		((YosemiteTerrainRender*)getRenderComponent())->modelResourceName = object["modelResourceName"];
+		modelResourceName = object["modelResourceName"];
 	}
 
 	// TODO: make it so that you don't have to retrigger this every time you load
-	((YosemiteTerrainRender*)getRenderComponent())->refreshResources();
+	refreshResources();
 }
 
 nlohmann::json YosemiteTerrain::savePropertiesToJson()
@@ -74,7 +70,7 @@ nlohmann::json YosemiteTerrain::savePropertiesToJson()
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 
 	// Explicit model resource name
-	j["modelResourceName"] = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
+	j["modelResourceName"] = modelResourceName;
 
 	return j;
 }
@@ -109,38 +105,8 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 	}
 }
 
-void YosemiteTerrainRender::preRenderUpdate()
+void YosemiteTerrain::preRenderUpdate()
 {
-}
-
-
-void YosemiteTerrainRender::render()
-{
-#ifdef _DEBUG
-	refreshResources();
-#endif
-
-	//
-	// Setup the transformation matrices and lights
-	//
-	//glUniformMatrix4fv(glGetUniformLocation(pbrShaderProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(renderTransform));
-	//glUniformMatrix3fv(glGetUniformLocation(pbrShaderProgramId, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(renderTransform)))));
-	//model->render(pbrShaderProgramId);
-
-	model->render(baseObject->getTransform(), 0);
-}
-
-void YosemiteTerrainRender::renderShadow(GLuint programId)
-{
-	//glUniformMatrix4fv(
-	//	glGetUniformLocation(programId, "modelMatrix"),
-	//	1,
-	//	GL_FALSE,
-	//	glm::value_ptr(renderTransform)
-	//);
-	//model->render(programId);
-
-	model->render(baseObject->getTransform(), programId);
 }
 
 #ifdef _DEBUG
@@ -153,13 +119,13 @@ void YosemiteTerrain::imguiPropertyPanel()
 	ImGui::Separator();
 
 	// Changing the model resource name
-	static std::string tempModelResourceName = ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName;
+	static std::string tempModelResourceName = modelResourceName;
 	ImGui::InputText("Model Resource", &tempModelResourceName);
-	if (tempModelResourceName != ((YosemiteTerrainRender*)getRenderComponent())->modelResourceName)
+	if (tempModelResourceName != modelResourceName)
 	{
 		if (ImGui::Button("Apply Resource Name"))
 		{
-			((YosemiteTerrainRender*)getRenderComponent())->modelResourceName = tempModelResourceName;
+			modelResourceName = tempModelResourceName;
 		}
 	}
 

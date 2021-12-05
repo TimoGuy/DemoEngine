@@ -10,6 +10,7 @@
 
 
 class Animation;
+struct ViewFrustum;
 typedef unsigned int GLuint;
 
 struct BoneInfo
@@ -24,7 +25,8 @@ public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
 	Model(const char* path, std::vector<std::string> animationNames);
-	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride);
+	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
+	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView);
 
 #ifdef _DEBUG
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);

@@ -110,7 +110,8 @@ private:
 	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
 	std::vector<float> transparentDistancesToCamera;
 
-	bool isWireFrameMode;
+	static bool isWireFrameMode;
+	static bool renderMeshRenderAABB;
 
 #ifdef _DEBUG
 	// ImGui Debug stuff

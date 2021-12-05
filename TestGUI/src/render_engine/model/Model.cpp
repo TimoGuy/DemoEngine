@@ -6,6 +6,7 @@
 
 #include "animation/Animation.h"
 #include "../../utils/PhysicsUtils.h"
+#include "../camera/Camera.h"
 
 
 Model::Model() { scene = nullptr; }
@@ -21,12 +22,29 @@ Model::Model(const char* path, std::vector<std::string> animationNames)
 	loadModel(path, animationNames);
 }
 
+bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView)
+{
+	bool modelIsChottoDakeDemoInViewFrustum = false;
 
-void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride)
+	out_whichMeshesInView.reserve(meshes.size());
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		const bool withinViewFrustum = viewFrustum->checkIfInViewFrustum(meshes[i].bounds, modelMatrix * localTransform);
+		out_whichMeshesInView.push_back(withinViewFrustum);
+		if (withinViewFrustum)
+			modelIsChottoDakeDemoInViewFrustum = true;
+	}
+
+	return modelIsChottoDakeDemoInViewFrustum;
+}
+
+
+void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView)
 {
 	for (unsigned int i = 0; i < meshes.size(); i++)
 	{
-		meshes[i].render(modelMatrix * localTransform, shaderIdOverride, false);			// NOTE: at this stage, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
+		if (whichMeshesInView == nullptr || (*whichMeshesInView)[i])
+			meshes[i].render(modelMatrix * localTransform, shaderIdOverride, false);			// NOTE: inside this render function, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "../mainloop/MainLoop.h"
 #include "../utils/PhysicsUtils.h"
 #include "../utils/Utils.h"
+#include "../render_engine/camera/Camera.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/model/animation/Animator.h"
 
@@ -231,7 +232,6 @@ void PhysicsComponent::INTERNALonTrigger(const physx::PxTriggerPair& pair)
 
 RenderComponent::RenderComponent(BaseObject* baseObject) : baseObject(baseObject)
 {
-	refreshResources();
 	MainLoop::getInstance().renderObjects.push_back(this);
 }
 
@@ -252,7 +252,12 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
-void RenderComponent::render()								// @Copypasta
+void RenderComponent::clearAllModels()
+{
+	modelsWithMetadata.clear();
+}
+
+void RenderComponent::render(const ViewFrustum* viewFrustum)								// @Copypasta
 {
 #ifdef _DEBUG
 	refreshResources();
@@ -260,13 +265,20 @@ void RenderComponent::render()								// @Copypasta
 
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
 	{
-		ModelWithMetadata& mwmd = modelsWithMetadata[i];
+		const ModelWithMetadata& mwmd = modelsWithMetadata[i];
+
+		// Short circuit out of loop if none of meshes are in view frustum.
+		// Also creates a reference to the meshes of which ones are in the view frustum.
+		std::vector<bool> whichMeshesInView;
+		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform(), viewFrustum, whichMeshesInView))
+			continue;
+		
 		if (mwmd.modelAnimator != nullptr)
 		{
 			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
 		}
-		mwmd.model->render(baseObject->getTransform(), 0);
+		mwmd.model->render(baseObject->getTransform(), 0, &whichMeshesInView);
 	}
 }
 
@@ -278,13 +290,13 @@ void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
 
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
 	{
-		ModelWithMetadata& mwmd = modelsWithMetadata[i];
+		const ModelWithMetadata& mwmd = modelsWithMetadata[i];
 		if (mwmd.modelAnimator != nullptr)
 		{
 			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
 		}
-		mwmd.model->render(baseObject->getTransform(), programId);
+		mwmd.model->render(baseObject->getTransform(), programId, nullptr);
 	}
 }
 
@@ -298,7 +310,9 @@ void RenderComponent::TEMPrenderImguiModelBounds()
 }
 #endif
 
+#ifdef _DEBUG
 void RenderComponent::refreshResources()
 {
 	baseObject->refreshResources();
 }
+#endif

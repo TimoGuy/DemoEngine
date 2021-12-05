@@ -7,26 +7,6 @@
 
 typedef unsigned int GLuint;
 
-class YosemiteTerrainRender : public RenderComponent
-{
-public:
-	YosemiteTerrainRender(BaseObject* bo, std::string modelResourceName);
-
-	void preRenderUpdate();
-	void render();
-	void renderShadow(GLuint programId);
-
-	unsigned int pbrShaderProgramId, shadowPassProgramId;
-
-	std::string modelResourceName;
-	Model* model;
-	std::map<std::string, Material*> materials;
-
-	// TODO: This needs to stop (having a bad loading function) bc this function should be private, but it's not. Kuso.
-	void refreshResources();
-private:
-};
-
 class YosemiteTerrain : public BaseObject
 {
 public:
@@ -38,6 +18,7 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
+	void preRenderUpdate();
 	void physicsUpdate();
 
 	PhysicsComponent* physicsComponent;
@@ -55,5 +36,15 @@ public:
 
 	// TODO: this should be private, with all the components just referring back to the single main one
 	physx::PxVec3 velocity, angularVelocity;
+
+	//
+	// OLD YOSEMITETERRAINRENDER
+	//
+	std::string modelResourceName;
+	Model* model;
+	std::map<std::string, Material*> materials;
+
+	// TODO: This needs to stop (having a bad loading function) bc this function should be private, but it's not. Kuso.
+	void refreshResources();
 };
 

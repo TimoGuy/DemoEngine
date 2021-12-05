@@ -13,8 +13,8 @@ struct ViewPlane
 	glm::vec3 normal;
 	glm::vec3 position;
 
-	bool checkIfInViewPlane(const RenderAABB& cookedBounds);
-	float getSignedDistance(const glm::vec3& point);
+	bool checkIfInViewPlane(const RenderAABB& cookedBounds) const;
+	float getSignedDistance(const glm::vec3& point) const;
 };
 
 struct ViewFrustum
@@ -29,7 +29,7 @@ struct ViewFrustum
 	ViewPlane nearFace;
 
 	static ViewFrustum createFrustumFromCamera(const Camera& camera);
-	bool checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix);
+	bool checkIfInViewFrustum(const RenderAABB& bounds, const glm::mat4& modelMatrix) const;
 };
 
 struct VirtualCamera

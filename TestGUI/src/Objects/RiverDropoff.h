@@ -6,21 +6,6 @@
 class Material;
 class Model;
 
-class RiverDropoffRender : public RenderComponent
-{
-public:
-	RiverDropoffRender(BaseObject* bo);
-
-	void preRenderUpdate();
-	void render();
-	void renderShadow(GLuint programId);
-
-private:
-	void refreshResources();
-	Model* model;
-	std::map<std::string, Material*> materials;
-};
-
 class RiverDropoff : public BaseObject
 {
 public:
@@ -29,15 +14,18 @@ public:
 	RiverDropoff();
 	~RiverDropoff();
 
+	void refreshResources();
+	void preRenderUpdate();
+
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
 	PhysicsComponent* physicsComponent;
-	RiverDropoffRender* renderComponent;
+	RenderComponent* renderComponent;
 
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
-	virtual RiverDropoffRender* getRenderComponent() override { return renderComponent; }
+	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	void onTrigger(const physx::PxTriggerPair& pair);
 
@@ -52,4 +40,10 @@ public:
 
 private:
 	bool beingTriggeredByPlayer = false;
+
+	//
+	// OLD RIVERDROPOFFRENDER
+	//
+	Model* model;
+	std::map<std::string, Material*> materials;
 };

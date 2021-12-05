@@ -33,15 +33,34 @@ private:
 
 struct VirtualCamera;
 
-class PlayerRender : public RenderComponent
+class PlayerCharacter : public BaseObject
 {
 public:
-	PlayerRender(BaseObject* bo);
-	~PlayerRender();
+	static const std::string TYPE_NAME;
 
-	void render();
-	void renderShadow(GLuint programId);
+	PlayerCharacter();
+	~PlayerCharacter();
 
+	void loadPropertiesFromJson(nlohmann::json& object);
+	nlohmann::json savePropertiesToJson();
+
+	PhysicsComponent* physicsComponent;
+	RenderComponent* renderComponent;
+
+	LightComponent* getLightComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
+	RenderComponent* getRenderComponent() { return renderComponent; }
+
+	void preRenderUpdate();
+
+#ifdef _DEBUG
+	void imguiPropertyPanel();
+	void imguiRender();
+#endif
+
+	//
+	// OLD PLAYERRENDER
+	//
 	Model* model;
 	Animator animator;
 	std::map<std::string, Material*> materials;
@@ -113,30 +132,4 @@ public:		// TODO: make this private (delete this!!!!!!)
 	// Rope Simulations
 	//
 	RopeSimulation leftSideburn, rightSideburn, backAttachment;
-};
-
-class PlayerCharacter : public BaseObject
-{
-public:
-	static const std::string TYPE_NAME;
-
-	PlayerCharacter();
-	~PlayerCharacter();
-
-	void loadPropertiesFromJson(nlohmann::json& object);
-	nlohmann::json savePropertiesToJson();
-
-	PhysicsComponent* physicsComponent;
-	RenderComponent* renderComponent;
-
-	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
-	RenderComponent* getRenderComponent() { return renderComponent; }
-
-	void preRenderUpdate();
-
-#ifdef _DEBUG
-	void imguiPropertyPanel();
-	void imguiRender();
-#endif
 };
