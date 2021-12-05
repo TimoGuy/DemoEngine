@@ -257,7 +257,15 @@ void createWindow(const char* windowName)
 		glfwTerminate();
 
 #if FULLSCREEN_MODE
-	MainLoop::getInstance().window = glfwCreateWindow(3440, 1440, windowName, glfwGetPrimaryMonitor(), NULL);
+	GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+
+	glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+	MainLoop::getInstance().window = glfwCreateWindow(mode->width, mode->height, windowName, primaryMonitor, NULL);
 #else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
 #endif
