@@ -192,6 +192,7 @@
     <None Include="shaders\zelly.frag" />
     <None Include="shaders\hudUI.frag" />
     <None Include="shaders\hudUI.vert" />
+    <None Include="shaders\color.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

@@ -137,6 +137,7 @@
     <None Include="shaders\bloom_postprocessing.vert" />
     <None Include="shaders\brdf.frag" />
     <None Include="shaders\brdf.vert" />
+    <None Include="shaders\color.frag" />
     <None Include="shaders\csm_shadow.geom" />
     <None Include="shaders\csm_shadow.vert" />
     <None Include="shaders\debug_csm.frag" />
