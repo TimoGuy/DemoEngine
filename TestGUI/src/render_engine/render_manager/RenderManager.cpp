@@ -538,9 +538,8 @@ void RenderManager::render()
 	//
 	// Render Picking texture
 	//
-	if (DEBUGdoPicking)
-	{
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pickingFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(pickingRenderFormatProgramId);
@@ -555,18 +554,21 @@ void RenderManager::render()
 			rc->renderShadow(pickingRenderFormatProgramId);
 		}
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+	if (DEBUGdoPicking)
+	{
 		// Read pixel
 		double mouseX, mouseY;
 		glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
 		PixelInfo pixInfo = readPixelFromPickingBuffer((uint32_t)mouseX, (uint32_t)(MainLoop::getInstance().camera.height - mouseY - 1));
-		size_t id = (size_t)pixInfo.objectID - 1;
-		currentSelectedObjectIndex = (int)id;
+		size_t id = (size_t)pixInfo.objectID;
+		currentSelectedObjectIndex = (int)id - 1;
 
 		// Unset flag
 		DEBUGdoPicking = false;
 	}
+	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
 
 #endif
 
@@ -1691,7 +1693,7 @@ void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
 	// Create floating point color buffer
 	glGenTextures(1, &pickingTexture);
 	glBindTexture(GL_TEXTURE_2D, pickingTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RED, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Create depth buffer (renderbuffer)
@@ -1704,9 +1706,12 @@ void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pickingDepthTexture);
 
 	glReadBuffer(GL_NONE);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Picking Buffer)" << std::endl;
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -1723,7 +1728,7 @@ PixelInfo RenderManager::readPixelFromPickingBuffer(uint32_t x, uint32_t y)
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
 	PixelInfo pixel;
-	glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &pixel);
+	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &pixel);
 
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);

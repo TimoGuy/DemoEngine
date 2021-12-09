@@ -1,10 +1,10 @@
 #version 430
 
-out float FragColor;
+out vec3 FragColor;
 
 uniform uint objectID;
 
 void main()
 {
-    FragColor = float(objectID);
+    FragColor = vec3(25.0, 1, 1);//float(objectID);
 }
