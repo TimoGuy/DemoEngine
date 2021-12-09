@@ -32,6 +32,19 @@ struct TextCharacter
 class Mesh;
 
 
+#ifdef _DEBUG
+struct PixelInfo
+{
+	float objectID;
+
+	PixelInfo()
+	{
+		objectID = 0.0f;
+	}
+};
+#endif
+
+
 class RenderManager
 {
 public:
@@ -46,7 +59,7 @@ public:
 
 	int debugCSMLayerNum = 0;
 
-	void recreateHDRBuffer();
+	void recreateRenderBuffers();
 
 #ifdef _DEBUG
 	int currentSelectedObjectIndex = -1;
@@ -130,6 +143,24 @@ private:
 #ifdef _DEBUG
 	// @PHYSX_VISUALIZATION
 	std::vector<physx::PxDebugLine>* physxVisDebugLines;
+#endif
+
+#ifdef _DEBUG
+	// Picking texture
+	void createPickingBuffer();
+	void destroyPickingBuffer();
+	PixelInfo readPixelFromPickingBuffer(uint32_t x, uint32_t y);
+
+public:
+	void flagForPicking() { DEBUGdoPicking = true; }
+private:
+	bool DEBUGdoPicking = false;
+
+	GLuint pickingRenderFormatProgramId;
+
+	GLuint pickingFBO;
+	GLuint pickingTexture;
+	GLuint pickingDepthTexture;
 #endif
 
 	// Skeletal Animation UBO

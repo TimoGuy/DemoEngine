@@ -409,6 +409,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/hudUI.vert", "shaders/hudUI.frag");
 #ifdef _DEBUG
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/color.frag");
+	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/debug_picking.frag");
 #endif
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);

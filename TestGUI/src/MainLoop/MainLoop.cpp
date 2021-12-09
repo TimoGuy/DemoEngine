@@ -18,7 +18,7 @@
 #include "../utils/FileLoading.h"
 
 
-#define FULLSCREEN_MODE 1
+#define FULLSCREEN_MODE 0
 #define SINGLE_BUFFERED_MODE 0
 #if SINGLE_BUFFERED_MODE
 #include <chrono>
@@ -165,10 +165,18 @@ void MainLoop::run()
 		ImGuizmo::BeginFrame();
 
 		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
-#endif
 		{
+			static bool prevLeftMouseButtonPressed = false;
+			if (!prevLeftMouseButtonPressed && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+			{
+				renderManager->flagForPicking();
+			}
+			prevLeftMouseButtonPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+#endif
 			camera.Inputs(window);
+#ifdef _DEBUG
 		}
+#endif
 
 		//
 		// Update the input manager
@@ -298,7 +306,7 @@ void frameBufferSizeChangedCallback(GLFWwindow* window, int width, int height)
 	MainLoop::getInstance().camera.height = (float)height;
 
 	if (MainLoop::getInstance().renderManager != nullptr)
-		MainLoop::getInstance().renderManager->recreateHDRBuffer();
+		MainLoop::getInstance().renderManager->recreateRenderBuffers();
 }
 
 

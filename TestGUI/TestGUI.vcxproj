@@ -142,6 +142,7 @@
     <None Include="shaders\csm_shadow.vert" />
     <None Include="shaders\debug_csm.frag" />
     <None Include="shaders\debug_csm.vert" />
+    <None Include="shaders\debug_picking.frag" />
     <None Include="shaders\do_nothing.frag" />
     <None Include="shaders\fragment.frag" />
     <None Include="shaders\hdri_equirectangular.frag" />

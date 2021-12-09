@@ -66,6 +66,9 @@ RenderManager::RenderManager()
 	}
 
 	createHDRBuffer();
+#ifdef _DEBUG
+	createPickingBuffer();
+#endif
 	createFonts();
 	createSkeletalAnimationUBO();
 }
@@ -297,10 +300,14 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void RenderManager::recreateHDRBuffer()
+void RenderManager::recreateRenderBuffers()
 {
 	destroyHDRBuffer();
 	createHDRBuffer();
+#ifdef _DEBUG
+	destroyPickingBuffer();
+	createPickingBuffer();
+#endif
 }
 
 void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList)
@@ -327,7 +334,7 @@ void RenderManager::createHDRBuffer()
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthRBO);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete!" << std::endl;
+		std::cout << "Framebuffer not complete! (HDR Render Buffer)" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
@@ -527,6 +534,42 @@ void RenderManager::render()
 		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
 	}
 
+#ifdef _DEBUG
+	//
+	// Render Picking texture
+	//
+	if (DEBUGdoPicking)
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, pickingFBO);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(pickingRenderFormatProgramId);
+		glUniformMatrix4fv(glGetUniformLocation(pickingRenderFormatProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+		for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
+		{
+			RenderComponent* rc = MainLoop::getInstance().objects[i]->getRenderComponent();
+			if (rc == nullptr)
+				continue;
+
+			glUniform1ui(glGetUniformLocation(pickingRenderFormatProgramId, "objectID"), i + 1);
+			rc->renderShadow(pickingRenderFormatProgramId);
+		}
+
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+		// Read pixel
+		double mouseX, mouseY;
+		glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
+		PixelInfo pixInfo = readPixelFromPickingBuffer((uint32_t)mouseX, (uint32_t)(MainLoop::getInstance().camera.height - mouseY - 1));
+		size_t id = (size_t)pixInfo.objectID - 1;
+		currentSelectedObjectIndex = (int)id;
+
+		// Unset flag
+		DEBUGdoPicking = false;
+	}
+
+#endif
+
 	//
 	// Render scene normally
 	//
@@ -567,7 +610,7 @@ void RenderManager::render()
 			glFrontFace(GL_CCW);
 			{
 				float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
-				std::cout << evaluatedIntensityValue << std::endl;
+				//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
 				GLuint selectionWireframeProgramId =
 					*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
 				glUseProgram(selectionWireframeProgramId);
@@ -580,7 +623,7 @@ void RenderManager::render()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glDepthMask(GL_TRUE);
 
-			selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 1.5f;
+			selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 4.0f;
 		}
 	}
 #endif
@@ -1257,8 +1300,8 @@ void RenderManager::renderImGuiContents()
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
-				/*if (glfwGetKey(windowRef, GLFW_KEY_Q))		TODO: find what you wanna do with key Q
-					currentSelectedObjectIndex = -1;*/
+				if (glfwGetKey(windowRef, GLFW_KEY_Q))
+					currentSelectedObjectIndex = -1;
 				if (glfwGetKey(windowRef, GLFW_KEY_W))
 					imGuizmoTransformOperation = 0;
 				if (glfwGetKey(windowRef, GLFW_KEY_E))
@@ -1638,6 +1681,54 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 	}
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
+{
+	pickingRenderFormatProgramId = *(GLuint*)Resources::getResource("shader;pickingRenderFormat");
+
+	glGenFramebuffers(1, &pickingFBO);
+	// Create floating point color buffer
+	glGenTextures(1, &pickingTexture);
+	glBindTexture(GL_TEXTURE_2D, pickingTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RED, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Create depth buffer (renderbuffer)
+	glGenRenderbuffers(1, &pickingDepthTexture);
+	glBindRenderbuffer(GL_RENDERBUFFER, pickingDepthTexture);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+	// Attach buffers
+	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pickingTexture, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pickingDepthTexture);
+
+	glReadBuffer(GL_NONE);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Picking Buffer)" << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void RenderManager::destroyPickingBuffer()
+{
+	glDeleteRenderbuffers(1, &pickingDepthTexture);
+	glDeleteTextures(1, &pickingTexture);
+	glDeleteFramebuffers(1, &pickingFBO);
+}
+
+PixelInfo RenderManager::readPixelFromPickingBuffer(uint32_t x, uint32_t y)
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, pickingFBO);
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+
+	PixelInfo pixel;
+	glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &pixel);
+
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+	return pixel;
 }
 
 void RenderManager::createSkeletalAnimationUBO()
