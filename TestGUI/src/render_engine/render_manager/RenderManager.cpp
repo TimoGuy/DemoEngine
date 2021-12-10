@@ -310,11 +310,13 @@ void RenderManager::recreateRenderBuffers()
 #endif
 }
 
+#ifdef _DEBUG
 void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList)
 {
 	delete physxVisDebugLines;			// NOTE: this gets destroyed to prevent any memory leaks
 	physxVisDebugLines = lineList;
 }
+#endif
 
 void RenderManager::createHDRBuffer()
 {
@@ -1689,6 +1691,7 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+#ifdef _DEBUG
 void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
 {
 	glGenFramebuffers(1, &pickingFBO);
@@ -1731,6 +1734,7 @@ PixelInfo RenderManager::readPixelFromPickingBuffer(uint32_t x, uint32_t y)
 
 	return pixel;
 }
+#endif
 
 void RenderManager::createSkeletalAnimationUBO()
 {
