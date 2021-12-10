@@ -159,8 +159,8 @@ private:
 	GLuint pickingRenderFormatProgramId;
 
 	GLuint pickingFBO;
-	GLuint pickingTexture;
-	GLuint pickingDepthTexture;
+	GLuint pickingRBO;
+	GLuint pickingColorBuffer;
 #endif
 
 	// Skeletal Animation UBO

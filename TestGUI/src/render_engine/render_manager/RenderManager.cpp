@@ -538,32 +538,40 @@ void RenderManager::render()
 	//
 	// Render Picking texture
 	//
-		glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
-		glClearColor(0, 0, 0, 1);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glUseProgram(pickingRenderFormatProgramId);
-		glUniformMatrix4fv(glGetUniformLocation(pickingRenderFormatProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
-		for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
-		{
-			RenderComponent* rc = MainLoop::getInstance().objects[i]->getRenderComponent();
-			if (rc == nullptr)
-				continue;
-
-			glUniform1ui(glGetUniformLocation(pickingRenderFormatProgramId, "objectID"), i + 1);
-			rc->renderShadow(pickingRenderFormatProgramId);
-		}
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	if (DEBUGdoPicking)
 	{
-		// Read pixel
-		double mouseX, mouseY;
-		glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
-		PixelInfo pixInfo = readPixelFromPickingBuffer((uint32_t)mouseX, (uint32_t)(MainLoop::getInstance().camera.height - mouseY - 1));
-		size_t id = (size_t)pixInfo.objectID;
-		currentSelectedObjectIndex = (int)id - 1;
+		if (!MainLoop::getInstance().playMode)		// NOTE: no reason in particular for making this !playmode only
+		{
+			// Render out picking data
+			glDisable(GL_BLEND);
+			glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+			glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			pickingRenderFormatProgramId = *(GLuint*)Resources::getResource("shader;pickingRenderFormat");
+			glUseProgram(pickingRenderFormatProgramId);
+			glUniformMatrix4fv(glGetUniformLocation(pickingRenderFormatProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+			for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
+			{
+				RenderComponent* rc = MainLoop::getInstance().objects[i]->getRenderComponent();
+				if (rc == nullptr)
+					continue;
+
+				glUniform1ui(glGetUniformLocation(pickingRenderFormatProgramId, "objectID"), i + 1);
+				rc->renderShadow(pickingRenderFormatProgramId);
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glEnable(GL_BLEND);
+
+			// Read pixel
+			double mouseX, mouseY;
+			glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
+			PixelInfo pixInfo = readPixelFromPickingBuffer((uint32_t)mouseX, (uint32_t)(MainLoop::getInstance().camera.height - mouseY - 1));
+			size_t id = (size_t)pixInfo.objectID;
+			currentSelectedObjectIndex = (int)id - 1;
+		}
 
 		// Unset flag
 		DEBUGdoPicking = false;
@@ -607,9 +615,6 @@ void RenderManager::render()
 			// Render that selected object!!!!
 			glDepthMask(GL_FALSE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
-			glFrontFace(GL_CCW);
 			{
 				float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
 				//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
@@ -621,7 +626,6 @@ void RenderManager::render()
 				glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
 				rc->renderShadow(selectionWireframeProgramId);
 			}
-			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glDepthMask(GL_TRUE);
 
@@ -1687,38 +1691,30 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 
 void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
 {
-	pickingRenderFormatProgramId = *(GLuint*)Resources::getResource("shader;pickingRenderFormat");
-
 	glGenFramebuffers(1, &pickingFBO);
 	// Create floating point color buffer
-	glGenTextures(1, &pickingTexture);
-	glBindTexture(GL_TEXTURE_2D, pickingTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RGB, GL_FLOAT, NULL);
+	glGenTextures(1, &pickingColorBuffer);
+	glBindTexture(GL_TEXTURE_2D, pickingColorBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RED, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// Create depth buffer (renderbuffer)
-	glGenRenderbuffers(1, &pickingDepthTexture);
-	glBindRenderbuffer(GL_RENDERBUFFER, pickingDepthTexture);
+	glGenRenderbuffers(1, &pickingRBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, pickingRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	// Attach buffers
 	glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pickingTexture, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pickingDepthTexture);
-
-	glReadBuffer(GL_NONE);
-	glDrawBuffer(GL_COLOR_ATTACHMENT0);
-
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pickingColorBuffer, 0);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pickingRBO);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (Picking Buffer)" << std::endl;
-
-	glBindTexture(GL_TEXTURE_2D, 0);
+		std::cout << "Framebuffer not complete! (picking Framebuffer)" << std::endl;
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void RenderManager::destroyPickingBuffer()
 {
-	glDeleteRenderbuffers(1, &pickingDepthTexture);
-	glDeleteTextures(1, &pickingTexture);
+	glDeleteTextures(1, &pickingColorBuffer);
+	glDeleteRenderbuffers(1, &pickingRBO);
 	glDeleteFramebuffers(1, &pickingFBO);
 }
 
@@ -1728,7 +1724,7 @@ PixelInfo RenderManager::readPixelFromPickingBuffer(uint32_t x, uint32_t y)
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 
 	PixelInfo pixel;
-	glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, &pixel);
+	glReadPixels(x, y, 1, 1, GL_RED, GL_FLOAT, &pixel);
 
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
