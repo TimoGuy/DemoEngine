@@ -184,6 +184,11 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 			if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
 				lockedCursor = true;
+#ifdef _DEBUG
+				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+#else
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+#endif
 			}
 		}
 		else
@@ -192,6 +197,11 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 			if (glfwGetKey(window, GLFW_KEY_F10) == GLFW_PRESS)
 			{
 				lockedCursor = false;
+#ifdef _DEBUG
+				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+#else
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+#endif
 			}
 		}
 		return;
