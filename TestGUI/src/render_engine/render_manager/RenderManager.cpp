@@ -556,6 +556,9 @@ void RenderManager::render()
 			glUniformMatrix4fv(glGetUniformLocation(pickingRenderFormatProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
 			for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
 			{
+				if (i == (uint32_t)currentSelectedObjectIndex)
+					continue;
+
 				RenderComponent* rc = MainLoop::getInstance().objects[i]->getRenderComponent();
 				if (rc == nullptr)
 					continue;
