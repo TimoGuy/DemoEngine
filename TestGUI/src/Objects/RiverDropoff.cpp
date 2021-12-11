@@ -97,7 +97,7 @@ void RiverDropoff::preRenderUpdate()
 
 void RiverDropoff::refreshResources()
 {
-	model = (Model*)Resources::getResource("model;custommodel;res/debug/trigger_repr_cube.glb");
+	model = (Model*)Resources::getResource("model;custommodel;res/_debug/trigger_repr_cube.glb");
 	materials["Material"] = (Material*)Resources::getResource("material;pbrSlimeVest");
 	model->setMaterials(materials);
 }

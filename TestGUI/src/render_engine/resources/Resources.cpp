@@ -429,7 +429,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });
-	if (resourceName == "texture;lvlGridTexture")						return loadTexture2D(resourceName, isUnloading, "res/debug/lvl_grid_texture.png", GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;lvlGridTexture")						return loadTexture2D(resourceName, isUnloading, "res/_debug/lvl_grid_texture.png", GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
 	//
 	// Rusty metal pbr
