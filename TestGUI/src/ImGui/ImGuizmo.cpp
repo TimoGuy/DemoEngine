@@ -192,7 +192,7 @@ namespace ImGuizmo
    template <typename T> bool IsWithin(T x, T y, T z) { return (x >= y) && (x <= z); }
 
    struct matrix_t;
-   struct vec_t
+   /*struct vec_t           NOTE: I edited this out -Timo
    {
    public:
       float x, y, z, w;
@@ -268,9 +268,10 @@ namespace ImGuizmo
       float& operator [] (size_t index) { return ((float*)&x)[index]; }
       const float& operator [] (size_t index) const { return ((float*)&x)[index]; }
       bool operator!=(const vec_t& other) const { return memcmp(this, &other, sizeof(vec_t)); }
-   };
+   };*/
 
-   vec_t makeVect(float _x, float _y, float _z = 0.f, float _w = 0.f) { vec_t res; res.x = _x; res.y = _y; res.z = _z; res.w = _w; return res; }
+   // NOTE: defintion of default values moved to .h file -Timo
+   vec_t makeVect(float _x, float _y, float _z/* = 0.f*/, float _w/* = 0.f*/) { vec_t res; res.x = _x; res.y = _y; res.z = _z; res.w = _w; return res; }
    vec_t makeVect(ImVec2 v) { vec_t res; res.x = v.x; res.y = v.y; res.z = 0.f; res.w = 0.f; return res; }
    vec_t vec_t::operator * (float f) const { return makeVect(x * f, y * f, z * f, w * f); }
    vec_t vec_t::operator - () const { return makeVect(-x, -y, -z, -w); }
@@ -306,7 +307,7 @@ namespace ImGuizmo
       return res;
    }
 
-   struct matrix_t
+   /*struct matrix_t            NOTE: I edited this out -Timo
    {
    public:
 
@@ -408,7 +409,7 @@ namespace ImGuizmo
          v.up.Normalize();
          v.dir.Normalize();
       }
-   };
+   };*/
 
    void vec_t::Transform(const matrix_t& matrix)
    {
@@ -602,7 +603,7 @@ namespace ImGuizmo
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    //
 
-   enum MOVETYPE
+   /*enum MOVETYPE          NOTE: I edited this out -Timo
    {
       MT_NONE,
       MT_MOVE_X,
@@ -620,7 +621,7 @@ namespace ImGuizmo
       MT_SCALE_Y,
       MT_SCALE_Z,
       MT_SCALE_XYZ
-   };
+   };*/
 
    static bool IsTranslateType(int type)
    {
@@ -757,7 +758,7 @@ namespace ImGuizmo
 
    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    //
-   static int GetMoveType(OPERATION op, vec_t* gizmoHitProportion);
+   int GetMoveType(OPERATION op, vec_t* gizmoHitProportion);
    static int GetRotateType(OPERATION op);
    static int GetScaleType(OPERATION op);
 
@@ -1809,7 +1810,7 @@ namespace ImGuizmo
       return type;
    }
 
-   static int GetMoveType(OPERATION op, vec_t* gizmoHitProportion)
+   int GetMoveType(OPERATION op, vec_t* gizmoHitProportion)
    {
       if(!Intersects(op, TRANSLATE))
       {

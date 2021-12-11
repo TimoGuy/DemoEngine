@@ -45,6 +45,8 @@ bool RenderManager::isWireFrameMode = false;
 bool RenderManager::renderPhysicsDebug = false;
 bool RenderManager::renderMeshRenderAABB = false;
 
+ImGuizmo::OPERATION transOperation;
+
 
 RenderManager::RenderManager()
 {
@@ -851,36 +853,108 @@ void RenderManager::renderScene()
 	//
 	// @DEBUG: show grid for imguizmo
 	//
-	if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+	static bool imguizmoIsUsingPrevious = false;
+
+	if (ImGuizmo::IsUsing() && currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
 	{
+		static bool showXGrid = false;
+		static bool showYGrid = false;
+		static bool showZGrid = false;
+
+		//
+		// See which grid to show
+		// NOTE: you do NOT wanna see the jank I had to create inside of ImGuizmo.h and ImGuizmo.cpp to make this work. NG NG
+		//
+		if (!imguizmoIsUsingPrevious)
+		{
+			// Reset
+			showXGrid = false;
+			showYGrid = false;
+			showZGrid = false;
+
+			// Test what movetype
+			ImGuizmo::vec_t gizmoHitProportion;
+			int type = ImGuizmo::GetMoveType(transOperation, &gizmoHitProportion);
+			if (type == ImGuizmo::MOVETYPE::MT_NONE)
+			{
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_X)
+			{
+				showYGrid = true;
+				showZGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_Y)
+			{
+				showXGrid = true;
+				showZGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_Z)
+			{
+				showXGrid = true;
+				showYGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_YZ)
+			{
+				showXGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_ZX)
+			{
+				showYGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_XY)
+			{
+				showZGrid = true;
+			}
+			else if (type == ImGuizmo::MOVETYPE::MT_MOVE_SCREEN)
+			{
+				showXGrid = true;
+				showYGrid = true;
+				showZGrid = true;
+			}
+		}
+
+		//
+		// Draw the grids!!!
+		//
 		const glm::vec3 positionVector = PhysicsUtils::getPosition(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform());
 
 		glm::mat4 position = glm::translate(glm::mat4(1.0f), positionVector);
 		glm::mat4 rotation = glm::toMat4(PhysicsUtils::getRotation(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()));
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), {100, 100, 100});
-
 		constexpr float divisor = 4.0f;
 		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
-		gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.y / divisor });
-		gridMaterial->setColor({ 0.1, 0.1, 2 });
-		gridMaterial->applyTextureUniforms();
-		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * scale));
-		renderQuad();
 
-		gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.z / divisor });
-		gridMaterial->setColor({ 0.1, 2, 0.1 });
-		gridMaterial->applyTextureUniforms();
-		glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
-		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * xRotate * scale));
-		renderQuad();
+		if (showZGrid)
+		{
+			gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.y / divisor });
+			gridMaterial->setColor(glm::vec3(0.1, 0.1, 1) * 5);
+			gridMaterial->applyTextureUniforms();
+			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * scale));
+			renderQuad();
+		}
 
-		gridMaterial->setTilingAndOffset({ 50, 50, -positionVector.z / divisor, positionVector.y / divisor });
-		gridMaterial->setColor({ 2, 0.1, 0.1 });
-		gridMaterial->applyTextureUniforms();
-		glm::mat4 zRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 90, 0))));
-		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * zRotate * scale));
-		renderQuad();
+		if (showYGrid)
+		{
+			gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.z / divisor });
+			gridMaterial->setColor(glm::vec3(0.1, 1, 0.1) * 5);
+			gridMaterial->applyTextureUniforms();
+			glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
+			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * xRotate * scale));
+			renderQuad();
+		}
+
+		if (showXGrid)
+		{
+			gridMaterial->setTilingAndOffset({ 50, 50, -positionVector.z / divisor, positionVector.y / divisor });
+			gridMaterial->setColor(glm::vec3(1, 0.1, 0.1) * 5);
+			gridMaterial->applyTextureUniforms();
+			glm::mat4 zRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 90, 0))));
+			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * zRotate * scale));
+			renderQuad();
+		}
 	}
+
+	imguizmoIsUsingPrevious = ImGuizmo::IsUsing();
 #endif
 
 	//
@@ -1627,7 +1701,7 @@ void RenderManager::renderImGuiContents()
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
 		ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
 
-		ImGuizmo::OPERATION transOperation = ImGuizmo::OPERATION::TRANSLATE;
+		transOperation = ImGuizmo::OPERATION::TRANSLATE;
 		if (imGuizmoTransformOperation == 1)
 			transOperation = ImGuizmo::OPERATION::ROTATE;
 		if (imGuizmoTransformOperation == 2)
