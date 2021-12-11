@@ -26,6 +26,7 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 
 void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName);
 void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
+void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
 
 void* loadResource(const std::string& resourceName, bool isUnloading);
 
@@ -381,6 +382,20 @@ void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::
 	}
 }
 
+void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color)
+{
+	if (!isUnloading)
+	{
+		Material* material = new LvlGridMaterial(color);
+		return material;
+	}
+	else
+	{
+		delete (Material*)findResource(materialName);
+		return nullptr;
+	}
+}
+
 #pragma endregion
 
 
@@ -391,8 +406,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/pbr.frag");
 	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shaders/pbr.vert", "shaders/zelly.frag");
-	if (resourceName == "shader;blinnPhong")							return loadShaderProgramVF(resourceName, isUnloading, "shaders/vertex.vert", "shaders/fragment.frag");
-	if (resourceName == "shader;blinnPhongSkinned")						return loadShaderProgramVF(resourceName, isUnloading, "shaders/model.vert", "shaders/model.frag");
+	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shaders/lvlGrid.vert", "shaders/lvlGrid.frag");		// @DEBUG
 	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shaders/cubemap.vert", "shaders/skybox.frag");
 	if (resourceName == "shader;shadowPass")							return loadShaderProgramVF(resourceName, isUnloading, "shaders/shadow.vert", "shaders/do_nothing.frag");
 	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shaders/csm_shadow.vert", "shaders/csm_shadow.geom", "shaders/do_nothing.frag");
@@ -413,6 +427,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 #endif
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr"/*"res/skybox/rice_field_day_env.hdr"*/, GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+
+	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });
+	if (resourceName == "texture;lvlGridTexture")						return loadTexture2D(resourceName, isUnloading, "res/debug/lvl_grid_texture.png", GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
 	//
 	// Rusty metal pbr

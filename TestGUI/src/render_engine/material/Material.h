@@ -45,3 +45,16 @@ public:
 private:
 	glm::vec3 color;
 };
+
+
+class LvlGridMaterial : public Material
+{
+public:
+	LvlGridMaterial(glm::vec3 color);
+
+	void applyTextureUniforms();
+	void setColor(glm::vec3 color) { LvlGridMaterial::color = color; }
+
+private:
+	glm::vec3 color;
+};

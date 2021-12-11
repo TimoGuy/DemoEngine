@@ -161,3 +161,27 @@ void ZellyMaterial::applyTextureUniforms()
 	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
 }
+
+
+//
+// LvlGridMaterial
+//
+LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
+	Material(*(unsigned int*)Resources::getResource("shader;lvlGrid"), 0, 0, 0, 0, glm::vec4(50, 50, 0, 0))
+{
+	LvlGridMaterial::color = color;
+	isTransparent = true;
+}
+
+void LvlGridMaterial::applyTextureUniforms()
+{
+	setupShader(myShaderId);
+
+	glUniform3fv(glGetUniformLocation(myShaderId, "gridColor"), 1, &color.x);
+	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
+
+	GLuint gridTexture = *(GLuint*)Resources::getResource("texture;lvlGridTexture");
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, gridTexture);
+	glUniform1i(glGetUniformLocation(myShaderId, "gridTexture"), 0);
+}

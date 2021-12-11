@@ -150,6 +150,7 @@
     <None Include="shaders\hudUI.vert" />
     <None Include="shaders\irradiance_convolution.frag" />
     <None Include="shaders\cubemap.vert" />
+    <None Include="shaders\lvlGrid.frag" />
     <None Include="shaders\model.frag" />
     <None Include="shaders\model.vert" />
     <None Include="shaders\pbr.frag" />
@@ -166,7 +167,7 @@
     <None Include="shaders\skybox.vert" />
     <None Include="shaders\text.frag" />
     <None Include="shaders\text.vert" />
-    <None Include="shaders\vertex.vert" />
+    <None Include="shaders\lvlGrid.vert" />
     <None Include="shaders\zelly.frag" />
   </ItemGroup>
   <ItemGroup>

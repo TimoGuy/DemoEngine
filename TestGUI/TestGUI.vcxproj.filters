@@ -158,7 +158,7 @@
     <None Include="shaders\fragment.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\vertex.vert">
+    <None Include="shaders\lvlGrid.vert">
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="shaders\model.frag" />
@@ -194,6 +194,7 @@
     <None Include="shaders\hudUI.vert" />
     <None Include="shaders\color.frag" />
     <None Include="shaders\debug_picking.frag" />
+    <None Include="shaders\lvlGrid.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

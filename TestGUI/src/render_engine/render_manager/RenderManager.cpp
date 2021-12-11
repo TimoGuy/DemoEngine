@@ -378,8 +378,6 @@ void RenderManager::destroyHDRBuffer()
 
 void RenderManager::createShaderPrograms()
 {
-	this->program_id = *(GLuint*)Resources::getResource("shader;blinnPhong");
-	this->model_program_id = *(GLuint*)Resources::getResource("shader;blinnPhongSkinned");
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
 	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
 	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
@@ -728,6 +726,7 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 	RenderManager::cameraView = cameraView;
 }
 
+
 void RenderManager::renderScene()
 {
 	//
@@ -847,6 +846,42 @@ void RenderManager::renderScene()
 	transparentModelMatrices.clear();
 	transparentBoneMatrixMemAddrs.clear();
 	transparentDistancesToCamera.clear();
+
+#ifdef _DEBUG
+	//
+	// @DEBUG: show grid for imguizmo
+	//
+	if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+	{
+		const glm::vec3 positionVector = PhysicsUtils::getPosition(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform());
+
+		glm::mat4 position = glm::translate(glm::mat4(1.0f), positionVector);
+		glm::mat4 rotation = glm::toMat4(PhysicsUtils::getRotation(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()));
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), {100, 100, 100});
+
+		constexpr float divisor = 4.0f;
+		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
+		gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.y / divisor });
+		gridMaterial->setColor({ 0.1, 0.1, 2 });
+		gridMaterial->applyTextureUniforms();
+		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * scale));
+		renderQuad();
+
+		gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.z / divisor });
+		gridMaterial->setColor({ 0.1, 2, 0.1 });
+		gridMaterial->applyTextureUniforms();
+		glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
+		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * xRotate * scale));
+		renderQuad();
+
+		gridMaterial->setTilingAndOffset({ 50, 50, -positionVector.z / divisor, positionVector.y / divisor });
+		gridMaterial->setColor({ 2, 0.1, 0.1 });
+		gridMaterial->applyTextureUniforms();
+		glm::mat4 zRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 90, 0))));
+		glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * zRotate * scale));
+		renderQuad();
+	}
+#endif
 
 	//
 	// @DEBUG: Draw the shadowmaps on a quad on top of everything else
