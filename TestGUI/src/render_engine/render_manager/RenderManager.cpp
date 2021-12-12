@@ -165,6 +165,8 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), perlinTime);
 	glUniform1i(glGetUniformLocation(skybox_program_id, "showSun"), 0);				// NOTE: don't include sun in the hdr skies.
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
+	glUniform1i(glGetUniformLocation(skybox_program_id, "width"), renderTextureSize);
+	glUniform1i(glGetUniformLocation(skybox_program_id, "height"), renderTextureSize);
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
@@ -761,6 +763,8 @@ void RenderManager::renderScene()
 	glUniform1i(glGetUniformLocation(skybox_program_id, "showSun"), 1);
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
+	glUniform1i(glGetUniformLocation(skybox_program_id, "width"), (GLint)MainLoop::getInstance().camera.width);
+	glUniform1i(glGetUniformLocation(skybox_program_id, "height"), (GLint)MainLoop::getInstance().camera.height);
 	//perlinTime += MainLoop::getInstance().deltaTime;
 	renderCube();
 
