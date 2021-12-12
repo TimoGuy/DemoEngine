@@ -45,7 +45,9 @@ bool RenderManager::isWireFrameMode = false;
 bool RenderManager::renderPhysicsDebug = false;
 bool RenderManager::renderMeshRenderAABB = false;
 
+#ifdef _DEBUG
 ImGuizmo::OPERATION transOperation;
+#endif
 
 
 RenderManager::RenderManager()
