@@ -19,6 +19,10 @@ uniform float perlinTime;
 
 uniform bool showSun;
 
+
+
+uniform float cameraHeight;
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -27,7 +31,9 @@ uniform bool showSun;
 
 
 //https://github.com/fynnfluegge/oreon-engine/blob/master/oreonengine/oe-gl-components/src/main/resources/shaders/atmosphere/atmospheric_scattering.frag
-
+// Which apparently was plaigiarized from:
+//      https://github.com/wwwtyro/glsl-atmosphere/blob/master/index.glsl
+//          It's licensed under the Unlicense btw.
 
 
 
@@ -44,14 +50,15 @@ uniform mat4 projection;
 uniform mat4 view;
 //uniform vec3 v_Sun;       NOTE: use sunOrientation and sunRadius
 //uniform float r_Sun;
-uniform int width;
-uniform int height;
+//uniform int width;            NOTE: became unused bc used the ndc from the vertex shader instead haha
+//uniform int height;
 //uniform int isReflection;     NOTE: use showSun
 //uniform float horizonVerticalShift;
 //uniform float reflectionVerticalShift;
 const vec3 sunBaseColor = vec3(1.0f,0.79f,0.43f);
 
-vec2 rsi(vec3 r0, vec3 rd, float sr) {
+vec2 rsi(vec3 r0, vec3 rd, float sr)
+{
     // ray-sphere intersection that assumes
     // the sphere is centered at the origin.
     // No intersection when result.x > result.y
@@ -66,8 +73,8 @@ vec2 rsi(vec3 r0, vec3 rd, float sr) {
     );
 }
 
-vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos,
-				vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g)
+{
     // Normalize the sun and view directions.
     pSun = normalize(pSun);
     r = normalize(r);
@@ -97,8 +104,8 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     float pMie = 3.0 / (8.0 * PI) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg));
 
     // Sample the primary ray.
-    for (int i = 0; i < iSteps; i++) {
-
+    for (int i = 0; i < iSteps; i++)
+    {
         // Calculate the primary ray sample position.
         vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
 
@@ -124,8 +131,8 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
         float jOdMie = 0.0;
 
         // Sample the secondary ray.
-        for (int j = 0; j < jSteps; j++) {
-
+        for (int j = 0; j < jSteps; j++)
+        {
             // Calculate the secondary ray sample position.
             vec3 jPos = iPos + pSun * (jTime + jStepSize * 0.5);
 
@@ -157,8 +164,8 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 }
 
 
-void main() {
-
+void main()
+{
 	//vec2 ndc = vec2(gl_FragCoord.x/width * 2 -1,gl_FragCoord.y/height * 2 -1);
 	//vec4 ray_clip = vec4(ndc, -1.0, 1.0);
 	//vec4 ray_eye = inverse(projection) * ray_clip;
@@ -166,11 +173,13 @@ void main() {
 	//vec3 ray_world = (inverse(view) * ray_eye).xyz;
     vec3 ray_world = normalize(localPos);           // Does this work??? I guess so...
 	
-	if (!showSun){
+	if (!showSun)
+    {
 		//ray_world.y *= -1;
 		//ray_world.y += reflectionVerticalShift;
 	}
-	else{
+	else
+    {
 		//ray_world.y += horizonVerticalShift;
 	}
 	
@@ -181,9 +190,9 @@ void main() {
 
     vec3 out_Color = atmosphere(
         normalize(ray_world),        	// normalized ray direction
-        vec3(0,6372e3,0),              	// ray origin
+        vec3(0, 6372e3 + cameraHeight, 0),              	// ray origin
         v_Sun,                  		// position of the sun
-        showSun ? 48.0 : 22.0,          // intensity of the sun
+        22.0,//showSun ? 48.0 : 22.0,          // intensity of the sun
         6371e3,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
@@ -199,7 +208,7 @@ void main() {
 	float _sunRadius = length(normalize(ray_world)- normalize(v_Sun));
 	
 	// no sun rendering when scene reflection
-	if(_sunRadius < sunRadius && showSun)
+	if(_sunRadius < sunRadius && ray_world.y >= 0.0 && showSun)
 	{
 		_sunRadius /= sunRadius;
 		float smoothRadius = smoothstep(0,1,0.1f/_sunRadius-0.1f);
@@ -209,5 +218,5 @@ void main() {
 		out_LightScattering = mix(vec3(0), sunBaseColor, smoothRadius);
 	}
 
-    fragColor = vec4(out_Color,1);
+    fragColor = vec4(out_Color, 1);
 }
