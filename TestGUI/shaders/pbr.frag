@@ -148,7 +148,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         {
             float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r; 
             shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
-        }    
+        }
     }
     shadow /= 9.0;
     
@@ -158,16 +158,27 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         shadow = 0.0;
     }
 
-    if (layer == cascadeCount)
-    {
-        //
-        // Create a fading edge in the far plane
-        //
-        float fadingEdge = 2.0;
-        float subtractAmount = clamp((projCoords.z - 1.0) * (farPlane - nearPlane) + fadingEdge, 0.0, fadingEdge) / fadingEdge;
-        shadow -= subtractAmount;
-        shadow = clamp(shadow, 0.0, 1.0);
-    }
+    
+    // NOTE: Anybody who can figure out the distance fading for the shadows gets 10$ -Timo.
+    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
+    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
+    //if (layer == cascadeCount)
+    //{
+    //    //
+    //    // Create a fading edge in the far plane
+    //    //
+    //    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
+    //    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
+    //    
+    //    float fadingEdge = 20.0;
+    //    float visibleAmount = clamp(farPlane - linearDepth, 0.0, fadingEdge) / fadingEdge;
+    //    shadow *= visibleAmount;
+    //    //shadow = clamp(shadow, 0.0, 1.0);
+    //}
+
+
+    if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
+        return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?
         
     return shadow;
 }
@@ -396,6 +407,8 @@ void main()
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, 1.0);
+
+    //FragColor = vec4(vec3(linearDepth), 1.0);
 
     //FragColor += layerCalc(fragPosition);                         // NOTE: for debugging purposes, this shows the individual cascades
 }

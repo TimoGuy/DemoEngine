@@ -79,8 +79,8 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	colorIntensity = 150.0f;
 
 	// @Hardcode
-	shadowFarPlane = 200.0f;
-	shadowCascadeLevels = { shadowFarPlane / 50.0f, shadowFarPlane / 25.0f, shadowFarPlane / 10.0f, shadowFarPlane / 2.0f };
+	shadowFarPlane = 150.0f;
+	shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };
 
 	refreshRenderBuffers();
 }
@@ -98,7 +98,7 @@ void DirectionalLightLight::refreshRenderBuffers()
 		destroyCSMBuffers();
 }
 
-constexpr GLsizei depthMapResolution = 4096;
+constexpr GLsizei depthMapResolution = 1024;
 void DirectionalLightLight::createCSMBuffers()
 {
 	if (shadowMapsCreated) return;
@@ -304,7 +304,6 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxZ *= zMult;
 	}
 
-	//const glm::mat4 lpMatrix = glm::ortho(-shadowCoverageRadius, shadowCoverageRadius, -shadowCoverageRadius, shadowCoverageRadius, minZ, maxZ);
 	const glm::mat4 lpMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, minZ, maxZ);
 
 	const float scaleX = 2.0f / ((maxX - minX));
@@ -394,6 +393,16 @@ void DirectionalLight::imguiPropertyPanel()
 
 		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
 		trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
+	}
+
+	//
+	// Define the cascades for the shadows!
+	//
+	ImGui::Separator();
+	ImGui::Text("Shadow Cascade boundaries");
+	for (size_t i = 0; i < ((DirectionalLightLight*)getLightComponent())->shadowCascadeLevels.size(); i++)
+	{
+		ImGui::DragFloat((std::string("Bound ") + std::to_string(i)).c_str(), &((DirectionalLightLight*)getLightComponent())->shadowCascadeLevels[i], 1.0f, i==0?0.0f: ((DirectionalLightLight*)getLightComponent())->shadowCascadeLevels[i-1], i== ((DirectionalLightLight*)getLightComponent())->shadowCascadeLevels.size()-1?0.0f: ((DirectionalLightLight*)getLightComponent())->shadowCascadeLevels[i + 1]);
 	}
 
 	//
