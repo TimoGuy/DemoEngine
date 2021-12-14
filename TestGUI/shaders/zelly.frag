@@ -90,6 +90,22 @@ const float PI = 3.14159265359;
     return retColor;
 }*/
 
+float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float compare)           // https://www.youtube.com/watch?v=yn5UJzMqxj0 (29:27)
+{
+    vec2 pixelPos = coords / texelSize + vec2(0.5);
+    vec2 fracPart = fract(pixelPos);
+    vec2 startTexel = (pixelPos - fracPart) * texelSize;
+
+    float blTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, 0.0), layer)).r);
+    float brTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, 0.0), layer)).r);
+    float tlTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, texelSize.y), layer)).r);
+    float trTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, texelSize.y), layer)).r);
+    
+    float mixA = mix(blTexel, tlTexel, fracPart.y);
+    float mixB = mix(brTexel, trTexel, fracPart.y);
+
+    return mix(mixA, mixB, fracPart.x);
+}
 
 float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 {
@@ -142,11 +158,13 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r; 
-            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;        
-        }    
+            //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
+            //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+            shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
+        }
     }
     shadow /= 9.0;
+    shadow = 1.0 - shadow;
     
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
@@ -154,16 +172,27 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         shadow = 0.0;
     }
 
-    if (layer == cascadeCount)
-    {
-        //
-        // Create a fading edge in the far plane
-        //
-        float fadingEdge = 2.0;
-        float subtractAmount = clamp((projCoords.z - 1.0) * (farPlane - nearPlane) + fadingEdge, 0.0, fadingEdge) / fadingEdge;
-        shadow -= subtractAmount;
-        shadow = clamp(shadow, 0.0, 1.0);
-    }
+    
+    // NOTE: Anybody who can figure out the distance fading for the shadows gets 10$ -Timo.
+    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
+    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
+    //if (layer == cascadeCount)
+    //{
+    //    //
+    //    // Create a fading edge in the far plane
+    //    //
+    //    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
+    //    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
+    //    
+    //    float fadingEdge = 20.0;
+    //    float visibleAmount = clamp(farPlane - linearDepth, 0.0, fadingEdge) / fadingEdge;
+    //    shadow *= visibleAmount;
+    //    //shadow = clamp(shadow, 0.0, 1.0);
+    //}
+
+
+    //if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
+    //    return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?
         
     return shadow;
 }
