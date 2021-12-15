@@ -108,7 +108,7 @@ void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 	//
 	// Resize the scale of the triangle mesh
 	//
-	body->detachShape(*shape);
+	//body->detachShape(*shape);
 
 	// REDO THE TRI MESH!!!!
 }
