@@ -8,6 +8,9 @@
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 
+#define LERP(a, b, t) (a) + (t) * ((b) - (a))
+#define REMAP(value, istart, istop, ostart, ostop) ((value) - (istart)) / ((istop) - (istart)) * ((ostop) - (ostart)) + (ostart)
+
 #ifdef _DEBUG
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
@@ -16,6 +19,8 @@
 
 #include "../utils/PhysicsUtils.h"
 
+// NOTE: if 0, then use close fit shadows
+#define STABLE_FIT_CSM_SHADOWS 1
 
 static float multiplier = 2.0f;
 static int followCascade = -1;				// NOTE: this is so that it's off by default
@@ -45,7 +50,7 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	// I'll take the leftover tokens then
 	//
 	lightComponent->color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
-	lightComponent->colorIntensity = object["color_multiplier"];
+	((DirectionalLightLight*)lightComponent)->maxColorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 	((DirectionalLightLight*)lightComponent)->refreshRenderBuffers();
@@ -75,12 +80,15 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 
 	lightType = LightType::DIRECTIONAL;
 
-	color = glm::vec3(1.0f);
-	colorIntensity = 150.0f;
+	color = glm::vec3(1.0f, 1.0f, 0.984f);		// http://planetpixelemporium.com/tutorialpages/light.html (High Noon Sun)
+	maxColorIntensity = 150.0f;
+	colorIntensityMaxAtY = 0.707106781f;		// NOTE: sin(45)
 
 	// @Hardcode
 	shadowFarPlane = 150.0f;
-	shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };
+	//shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };			// This is unity's 4 cascade distribution
+	//shadowCascadeLevels = { shadowFarPlane * 0.1f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5f };
+	shadowCascadeLevels = { shadowFarPlane * 0.0625f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5625f };			// This one is x^2
 
 	refreshRenderBuffers();
 }
@@ -240,6 +248,7 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 }
 
 bool doThis = false;
+float divisor = 1024;
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
 	if (MainLoop::getInstance().camera.width == 0.0f || MainLoop::getInstance().camera.height == 0.0f)
@@ -260,8 +269,54 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	}
 	center /= corners.size();
 
+#if STABLE_FIT_CSM_SHADOWS
+	//
+	// Stable fit shadows
+	//
+	float largestDist = std::numeric_limits<float>::min();		// This will be radius of circumscribed circle (http://the-witness.net/news/2010/03/graphics-tech-shadow-maps-part-1/)
+	for (const auto& v : corners)
+	{
+		largestDist = std::max(largestDist, glm::distance(glm::vec3(v), center));
+	}
+	largestDist = std::ceilf(largestDist);
 
-	const auto lightView =
+	const glm::mat4 lightProjection = glm::ortho(-largestDist, largestDist, -largestDist, largestDist, -largestDist * multiplier, largestDist * multiplier);
+
+	// Align center of frustum to texel grid
+	const glm::mat3 unstableLightView =
+		glm::mat3(
+			glm::lookAt(
+				center,
+				center + facingDirection,
+				glm::vec3(0.0f, 1.0f, 0.0f)
+			)
+		);
+	glm::vec3 transformedCenter = unstableLightView * center;
+
+	const float texelSize = largestDist * 2.0f / depthMapResolution;
+	transformedCenter.x = std::floorf(transformedCenter.x / texelSize) * texelSize;
+	transformedCenter.y = std::floorf(transformedCenter.y / texelSize) * texelSize;
+	transformedCenter = glm::inverse(unstableLightView) * transformedCenter;
+
+	const glm::mat4 lightView =
+		glm::lookAt(
+			transformedCenter,
+			transformedCenter + facingDirection,
+			glm::vec3(0.0f, 1.0f, 0.0f)
+		);
+
+	// @DEBUG: Tanjiro centers himself onto the center of the view frustum (close fit)
+	if (doThis)
+	{
+		doThis = false;
+		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
+		trans = glm::translate(trans, glm::vec3(glm::vec4(transformedCenter, 1.0f)) - PhysicsUtils::getPosition(trans));
+	}
+#else
+	//
+	// Close fit shadows
+	//
+	const glm::mat4 lightView =
 		glm::lookAt(
 			center,
 			center + facingDirection,
@@ -304,28 +359,20 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxZ *= zMult;
 	}
 
-	const glm::mat4 lpMatrix = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, minZ, maxZ);
+	std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
 
-	const float scaleX = 2.0f / ((maxX - minX));
-	const float scaleY = 2.0f / ((maxY - minY));
-	const float offsetX = -0.5f * (minX + maxX) * scaleX;
-	const float offsetY = -0.5f * (minY + maxY) * scaleY;
+	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
-	glm::mat4 cropMatrix(1.0f);
-	cropMatrix[0][0] = scaleX;
-	cropMatrix[1][1] = scaleY;
-	cropMatrix[3][0] = offsetX;
-	cropMatrix[3][1] = offsetY;
-
+	// @DEBUG: Tanjiro centers himself onto the center of the view frustum (close fit)
 	if (doThis)
 	{
 		doThis = false;
 		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
-		trans = glm::translate(trans, glm::vec3(/*cropMatrix * lpMatrix * lightView * proj * MainLoop::getInstance().camera.calculateViewMatrix() * */ glm::vec4(center, 1.0f)) - PhysicsUtils::getPosition(trans));
-		//center = MainLoop::getInstance().camera.calculateViewMatrix() * glm::vec4(center, 1.0f);
+		trans = glm::translate(trans, glm::vec3(glm::vec4(center, 1.0f)) - PhysicsUtils::getPosition(trans));
 	}
+#endif
 
-	return cropMatrix * lpMatrix * lightView;
+	return lightProjection * lightView;
 }
 
 std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
@@ -358,6 +405,10 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	lookDirection = glm::normalize(lookDirection);
 
 	lightComponent->facingDirection = lookDirection;
+	lightComponent->colorIntensity =
+		(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
+			((DirectionalLightLight*)lightComponent)->maxColorIntensity :
+			LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f));
 }
 
 #ifdef _DEBUG
@@ -369,13 +420,14 @@ void DirectionalLight::imguiPropertyPanel()
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
-	ImGui::DragFloat("Light color multiplier", &lightComponent->colorIntensity);
+	ImGui::DragFloat("Light color multiplier (Max)", &((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 
 	ImGui::DragInt("Cascade Shadow Map Debug", &MainLoop::getInstance().renderManager->debugCSMLayerNum);
 
 	ImGui::InputFloat3("DEBUG", &lightComponent->facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
 	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
+	ImGui::DragFloat("TEMP DivisorForStableShadows", &divisor);
 
 	static bool plsFollow = false;
 	ImGui::Checkbox("Follow ndc mouse pos", &plsFollow);

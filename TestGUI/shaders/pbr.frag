@@ -198,6 +198,10 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 
     //if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
     //    return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?
+    
+    // @Hardcode: Removes last cascade's shadow acne (< 0.5)
+    //if (layer == cascadeCount)
+        //shadow = clamp(shadow * 2.0 - 1.0, 0.0, 1.0);
 
     return shadow;
 }
@@ -425,6 +429,9 @@ void main()
     //
     vec3 ambient = (kD * diffuse + specular);// * ao;
     vec3 color = ambient + Lo;
+
+    // Prevent negative colors (for some reason...)
+    color = max(color, vec3(0));
 
     FragColor = vec4(color, 1.0);
 

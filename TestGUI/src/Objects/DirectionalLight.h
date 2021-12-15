@@ -15,7 +15,14 @@ public:
 	void refreshRenderBuffers();
 
 	std::vector<float_t> shadowCascadeLevels;
+
+	// Light intensity based off angle
+	// @DEBUG: putting into public, but really should be in private bc imgui yo
+	float maxColorIntensity;
+	float colorIntensityMaxAtY;
 private:
+
+	// CSM shadows
 	bool shadowMapsCreated = false;
 
 	void createCSMBuffers();
