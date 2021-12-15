@@ -406,9 +406,12 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 	lightComponent->facingDirection = lookDirection;
 	lightComponent->colorIntensity =
-		(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
+		std::max(
+			0.0f,
+			(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
 			((DirectionalLightLight*)lightComponent)->maxColorIntensity :
-			LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f));
+			LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f))
+		);
 }
 
 #ifdef _DEBUG

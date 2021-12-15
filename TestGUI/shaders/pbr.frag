@@ -430,9 +430,6 @@ void main()
     vec3 ambient = (kD * diffuse + specular);// * ao;
     vec3 color = ambient + Lo;
 
-    // Prevent negative colors (for some reason...)
-    color = max(color, vec3(0));
-
     FragColor = vec4(color, 1.0);
 
     //FragColor = vec4(vec3(linearDepth), 1.0);
