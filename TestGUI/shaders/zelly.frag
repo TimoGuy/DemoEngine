@@ -94,7 +94,7 @@ float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float com
 {
     vec2 pixelPos = coords / texelSize + vec2(0.5);
     vec2 fracPart = fract(pixelPos);
-    vec2 startTexel = (pixelPos - fracPart) * texelSize;
+    vec2 startTexel = (pixelPos - fracPart - vec2(0.5)) * texelSize;                // NOTE: -vec2(0.5) fixes problem of one cascade being off from another.
 
     float blTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, 0.0), layer)).r);
     float brTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, 0.0), layer)).r);
@@ -126,6 +126,10 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     {
         layer = cascadeCount;
     }
+    //if (depthValue > farPlane)                   (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
+    //{
+    //    return 0.0;
+    //}
 
     vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
     // perform perspective divide
@@ -158,6 +162,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     {
         for(int y = -1; y <= 1; ++y)
         {
+            //int x = 0, y = 0;      NOTE: only use this for furthest cascade
             //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
             //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
             shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
@@ -172,28 +177,19 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         shadow = 0.0;
     }
 
-    
-    // NOTE: Anybody who can figure out the distance fading for the shadows gets 10$ -Timo.
-    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
-    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
+    //
+    // Do far shadow fadeaway       (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
+    //
     //if (layer == cascadeCount)
     //{
-    //    //
-    //    // Create a fading edge in the far plane
-    //    //
-    //    //float ndc = gl_FragCoord.z * 2.0 - 1.0;
-    //    //float linearDepth = (2.0 * nearPlane * farPlane) / (farPlane + nearPlane - ndc * (farPlane - nearPlane));
-    //    
-    //    float fadingEdge = 20.0;
-    //    float visibleAmount = clamp(farPlane - linearDepth, 0.0, fadingEdge) / fadingEdge;
+    //    float fadingEdgeAmount = 10.0;
+    //    float visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
     //    shadow *= visibleAmount;
-    //    //shadow = clamp(shadow, 0.0, 1.0);
     //}
-
 
     //if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
     //    return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?
-        
+
     return shadow;
 }
 
