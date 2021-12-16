@@ -334,11 +334,10 @@ void setupImGui()
 	style.FrameRounding = 1;
 	style.WindowTitleAlign.x = 0.5f;
 	style.WindowMenuButtonPosition = 1;		// Right side of menu
-	style.WindowRounding = 8;
+	style.WindowRounding = 0;
 
 	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
-
 }
 #endif
 

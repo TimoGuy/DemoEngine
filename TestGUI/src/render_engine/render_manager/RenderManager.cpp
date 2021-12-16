@@ -1195,6 +1195,7 @@ void RenderManager::renderImGuiContents()
 	static bool showObjectSelectionWindow = true;
 	static bool showLoadedResourcesWindow = true;
 	static bool showMaterialsManager = true;
+	static bool showDemoWindow = true;
 
 	static bool showShadowMap = false;
 
@@ -1260,6 +1261,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Scene Properties", NULL, &showScenePropterties)) {}
 				if (ImGui::MenuItem("Object Selection", NULL, &showObjectSelectionWindow)) {}
 				if (ImGui::MenuItem("Loaded Resources", NULL, &showLoadedResourcesWindow)) {}
+				if (ImGui::MenuItem("ImGui Demo Window", NULL, &showDemoWindow)) {}
 
 				ImGui::EndMenu();
 			}
@@ -1340,9 +1342,8 @@ void RenderManager::renderImGuiContents()
 	// Demo window
 	// @TODO: once everything you need is made, just comment this out (for future reference in the future eh)
 	//
-	static bool show = true;
-	if (show)
-		ImGui::ShowDemoWindow(&show);
+	if (showDemoWindow)
+		ImGui::ShowDemoWindow(&showDemoWindow);
 
 #ifdef _DEBUG
 	//
@@ -1422,7 +1423,7 @@ void RenderManager::renderImGuiContents()
 	static int imGuizmoTransformMode = 0;
 	if (showObjectSelectionWindow)
 	{
-		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow))
 		{
 			ImGui::Combo("##Transform operation combo", &imGuizmoTransformOperation, "Translate\0Rotate\0Scale\0Bounds");
 			ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
@@ -1527,7 +1528,7 @@ void RenderManager::renderImGuiContents()
 	//
 	if (showScenePropterties)
 	{
-		if (ImGui::Begin("Scene Properties", &showScenePropterties, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::Begin("Scene Properties", &showScenePropterties))
 		{
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
@@ -1563,21 +1564,29 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::DragInt("Which ibl map", (int*)&whichMap, 1.0f, 0, 4);
 			ImGui::DragFloat("Map Interpolation amount", &mapInterpolationAmt);
-
-			//
-			// Render out the properties panels of selected object
-			//
-			ImGui::Separator();
-			if (currentSelectedObjectIndex >= 0 &&
-				currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
-				MainLoop::getInstance().objects[currentSelectedObjectIndex]->imguiPropertyPanel();
-			else
-				ImGui::Text("No object is currently selected");
-
-
 		}
 		ImGui::End();
 	}
+
+	//
+	// Render out the properties panels of selected object
+	//
+	ImGui::Begin("Selected Object Properties");
+	{
+		if (currentSelectedObjectIndex >= 0 &&
+			currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+		{
+			ImGui::Text((MainLoop::getInstance().objects[currentSelectedObjectIndex]->name + " -- Properties").c_str());
+			ImGui::Separator();
+
+			MainLoop::getInstance().objects[currentSelectedObjectIndex]->imguiPropertyPanel();
+		}
+		else
+		{
+			ImGui::Text("No object is currently selected");
+		}
+	}
+	ImGui::End();
 
 	//
 	// Loaded resources window
@@ -1585,7 +1594,7 @@ void RenderManager::renderImGuiContents()
 	static int currentSelectLoadedResource = -1;
 	if (showLoadedResourcesWindow)
 	{
-		if (ImGui::Begin("Loaded Resources", &showLoadedResourcesWindow, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::Begin("Loaded Resources", &showLoadedResourcesWindow))
 		{
 			std::map<std::string, void*>::iterator it;
 			static std::string selectedKey;
@@ -1636,7 +1645,7 @@ void RenderManager::renderImGuiContents()
 	//
 	if (showMaterialsManager)
 	{
-		if (ImGui::Begin("Materials Manager", &showMaterialsManager, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::Begin("Materials Manager", &showMaterialsManager))
 		{
 			//
 			// List all materials
