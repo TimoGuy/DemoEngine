@@ -175,6 +175,7 @@
     <ClInclude Include="src\imgui\ImCurveEdit.h" />
     <ClInclude Include="src\imgui\ImGradient.h" />
     <ClInclude Include="src\imgui\ImGuizmo.h" />
+    <ClInclude Include="src\imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="src\imgui\imgui_stdlib.h" />
     <ClInclude Include="src\imgui\ImSequencer.h" />
     <ClInclude Include="src\imgui\ImZoomSlider.h" />

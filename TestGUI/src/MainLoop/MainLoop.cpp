@@ -324,6 +324,10 @@ void setupImGui()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigWindowsResizeFromEdges = true;
+
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.FrameBorderSize = 1;
@@ -335,8 +339,6 @@ void setupImGui()
 	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");
 
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 }
 #endif
 

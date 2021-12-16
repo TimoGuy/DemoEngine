@@ -1174,8 +1174,17 @@ void RenderManager::renderImGuiPass()
 {
 	renderImGuiContents();
 
-	// Render
+	// Render Imgui
 	ImGui::Render();
+
+	// Update and Render additional Platform Windows for Imgui
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+		glfwMakeContextCurrent(backup_current_context);
+	}
 }
 
 

@@ -34,7 +34,7 @@
                 "rotation": [
                     26.97496795654297,
                     41.02900695800781,
-                    -1.1317594044157886e-06
+                    -2.263518808831577e-06
                 ],
                 "scale": [
                     0.9999997019767761,
@@ -47,7 +47,7 @@
                 1.0,
                 1.0
             ],
-            "color_multiplier": 6.414889812469482,
+            "color_multiplier": 4.115080833435059,
             "lightComponent": {
                 "casts_shadows": true
             },
@@ -163,68 +163,6 @@
                 ]
             },
             "type": "river_dropoff"
-        },
-        {
-            "baseObject": {
-                "guid": "b725d8ad471948d18512ac190705bef783bb77c323565d51bdd62595d1bc724c",
-                "name": "Point Light",
-                "position": [
-                    111.22359466552734,
-                    71.19625854492188,
-                    -9.796924591064453
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "color": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "color_multiplier": 150.0,
-            "lightComponent": {
-                "casts_shadows": true
-            },
-            "type": "pt_light"
-        },
-        {
-            "baseObject": {
-                "guid": "d904034ff6269aa6db5169f3fbe3dfe303bd2be001d3cacb221bbccf21e7bf33",
-                "name": "Point Light",
-                "position": [
-                    111.22359466552734,
-                    71.19625854492188,
-                    -58.11567687988281
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "color": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "color_multiplier": 150.0,
-            "lightComponent": {
-                "casts_shadows": true
-            },
-            "type": "pt_light"
         }
     ]
 }
