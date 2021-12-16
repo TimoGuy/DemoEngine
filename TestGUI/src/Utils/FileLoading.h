@@ -13,7 +13,7 @@ public:
 	static FileLoading& getInstance();
 
 	bool isCurrentPathValid() { return !currentWorkingPath.empty(); }
-	void loadFileWithPrompt();
+	void loadFileWithPrompt(bool withPrompt);
 	void saveFile(bool withPrompt);
 
 	void createObjectWithJson(nlohmann::json& object);

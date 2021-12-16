@@ -54,19 +54,28 @@ void setupShader(GLuint shaderId)
 //
 // Material
 //
-Material::Material(unsigned int myShaderId, unsigned int albedoMap, unsigned int normalMap, unsigned int metallicMap, unsigned int roughnessMap, glm::vec4 offsetTiling)
+Material::Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, glm::vec4 offsetTiling)
 {
 	Material::myShaderId = myShaderId;
-	Material::albedoMap = albedoMap;
-	Material::normalMap = normalMap;
-	Material::metallicMap = metallicMap;
-	Material::roughnessMap = roughnessMap;
+	Material::albedoMapPtr = albedoMap;
+	Material::normalMapPtr = normalMap;
+	Material::metallicMapPtr = metallicMap;
+	Material::roughnessMapPtr = roughnessMap;
 	Material::tilingAndOffset = offsetTiling;
 }
 
 void Material::applyTextureUniforms()
 {
 	setupShader(myShaderId);
+
+	if (albedoMapPtr != nullptr)
+		albedoMap = *albedoMapPtr;
+	if (normalMapPtr != nullptr)
+		normalMap = *normalMapPtr;
+	if (metallicMapPtr != nullptr)
+		metallicMap = *metallicMapPtr;
+	if (roughnessMapPtr != nullptr)
+		roughnessMap = *roughnessMapPtr;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, albedoMap);

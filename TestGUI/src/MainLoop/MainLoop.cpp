@@ -16,6 +16,7 @@
 
 #include "../utils/InputManager.h"
 #include "../utils/FileLoading.h"
+#include "../render_engine/resources/Resources.h"
 
 
 #define FULLSCREEN_MODE 0
@@ -125,7 +126,7 @@ void MainLoop::initialize()
 	//
 	// Once loading of all the internals happens, now we can load in the level
 	//
-	FileLoading::getInstance().loadFileWithPrompt();
+	FileLoading::getInstance().loadFileWithPrompt(false);
 }
 
 
@@ -177,6 +178,11 @@ void MainLoop::run()
 #ifdef _DEBUG
 		}
 #endif
+
+		//
+		// Load async loaded resources to GPU (textures, VAO's, etc.)
+		//
+		Resources::allowAsyncResourcesToFinishLoading();
 
 		//
 		// Update the input manager

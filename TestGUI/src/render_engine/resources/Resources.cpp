@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <vector>
+#include <mutex>
+#include <future>
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
@@ -33,8 +35,59 @@ void* loadResource(const std::string& resourceName, bool isUnloading);
 
 namespace Resources
 {
-	std::map<std::string, void*> resourceMap;
+	struct AsyncResource
+	{
+		GLuint* idToLoadIn;
+		unsigned char* bytes;
+		GLuint toTexture;
+		GLuint minFilter;
+		GLuint magFilter;
+		GLuint wrapS;
+		GLuint wrapT;
+		int imgWidth, imgHeight, numColorChannels;
+	};
+	std::vector<AsyncResource> asyncResources;
 
+	void allowAsyncResourcesToFinishLoading()
+	{
+		while (asyncResources.size() > 0)
+		{
+			//
+			// Load in the thingo!!!
+			//
+			GLuint textureId;
+			glGenTextures(1, &textureId);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, asyncResources[0].minFilter);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, asyncResources[0].magFilter);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, asyncResources[0].wrapS);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, asyncResources[0].wrapT);
+
+			GLuint fromTexture = GL_RED;
+			if (asyncResources[0].numColorChannels == 2)
+				fromTexture = GL_RG;
+			else if (asyncResources[0].numColorChannels == 3)
+				fromTexture = GL_RGB;
+			else if (asyncResources[0].numColorChannels == 4)
+				fromTexture = GL_RGBA;
+
+			glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, asyncResources[0].imgWidth, asyncResources[0].imgHeight, 0, asyncResources[0].toTexture, GL_UNSIGNED_BYTE, asyncResources[0].bytes);
+			glGenerateMipmap(GL_TEXTURE_2D);
+
+			stbi_image_free(asyncResources[0].bytes);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+			// Apply the texture!
+			*asyncResources[0].idToLoadIn = textureId;
+
+			// Remove the current one being worked on!
+			asyncResources.erase(asyncResources.begin());
+		}
+	}
+
+	// Resource map
+	std::map<std::string, void*> resourceMap;
 	std::map<std::string, void*>& getResourceMap() { return resourceMap; }
 
 	// ---------------------------------------
@@ -208,6 +261,35 @@ void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, con
 
 #pragma region Texture Resources Utils
 
+static std::mutex loadTextureToGPUMutex;
+static std::vector<std::future<void>> loadingFutures;
+
+void loadTexture2DAsync(
+	GLuint* idToLoadIn,
+	const std::string& fname,
+	GLuint toTexture,
+	GLuint minFilter,
+	GLuint magFilter,
+	GLuint wrapS,
+	GLuint wrapT,
+	bool flipVertical)
+{
+	//
+	// Load actual image
+	//
+	stbi_set_flip_vertically_on_load(flipVertical);
+	int imgWidth, imgHeight, numColorChannels;
+	unsigned char* bytes = stbi_load(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+
+	if (bytes == NULL)
+	{
+		std::cout << stbi_failure_reason() << std::endl;
+	}
+
+	Resources::AsyncResource res{ idToLoadIn, bytes, toTexture, minFilter, magFilter, wrapS, wrapT, imgWidth, imgHeight, numColorChannels };
+	Resources::asyncResources.push_back(res);
+}
+
 void* loadTexture2D(
 	const std::string& textureName,
 	bool isUnloading,
@@ -221,41 +303,16 @@ void* loadTexture2D(
 {
 	if (!isUnloading)
 	{
-		stbi_set_flip_vertically_on_load(flipVertical);
-		int imgWidth, imgHeight, numColorChannels;
-		unsigned char* bytes = stbi_load(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
+		//
+		// Setup dummy resource
+		//
+		GLuint* future = new GLuint;			// NOTE: Idk if this should be debug or not yo
+		*future = 0;
+		registerResource(textureName, future);
 
-		if (bytes == NULL)
-		{
-			std::cout << stbi_failure_reason() << std::endl;
-		}
+		loadingFutures.push_back(std::async(std::launch::async, loadTexture2DAsync, future, fname, toTexture, minFilter, magFilter, wrapS, wrapT, flipVertical));
 
-		GLuint textureId;
-		glGenTextures(1, &textureId);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-
-		GLuint fromTexture = GL_RED;
-		if (numColorChannels == 2)
-			fromTexture = GL_RG;
-		else if (numColorChannels == 3)
-			fromTexture = GL_RGB;
-		else if (numColorChannels == 4)
-			fromTexture = GL_RGBA;
-
-		glTexImage2D(GL_TEXTURE_2D, 0, fromTexture, imgWidth, imgHeight, 0, toTexture, GL_UNSIGNED_BYTE, bytes);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		stbi_image_free(bytes);
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		GLuint* payload = new GLuint();
-		*payload = textureId;
-		return payload;
+		return future;
 	}
 	else
 	{
@@ -279,6 +336,11 @@ void* loadHDRTexture2D(
 {
 	if (!isUnloading)
 	{
+		GLuint* future = new GLuint;
+		*future = 0;
+		registerResource(textureName, future);
+		return future;
+
 		stbi_set_flip_vertically_on_load(flipVertical);
 		int imgWidth, imgHeight, numColorChannels;
 		float* bytes = stbi_loadf(fname.c_str(), &imgWidth, &imgHeight, &numColorChannels, STBI_default);
@@ -354,10 +416,10 @@ void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const s
 		Material* material =
 			new Material(
 				*(GLuint*)Resources::getResource("shader;pbr"),
-				*(GLuint*)Resources::getResource(albedoName),
-				*(GLuint*)Resources::getResource(normalName),
-				*(GLuint*)Resources::getResource(metallicName),
-				*(GLuint*)Resources::getResource(roughnessName)
+				(GLuint*)Resources::getResource(albedoName),
+				(GLuint*)Resources::getResource(normalName),
+				(GLuint*)Resources::getResource(metallicName),
+				(GLuint*)Resources::getResource(roughnessName)
 			);
 		return material;
 	}

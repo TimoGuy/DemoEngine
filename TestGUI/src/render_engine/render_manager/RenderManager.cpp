@@ -1211,7 +1211,7 @@ void RenderManager::renderImGuiContents()
 				//ShowExampleMenuFile();
 				if (ImGui::MenuItem("Open...", "CTRL+O"))
 				{
-					FileLoading::getInstance().loadFileWithPrompt();
+					FileLoading::getInstance().loadFileWithPrompt(true);
 				}
 
 				bool enableSave = FileLoading::getInstance().isCurrentPathValid();

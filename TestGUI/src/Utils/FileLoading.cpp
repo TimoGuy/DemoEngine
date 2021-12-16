@@ -25,23 +25,28 @@ FileLoading& FileLoading::getInstance()
 	return instance;
 }
 
-void FileLoading::loadFileWithPrompt()
+void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
-	const char* filters[] = {  "*.hsfs" };
-	std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\" };
-	char* fname = tinyfd_openFileDialog(
-		"Open Scene File",
-		currentPath.c_str(),
-		1,
-		filters,
-		"Game Scene Files (*.hsfs)",
-		0
-	);
+	char* fname = (char*)"res\\level1.hsfs";
 
-	if (!fname)
+	if (withPrompt)
 	{
-		std::cout << "ERROR: Adam Sandler" << std::endl;
-		return;
+		const char* filters[] = { "*.hsfs" };
+		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\" };
+		fname = tinyfd_openFileDialog(
+			"Open Scene File",
+			currentPath.c_str(),
+			1,
+			filters,
+			"Game Scene Files (*.hsfs)",
+			0
+		);
+
+		if (!fname)
+		{
+			std::cout << "ERROR: Adam Sandler" << std::endl;
+			return;
+		}
 	}
 
 	//
