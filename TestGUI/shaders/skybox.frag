@@ -34,6 +34,8 @@ uniform float cameraHeight;
 // Which apparently was plaigiarized from:
 //      https://github.com/wwwtyro/glsl-atmosphere/blob/master/index.glsl
 //          It's licensed under the Unlicense btw.
+//              Rye Terrell
+//                  wwwtyro
 
 
 
