@@ -384,7 +384,6 @@ void RenderManager::destroyHDRBuffer()
 void RenderManager::createShaderPrograms()
 {
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
-	shadow_program_id = *(GLuint*)Resources::getResource("shader;shadowPass");
 	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
 	text_program_id = *(GLuint*)Resources::getResource("shader;text");
 	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
@@ -406,7 +405,7 @@ void RenderManager::createFonts()
 	}
 
 	FT_Face face;
-	if (FT_New_Face(ft, "res/arial.ttf", 0, &face))
+	if (FT_New_Face(ft, "res/font/arial.ttf", 0, &face))
 	{
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 		return;

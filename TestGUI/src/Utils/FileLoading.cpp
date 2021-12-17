@@ -27,12 +27,12 @@ FileLoading& FileLoading::getInstance()
 
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
-	char* fname = (char*)"res\\level1.hsfs";
+	char* fname = (char*)"res\\level\\level1.hsfs";
 
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\" };
+		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
 		fname = tinyfd_openFileDialog(
 			"Open Scene File",
 			currentPath.c_str(),
@@ -110,7 +110,7 @@ void FileLoading::saveFile(bool withPrompt)
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\" };
+		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
 		char* fname = tinyfd_saveFileDialog(
 			"Save Scene File As...",
 			currentPath.c_str(),

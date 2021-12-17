@@ -93,7 +93,7 @@ public:
 	static bool renderMeshRenderAABB;
 
 private:
-	GLuint skybox_program_id, shadow_program_id, debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
+	GLuint skybox_program_id, debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 

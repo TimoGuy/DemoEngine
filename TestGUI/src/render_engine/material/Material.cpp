@@ -62,6 +62,13 @@ Material::Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned in
 	Material::metallicMapPtr = metallicMap;
 	Material::roughnessMapPtr = roughnessMap;
 	Material::tilingAndOffset = offsetTiling;
+
+
+	/* TODO: figgure out why doesn't work! (New impl where glGenTextures is run prematurely, and then configured later*/
+	/*Material::albedoMap = *albedoMapPtr;
+	Material::normalMap = *normalMapPtr;
+	Material::metallicMap = *metallicMapPtr;
+	Material::roughnessMap = *roughnessMapPtr;*/
 }
 
 void Material::applyTextureUniforms()
