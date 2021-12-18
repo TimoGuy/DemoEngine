@@ -283,7 +283,9 @@ void loadTexture2DAsync(
 
 	if (bytes == NULL)
 	{
+		std::cout << "Error on loading \"" << fname << "\"" << std::endl;
 		std::cout << stbi_failure_reason() << std::endl;
+		assert(0);
 	}
 
 	Resources::AsyncResource res{ idToLoadIn, bytes, toTexture, minFilter, magFilter, wrapS, wrapT, imgWidth, imgHeight, numColorChannels };
@@ -322,7 +324,7 @@ void* loadTexture2D(
 }
 
 
-void* loadHDRTexture2D(
+void* loadHDRTexture2D(					// TODO: This isn't async yet!!!!! However, you wanna probs wait until the wrapper class implementation comes in, and you won't have to worry about this anymore -Timo
 	const std::string& textureName,
 	bool isUnloading,
 	const std::string& fname,
@@ -348,6 +350,7 @@ void* loadHDRTexture2D(
 		if (bytes == NULL)
 		{
 			std::cout << stbi_failure_reason() << std::endl;
+			assert(0);
 		}
 
 		GLuint textureId;
@@ -502,6 +505,16 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrRoughness")							return loadTexture2D(resourceName, isUnloading, "res/rusted_iron/rustediron2_roughness.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	//
+	// Voxel group pbr
+	//
+	if (resourceName == "material;pbrVoxelGroup")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrVGAlbedo", "texture;pbrVGNormal", "texture;pbrVGMetallic", "texture;pbrVGRoughness");
+
+	if (resourceName == "texture;pbrVGAlbedo")							return loadTexture2D(resourceName, isUnloading, "res/_debug/voxel_group/voxel_grp_albedo.png", GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrVGNormal")							return loadTexture2D(resourceName, isUnloading, "res/_debug/voxel_group/voxel_grp_normal.png", GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrVGMetallic")						return loadTexture2D(resourceName, isUnloading, "res/_debug/voxel_group/voxel_grp_metallic.png", GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrVGRoughness")						return loadTexture2D(resourceName, isUnloading, "res/_debug/voxel_group/voxel_grp_roughness.png", GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+
+	//
 	// Commons
 	//
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/_debug/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -546,24 +559,24 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeEyeAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);
 
 	if (resourceName == "material;pbrSlimeShoeAccent")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShoeAccentAlbedo", "texture;pbrSlimeShoeAccentNormal", "texture;pbr0Value", "texture;pbrSlimeShoeAccentRoughness");
-	if (resourceName == "texture;pbrSlimeShoeAccentAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeAccentNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeAccentAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeAccentNormal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeShoeBlack")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShoeBlackAlbedo", "texture;pbrSlimeShoeBlackNormal", "texture;pbr0Value", "texture;pbrSlimeShoeBlackRoughness");
-	if (resourceName == "texture;pbrSlimeShoeBlackAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeBlackNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeBlackRoughness")			return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeBlackAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeBlackNormal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeBlackRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeShoeWhite")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShoeWhiteAlbedo", "texture;pbrSlimeShoeWhiteNormal", "texture;pbr0Value", "texture;pbrSlimeShoeWhiteRoughness");
-	if (resourceName == "texture;pbrSlimeShoeWhiteAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeWhiteNormal")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeWhiteRoughness")			return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhiteAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhiteNormal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhiteRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeShoeWhite2")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShoeWhite2Albedo", "texture;pbrSlimeShoeWhite2Normal", "texture;pbr0Value", "texture;pbrSlimeShoeWhite2Roughness");
-	if (resourceName == "texture;pbrSlimeShoeWhite2Albedo")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeWhite2Normal")				return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrSlimeShoeWhite2Roughness")			return loadTexture2D(resourceName, isUnloading, "res/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhite2Albedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhite2Normal")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/normalGL.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrSlimeShoeWhite2Roughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/roughness.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	if (resourceName == "material;pbrSlimeShorts")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeShortsNormal", "texture;pbr0Value", "texture;pbrSlimeShortsRoughness");
 	if (resourceName == "texture;pbrSlimeShortsAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric023/1K-JPG/Fabric023_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);

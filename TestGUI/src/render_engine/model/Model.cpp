@@ -22,6 +22,113 @@ Model::Model(const char* path, std::vector<std::string> animationNames)
 	loadModel(path, animationNames);
 }
 
+//
+// NOTE: vertices should be supplied in a counter-clockwise orientation.
+// 
+// Like this:
+//		0 ---- 3
+//		|	   |
+//		|	   |
+//		1 ---- 2
+//
+Model::Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights)
+{
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+
+	glm::vec3* minAABBPoint = nullptr;
+	glm::vec3* maxAABBPoint = nullptr;
+
+	//
+	// Take one quad at a time
+	//
+	for (size_t i = 0; i < quadMesh.size(); i += 4)
+	{
+		Vertex currentQuad[] = { quadMesh[i], quadMesh[i + 1], quadMesh[i + 2], quadMesh[i + 3] };
+
+		//
+		// Pre-processing
+		//
+		for (size_t j = 0; j < 4; j++)
+		{
+			if (stripBoneWeights)
+			{
+				setVertexBoneDataToDefault(currentQuad[j]);
+			}
+
+			// @Copypasta: (there's another block just like this fyi)
+			// Calculate AABB
+			if (minAABBPoint == nullptr)
+				minAABBPoint = new glm::vec3(currentQuad[j].position);
+			else
+			{
+				minAABBPoint->x = std::min(minAABBPoint->x, currentQuad[j].position.x);
+				minAABBPoint->y = std::min(minAABBPoint->y, currentQuad[j].position.y);
+				minAABBPoint->z = std::min(minAABBPoint->z, currentQuad[j].position.z);
+			}
+
+			if (maxAABBPoint == nullptr)
+				maxAABBPoint = new glm::vec3(currentQuad[j].position);
+			else
+			{
+				maxAABBPoint->x = std::max(maxAABBPoint->x, currentQuad[j].position.x);
+				maxAABBPoint->y = std::max(maxAABBPoint->y, currentQuad[j].position.y);
+				maxAABBPoint->z = std::max(maxAABBPoint->z, currentQuad[j].position.z);
+			}
+		}
+
+		//
+		// Calculate the normals
+		//
+		const glm::vec3 dirA = currentQuad[1].position - currentQuad[0].position;
+		const glm::vec3 dirB = currentQuad[2].position - currentQuad[0].position;
+		const glm::vec3 normal = glm::normalize(glm::cross(dirA, dirB));
+		currentQuad[0].normal = normal;
+		currentQuad[1].normal = normal;
+		currentQuad[2].normal = normal;
+		currentQuad[3].normal = normal;
+
+		//
+		// Apply the texture coordinates
+		//
+		currentQuad[0].texCoords = { 0.0, 0.0 };
+		currentQuad[1].texCoords = { 0.0, 1.0 };
+		currentQuad[2].texCoords = { 1.0, 1.0 };
+		currentQuad[3].texCoords = { 1.0, 0.0 };
+
+		//
+		// Insert the vertices and the indices
+		//
+		unsigned int currentVertexJunban = (unsigned int)vertices.size();
+		vertices.push_back(currentQuad[0]);
+		vertices.push_back(currentQuad[1]);
+		vertices.push_back(currentQuad[2]);
+		vertices.push_back(currentQuad[3]);
+
+		indices.push_back(currentVertexJunban + 0);
+		indices.push_back(currentVertexJunban + 1);
+		indices.push_back(currentVertexJunban + 3);
+
+		indices.push_back(currentVertexJunban + 3);
+		indices.push_back(currentVertexJunban + 1);
+		indices.push_back(currentVertexJunban + 2);
+	}
+
+	// Convert aiAABB to RenderAABB
+	RenderAABB modelRenderAABB;
+	if (minAABBPoint != nullptr && maxAABBPoint != nullptr)
+	{
+		modelRenderAABB.center = (*minAABBPoint + *maxAABBPoint) / 2.0f;
+		modelRenderAABB.extents = *maxAABBPoint - modelRenderAABB.center;
+
+		delete minAABBPoint;
+		delete maxAABBPoint;
+	}
+
+	// Finally, create the mesh
+	meshes.push_back(Mesh(vertices, indices, modelRenderAABB, "Material"));		// Default material name
+}
+
 bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView)
 {
 	bool modelIsChottoDakeDemoInViewFrustum = false;

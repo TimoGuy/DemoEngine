@@ -14,6 +14,7 @@
 #include "../objects/PointLight.h"
 #include "../objects/WaterPuddle.h"
 #include "../objects/RiverDropoff.h"
+#include "../objects/VoxelGroup.h"
 
 #include "tinyfiledialogs.h"
 #include "Utils.h"
@@ -92,6 +93,7 @@ void FileLoading::createObjectWithJson(nlohmann::json& object)
 	if (object["type"] == PointLight::TYPE_NAME)		buildingObject = new PointLight(false);
 	if (object["type"] == WaterPuddle::TYPE_NAME)		buildingObject = new WaterPuddle();
 	if (object["type"] == RiverDropoff::TYPE_NAME)		buildingObject = new RiverDropoff();
+	if (object["type"] == VoxelGroup::TYPE_NAME)		buildingObject = new VoxelGroup();
 
 	//
 	// @@@@TODO: Because the properties are getting loaded after the constructor has run, then

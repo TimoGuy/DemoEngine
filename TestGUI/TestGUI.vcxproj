@@ -100,6 +100,7 @@
     <ClCompile Include="src\objects\ObjectTypes.cpp" />
     <ClCompile Include="src\objects\PlayerCharacter.cpp" />
     <ClCompile Include="src\objects\RiverDropoff.cpp" />
+    <ClCompile Include="src\objects\VoxelGroup.cpp" />
     <ClCompile Include="src\objects\WaterPuddle.cpp" />
     <ClCompile Include="src\objects\YosemiteTerrain.cpp" />
     <ClCompile Include="src\objects\PointLight.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="src\imgui\ImZoomSlider.h" />
     <ClInclude Include="src\objects\components\PhysicsComponents.h" />
     <ClInclude Include="src\objects\RiverDropoff.h" />
+    <ClInclude Include="src\objects\VoxelGroup.h" />
     <ClInclude Include="src\objects\WaterPuddle.h" />
     <ClInclude Include="src\render_engine\camera\Camera.h" />
     <ClInclude Include="src\render_engine\light\LightManager.h" />

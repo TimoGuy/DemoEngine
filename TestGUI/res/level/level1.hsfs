@@ -47,7 +47,7 @@
                 1.0,
                 1.0
             ],
-            "color_multiplier": 4.115080833435059,
+            "color_multiplier": 2.6397788524627686,
             "lightComponent": {
                 "casts_shadows": true
             },
@@ -163,6 +163,28 @@
                 ]
             },
             "type": "river_dropoff"
+        },
+        {
+            "baseObject": {
+                "guid": "7dcbbe968e73fb87c1c924db2918e884e640cd79f895702ba5986fc1d25b0068",
+                "name": "Voxel Group (unnamed)",
+                "position": [
+                    15.251150131225586,
+                    23.476516723632813,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": "voxel_group"
         }
     ]
 }

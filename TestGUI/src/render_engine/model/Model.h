@@ -25,6 +25,7 @@ public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
 	Model(const char* path, std::vector<std::string> animationNames);
+	Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights = true);			// NOTE: this is purely for VoxelGroup class
 	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
 	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView);
 

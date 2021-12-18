@@ -34,6 +34,7 @@
 #include "../../objects/PointLight.h"
 #include "../../objects/WaterPuddle.h"
 #include "../../objects/RiverDropoff.h"
+#include "../../objects/VoxelGroup.h"
 
 
 void renderCube();
@@ -1512,6 +1513,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
 				if (ImGui::Selectable("Collectable Water Puddle"))	newObject = new WaterPuddle();
 				if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
+				if (ImGui::Selectable("Voxel Group"))				newObject = new VoxelGroup();
 
 				if (newObject != nullptr)
 					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
