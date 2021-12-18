@@ -91,10 +91,10 @@ Model::Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights)
 		//
 		// Apply the texture coordinates
 		//
-		currentQuad[0].texCoords = { 0.0, 0.0 };
-		currentQuad[1].texCoords = { 0.0, 1.0 };
-		currentQuad[2].texCoords = { 1.0, 1.0 };
-		currentQuad[3].texCoords = { 1.0, 0.0 };
+		currentQuad[0].texCoords = { 0.0, 1.0 };
+		currentQuad[1].texCoords = { 0.0, 0.0 };
+		currentQuad[2].texCoords = { 1.0, 0.0 };
+		currentQuad[3].texCoords = { 1.0, 1.0 };
 
 		//
 		// Insert the vertices and the indices

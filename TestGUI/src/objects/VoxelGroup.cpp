@@ -19,6 +19,13 @@ VoxelGroup::VoxelGroup()
 {
 	name = "Voxel Group (unnamed)";
 
+	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
+	resizeVoxelArea(chunk_increments, chunk_increments, chunk_increments);				// For now default. (Needs loading system to do different branch)
+	setVoxelBitAtPosition(voxel_group_offset, true);									// Default: center cube is enabled
+	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 0, 0), true);
+	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 1, 0), true);
+	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 1, 1), true);
+
 	renderComponent = new RenderComponent(this);
 	refreshResources();
 	//INTERNALrecreatePhysicsComponent();
@@ -32,36 +39,193 @@ VoxelGroup::~VoxelGroup()
 
 void VoxelGroup::refreshResources()
 {
-	static bool isNewModel = true;
-	if (isNewModel)
+	if (is_voxel_bit_field_dirty)
 	{
-		//
 		// Create quadmesh
-		//
-		std::vector<Vertex> quadMesh;
-		Vertex vert;
-		vert.position = glm::vec3(0);
-		quadMesh.push_back(vert);
-		vert.position = glm::vec3(0, 0, 1);
-		quadMesh.push_back(vert);
-		vert.position = glm::vec3(1, 0, 1);
-		quadMesh.push_back(vert);
-		vert.position = glm::vec3(1, 0, 0);
-		quadMesh.push_back(vert);
-		model = new Model(quadMesh);
+		updateQuadMeshFromBitField();
 
 		//
 		// Create cooked collision mesh
 		//
 		INTERNALrecreatePhysicsComponent();
 		renderComponent->clearAllModels();
-		renderComponent->addModelToRender({ model, true, nullptr });
+		renderComponent->addModelToRender({ voxel_model, true, nullptr });
 
-		isNewModel = false;
+		is_voxel_bit_field_dirty = false;
 	}
 
 	materials["Material"] = (Material*)Resources::getResource("material;pbrVoxelGroup");
-	model->setMaterials(materials);
+	voxel_model->setMaterials(materials);
+}
+
+void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offset)
+{
+	//
+	// Create new voxel_bit_field
+	//
+	std::vector<bool> zVoxels;
+	zVoxels.resize(z, false);
+	std::vector<std::vector<bool>> yzVoxels;
+	yzVoxels.resize(y, zVoxels);
+	std::vector<std::vector<std::vector<bool>>> xyzVoxels;
+	xyzVoxels.resize(y, yzVoxels);
+
+	// Fill it!
+	if (voxel_bit_field.size() == 0)
+	{
+		// From scratch
+		voxel_group_offset = voxel_group_size / (glm::u64)2;
+	}
+	else
+	{
+		// With existing
+		voxel_group_offset += offset;
+
+		// 
+		// (NOTE: this is an unsafe operation and if offset is incorrectly set, there could be some bad joojoo with out-of-bounds stuff)
+		// I trust ya tho ;)
+		//
+		for (size_t i = 0; i < voxel_bit_field.size(); i++)
+		{
+			size_t offsetX = offset.x;
+
+			for (size_t j = 0; j < voxel_bit_field[i].size(); j++)
+			{
+				size_t offsetY = offset.y;
+
+				for (size_t k = 0; k < voxel_bit_field[i][j].size(); k++)
+				{
+					size_t offsetZ = offset.z;
+
+					xyzVoxels[offsetX + i][offsetY + j][offsetZ + k] = voxel_bit_field[i][j][k];
+				}
+			}
+		}
+	}
+
+	// Apply the new voxels
+	voxel_bit_field = xyzVoxels;
+
+	// Update size
+	voxel_group_size = { x, y, z };
+	is_voxel_bit_field_dirty = true;
+}
+
+void VoxelGroup::setVoxelBitAtPosition(glm::u64vec3 pos, bool flag)
+{
+	voxel_bit_field[pos.x][pos.y][pos.z] = true;
+	is_voxel_bit_field_dirty = true;
+}
+
+void VoxelGroup::updateQuadMeshFromBitField()
+{
+	std::vector<Vertex> quadMesh;
+	Vertex vertBuilder;			// Let's call him "Bob" (https://pm1.narvii.com/6734/14e3582d0aa8180bd12d22772631e949ad4e6837v2_hq.jpg)
+	const float voxel_size = 2.0f;
+
+	//
+	// Cycle thru each bit in the bitfield and see if meshes need to be rendered there
+	//
+	for (size_t i = 0; i < voxel_bit_field.size(); i++)
+	{
+		for (size_t j = 0; j < voxel_bit_field[i].size(); j++)
+		{
+			for (size_t k = 0; k < voxel_bit_field[i][j].size(); k++)
+			{
+				// Skip if empty
+				if (!voxel_bit_field[i][j][k])
+					continue;
+
+				// Compute the origin position in the case that quads are added
+				// NOTE: the origin is going to be the bottom-left-front
+				glm::vec3 voxelOriginPosition = { i, j, k };
+				voxelOriginPosition -= voxel_group_offset;
+				voxelOriginPosition *= voxel_size;
+
+				//
+				// See if on the edge!
+				// 
+				// x-1 (normal: left)
+				if (i == 0 || !voxel_bit_field[i - 1][j][k])
+				{
+					vertBuilder.position = glm::vec3(0, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+
+				// x+1 (normal: right)
+				if (i == voxel_bit_field.size() - 1 || !voxel_bit_field[i + 1][j][k])
+				{
+					vertBuilder.position = glm::vec3(1, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+
+				// y-1 (normal: down)
+				if (j == 0 || !voxel_bit_field[i][j - 1][k])
+				{
+					vertBuilder.position = glm::vec3(0, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+
+				// y+1 (normal: up)
+				if (j == voxel_bit_field[i].size() - 1 || !voxel_bit_field[i][j + 1][k])
+				{
+					vertBuilder.position = glm::vec3(0, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+
+				// z-1 (normal: backwards)
+				if (k == 0 || !voxel_bit_field[i][j][k - 1])
+				{
+					vertBuilder.position = glm::vec3(0, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 1, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 0) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+
+				// z+1 (normal: forwards)
+				if (k == voxel_bit_field[i][j].size() - 1 || !voxel_bit_field[i][j][k + 1])
+				{
+					vertBuilder.position = glm::vec3(0, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(0, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 0, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+					vertBuilder.position = glm::vec3(1, 1, 1) * voxel_size + voxelOriginPosition;
+					quadMesh.push_back(vertBuilder);
+				}
+			}
+		}
+	}
+	voxel_model = new Model(quadMesh);
 }
 
 void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)		// @Override
@@ -100,7 +264,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	if (physicsComponent != nullptr)
 		delete physicsComponent;
 
-	physicsComponent = new TriangleMeshCollider(this, model, RigidActorTypes::STATIC);
+	physicsComponent = new TriangleMeshCollider(this, voxel_model, RigidActorTypes::STATIC);
 }
 
 void VoxelGroup::preRenderUpdate()
