@@ -44,7 +44,7 @@ private:
 	//
 	// Some voxel props
 	//
-	size_t chunk_increments = 256;
+	size_t chunk_increments = 32;
 	glm::u64vec3 voxel_group_size;
 	glm::u64vec3 voxel_group_offset;
 	std::vector<std::vector<std::vector<bool>>> voxel_bit_field;
