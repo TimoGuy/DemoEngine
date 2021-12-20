@@ -18,6 +18,8 @@ public:
 	void run();
 	void cleanup();
 
+	void deleteObject(BaseObject* obj);
+
 	GLFWwindow* window;
 	Camera camera;
 	std::vector<BaseObject*> objects;
@@ -45,4 +47,7 @@ public:
 	// Debug mode flags
 	//
 	//bool simulatePhysics = false;		@Simplify: this was making things too complicated
+
+private:
+	std::vector<BaseObject*> objectsToDelete;
 };

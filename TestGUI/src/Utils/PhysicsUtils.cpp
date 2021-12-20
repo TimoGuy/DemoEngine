@@ -290,8 +290,8 @@ namespace PhysicsUtils
 			glm::vec3 pointOnScreen = MainLoop::getInstance().camera.PositionToClipSpace(point);
 			float clipZ = pointOnScreen.z;
 			pointOnScreen /= clipZ;
-			pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-			pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+			pointOnScreen.x = ImGui::GetWindowPos().x +pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointOnScreen.y = ImGui::GetWindowPos().y - pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 			pointOnScreen.z = clipZ;		// Reassign for test later
 			screenSpacePoints.push_back(pointOnScreen);
 		}
@@ -374,8 +374,8 @@ namespace PhysicsUtils
 			if (clipZ < 0.0f) return;							// NOTE: this is to break away from any rings that are intersecting with the near space
 
 			pointOnScreen /= clipZ;
-			pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-			pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+			pointOnScreen.x = ImGui::GetWindowPos().x + pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointOnScreen.y = ImGui::GetWindowPos().y - pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 			screenSpacePoints.push_back(ImVec2(pointOnScreen.x, pointOnScreen.y));
 		}
 
@@ -428,8 +428,8 @@ namespace PhysicsUtils
 			if (clipZ < 0.0f) return;							// NOTE: this is to break away from any rings that are intersecting with the near space
 
 			pointOnScreen /= clipZ;
-			pointOnScreen.x = pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-			pointOnScreen.y = -pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+			pointOnScreen.x = ImGui::GetWindowPos().x + pointOnScreen.x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointOnScreen.y = ImGui::GetWindowPos().y - pointOnScreen.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 			screenSpacePoints.push_back(ImVec2(pointOnScreen.x, pointOnScreen.y));
 		}
 

@@ -239,6 +239,15 @@ void MainLoop::run()
 		//
 		renderManager->render();
 
+		//
+		// Delete all objects that were marked for deletion
+		//
+		for (int i = objectsToDelete.size() - 1; i >= 0; i--)
+		{
+			delete objectsToDelete[i];
+		}
+		objectsToDelete.clear();
+
 //#if SINGLE_BUFFERED_MODE
 //		glFlush();
 //		//float haha = (glfwGetTime() - startFrameTime) * 1000.0;
@@ -263,6 +272,15 @@ void MainLoop::cleanup()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+void MainLoop::deleteObject(BaseObject* obj)
+{
+	// Don't add unless not in the deletion list
+	if (std::find(objectsToDelete.begin(), objectsToDelete.end(), obj) != objectsToDelete.end())
+		return;
+
+	objectsToDelete.push_back(obj);
 }
 
 

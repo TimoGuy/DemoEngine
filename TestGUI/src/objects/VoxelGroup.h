@@ -44,6 +44,7 @@ private:
 	//
 	// Some voxel props
 	//
+	const float voxel_render_size = 2.0f;
 	size_t chunk_increments = 32;
 	glm::u64vec3 voxel_group_size;
 	glm::u64vec3 voxel_group_offset;

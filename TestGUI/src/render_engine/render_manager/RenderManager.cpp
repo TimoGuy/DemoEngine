@@ -1359,7 +1359,7 @@ void RenderManager::renderImGuiContents()
 			//
 			// Convert to screen space
 			//
-			const physx::PxDebugLine& debugLine = debugLinesCopy[i];
+			physx::PxDebugLine& debugLine = debugLinesCopy[i];
 			physx::PxU32 lineColor = debugLine.color0;		// @Checkup: would there be any situation where color0 and color1 would differ????
 
 			// Change ugly purple color to the collision green!
@@ -1381,8 +1381,8 @@ void RenderManager::renderImGuiContents()
 				}
 
 				pointsOnScreen[ii] /= pointsOnScreen[ii].z;
-				pointsOnScreen[ii].x = pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
-				pointsOnScreen[ii].y = -pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+				pointsOnScreen[ii].x = ImGui::GetWindowPos().x + pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+				pointsOnScreen[ii].y = ImGui::GetWindowPos().y - pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 			}
 
 			if (!willBeOnScreen)

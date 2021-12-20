@@ -47,7 +47,7 @@
                 1.0,
                 1.0
             ],
-            "color_multiplier": 2.6397788524627686,
+            "color_multiplier": 1.6933890581130981,
             "lightComponent": {
                 "casts_shadows": true
             },
@@ -169,9 +169,9 @@
                 "guid": "7dcbbe968e73fb87c1c924db2918e884e640cd79f895702ba5986fc1d25b0068",
                 "name": "Voxel Group (unnamed)",
                 "position": [
-                    15.251150131225586,
-                    23.476516723632813,
-                    0.0
+                    -31.095977783203125,
+                    -2.6435422897338867,
+                    238.6814422607422
                 ],
                 "rotation": [
                     0.0,
