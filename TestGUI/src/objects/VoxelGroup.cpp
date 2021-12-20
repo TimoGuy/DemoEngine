@@ -10,6 +10,8 @@
 #include "../utils/PhysicsUtils.h"
 
 #ifdef _DEBUG
+#include "../render_engine/render_manager/RenderManager.h"
+
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #endif
@@ -269,6 +271,64 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 
 void VoxelGroup::preRenderUpdate()
 {
+#ifdef _DEBUG
+	// If in playmode
+	// NOTE: turns out even though no physics simulation is happening during !playMode, you can still do raycasts. Nice
+	if (MainLoop::getInstance().playMode)
+		return;
+
+	// If current selected object is me
+	int currentObjIndex = MainLoop::getInstance().renderManager->currentSelectedObjectIndex;
+	if (currentObjIndex < 0 ||
+		currentObjIndex >= MainLoop::getInstance().objects.size() ||
+		MainLoop::getInstance().objects[currentObjIndex] != this)
+		return;
+
+	// If press x
+	bool yare = false;
+	static bool prevIsButtonHeld = GLFW_RELEASE;
+	bool isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
+	if (prevIsButtonHeld == GLFW_RELEASE && isButtonHeld == GLFW_PRESS)
+	{
+		yare = true;
+	}
+	prevIsButtonHeld = isButtonHeld;
+
+
+	if (!yare)
+		return;
+
+	//
+	// Check what position and angle it's clicked on! (@TODO: Figure out why not working)
+	//
+	double mouseX, mouseY;
+	glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
+
+	physx::PxRaycastBuffer hitInfo;
+	const Camera& camera = MainLoop::getInstance().camera;
+	bool hit = PhysicsUtils::raycast(
+		PhysicsUtils::toPxVec3(camera.position),
+		PhysicsUtils::toPxVec3(glm::quat({ 0, 0, 1 }, camera.orientation) * glm::normalize(glm::vec3(mouseX - (camera.width / 2.0f), camera.height - mouseY - 1 - (camera.height / 2.0f), camera.zFar))),
+		500,
+		hitInfo
+	);
+
+	if (!hit || !hitInfo.hasBlock || hitInfo.block.actor != getPhysicsComponent()->getActor())
+		return;
+
+	std::cout << "Yolo4" << std::endl;
+
+	glm::vec3 position = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f);
+	glm::vec3 normal = glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.position);			// @CHECK, bc it's based off the normalModelMatrix in mesh.cpp
+
+	std::cout << position.x << ",\t" << position.y << ",\t" << position.z << std::endl;
+	std::cout << "\t\t\t" << normal.x << ",\t" << normal.y << ",\t" << normal.z << std::endl;
+
+	//
+	// Add onto voxelgroup!
+	//
+	// @TODO
+#endif
 }
 
 #ifdef _DEBUG

@@ -288,6 +288,7 @@ void loadTexture2DAsync(
 		assert(0);
 	}
 
+	std::lock_guard<std::mutex> resLock(loadTextureToGPUMutex);
 	Resources::AsyncResource res{ idToLoadIn, bytes, toTexture, minFilter, magFilter, wrapS, wrapT, imgWidth, imgHeight, numColorChannels };
 	Resources::asyncResources.push_back(res);
 }
