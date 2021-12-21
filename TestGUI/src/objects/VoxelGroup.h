@@ -47,13 +47,13 @@ private:
 	//
 	const float voxel_render_size = 2.0f;
 	size_t chunk_increments = 32;
-	glm::u64vec3 voxel_group_size;
-	glm::u64vec3 voxel_group_offset;
+	glm::i64vec3 voxel_group_size;
+	glm::i64vec3 voxel_group_offset;
 	std::vector<std::vector<std::vector<bool>>> voxel_bit_field;
 	bool is_voxel_bit_field_dirty = false;
 
-	void resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offset = glm::u64vec3(0));
-	void setVoxelBitAtPosition(glm::u64vec3 pos, bool flag);
+	void resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offset = glm::i64vec3(0));
+	void setVoxelBitAtPosition(glm::i64vec3 pos, bool flag);
 	void updateQuadMeshFromBitField();
 	Model* voxel_model;
 	std::map<std::string, Material*> materials;

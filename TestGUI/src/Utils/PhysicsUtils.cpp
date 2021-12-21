@@ -163,6 +163,12 @@ namespace PhysicsUtils
 		return (maxDistanceDelta >= std::abs(delta)) ? target : (current + std::copysignf(1.0f, delta) * maxDistanceDelta);
 	}
 
+	glm::i64 moveTowards(glm::i64 current, glm::i64 target, glm::i64 maxDistanceDelta)
+	{
+		glm::i64 delta = target - current;
+		return (maxDistanceDelta >= glm::abs(delta)) ? target : (current + glm::sign(delta) * maxDistanceDelta);
+	}
+
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta)
 	{
 		float result;

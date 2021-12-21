@@ -24,9 +24,9 @@ VoxelGroup::VoxelGroup()
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(chunk_increments, chunk_increments, chunk_increments);				// For now default. (Needs loading system to do different branch)
 	setVoxelBitAtPosition(voxel_group_offset, true);									// Default: center cube is enabled
-	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 0, 0), true);
-	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 1, 0), true);
-	setVoxelBitAtPosition(voxel_group_offset + glm::u64vec3(1, 1, 1), true);
+	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 0, 0), true);
+	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 1, 0), true);
+	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 1, 1), true);
 
 	renderComponent = new RenderComponent(this);
 	refreshResources();
@@ -66,7 +66,7 @@ void VoxelGroup::refreshResources()
 	}
 }
 
-void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offset)
+void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offset)
 {
 	//
 	// Create new voxel_bit_field
@@ -82,7 +82,7 @@ void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offs
 	if (voxel_bit_field.size() == 0)
 	{
 		// From scratch
-		voxel_group_offset = voxel_group_size / (glm::u64)2;
+		voxel_group_offset = voxel_group_size / (glm::i64)2;
 	}
 	else
 	{
@@ -119,7 +119,7 @@ void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offs
 	is_voxel_bit_field_dirty = true;
 }
 
-void VoxelGroup::setVoxelBitAtPosition(glm::u64vec3 pos, bool flag)
+void VoxelGroup::setVoxelBitAtPosition(glm::i64vec3 pos, bool flag)
 {
 	if (pos.x < 0 ||
 		pos.y < 0 ||
@@ -308,13 +308,14 @@ void VoxelGroup::preRenderUpdate()
 		currentObjIndex >= MainLoop::getInstance().objects.size() ||
 		MainLoop::getInstance().objects[currentObjIndex] != this)
 		return;
-	
+
 	// MODE: 0: normal. 1: appending a bunch of voxels
 	enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS };
 	static int mode = NORMAL;
-	static ViewPlane mode1Plane;
-	static glm::u64vec3 fromPosition;
-	static glm::u64vec3 toPosition;
+	static ViewPlane rawPlane;
+	static glm::vec3 cookedNormal;
+	static glm::i64vec3 fromPosition;
+	static glm::i64vec3 toPosition;
 
 	// Do the WS position camera vector.
 	Camera& camera = MainLoop::getInstance().camera;
@@ -374,7 +375,7 @@ void VoxelGroup::preRenderUpdate()
 		glm::vec3 positionRaw = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f) / voxel_render_size;
 		glm::vec3 normal = glm::round(glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.normal));
 		positionRaw -= glm::vec3(0.1f) * normal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
-		glm::u64vec3 position = glm::floor(positionRaw);
+		glm::i64vec3 position = glm::floor(positionRaw);
 
 		//
 		// Edit the voxelgroup!
@@ -384,11 +385,12 @@ void VoxelGroup::preRenderUpdate()
 			//
 			// Take the normal and project the current mouse position to it
 			//
-			mode1Plane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
-			mode1Plane.normal = normal;
+			rawPlane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
+			rawPlane.normal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+			cookedNormal = normal;
 
 			fromPosition = position;
-			
+
 			mode = APPENDING_VOXELS;
 
 
@@ -412,7 +414,7 @@ void VoxelGroup::preRenderUpdate()
 			if (doOneAtATime)
 			{
 				// Append voxel (if in range)!
-				glm::u64vec3 additionVoxel = position + glm::u64vec3(normal);
+				glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
 				setVoxelBitAtPosition(additionVoxel, true);
 			}
 		}
@@ -422,7 +424,7 @@ void VoxelGroup::preRenderUpdate()
 			setVoxelBitAtPosition(position, false);
 		}
 	}
-	
+
 	if (mode == APPENDING_VOXELS)
 	{
 		bool isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
@@ -441,7 +443,7 @@ void VoxelGroup::preRenderUpdate()
 			{
 				prevRMPos = currRMPos;
 
-				const float distance = glm::abs(mode1Plane.getSignedDistance(prevRMPos));
+				const float distance = glm::abs(rawPlane.getSignedDistance(prevRMPos));
 				const glm::vec3 raymarchDelta = glm::normalize(targetRMPos - currRMPos) * distance;
 				currRMPos += raymarchDelta;
 
@@ -453,15 +455,50 @@ void VoxelGroup::preRenderUpdate()
 				jfodsjfsalkdfjlkasdf = currRMPos;
 
 				// Convert hovering position to voxelposition
-				toPosition = glm::floor(glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size);
-
-				std::cout << toPosition.x << "\t" << toPosition.y << "\t" << toPosition.z << std::endl;
+				glm::vec3 toPositionRaw = glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size;
+				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
+				toPosition = glm::floor(toPositionRaw);
 			}
 		}
 		else
 		{
 			// @TODO: fill in all that area specified while holding "C"
-			// NOTE: you'll probs have to use mode1Plane.normal along with the hovering position to accomplish this!
+			// NOTE: you'll probs have to use cookedNormal along with the hovering position to accomplish this!
+			glm::i64vec3 startPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
+			glm::i64vec3 currentPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
+			glm::i64vec3 targetPlacementPosition = toPosition + glm::i64vec3(cookedNormal);
+			bool breakX, breakY, breakZ;
+			for (currentPlacementPosition.x = startPlacementPosition.x, breakX = false; !breakX; currentPlacementPosition.x = PhysicsUtils::moveTowards(currentPlacementPosition.x, targetPlacementPosition.x, 1))
+			{
+				for (currentPlacementPosition.y = startPlacementPosition.y, breakY = false; !breakY; currentPlacementPosition.y = PhysicsUtils::moveTowards(currentPlacementPosition.y, targetPlacementPosition.y, 1))
+				{
+					for (currentPlacementPosition.z = startPlacementPosition.z, breakZ = false; !breakZ; currentPlacementPosition.z = PhysicsUtils::moveTowards(currentPlacementPosition.z, targetPlacementPosition.z, 1))
+					{
+						//
+						// Fill in current spot, then move towards the next spot
+						//
+						setVoxelBitAtPosition(currentPlacementPosition, true);
+
+						// Check if finished
+						if (currentPlacementPosition.z == targetPlacementPosition.z)
+						{
+							breakZ = true;
+						}
+					}
+
+					// Check if finished
+					if (currentPlacementPosition.y == targetPlacementPosition.y)
+					{
+						breakY = true;
+					}
+				}
+
+				// Check if finished
+				if (currentPlacementPosition.x == targetPlacementPosition.x)
+				{
+					breakX = true;
+				}
+			}
 
 			mode = NORMAL;
 		}

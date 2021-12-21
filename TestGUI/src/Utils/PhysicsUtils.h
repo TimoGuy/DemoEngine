@@ -48,6 +48,7 @@ namespace PhysicsUtils
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 
 	float moveTowards(float current, float target, float maxDistanceDelta);
+	glm::i64 moveTowards(glm::i64 current, glm::i64 target, glm::i64 maxDistanceDelta);
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
 	bool raycast(physx::PxVec3 origin, physx::PxVec3 unitDirection, physx::PxReal distance, physx::PxRaycastBuffer& hitInfo);
