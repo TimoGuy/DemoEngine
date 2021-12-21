@@ -32,6 +32,7 @@ public:
 
 #ifdef _DEBUG
 	void imguiPropertyPanel();
+	void imguiRender();
 #endif
 
 	// TODO: this should be private, with all the components just referring back to the single main one

@@ -121,6 +121,14 @@ void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::u64vec3 offs
 
 void VoxelGroup::setVoxelBitAtPosition(glm::u64vec3 pos, bool flag)
 {
+	if (pos.x < 0 ||
+		pos.y < 0 ||
+		pos.z < 0 ||
+		pos.x >= voxel_group_size.x ||
+		pos.y >= voxel_group_size.y ||
+		pos.z >= voxel_group_size.z)
+		return;
+
 	voxel_bit_field[pos.x][pos.y][pos.z] = flag;
 	is_voxel_bit_field_dirty = true;
 }
@@ -286,13 +294,13 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	physicsComponent = new TriangleMeshCollider(this, voxel_model, RigidActorTypes::STATIC);
 }
 
+glm::vec3 jfodsjfsalkdfjlkasdf;
 void VoxelGroup::preRenderUpdate()
 {
 #ifdef _DEBUG
-	// If in playmode
 	// NOTE: turns out even though no physics simulation is happening during !playMode, you can still do raycasts. Nice
-	//if (MainLoop::getInstance().playMode)
-	//	return;
+	if (MainLoop::getInstance().playMode)
+		return;
 
 	// If current selected object is me
 	int currentObjIndex = MainLoop::getInstance().renderManager->currentSelectedObjectIndex;
@@ -300,34 +308,15 @@ void VoxelGroup::preRenderUpdate()
 		currentObjIndex >= MainLoop::getInstance().objects.size() ||
 		MainLoop::getInstance().objects[currentObjIndex] != this)
 		return;
+	
+	// MODE: 0: normal. 1: appending a bunch of voxels
+	enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS };
+	static int mode = NORMAL;
+	static ViewPlane mode1Plane;
+	static glm::u64vec3 fromPosition;
+	static glm::u64vec3 toPosition;
 
-	// If press x
-	bool yareDelete = false;
-	static bool prevIsButtonHeld1 = GLFW_RELEASE;
-	bool isButtonHeld1 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
-	if (prevIsButtonHeld1 == GLFW_RELEASE && isButtonHeld1 == GLFW_PRESS)
-	{
-		yareDelete = true;
-	}
-	prevIsButtonHeld1 = isButtonHeld1;
-
-	// OR if press c
-	bool yareAdd = false;
-	static bool prevIsButtonHeld2 = GLFW_RELEASE;
-	bool isButtonHeld2 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
-	if (prevIsButtonHeld2 == GLFW_RELEASE && isButtonHeld2 == GLFW_PRESS)
-	{
-		yareAdd = true;
-	}
-	prevIsButtonHeld2 = isButtonHeld2;
-
-
-	if (!yareDelete && !yareAdd)
-		return;
-
-	//
-	// Check what position and angle it's clicked on! (@TODO: Figure out why not working)
-	//
+	// Do the WS position camera vector.
 	Camera& camera = MainLoop::getInstance().camera;
 
 	double xpos, ypos;
@@ -338,49 +327,145 @@ void VoxelGroup::preRenderUpdate()
 	xpos = xpos * 2.0f - 1.0f;
 	ypos = ypos * 2.0f - 1.0f;
 	glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
-	glm::vec3 worldSpacePosition = camera.clipSpacePositionToWordSpace(clipSpacePosition);
+	const glm::vec3 worldSpacePosition = camera.clipSpacePositionToWordSpace(clipSpacePosition);
 
-	physx::PxRaycastBuffer hitInfo;
-	bool hit = PhysicsUtils::raycast(
-		PhysicsUtils::toPxVec3(camera.position),
-		PhysicsUtils::toPxVec3(glm::normalize(worldSpacePosition - camera.position)),
-		500,
-		hitInfo
-	);
-
-	if (!hit || !hitInfo.hasBlock || hitInfo.block.actor != getPhysicsComponent()->getActor())
-		return;
-
-	glm::vec3 positionRaw = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f) / voxel_render_size;
-	glm::vec3 normal = glm::round(glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.normal));			// @CHECK, bc it's based off the normalModelMatrix in mesh.cpp
-	positionRaw -= glm::vec3(0.1f) * normal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
-	glm::u64vec3 position = glm::floor(positionRaw);
-
-	//
-	// Edit the voxelgroup!
-	//
-	if (yareAdd)
+	if (mode == NORMAL)
 	{
-		// Append voxel (if in range)!
-		glm::u64vec3 additionVoxel = position + glm::u64vec3(normal);
-		if (additionVoxel.x >= 0 &&
-			additionVoxel.y >= 0 &&
-			additionVoxel.z >= 0 &&
-			additionVoxel.x < voxel_group_size.x &&
-			additionVoxel.y < voxel_group_size.y &&
-			additionVoxel.z < voxel_group_size.z)
+
+		// If press x (if held shift, then x is "turbo'd")
+		bool yareDelete = false;
+		static bool prevIsButtonHeld1 = GLFW_RELEASE;
+		bool isButtonHeld1 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
+		bool isShiftHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+		if ((prevIsButtonHeld1 == GLFW_RELEASE || isShiftHeld) && isButtonHeld1 == GLFW_PRESS)
 		{
-			setVoxelBitAtPosition(additionVoxel, true);
+			yareDelete = true;
+		}
+		prevIsButtonHeld1 = isButtonHeld1;
+
+		// OR if press c
+		bool yareAdd = false;
+		static bool prevIsButtonHeld2 = GLFW_RELEASE;
+		bool isButtonHeld2 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
+		if (prevIsButtonHeld2 == GLFW_RELEASE && isButtonHeld2 == GLFW_PRESS)
+		{
+			yareAdd = true;
+		}
+		prevIsButtonHeld2 = isButtonHeld2;
+
+
+		if (!yareDelete && !yareAdd)
+			return;
+
+		//
+		// Check what position and angle it's clicked on! (@TODO: Figure out why not working)
+		//
+		physx::PxRaycastBuffer hitInfo;
+		bool hit = PhysicsUtils::raycast(
+			PhysicsUtils::toPxVec3(camera.position),
+			PhysicsUtils::toPxVec3(glm::normalize(worldSpacePosition - camera.position)),
+			500,
+			hitInfo
+		);
+
+		if (!hit || !hitInfo.hasBlock || hitInfo.block.actor != getPhysicsComponent()->getActor())
+			return;
+
+		glm::vec3 positionRaw = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f) / voxel_render_size;
+		glm::vec3 normal = glm::round(glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.normal));
+		positionRaw -= glm::vec3(0.1f) * normal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
+		glm::u64vec3 position = glm::floor(positionRaw);
+
+		//
+		// Edit the voxelgroup!
+		//
+		if (yareAdd)
+		{
+			//
+			// Take the normal and project the current mouse position to it
+			//
+			mode1Plane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
+			mode1Plane.normal = normal;
+
+			fromPosition = position;
+			
+			mode = APPENDING_VOXELS;
+
+
+
+			if (normal.x != 0.0f)
+			{
+			}
+			else if (normal.y != 0.0f)
+			{
+
+			}
+			else if (normal.z != 0.0f)
+			{
+
+			}
+
+			//
+			// Append one voxel at a time
+			//
+			bool doOneAtATime = false;
+			if (doOneAtATime)
+			{
+				// Append voxel (if in range)!
+				glm::u64vec3 additionVoxel = position + glm::u64vec3(normal);
+				setVoxelBitAtPosition(additionVoxel, true);
+			}
+		}
+		else if (yareDelete)
+		{
+			// Delete voxel!
+			setVoxelBitAtPosition(position, false);
 		}
 	}
-	else if (yareDelete)
+	
+	if (mode == APPENDING_VOXELS)
 	{
-		// Delete voxel!
-		setVoxelBitAtPosition(position, false);
+		bool isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
+		if (isButtonHeld)
+		{
+			//
+			// Keep track of what the position of (cpu side ray-marching)
+			//
+			glm::vec3 prevRMPos = worldSpacePosition + glm::vec3(1.0f);		// Just to enter the while loop below
+			glm::vec3 currRMPos = worldSpacePosition;
+			const glm::vec3 targetRMPos = camera.position;		// NOTE: not the goal, but the direction that RM is gonna go
+
+			size_t iterations = 0;
+			const size_t max_iterations = 100;
+			while (glm::distance(prevRMPos, currRMPos) > 0.01f && iterations < max_iterations)
+			{
+				prevRMPos = currRMPos;
+
+				const float distance = glm::abs(mode1Plane.getSignedDistance(prevRMPos));
+				const glm::vec3 raymarchDelta = glm::normalize(targetRMPos - currRMPos) * distance;
+				currRMPos += raymarchDelta;
+
+				iterations++;
+			}
+
+			if (iterations < max_iterations)
+			{
+				jfodsjfsalkdfjlkasdf = currRMPos;
+
+				// Convert hovering position to voxelposition
+				toPosition = glm::floor(glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size);
+
+				std::cout << toPosition.x << "\t" << toPosition.y << "\t" << toPosition.z << std::endl;
+			}
+		}
+		else
+		{
+			// @TODO: fill in all that area specified while holding "C"
+			// NOTE: you'll probs have to use mode1Plane.normal along with the hovering position to accomplish this!
+
+			mode = NORMAL;
+		}
 	}
-
-
-	// @TODO
 #endif
 }
 
@@ -395,5 +480,10 @@ void VoxelGroup::imguiPropertyPanel()
 
 	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
 	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
+}
+
+void VoxelGroup::imguiRender()
+{
+	PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::vec3(), glm::vec3(), 10);
 }
 #endif
