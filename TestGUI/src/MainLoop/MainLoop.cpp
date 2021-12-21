@@ -248,15 +248,8 @@ void MainLoop::run()
 		}
 		objectsToDelete.clear();
 
-//#if SINGLE_BUFFERED_MODE
-//		glFlush();
-//		//float haha = (glfwGetTime() - startFrameTime) * 1000.0;
-//		unsigned int sleepAmount = (unsigned int)std::max(0.0, desiredFrameTime - (glfwGetTime() - startFrameTime) * 1000.0);
-//		std::this_thread::sleep_for(std::chrono::milliseconds(sleepAmount));		// TODO: comment this out if wanted
-//		//std::cout << "jfjlskdjf\n";
-//#else
+		// SWAP DEM BUFFERS
 		glfwSwapBuffers(window);
-//#endif
 	}
 }
 
