@@ -579,13 +579,14 @@ void VoxelGroup::imguiRender()
 		// Draw the bounds for the creation area of the voxel group
 		const float halfSingleBlock = 0.5f * voxel_render_size;
 		const glm::vec3 normalMask = glm::abs(jojfjsdkfjksdkfhskdnormal_cooked);
-		glm::vec3 halfExtents = glm::vec3(glm::abs(glm::vec3(jojokhkohhohokhoh_to_pos - jojokhkohhohokhoh_from_pos)) + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
+
+		glm::vec3 deltaPositions(jojokhkohhohokhoh_to_pos - jojokhkohhohokhoh_from_pos);
+		glm::vec3 halfExtents = (glm::abs(deltaPositions) + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
 		halfExtents *= 1.0f - normalMask;
 		halfExtents = glm::max(glm::vec3(halfSingleBlock), halfExtents);
 		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
 
-		//glm::vec3 offset = glm::vec3(-1.0f) + glm::vec3((jojokhkohhohokhoh_from_pos - voxel_group_offset) * glm::i64vec3(normalMask)) * voxel_render_size + jojfjsdkfjksdkfhskdnormal_cooked * halfSingleBlock + glm::vec3((jojokhkohhohokhoh_to_pos + jojokhkohhohokhoh_from_pos) / (glm::i64)2 - voxel_group_offset) * voxel_render_size * (1.0f - normalMask);
-		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + halfExtents;
+		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + (deltaPositions + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
 
 		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
 		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
