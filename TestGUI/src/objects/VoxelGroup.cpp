@@ -581,12 +581,13 @@ void VoxelGroup::imguiRender()
 		const glm::vec3 normalMask = glm::abs(jojfjsdkfjksdkfhskdnormal_cooked);
 
 		glm::vec3 deltaPositions(jojokhkohhohokhoh_to_pos - jojokhkohhohokhoh_from_pos);
-		glm::vec3 halfExtents = (glm::abs(deltaPositions) + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
+		glm::vec3 halfExtents = (glm::abs(deltaPositions) + 1.0f) * halfSingleBlock;
 		halfExtents *= 1.0f - normalMask;
 		halfExtents = glm::max(glm::vec3(halfSingleBlock), halfExtents);
 		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
 
-		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + (deltaPositions + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
+		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
+		std::cout << jojokhkohhohokhoh_from_pos.x << "\t" << jojokhkohhohokhoh_from_pos.y << "\t" << jojokhkohhohokhoh_from_pos.z << std::endl;
 
 		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
 		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
