@@ -38,6 +38,64 @@ VoxelGroup::~VoxelGroup()
 	delete physicsComponent;
 }
 
+void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
+{
+	// NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
+	BaseObject::loadPropertiesFromJson(object["baseObject"]);
+
+	//
+	// Load bitfield
+	//
+	if (object.contains("voxel_bit_field"))
+	{
+		std::string bigBitfield = object["voxel_bit_field"];
+		for (size_t i = 0; i < voxel_group_size.x; i++)
+		{
+			for (size_t j = 0; j < voxel_group_size.y; j++)
+			{
+				for (size_t k = 0; k < voxel_group_size.z; k++)
+				{
+					char voxel_bit = bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k];
+					setVoxelBitAtPosition(
+						{ i, j, k },
+						voxel_bit != '0'
+					);
+				}
+			}
+		}
+	}
+
+	// TODO: make it so that you don't have to retrigger this every time you load
+	refreshResources();
+}
+
+nlohmann::json VoxelGroup::savePropertiesToJson()
+{
+	nlohmann::json j;
+	j["type"] = TYPE_NAME;
+	j["baseObject"] = BaseObject::savePropertiesToJson();
+
+	//
+	// Save bitfield
+	//
+	std::string bigBitfield;
+	bigBitfield.resize(voxel_group_size.x * voxel_group_size.y * voxel_group_size.z, '0');
+	for (size_t i = 0; i < voxel_group_size.x; i++)
+	{
+		for (size_t j = 0; j < voxel_group_size.y; j++)
+		{
+			for (size_t k = 0; k < voxel_group_size.z; k++)
+			{
+				bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k] =
+					getVoxelBitAtPosition({ i, j, k }) ? '1' : '0';
+			}
+		}
+	}
+	j["voxel_bit_field"] = bigBitfield;
+
+	return j;
+}
+
 void VoxelGroup::refreshResources()
 {
 	if (is_voxel_bit_field_dirty)
@@ -82,7 +140,8 @@ void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offs
 	if (voxel_bit_field.size() == 0)
 	{
 		// From scratch
-		voxel_group_offset = voxel_group_size / (glm::i64)2;
+		//voxel_group_offset = glm::i64vec3(x, y, z) / (glm::i64)2;		// TODO: figure this out, bc this line breaks the voxel creation system (and probs the deletion system too)
+		voxel_group_offset = glm::i64vec3(0);
 	}
 	else
 	{
@@ -131,6 +190,19 @@ void VoxelGroup::setVoxelBitAtPosition(glm::i64vec3 pos, bool flag)
 
 	voxel_bit_field[pos.x][pos.y][pos.z] = flag;
 	is_voxel_bit_field_dirty = true;
+}
+
+bool VoxelGroup::getVoxelBitAtPosition(glm::i64vec3 pos)
+{
+	if (pos.x < 0 ||
+		pos.y < 0 ||
+		pos.z < 0 ||
+		pos.x >= voxel_group_size.x ||
+		pos.y >= voxel_group_size.y ||
+		pos.z >= voxel_group_size.z)
+		return false;
+
+	return voxel_bit_field[pos.x][pos.y][pos.z];
 }
 
 void VoxelGroup::updateQuadMeshFromBitField()
@@ -255,24 +327,6 @@ void VoxelGroup::updateQuadMeshFromBitField()
 		MainLoop::getInstance().deleteObject(this);
 }
 
-void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)		// @Override
-{
-	// NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
-	BaseObject::loadPropertiesFromJson(object["baseObject"]);
-
-	// TODO: make it so that you don't have to retrigger this every time you load
-	refreshResources();
-}
-
-nlohmann::json VoxelGroup::savePropertiesToJson()
-{
-	nlohmann::json j;
-	j["type"] = TYPE_NAME;
-	j["baseObject"] = BaseObject::savePropertiesToJson();
-
-	return j;
-}
-
 void VoxelGroup::physicsUpdate()
 {
 	if (velocity.isZero() && angularVelocity.isZero())
@@ -393,30 +447,16 @@ void VoxelGroup::preRenderUpdate()
 
 			mode = APPENDING_VOXELS;
 
-
-
-			if (normal.x != 0.0f)
-			{
-			}
-			else if (normal.y != 0.0f)
-			{
-
-			}
-			else if (normal.z != 0.0f)
-			{
-
-			}
-
-			//
-			// Append one voxel at a time
-			//
-			bool doOneAtATime = false;
-			if (doOneAtATime)
-			{
-				// Append voxel (if in range)!
-				glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
-				setVoxelBitAtPosition(additionVoxel, true);
-			}
+			////
+			//// Append one voxel at a time
+			////
+			//bool doOneAtATime = false;
+			//if (doOneAtATime)
+			//{
+			//	// Append voxel (if in range)!
+			//	glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
+			//	setVoxelBitAtPosition(additionVoxel, true);
+			//}
 		}
 		else if (yareDelete)
 		{
