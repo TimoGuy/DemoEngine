@@ -515,8 +515,9 @@ void VoxelGroup::preRenderUpdate()
 		}
 		else
 		{
-			// @TODO: fill in all that area specified while holding "C"
-			// NOTE: you'll probs have to use cookedNormal along with the hovering position to accomplish this!
+			//
+			// Fill in all that area specified while holding SHIFT+C
+			//
 			glm::i64vec3 startPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
 			glm::i64vec3 currentPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
 			glm::i64vec3 targetPlacementPosition = toPosition + glm::i64vec3(cookedNormal);
