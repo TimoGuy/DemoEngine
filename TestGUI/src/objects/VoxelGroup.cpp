@@ -50,11 +50,11 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 	if (object.contains("voxel_bit_field"))
 	{
 		std::string bigBitfield = object["voxel_bit_field"];
-		for (size_t i = 0; i < voxel_group_size.x; i++)
+		for (size_t i = 0; i < (size_t)voxel_group_size.x; i++)
 		{
-			for (size_t j = 0; j < voxel_group_size.y; j++)
+			for (size_t j = 0; j < (size_t)voxel_group_size.y; j++)
 			{
-				for (size_t k = 0; k < voxel_group_size.z; k++)
+				for (size_t k = 0; k < (size_t)voxel_group_size.z; k++)
 				{
 					char voxel_bit = bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k];
 					setVoxelBitAtPosition(
@@ -81,11 +81,11 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	//
 	std::string bigBitfield;
 	bigBitfield.resize(voxel_group_size.x * voxel_group_size.y * voxel_group_size.z, '0');
-	for (size_t i = 0; i < voxel_group_size.x; i++)
+	for (size_t i = 0; i < (size_t)voxel_group_size.x; i++)
 	{
-		for (size_t j = 0; j < voxel_group_size.y; j++)
+		for (size_t j = 0; j < (size_t)voxel_group_size.y; j++)
 		{
-			for (size_t k = 0; k < voxel_group_size.z; k++)
+			for (size_t k = 0; k < (size_t)voxel_group_size.z; k++)
 			{
 				bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k] =
 					getVoxelBitAtPosition({ i, j, k }) ? '1' : '0';
