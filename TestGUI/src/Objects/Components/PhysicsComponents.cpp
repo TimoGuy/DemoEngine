@@ -75,6 +75,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	//
 	physx::PxTriangleMeshGeometry triGeom;
 	triGeom.triangleMesh = triMesh;
+	geom = &triGeom;
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
 	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
@@ -128,7 +129,8 @@ BoxCollider::BoxCollider(BaseObject* bo, const glm::vec3& extents, RigidActorTyp
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
 	glm::vec3 realExtents = extents * scale;
 
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
+	geom = new physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -161,7 +163,9 @@ void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 	// NOTE: apparently it doesn't work when trying to set the geometry
 	//
 	body->detachShape(*shape);
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z), *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	geom = new physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -177,13 +181,6 @@ void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 
 physx::PxTransform BoxCollider::getGlobalPose() { return body->getGlobalPose(); }
 
-physx::PxBoxGeometry BoxCollider::getBoxGeometry()
-{
-	physx::PxBoxGeometry geom;
-	shape->getBoxGeometry(geom);
-	return geom;
-}
-
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // SphereCollider Class
@@ -195,7 +192,8 @@ SphereCollider::SphereCollider(BaseObject* bo, float radius, RigidActorTypes rig
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
 	float maxScale = std::max(scale.x, std::max(scale.y, scale.z));
 
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxSphereGeometry(maxScale * radius), *MainLoop::getInstance().defaultPhysicsMaterial);
+	geom = new physx::PxSphereGeometry(maxScale * radius);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -227,7 +225,9 @@ void SphereCollider::propagateNewTransform(const glm::mat4& newTransform)
 	// TODO: change to: Get, then move shape
 	//
 	body->detachShape(*shape);
-	shape = MainLoop::getInstance().physicsPhysics->createShape(physx::PxSphereGeometry(maxScale * radius), *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	geom = new physx::PxSphereGeometry(maxScale * radius);
+	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -242,13 +242,6 @@ void SphereCollider::propagateNewTransform(const glm::mat4& newTransform)
 }
 
 physx::PxTransform SphereCollider::getGlobalPose() { return body->getGlobalPose(); }
-
-physx::PxSphereGeometry SphereCollider::getSphereGeometry()
-{
-	physx::PxSphereGeometry geom;
-	shape->getSphereGeometry(geom);
-	return geom;
-}
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------

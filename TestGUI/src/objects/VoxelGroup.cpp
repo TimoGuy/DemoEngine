@@ -140,8 +140,8 @@ void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offs
 	if (voxel_bit_field.size() == 0)
 	{
 		// From scratch
-		//voxel_group_offset = glm::i64vec3(x, y, z) / (glm::i64)2;		// TODO: figure this out, bc this line breaks the voxel creation system (and probs the deletion system too)
-		voxel_group_offset = glm::i64vec3(0);
+		voxel_group_offset = glm::i64vec3(x, y, z) / (glm::i64)2;		// TODO: figure this out, bc this line breaks the voxel creation system (and probs the deletion system too)
+		//voxel_group_offset = glm::i64vec3(0);
 	}
 	else
 	{
@@ -348,7 +348,9 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	physicsComponent = new TriangleMeshCollider(this, voxel_model, RigidActorTypes::STATIC);
 }
 
+bool jfjkjlskdjfkljyes_pls;
 glm::vec3 jfodsjfsalkdfjlkasdf;
+glm::vec3 jfjdskldfklslkdfheuler;
 void VoxelGroup::preRenderUpdate()
 {
 #ifdef _DEBUG
@@ -429,7 +431,7 @@ void VoxelGroup::preRenderUpdate()
 		glm::vec3 positionRaw = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f) / voxel_render_size;
 		glm::vec3 normal = glm::round(glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.normal));
 		positionRaw -= glm::vec3(0.1f) * normal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
-		glm::i64vec3 position = glm::floor(positionRaw);
+		glm::i64vec3 position = glm::i64vec3(glm::floor(positionRaw)) + voxel_group_offset;
 
 		//
 		// Edit the voxelgroup!
@@ -493,11 +495,13 @@ void VoxelGroup::preRenderUpdate()
 			if (iterations < max_iterations)
 			{
 				jfodsjfsalkdfjlkasdf = currRMPos;
+				jfjdskldfklslkdfheuler = rawPlane.normal;
+				jfjkjlskdjfkljyes_pls = true;
 
 				// Convert hovering position to voxelposition
 				glm::vec3 toPositionRaw = glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size;
 				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
-				toPosition = glm::floor(toPositionRaw);
+				toPosition = glm::i64vec3(glm::floor(toPositionRaw)) + voxel_group_offset;
 			}
 		}
 		else
@@ -561,6 +565,10 @@ void VoxelGroup::imguiPropertyPanel()
 
 void VoxelGroup::imguiRender()
 {
-	PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::vec3(), glm::vec3(), 10);
+	if (jfjkjlskdjfkljyes_pls)
+	{
+		PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::eulerAngles(glm::quat({ 0, 0, 1 }, jfjdskldfklslkdfheuler)), glm::vec3(), 10);
+		jfjkjlskdjfkljyes_pls = false;
+	}
 }
 #endif

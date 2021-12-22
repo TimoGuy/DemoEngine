@@ -18,6 +18,7 @@ public:
 
 private:
 	physx::PxShape* shape;
+	physx::PxGeometry* geom;
 	ShapeTypes shapeType;
 };
 
@@ -31,11 +32,10 @@ public:
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
-	physx::PxBoxGeometry getBoxGeometry();
-
 private:
 	glm::vec3 extents;
 	physx::PxShape* shape;
+	physx::PxGeometry* geom;
 	ShapeTypes shapeType;
 };
 
@@ -50,10 +50,9 @@ public:
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
-	physx::PxSphereGeometry getSphereGeometry();
-
 private:
 	physx::PxShape* shape;
+	physx::PxGeometry* geom;
 	float radius;
 	ShapeTypes shapeType;
 };
