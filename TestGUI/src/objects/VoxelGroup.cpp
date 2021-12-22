@@ -587,13 +587,12 @@ void VoxelGroup::imguiRender()
 		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
 
 		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
-		std::cout << jojokhkohhohokhoh_from_pos.x << "\t" << jojokhkohhohokhoh_from_pos.y << "\t" << jojokhkohhohokhoh_from_pos.z << std::endl;
 
 		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
 		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
 		glm::vec3 scale = PhysicsUtils::getScale(getTransform());
 		PhysicsUtils::imguiRenderBoxCollider(
-			glm::translate(glm::mat4(1.0f), position + offset) * glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale),
+			glm::translate(glm::mat4(1.0f), position) * glm::toMat4(rotation) * glm::translate(glm::mat4(1.0f), offset) * glm::scale(glm::mat4(1.0f), scale),
 			geom,
 			ImColor(0.78f, 0.243f, 0.373f)
 		);
