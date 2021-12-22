@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "components/PhysicsComponents.h"
 #include "../mainloop/MainLoop.h"
 #include "../render_engine/resources/Resources.h"
@@ -350,7 +351,11 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 
 bool jfjkjlskdjfkljyes_pls;
 glm::vec3 jfodsjfsalkdfjlkasdf;
-glm::vec3 jfjdskldfklslkdfheuler;
+glm::vec3 jfjdskldfklslkdfnormal_raw;
+glm::vec3 jojfjsdkfjksdkfhskdnormal_cooked;
+glm::i64vec3 jojokhkohhohokhoh_from_pos;
+glm::i64vec3 jojokhkohhohokhoh_to_pos;
+
 void VoxelGroup::preRenderUpdate()
 {
 #ifdef _DEBUG
@@ -400,7 +405,7 @@ void VoxelGroup::preRenderUpdate()
 		}
 		prevIsButtonHeld1 = isButtonHeld1;
 
-		// OR if press c
+		// OR if press c (if held shift, then c is group append)
 		bool yareAdd = false;
 		static bool prevIsButtonHeld2 = GLFW_RELEASE;
 		bool isButtonHeld2 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
@@ -438,27 +443,27 @@ void VoxelGroup::preRenderUpdate()
 		//
 		if (yareAdd)
 		{
-			//
-			// Take the normal and project the current mouse position to it
-			//
-			rawPlane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
-			rawPlane.normal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
-			cookedNormal = normal;
+			if (isShiftHeld)
+			{
+				//
+				// Take the normal and project the current mouse position to it
+				//
+				rawPlane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
+				rawPlane.normal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+				cookedNormal = normal;
 
-			fromPosition = position;
+				fromPosition = position;
 
-			mode = APPENDING_VOXELS;
-
-			////
-			//// Append one voxel at a time
-			////
-			//bool doOneAtATime = false;
-			//if (doOneAtATime)
-			//{
-			//	// Append voxel (if in range)!
-			//	glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
-			//	setVoxelBitAtPosition(additionVoxel, true);
-			//}
+				mode = APPENDING_VOXELS;
+			}
+			else
+			{
+				//
+				// Append one voxel at a time (If in range!)
+				//
+				glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
+				setVoxelBitAtPosition(additionVoxel, true);
+			}
 		}
 		else if (yareDelete)
 		{
@@ -495,13 +500,17 @@ void VoxelGroup::preRenderUpdate()
 			if (iterations < max_iterations)
 			{
 				jfodsjfsalkdfjlkasdf = currRMPos;
-				jfjdskldfklslkdfheuler = rawPlane.normal;
+				jojokhkohhohokhoh_from_pos = fromPosition;
+				jfjdskldfklslkdfnormal_raw = rawPlane.normal;
+				jojfjsdkfjksdkfhskdnormal_cooked = cookedNormal;
 				jfjkjlskdjfkljyes_pls = true;
 
 				// Convert hovering position to voxelposition
 				glm::vec3 toPositionRaw = glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size;
 				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
 				toPosition = glm::i64vec3(glm::floor(toPositionRaw)) + voxel_group_offset;
+
+				jojokhkohhohokhoh_to_pos = toPosition;
 			}
 		}
 		else
@@ -567,7 +576,28 @@ void VoxelGroup::imguiRender()
 {
 	if (jfjkjlskdjfkljyes_pls)
 	{
-		PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::eulerAngles(glm::quat({ 0, 0, 1 }, jfjdskldfklslkdfheuler)), glm::vec3(), 10);
+		// Draw the bounds for the creation area of the voxel group
+		const float halfSingleBlock = 0.5f * voxel_render_size;
+		const glm::vec3 normalMask = glm::abs(jojfjsdkfjksdkfhskdnormal_cooked);
+		glm::vec3 halfExtents = glm::vec3(glm::abs(glm::vec3(jojokhkohhohokhoh_to_pos - jojokhkohhohokhoh_from_pos)) + 1.0f) * glm::vec3(voxel_render_size) / 2.0f;
+		halfExtents *= 1.0f - normalMask;
+		halfExtents = glm::max(glm::vec3(halfSingleBlock), halfExtents);
+		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
+
+		//glm::vec3 offset = glm::vec3(-1.0f) + glm::vec3((jojokhkohhohokhoh_from_pos - voxel_group_offset) * glm::i64vec3(normalMask)) * voxel_render_size + jojfjsdkfjksdkfhskdnormal_cooked * halfSingleBlock + glm::vec3((jojokhkohhohokhoh_to_pos + jojokhkohhohokhoh_from_pos) / (glm::i64)2 - voxel_group_offset) * voxel_render_size * (1.0f - normalMask);
+		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + halfExtents;
+
+		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
+		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
+		glm::vec3 scale = PhysicsUtils::getScale(getTransform());
+		PhysicsUtils::imguiRenderBoxCollider(
+			glm::translate(glm::mat4(1.0f), position + offset) * glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale),
+			geom,
+			ImColor(0.78f, 0.243f, 0.373f)
+		);
+
+		// Draw the guiding circle for appending with SHIFT+C
+		PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::eulerAngles(glm::quat({ 0, 0, 1 }, jfjdskldfklslkdfnormal_raw)), glm::vec3(), 10);
 		jfjkjlskdjfkljyes_pls = false;
 	}
 }

@@ -26,7 +26,8 @@ uniform float cameraHeight;
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+// @SLOW: @NOTE: I noticed that when the camera is more facing the ground, the lower the fps. Perhaps the ground area is harder to sample for???
+// IDK, maybe look into it once you got better time.
 
 
 

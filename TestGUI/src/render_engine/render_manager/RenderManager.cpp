@@ -607,38 +607,47 @@ void RenderManager::render()
 	//
 	static float selectedColorIntensityTime = -1.15f;
 	static int previousSelectedObjInd = -1;
-
-	if (previousSelectedObjInd != currentSelectedObjectIndex)
+	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE &&		// @NOTE: when pressing shift, this is the start to doing group append for voxel groups, so in the even that this happens, now the creator can see better by not rendering the wireframe (I believe)
+		!MainLoop::getInstance().playMode)														// @NOTE: don't render the wireframe if in playmode. It's annoying.
 	{
-		// Reset
+		if (previousSelectedObjInd != currentSelectedObjectIndex)
+		{
+			// Reset @Copypasta
+			previousSelectedObjInd = currentSelectedObjectIndex;
+			selectedColorIntensityTime = -1.15f;
+		}
+
+		if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+		{
+			RenderComponent* rc = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getRenderComponent();
+			if (rc != nullptr)
+			{
+				// Render that selected object!!!!
+				glDepthMask(GL_FALSE);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				{
+					float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
+					//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
+					GLuint selectionWireframeProgramId =
+						*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
+					glUseProgram(selectionWireframeProgramId);
+					glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "wireframeColor"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
+					glUniform1f(glGetUniformLocation(selectionWireframeProgramId, "colorIntensity"), evaluatedIntensityValue);
+					glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+					rc->renderShadow(selectionWireframeProgramId);
+				}
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				glDepthMask(GL_TRUE);
+
+				selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 4.0f;
+			}
+		}
+	}
+	else
+	{
+		// Reset @Copypasta
 		previousSelectedObjInd = currentSelectedObjectIndex;
 		selectedColorIntensityTime = -1.15f;
-	}
-
-	if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
-	{
-		RenderComponent* rc = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getRenderComponent();
-		if (rc != nullptr)
-		{
-			// Render that selected object!!!!
-			glDepthMask(GL_FALSE);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			{
-				float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
-				//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
-				GLuint selectionWireframeProgramId =
-					*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
-				glUseProgram(selectionWireframeProgramId);
-				glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "wireframeColor"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
-				glUniform1f(glGetUniformLocation(selectionWireframeProgramId, "colorIntensity"), evaluatedIntensityValue);
-				glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
-				rc->renderShadow(selectionWireframeProgramId);
-			}
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			glDepthMask(GL_TRUE);
-
-			selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 4.0f;
-		}
 	}
 #endif
 

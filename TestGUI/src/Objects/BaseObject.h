@@ -112,7 +112,6 @@ public:
 	PhysicsComponent(BaseObject* baseObject);
 	virtual ~PhysicsComponent();
 	virtual void physicsUpdate() = 0;
-	virtual physx::PxGeometry* getGeometry() = 0;
 	virtual physx::PxTransform getGlobalPose() = 0;
 
 	virtual void propagateNewTransform(const glm::mat4& newTransform) = 0;
