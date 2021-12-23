@@ -355,6 +355,8 @@ glm::vec3 jfjdskldfklslkdfnormal_raw;
 glm::vec3 jojfjsdkfjksdkfhskdnormal_cooked;
 glm::i64vec3 jojokhkohhohokhoh_from_pos;
 glm::i64vec3 jojokhkohhohokhoh_to_pos;
+int jjfjdksjdkfskdghksdhkfsd_mode;
+enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS, REMOVING_VOXELS };
 
 void VoxelGroup::preRenderUpdate()
 {
@@ -371,12 +373,12 @@ void VoxelGroup::preRenderUpdate()
 		return;
 
 	// MODE: 0: normal. 1: appending a bunch of voxels
-	enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS };
 	static int mode = NORMAL;
 	static ViewPlane rawPlane;
 	static glm::vec3 cookedNormal;
 	static glm::i64vec3 fromPosition;
 	static glm::i64vec3 toPosition;
+	static int operationKeyBinding;		// Either GLFW_KEY_X for delete or GLFW_KEY_C for create
 
 	// Do the WS position camera vector.
 	Camera& camera = MainLoop::getInstance().camera;
@@ -393,19 +395,7 @@ void VoxelGroup::preRenderUpdate()
 
 	if (mode == NORMAL)
 	{
-
-		// If press x (if held shift, then x is "turbo'd")
-		bool yareDelete = false;
-		static bool prevIsButtonHeld1 = GLFW_RELEASE;
-		bool isButtonHeld1 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
-		bool isShiftHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
-		if ((prevIsButtonHeld1 == GLFW_RELEASE || isShiftHeld) && isButtonHeld1 == GLFW_PRESS)
-		{
-			yareDelete = true;
-		}
-		prevIsButtonHeld1 = isButtonHeld1;
-
-		// OR if press c (if held shift, then c is group append)
+		// If press c (if held shift, then c is group append)
 		bool yareAdd = false;
 		static bool prevIsButtonHeld2 = GLFW_RELEASE;
 		bool isButtonHeld2 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
@@ -414,6 +404,16 @@ void VoxelGroup::preRenderUpdate()
 			yareAdd = true;
 		}
 		prevIsButtonHeld2 = isButtonHeld2;
+
+		// OR if press x (if held shift, then x is group remove)
+		bool yareDelete = false;
+		static bool prevIsButtonHeld1 = GLFW_RELEASE;
+		bool isButtonHeld1 = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
+		if (prevIsButtonHeld1 == GLFW_RELEASE && isButtonHeld1 == GLFW_PRESS)
+		{
+			yareDelete = true;
+		}
+		prevIsButtonHeld1 = isButtonHeld1;
 
 
 		if (!yareDelete && !yareAdd)
@@ -441,40 +441,46 @@ void VoxelGroup::preRenderUpdate()
 		//
 		// Edit the voxelgroup!
 		//
-		if (yareAdd)
+		bool isShiftHeld =
+			glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+			glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+		if (isShiftHeld && (yareAdd || yareDelete))
 		{
-			if (isShiftHeld)
-			{
-				//
-				// Take the normal and project the current mouse position to it
-				//
-				rawPlane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
-				rawPlane.normal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
-				cookedNormal = normal;
+			//
+			// Take the normal and project the current mouse position to it
+			//
+			rawPlane.position = PhysicsUtils::toGLMVec3(hitInfo.block.position);
+			rawPlane.normal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+			cookedNormal = normal;
 
-				fromPosition = position;
+			fromPosition = position;
 
+			if (yareAdd)
 				mode = APPENDING_VOXELS;
-			}
-			else
-			{
-				//
-				// Append one voxel at a time (If in range!)
-				//
-				glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
-				setVoxelBitAtPosition(additionVoxel, true);
-			}
+			else if (yareDelete)
+				mode = REMOVING_VOXELS;
+		}
+		else if (yareAdd)
+		{
+			// Append one voxel at a time (If in range!)
+			glm::i64vec3 additionVoxel = position + glm::i64vec3(normal);
+			setVoxelBitAtPosition(additionVoxel, true);
 		}
 		else if (yareDelete)
 		{
-			// Delete voxel!
+			// Delete voxel one at a time!
 			setVoxelBitAtPosition(position, false);
 		}
 	}
 
-	if (mode == APPENDING_VOXELS)
+	if (mode == APPENDING_VOXELS || mode == REMOVING_VOXELS)
 	{
-		bool isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
+		bool isButtonHeld = false;
+		if (mode == APPENDING_VOXELS)
+			isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_C);
+		else if (mode == REMOVING_VOXELS)
+			isButtonHeld = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_X);
+
 		if (isButtonHeld)
 		{
 			//
@@ -504,10 +510,11 @@ void VoxelGroup::preRenderUpdate()
 				jfjdskldfklslkdfnormal_raw = rawPlane.normal;
 				jojfjsdkfjksdkfhskdnormal_cooked = cookedNormal;
 				jfjkjlskdjfkljyes_pls = true;
+				jjfjdksjdkfskdghksdhkfsd_mode = mode;
 
 				// Convert hovering position to voxelposition
 				glm::vec3 toPositionRaw = glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size;
-				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs especially if rotated, so this is to do some padding for that
+				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs (especially if rotated (It's like 10^-8)), so this is to do some padding for that
 				toPosition = glm::i64vec3(glm::floor(toPositionRaw)) + voxel_group_offset;
 
 				jojokhkohhohokhoh_to_pos = toPosition;
@@ -516,11 +523,12 @@ void VoxelGroup::preRenderUpdate()
 		else
 		{
 			//
-			// Fill in all that area specified while holding SHIFT+C
+			// Fill in all that area specified while holding SHIFT+(C/X)
 			//
-			glm::i64vec3 startPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
-			glm::i64vec3 currentPlacementPosition = fromPosition + glm::i64vec3(cookedNormal);
-			glm::i64vec3 targetPlacementPosition = toPosition + glm::i64vec3(cookedNormal);
+			glm::i64vec3 offset = mode == APPENDING_VOXELS ? glm::i64vec3(cookedNormal) : glm::i64vec3(0);
+			glm::i64vec3 startPlacementPosition = fromPosition + offset;
+			glm::i64vec3 currentPlacementPosition = fromPosition + offset;
+			glm::i64vec3 targetPlacementPosition = toPosition + offset;
 			bool breakX, breakY, breakZ;
 			for (currentPlacementPosition.x = startPlacementPosition.x, breakX = false; !breakX; currentPlacementPosition.x = PhysicsUtils::moveTowards(currentPlacementPosition.x, targetPlacementPosition.x, 1))
 			{
@@ -531,7 +539,7 @@ void VoxelGroup::preRenderUpdate()
 						//
 						// Fill in current spot, then move towards the next spot
 						//
-						setVoxelBitAtPosition(currentPlacementPosition, true);
+						setVoxelBitAtPosition(currentPlacementPosition, (mode == APPENDING_VOXELS));
 
 						// Check if finished
 						if (currentPlacementPosition.z == targetPlacementPosition.z)
@@ -587,7 +595,7 @@ void VoxelGroup::imguiRender()
 		halfExtents = glm::max(glm::vec3(halfSingleBlock), halfExtents);
 		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
 
-		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + jojfjsdkfjksdkfhskdnormal_cooked) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
+		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + (jjfjdksjdkfskdghksdhkfsd_mode == APPENDING_VOXELS ? jojfjsdkfjksdkfhskdnormal_cooked : glm::vec3(0.0f))) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
 
 		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
 		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
@@ -595,7 +603,7 @@ void VoxelGroup::imguiRender()
 		PhysicsUtils::imguiRenderBoxCollider(
 			glm::translate(glm::mat4(1.0f), position) * glm::toMat4(rotation) * glm::translate(glm::mat4(1.0f), offset) * glm::scale(glm::mat4(1.0f), scale),
 			geom,
-			ImColor(0.78f, 0.243f, 0.373f)
+			(jjfjdksjdkfskdghksdhkfsd_mode == APPENDING_VOXELS ? ImColor(0.78f, 0.243f, 0.373f) : ImColor(0.196f, 0.078f, 0.706f))
 		);
 
 		// Draw the guiding circle for appending with SHIFT+C
