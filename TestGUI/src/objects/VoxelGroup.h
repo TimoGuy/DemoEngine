@@ -71,4 +71,3 @@ private:
 	};
 	ImguiRenderVariables irv;
 };
-

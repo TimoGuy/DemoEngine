@@ -549,8 +549,8 @@ void setupPhysx()
 
 	MainLoop::getInstance().physicsPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, tolerancesScale, true, gPvd);
 
-	const int numCores = 4;
-	gDispatcher = physx::PxDefaultCpuDispatcherCreate(numCores == 0 ? 0 : numCores - 1);
+	const uint32_t numCores = std::thread::hardware_concurrency();
+	gDispatcher = physx::PxDefaultCpuDispatcherCreate(numCores == 0 ? 1 : numCores);
 	physx::PxSceneDesc sceneDesc(MainLoop::getInstance().physicsPhysics->getTolerancesScale());
 	sceneDesc.cpuDispatcher = gDispatcher;
 	sceneDesc.gravity = physx::PxVec3(0, -98.1f, 0);

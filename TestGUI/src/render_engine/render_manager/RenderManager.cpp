@@ -824,10 +824,10 @@ void RenderManager::renderScene()
 	Material::resetFlag = true;
 	this->repopulateAnimationUBO = true;
 
-	// Start of main render queues: turn on face culling
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	//// Start of main render queues: turn on face culling
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+	//glFrontFace(GL_CCW);
 
 	//
 	// OPAQUE RENDER QUEUE
@@ -867,8 +867,8 @@ void RenderManager::renderScene()
 	transparentBoneMatrixMemAddrs.clear();
 	transparentDistancesToCamera.clear();
 
-	// End of main render queues: turn off face culling
-	glDisable(GL_CULL_FACE);
+	//// End of main render queues: turn off face culling
+	//glDisable(GL_CULL_FACE);
 
 #ifdef _DEBUG
 	//
