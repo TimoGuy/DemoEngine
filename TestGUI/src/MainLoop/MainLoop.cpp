@@ -20,10 +20,7 @@
 
 
 #define FULLSCREEN_MODE 0
-#define SINGLE_BUFFERED_MODE 0
-#if SINGLE_BUFFERED_MODE
-#include <chrono>
-#endif
+#define SINGLE_BUFFERED_MODE 1
 
 
 void createWindow(const char* windowName);
@@ -153,6 +150,29 @@ void MainLoop::run()
 
 		glfwPollEvents();
 
+		//
+		// Switch fullscreen or not when pressing ALT+ENTER
+		//
+		{
+			static bool isAltPressed = false;
+			static bool isEnterPressed = false;
+			static bool isKeyComboPressedPrev = false;
+
+			isAltPressed = (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS);
+			isEnterPressed = glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS;
+			if (isAltPressed && isEnterPressed)
+			{
+				if (!isKeyComboPressedPrev)
+				{
+					setFullscreen(!isFullscreen);
+				}
+
+				isKeyComboPressedPrev = true;
+			}
+			else
+				isKeyComboPressedPrev = false;
+		}
+
 #ifdef _DEBUG
 		//
 		// ImGui render pass
@@ -276,13 +296,49 @@ void MainLoop::deleteObject(BaseObject* obj)
 	objectsToDelete.push_back(obj);
 }
 
+void MainLoop::setFullscreen(bool flag, bool force)
+{
+	if (!force && isFullscreen == flag)
+		return;
+
+	isFullscreen = flag;
+
+	if (isFullscreen)
+	{
+		// Save cache
+		glfwGetWindowPos(window, &windowXposCache, &windowYposCache);
+		glfwGetWindowSize(window, &windowWidthCache, &windowHeightCache);
+
+		// Make fullscreen
+		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+		glfwSetWindowMonitor(window, primaryMonitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+	}
+	else
+	{
+		// Make windowed
+		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+		glfwSetWindowMonitor(window, NULL, windowXposCache, windowYposCache, windowWidthCache, windowHeightCache, mode->refreshRate);
+	}
+
+	//
+	// Make sure vsync is on
+	//
+	glfwMakeContextCurrent(window);
+#if SINGLE_BUFFERED_MODE
+	glfwSwapInterval(0);
+#else
+	glfwSwapInterval(1);
+#endif
+}
+
 
 void createWindow(const char* windowName)
 {
 	if (!glfwInit())
 		glfwTerminate();
 
-#if FULLSCREEN_MODE
 	GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
 
@@ -291,9 +347,10 @@ void createWindow(const char* windowName)
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-	MainLoop::getInstance().window = glfwCreateWindow(mode->width, mode->height, windowName, primaryMonitor, NULL);
-#else
 	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, windowName, NULL, NULL);
+
+#if FULLSCREEN_MODE
+	setFullscreen(true, true);
 #endif
 
 	if (!MainLoop::getInstance().window)

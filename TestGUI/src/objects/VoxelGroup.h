@@ -58,5 +58,17 @@ private:
 	void updateQuadMeshFromBitField();
 	Model* voxel_model;
 	std::map<std::string, Material*> materials;
+
+	struct ImguiRenderVariables
+	{
+		bool show_render;
+		int voxel_edit_mode;
+		glm::vec3 cursor_pos_projected;
+		glm::vec3 rayhit_normal_raw;
+		glm::vec3 rayhit_normal_cooked;
+		glm::i64vec3 select_from_pos;
+		glm::i64vec3 select_to_pos;
+	};
+	ImguiRenderVariables irv;
 };
 

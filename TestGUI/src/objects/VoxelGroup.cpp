@@ -1,5 +1,7 @@
 #include "VoxelGroup.h"
 
+#include <sstream>
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -39,6 +41,13 @@ VoxelGroup::~VoxelGroup()
 	delete physicsComponent;
 }
 
+
+struct VoxelSaveLoadGroup
+{
+	int numBits;
+	char currentBit;
+};
+
 void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 {
 	// NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
@@ -50,17 +59,51 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 	if (object.contains("voxel_bit_field"))
 	{
 		std::string bigBitfield = object["voxel_bit_field"];
+
+		// Parse out all the VoxelSaveLoadGroups
+		std::vector<VoxelSaveLoadGroup> vslgs;
+		{
+			std::stringstream bbfStream(bigBitfield);
+			std::string seg;
+			while (std::getline(bbfStream, seg, ';'))
+			{
+				size_t colonPos = seg.find(':');
+				const std::string str_numBits = seg.substr(0, colonPos);
+				const std::string str_currentBit = seg.substr(colonPos + 1);
+
+				VoxelSaveLoadGroup vslg;
+				vslg.numBits = std::stoi(str_numBits);
+				vslg.currentBit = str_currentBit.c_str()[0];
+				vslgs.push_back(vslg);
+			}
+		}
+		
+		// Fill in the voxels
+		size_t currentVSLGroup = 0;
+		VoxelSaveLoadGroup vslg;
+		vslg.numBits = vslgs[0].numBits;
+		vslg.currentBit = vslgs[0].currentBit;
+
 		for (size_t i = 0; i < (size_t)voxel_group_size.x; i++)
 		{
 			for (size_t j = 0; j < (size_t)voxel_group_size.y; j++)
 			{
 				for (size_t k = 0; k < (size_t)voxel_group_size.z; k++)
 				{
-					char voxel_bit = bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k];
 					setVoxelBitAtPosition(
 						{ i, j, k },
-						voxel_bit != '0'
+						vslg.currentBit != '0'
 					);
+
+					// See if should move to next VSL group
+					vslg.numBits--;
+					if (vslg.numBits == 0 && currentVSLGroup + 1 < vslgs.size())		// NOTE: the second part isn't really needed, however, that's more of a safety precaution in the case that the data is weird or something. @AMEND: ok, apparently it IS needed, bc the very last voxel will run, finishing the whole set, and since the last set is finished, it's gonna wanna run this block to increment the group index, so we should prevent that from happening.
+					{
+						// Move to next group
+						currentVSLGroup++;
+						vslg.numBits = vslgs[currentVSLGroup].numBits;
+						vslg.currentBit = vslgs[currentVSLGroup].currentBit;
+					}
 				}
 			}
 		}
@@ -79,16 +122,39 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	//
 	// Save bitfield
 	//
-	std::string bigBitfield;
-	bigBitfield.resize(voxel_group_size.x * voxel_group_size.y * voxel_group_size.z, '0');
+	std::string bigBitfield = "";
+
+	VoxelSaveLoadGroup vslg;
+	vslg.numBits = 0;
+	vslg.currentBit = 'S';
+	
 	for (size_t i = 0; i < (size_t)voxel_group_size.x; i++)
 	{
 		for (size_t j = 0; j < (size_t)voxel_group_size.y; j++)
 		{
 			for (size_t k = 0; k < (size_t)voxel_group_size.z; k++)
 			{
-				bigBitfield[i * voxel_group_size.y * voxel_group_size.z + j * voxel_group_size.z + k] =
-					getVoxelBitAtPosition({ i, j, k }) ? '1' : '0';
+				//
+				// Change bit if different from currentBit
+				//
+				char sampledBit = getVoxelBitAtPosition({ i, j, k }) ? '1' : '0';
+				const bool isLast = (i == (size_t)(voxel_group_size.x - 1) && j == (size_t)(voxel_group_size.y - 1) && k == (size_t)(voxel_group_size.z - 1));
+				if (vslg.currentBit != sampledBit || isLast)
+				{
+					if (vslg.currentBit != 'S')
+					{
+						if (isLast)
+							vslg.numBits++;		// NOTE: the count is off by 1 for the last group, since vslg.numBits++ is normally run at the end of the block. This fixes that bug.
+
+						// Write the amount of previous bits there were!
+						bigBitfield += std::to_string(vslg.numBits) + ":" + vslg.currentBit + ";";
+					}
+
+					// Reset number of bits!
+					vslg.currentBit = sampledBit;
+					vslg.numBits = 0;
+				}
+				vslg.numBits++;
 			}
 		}
 	}
@@ -349,13 +415,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	physicsComponent = new TriangleMeshCollider(this, voxel_model, RigidActorTypes::STATIC);
 }
 
-bool jfjkjlskdjfkljyes_pls;
-glm::vec3 jfodsjfsalkdfjlkasdf;
-glm::vec3 jfjdskldfklslkdfnormal_raw;
-glm::vec3 jojfjsdkfjksdkfhskdnormal_cooked;
-glm::i64vec3 jojokhkohhohokhoh_from_pos;
-glm::i64vec3 jojokhkohhohokhoh_to_pos;
-int jjfjdksjdkfskdghksdhkfsd_mode;
+
 enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS, REMOVING_VOXELS };
 
 void VoxelGroup::preRenderUpdate()
@@ -505,19 +565,18 @@ void VoxelGroup::preRenderUpdate()
 
 			if (iterations < max_iterations)
 			{
-				jfodsjfsalkdfjlkasdf = currRMPos;
-				jojokhkohhohokhoh_from_pos = fromPosition;
-				jfjdskldfklslkdfnormal_raw = rawPlane.normal;
-				jojfjsdkfjksdkfhskdnormal_cooked = cookedNormal;
-				jfjkjlskdjfkljyes_pls = true;
-				jjfjdksjdkfskdghksdhkfsd_mode = mode;
-
 				// Convert hovering position to voxelposition
 				glm::vec3 toPositionRaw = glm::inverse(getTransform()) * glm::vec4(currRMPos, 1.0f) / voxel_render_size;
 				toPositionRaw -= glm::vec3(0.1f) * cookedNormal;		// NOTE: a slight offset occurs (especially if rotated (It's like 10^-8)), so this is to do some padding for that
 				toPosition = glm::i64vec3(glm::floor(toPositionRaw)) + voxel_group_offset;
 
-				jojokhkohhohokhoh_to_pos = toPosition;
+				irv.show_render = true;
+				irv.voxel_edit_mode = mode;
+				irv.cursor_pos_projected = currRMPos;
+				irv.rayhit_normal_raw = rawPlane.normal;
+				irv.rayhit_normal_cooked = cookedNormal;
+				irv.select_to_pos = toPosition;
+				irv.select_from_pos = fromPosition;
 			}
 		}
 		else
@@ -525,7 +584,7 @@ void VoxelGroup::preRenderUpdate()
 			//
 			// Fill in all that area specified while holding SHIFT+(C/X)
 			//
-			glm::i64vec3 offset = mode == APPENDING_VOXELS ? glm::i64vec3(cookedNormal) : glm::i64vec3(0);
+			glm::i64vec3 offset = mode == APPENDING_VOXELS && fromPosition - toPosition == glm::i64vec3(0) ? glm::i64vec3(cookedNormal) : glm::i64vec3(0);
 			glm::i64vec3 startPlacementPosition = fromPosition + offset;
 			glm::i64vec3 currentPlacementPosition = fromPosition + offset;
 			glm::i64vec3 targetPlacementPosition = toPosition + offset;
@@ -583,19 +642,19 @@ void VoxelGroup::imguiPropertyPanel()
 
 void VoxelGroup::imguiRender()
 {
-	if (jfjkjlskdjfkljyes_pls)
+	if (irv.show_render)
 	{
 		// Draw the bounds for the creation area of the voxel group
 		const float halfSingleBlock = 0.5f * voxel_render_size;
-		const glm::vec3 normalMask = glm::abs(jojfjsdkfjksdkfhskdnormal_cooked);
+		const glm::vec3 normalMask = glm::abs(irv.rayhit_normal_cooked);
 
-		glm::vec3 deltaPositions(jojokhkohhohokhoh_to_pos - jojokhkohhohokhoh_from_pos);
+		glm::vec3 deltaPositions(irv.select_to_pos - irv.select_from_pos);
 		glm::vec3 halfExtents = (glm::abs(deltaPositions) + 1.0f) * halfSingleBlock;
 		halfExtents *= 1.0f - normalMask;
 		halfExtents = glm::max(glm::vec3(halfSingleBlock), halfExtents);
 		physx::PxBoxGeometry geom(PhysicsUtils::toPxVec3(halfExtents));
 
-		const glm::vec3 offset = (glm::vec3(jojokhkohhohokhoh_from_pos - voxel_group_offset) + (jjfjdksjdkfskdghksdhkfsd_mode == APPENDING_VOXELS ? jojfjsdkfjksdkfhskdnormal_cooked : glm::vec3(0.0f))) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
+		const glm::vec3 offset = (glm::vec3(irv.select_from_pos - voxel_group_offset) + (irv.voxel_edit_mode == APPENDING_VOXELS && deltaPositions == glm::vec3(0) ? irv.rayhit_normal_cooked : glm::vec3(0.0f))) * voxel_render_size + (deltaPositions + 1.0f) * halfSingleBlock;
 
 		glm::vec3 position = PhysicsUtils::getPosition(getTransform());
 		glm::quat rotation = PhysicsUtils::getRotation(getTransform());
@@ -603,12 +662,12 @@ void VoxelGroup::imguiRender()
 		PhysicsUtils::imguiRenderBoxCollider(
 			glm::translate(glm::mat4(1.0f), position) * glm::toMat4(rotation) * glm::translate(glm::mat4(1.0f), offset) * glm::scale(glm::mat4(1.0f), scale),
 			geom,
-			(jjfjdksjdkfskdghksdhkfsd_mode == APPENDING_VOXELS ? ImColor(0.78f, 0.243f, 0.373f) : ImColor(0.196f, 0.078f, 0.706f))
+			(irv.voxel_edit_mode == APPENDING_VOXELS ? ImColor(0.78f, 0.243f, 0.373f) : ImColor(0.196f, 0.078f, 0.706f))
 		);
 
 		// Draw the guiding circle for appending with SHIFT+C
-		PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), jfodsjfsalkdfjlkasdf), 0.5f, glm::eulerAngles(glm::quat({ 0, 0, 1 }, jfjdskldfklslkdfnormal_raw)), glm::vec3(), 10);
-		jfjkjlskdjfkljyes_pls = false;
+		PhysicsUtils::imguiRenderCircle(glm::translate(glm::mat4(1.0f), irv.cursor_pos_projected), 0.5f, glm::eulerAngles(glm::quat({ 0, 0, 1 }, irv.rayhit_normal_raw)), glm::vec3(), 10);
+		irv.show_render = false;
 	}
 }
 #endif

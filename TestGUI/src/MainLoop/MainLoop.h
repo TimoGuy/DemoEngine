@@ -50,4 +50,9 @@ public:
 
 private:
 	std::vector<BaseObject*> objectsToDelete;
+
+	// Fullscreen/windowed cache
+	bool isFullscreen;
+	int windowXposCache, windowYposCache, windowWidthCache, windowHeightCache;
+	void setFullscreen(bool flag, bool force = false);
 };

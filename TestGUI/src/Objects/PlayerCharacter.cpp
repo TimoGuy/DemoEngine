@@ -182,6 +182,10 @@ void PlayerCharacter::processMovement()
 	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
 	float cameraDistance = playerCamOffset.z;
 
+	// Setup camera orientation
+	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
+	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
+
 	// Do raycast to see what the camera distance should be
 	{
 		physx::PxRaycastBuffer hitInfo;
@@ -213,11 +217,7 @@ void PlayerCharacter::processMovement()
 		}
 	}
 
-	// Setup camera orientation
-	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
-	playerCamera.orientation = lookingRotation * glm::vec3(0, 0, 1);
-
-
+	// Setup camera position based off distance
 	const glm::vec3 depthOffset(0, 0, currentMaxCamDistance);
 	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
 
