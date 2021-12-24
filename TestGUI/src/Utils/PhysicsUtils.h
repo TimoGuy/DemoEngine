@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <PxPhysicsAPI.h>
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #endif
 
@@ -65,7 +65,7 @@ namespace PhysicsUtils
 
 #pragma endregion
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #pragma region imgui property panel functions
 
 	void imguiTransformMatrixProps(float* matrixPtr);

@@ -34,7 +34,7 @@ void Animator::updateAnimation(float deltaTime)
 {
 	deltaTime *= animationSpeed;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Don't run the animation update unless in playmode
 	if (!MainLoop::getInstance().playMode)
 		return;

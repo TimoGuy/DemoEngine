@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../../imgui/imgui.h"
 #endif
 
@@ -126,7 +126,7 @@ void Camera::removeVirtualCamera(VirtualCamera* virtualCamera)
 
 void Camera::updateToVirtualCameras()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	if (!MainLoop::getInstance().playMode)
 		return;
 #endif
@@ -162,7 +162,7 @@ void Camera::updateToVirtualCameras()
 bool prevF11Keypressed;
 void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	if (glfwGetKey(window, GLFW_KEY_F11) == GLFW_PRESS && prevF11Keypressed == GLFW_RELEASE)
 	{
 		//
@@ -173,7 +173,7 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 	prevF11Keypressed = glfwGetKey(window, GLFW_KEY_F11);
 #endif
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Don't do look around stuff unless if doing freecam mode
 	if (MainLoop::getInstance().playMode)
 #endif
@@ -184,7 +184,7 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 			if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 			{
 				lockedCursor = true;
-#ifdef _DEBUG
+#ifdef _DEVELOP
 				ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 #else
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -197,7 +197,7 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 			if (glfwGetKey(window, GLFW_KEY_F10) == GLFW_PRESS)
 			{
 				lockedCursor = false;
-#ifdef _DEBUG
+#ifdef _DEVELOP
 				ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
 #else
 				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -206,12 +206,12 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		}
 		return;
 	}
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	else
 		lockedCursor = false;
 #endif
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// Look around
 	//

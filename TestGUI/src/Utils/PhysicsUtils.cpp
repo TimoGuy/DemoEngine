@@ -2,7 +2,7 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/ImGuizmo.h"
 #endif
@@ -250,7 +250,7 @@ namespace PhysicsUtils
 
 #pragma endregion
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #pragma region imgui property panel functions
 
 	void imguiTransformMatrixProps(float* matrixPtr)

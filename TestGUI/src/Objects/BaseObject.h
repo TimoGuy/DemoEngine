@@ -38,7 +38,7 @@ public:
 	virtual PhysicsComponent* getPhysicsComponent() = 0;
 	virtual RenderComponent* getRenderComponent() = 0;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	virtual void imguiPropertyPanel() {}
 	virtual void imguiRender() {}
 #endif
@@ -154,14 +154,14 @@ public:
 	void render(const ViewFrustum* viewFrustum);
 	void renderShadow(GLuint programId);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void TEMPrenderImguiModelBounds();
 #endif
 
 private:
 	std::vector<ModelWithMetadata> modelsWithMetadata;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void refreshResources();
 #endif
 };

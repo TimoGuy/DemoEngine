@@ -58,7 +58,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 		delete MainLoop::getInstance().objects[i];
 	}
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	MainLoop::getInstance().renderManager->currentSelectedObjectIndex = -1;
 #endif
 

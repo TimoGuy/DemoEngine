@@ -13,7 +13,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../../imgui/imgui.h"
 #include "../../imgui/imgui_impl_glfw.h"
 #include "../../imgui/imgui_impl_opengl3.h"
@@ -46,7 +46,7 @@ bool RenderManager::isWireFrameMode = false;
 bool RenderManager::renderPhysicsDebug = false;
 bool RenderManager::renderMeshRenderAABB = false;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 ImGuizmo::OPERATION transOperation;
 #endif
 
@@ -71,7 +71,7 @@ RenderManager::RenderManager()
 	}
 
 	createHDRBuffer();
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	createPickingBuffer();
 #endif
 	createFonts();
@@ -310,13 +310,13 @@ void RenderManager::recreateRenderBuffers()
 {
 	destroyHDRBuffer();
 	createHDRBuffer();
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	destroyPickingBuffer();
 	createPickingBuffer();
 #endif
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList)
 {
 	delete physxVisDebugLines;			// NOTE: this gets destroyed to prevent any memory leaks
@@ -481,7 +481,7 @@ void RenderManager::createFonts()
 
 void RenderManager::render()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	renderImGuiPass();
 
 	//
@@ -539,7 +539,7 @@ void RenderManager::render()
 		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
 	}
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// Render Picking texture
 	//
@@ -601,7 +601,7 @@ void RenderManager::render()
 
 	renderUI();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// @Debug: Render wireframe of selected object
 	//
@@ -727,7 +727,7 @@ void RenderManager::render()
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// ImGui buffer swap
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
@@ -870,7 +870,7 @@ void RenderManager::renderScene()
 	//// End of main render queues: turn off face culling
 	//glDisable(GL_CULL_FACE);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// @DEBUG: show grid for imguizmo
 	//
@@ -1186,7 +1186,7 @@ void RenderManager::renderUI()
 //	ImGuizmo::IsUsing())
 //	return;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RenderManager::renderImGuiPass()
 {
 	renderImGuiContents();
@@ -1362,7 +1362,7 @@ void RenderManager::renderImGuiContents()
 	if (showDemoWindow)
 		ImGui::ShowDemoWindow(&showDemoWindow);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// @PHYSX_VISUALIZATION
 	//
@@ -1420,7 +1420,7 @@ void RenderManager::renderImGuiContents()
 		MainLoop::getInstance().objects[i]->imguiRender();
 	}
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	//
 	// Render bounds of all renderobjects
 	//
@@ -1843,7 +1843,7 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RenderManager::createPickingBuffer()			// @Copypasta with createHDRBuffer()
 {
 	glGenFramebuffers(1, &pickingFBO);

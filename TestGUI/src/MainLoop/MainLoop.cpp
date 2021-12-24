@@ -7,7 +7,7 @@
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/camera/Camera.h"
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
 #include "../imgui/imgui_impl_opengl3.h"
@@ -20,20 +20,20 @@
 
 
 #define FULLSCREEN_MODE 0
-#define SINGLE_BUFFERED_MODE 1
+#define V_SYNC 1
 
 
 void createWindow(const char* windowName);
 void setupViewPort();
 void setupPhysx();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void setupImGui();
 #endif
 
 void physicsUpdate();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
@@ -86,7 +86,7 @@ void MainLoop::initialize()
 	setupViewPort();
 	setupPhysx();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	setupImGui();
 #endif
 
@@ -95,7 +95,7 @@ void MainLoop::initialize()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(openglMessageCallback, 0);
 #endif
@@ -129,13 +129,8 @@ void MainLoop::initialize()
 
 void MainLoop::run()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-#endif
-
-#if SINGLE_BUFFERED_MODE
-	const float desiredFrameTime = 1000.0f / 60.0f;
-	float startFrameTime = 0;
 #endif
 
 	float lastFrame = (float)glfwGetTime();
@@ -144,10 +139,6 @@ void MainLoop::run()
 
 	while (!glfwWindowShouldClose(window))
 	{
-#if SINGLE_BUFFERED_MODE
-		startFrameTime = (float)glfwGetTime();
-#endif
-
 		glfwPollEvents();
 
 		//
@@ -173,7 +164,7 @@ void MainLoop::run()
 				isKeyComboPressedPrev = false;
 		}
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 		//
 		// ImGui render pass
 		//
@@ -195,7 +186,7 @@ void MainLoop::run()
 			prevLeftMouseButtonPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
 #endif
 			camera.Inputs(window);
-#ifdef _DEBUG
+#ifdef _DEVELOP
 		}
 #endif
 
@@ -234,7 +225,7 @@ void MainLoop::run()
 		// Take all physics objects and update their transforms (interpolation)
 		//
 		float interpolationAlpha = accumulatedTimeForPhysics / this->physicsDeltaTime;
-#ifdef _DEBUG
+#ifdef _DEVELOP
 		if (!playMode)
 			interpolationAlpha = 1.0f;
 #endif
@@ -277,7 +268,7 @@ void MainLoop::cleanup()
 {
 	delete renderManager;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -326,10 +317,10 @@ void MainLoop::setFullscreen(bool flag, bool force)
 	// Make sure vsync is on
 	//
 	glfwMakeContextCurrent(window);
-#if SINGLE_BUFFERED_MODE
-	glfwSwapInterval(0);
-#else
+#if V_SYNC
 	glfwSwapInterval(1);
+#else
+	glfwSwapInterval(0);
 #endif
 }
 
@@ -361,10 +352,10 @@ void createWindow(const char* windowName)
 	glfwMakeContextCurrent(MainLoop::getInstance().window);
 
 	// NOTE: glfwswapinterval() needs to be executed after glfwmakecontextcurrent()
-#if SINGLE_BUFFERED_MODE
-	glfwSwapInterval(0);
-#else
+#if V_SYNC
 	glfwSwapInterval(1);
+#else
+	glfwSwapInterval(0);
 #endif
 
 	gladLoadGL();
@@ -392,7 +383,7 @@ void setupViewPort()
 	frameBufferSizeChangedCallback(nullptr, width, height);
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void setupImGui()
 {
 	IMGUI_CHECKVERSION();
@@ -566,7 +557,7 @@ void setupPhysx()
 	MainLoop::getInstance().physicsScene = MainLoop::getInstance().physicsPhysics->createScene(sceneDesc);
 	MainLoop::getInstance().defaultPhysicsMaterial = MainLoop::getInstance().physicsPhysics->createMaterial(0.5f, 0.5f, 1.0f);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eSCALE, 1.0f);
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eACTOR_AXES, 2.0f);
 	MainLoop::getInstance().physicsScene->setVisualizationParameter(physx::PxVisualizationParameter::eCOLLISION_SHAPES, true);
@@ -590,7 +581,7 @@ void setupPhysx()
 
 void physicsUpdate()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Don't run unless if play mode
 	if (!MainLoop::getInstance().playMode)
 		return;
@@ -604,7 +595,7 @@ void physicsUpdate()
 	MainLoop::getInstance().physicsScene->simulate(MainLoop::getInstance().physicsDeltaTime);
 	MainLoop::getInstance().physicsScene->fetchResults(true);
 			
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Don't visualize unless enabled
 	if (!RenderManager::renderPhysicsDebug)
 		return;

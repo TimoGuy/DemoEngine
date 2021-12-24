@@ -7,7 +7,7 @@
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #include "../imgui/ImGuizmo.h"
@@ -169,7 +169,7 @@ void PointLightLight::configureShaderAndMatrices()
 
 void PointLightLight::renderPassShadowMap()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	refreshResources();
 #endif
 
@@ -194,7 +194,7 @@ void PointLightLight::refreshResources()
 	pointLightShaderProgram = *(GLuint*)Resources::getResource("shader;pointLightShadowPass");
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void PointLight::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);

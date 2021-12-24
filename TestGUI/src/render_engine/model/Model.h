@@ -29,7 +29,7 @@ public:
 	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
 	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);
 #endif
 

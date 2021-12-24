@@ -60,7 +60,7 @@ public:
 	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return nullptr; }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif

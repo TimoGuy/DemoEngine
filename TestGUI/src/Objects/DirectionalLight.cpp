@@ -11,7 +11,7 @@
 #define LERP(a, b, t) (a) + (t) * ((b) - (a))
 #define REMAP(value, istart, istop, ostart, ostop) ((value) - (istart)) / ((istop) - (istart)) * ((ostop) - (ostart)) + (ostart)
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #include "../imgui/ImGuizmo.h"
@@ -181,7 +181,7 @@ void DirectionalLightLight::destroyCSMBuffers()
 
 void DirectionalLightLight::renderPassShadowMap()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	refreshResources();
 #endif
 
@@ -414,7 +414,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 		);
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void DirectionalLight::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);

@@ -39,7 +39,7 @@ public:
 	float physicsDeltaTime;		// To only be used on the physics thread
 	float physicsCalcTimeAnchor;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	bool playMode = false;
 #endif
 

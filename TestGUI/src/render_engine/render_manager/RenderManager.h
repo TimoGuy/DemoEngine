@@ -32,7 +32,7 @@ struct TextCharacter
 class Mesh;
 
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 struct PixelInfo
 {
 	float objectID;
@@ -61,7 +61,7 @@ public:
 
 	void recreateRenderBuffers();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	int currentSelectedObjectIndex = -1;
 #endif
 
@@ -81,13 +81,13 @@ public:
 	// Transparent rendering
 	void INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// @PHYSX_VISUALIZATION
 	void physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList);
 #endif
 
 	// @DEBUG: @WHEN_RELEASE: remove these when done with game.
-	// This should be in an #ifdef _DEBUG block...
+	// This should be in an #ifdef _DEVELOP block...
 	static bool isWireFrameMode;
 	static bool renderPhysicsDebug;
 	static bool renderMeshRenderAABB;
@@ -132,7 +132,7 @@ private:
 	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
 	std::vector<float> transparentDistancesToCamera;
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// ImGui Debug stuff
 	void renderImGuiPass();
 	void renderImGuiContents();
@@ -140,12 +140,12 @@ private:
 
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// @PHYSX_VISUALIZATION
 	std::vector<physx::PxDebugLine>* physxVisDebugLines;
 #endif
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Picking texture
 	void createPickingBuffer();
 	void destroyPickingBuffer();

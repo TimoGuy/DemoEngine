@@ -485,7 +485,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/bloom_postprocessing.vert", "shader/bloom_postprocessing.frag");
 	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/postprocessing.frag");
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/hudUI.vert", "shader/hudUI.frag");
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
 #endif

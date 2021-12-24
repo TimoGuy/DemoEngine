@@ -53,7 +53,7 @@ public:
 
 	void preRenderUpdate();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif

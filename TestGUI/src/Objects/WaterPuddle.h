@@ -33,7 +33,7 @@ public:
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif

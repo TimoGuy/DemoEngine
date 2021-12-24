@@ -30,7 +30,7 @@ public:
 
 	void INTERNALrecreatePhysicsComponent();
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif

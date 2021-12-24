@@ -259,7 +259,7 @@ void RenderComponent::clearAllModels()
 
 void RenderComponent::render(const ViewFrustum* viewFrustum)								// @Copypasta
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	refreshResources();
 #endif
 
@@ -284,7 +284,7 @@ void RenderComponent::render(const ViewFrustum* viewFrustum)								// @Copypast
 
 void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	refreshResources();
 #endif
 
@@ -300,7 +300,7 @@ void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
 	}
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RenderComponent::TEMPrenderImguiModelBounds()
 {
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
@@ -310,7 +310,7 @@ void RenderComponent::TEMPrenderImguiModelBounds()
 }
 #endif
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RenderComponent::refreshResources()
 {
 	baseObject->refreshResources();

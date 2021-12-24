@@ -30,7 +30,7 @@ public:
 
 	void INTERNALrecreatePhysicsComponent(std::string modelResourceName);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	void imguiPropertyPanel();
 #endif
 

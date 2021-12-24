@@ -12,7 +12,7 @@
 #include "../render_engine/resources/Resources.h"
 #include "../utils/PhysicsUtils.h"
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../render_engine/render_manager/RenderManager.h"
 
 #include "../imgui/imgui.h"
@@ -420,7 +420,7 @@ enum VOXEL_EDIT_MODES { NORMAL, APPENDING_VOXELS, REMOVING_VOXELS };
 
 void VoxelGroup::preRenderUpdate()
 {
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// NOTE: turns out even though no physics simulation is happening during !playMode, you can still do raycasts. Nice
 	if (MainLoop::getInstance().playMode)
 		return;
@@ -627,7 +627,7 @@ void VoxelGroup::preRenderUpdate()
 #endif
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void VoxelGroup::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);

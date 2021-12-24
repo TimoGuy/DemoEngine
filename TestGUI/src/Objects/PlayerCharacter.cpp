@@ -16,7 +16,7 @@
 #include "../utils/InputManager.h"
 #include "../utils/Messages.h"
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #endif
@@ -165,7 +165,7 @@ void PlayerCharacter::processMovement()
 	if (glm::length2(movementVector) > 0.001f)
 		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	// Remove input if not playmode
 	if (!MainLoop::getInstance().playMode)
 	{
@@ -575,7 +575,7 @@ void PlayerCharacter::processAnimation()
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
 	//
-#ifdef _DEBUG
+#ifdef _DEVELOP
 	if (MainLoop::getInstance().playMode)
 #endif
 	{
@@ -683,7 +683,7 @@ void PlayerCharacter::preRenderUpdate()
 	processAnimation();
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void PlayerCharacter::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);

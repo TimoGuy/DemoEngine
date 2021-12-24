@@ -155,7 +155,7 @@ void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const 
 	}
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 {
 	for (size_t i = 0; i < meshes.size(); i++)

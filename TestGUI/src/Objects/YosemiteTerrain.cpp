@@ -9,7 +9,7 @@
 #include "../render_engine/resources/Resources.h"
 #include "../utils/PhysicsUtils.h"
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #endif
@@ -109,7 +109,7 @@ void YosemiteTerrain::preRenderUpdate()
 {
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void YosemiteTerrain::imguiPropertyPanel()
 {
 	ImGui::InputText("Name", &name);

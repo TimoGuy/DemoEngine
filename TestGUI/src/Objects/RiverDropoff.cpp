@@ -102,7 +102,7 @@ void RiverDropoff::refreshResources()
 	model->setMaterials(materials);
 }
 
-#ifdef _DEBUG
+#ifdef _DEVELOP
 void RiverDropoff::imguiPropertyPanel()
 {
 }
