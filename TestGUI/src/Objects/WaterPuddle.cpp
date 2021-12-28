@@ -137,8 +137,8 @@ void WaterPuddle::refreshResources()
 	//
 	// Materials
 	//
-	materials["Mound"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-	materials["Water"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
+	materials["Mound"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
+	materials["Water"] = (Material*)Resources::getResource("material;pbrWater");
 
 	model->setMaterials(materials);
 }
