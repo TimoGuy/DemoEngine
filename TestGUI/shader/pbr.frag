@@ -11,6 +11,7 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 //uniform sampler2D aoMap;
+uniform float fadeAlpha;
 uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
 
 // PBR stuff        TODO: maybe pack these into a UBO that gets calculated at the beginning of the frame only (light positions and the shadow stuff eh!)
@@ -430,7 +431,7 @@ void main()
     vec3 ambient = (kD * diffuse + specular);// * ao;
     vec3 color = ambient + Lo;
 
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(color, fadeAlpha);
 
     //FragColor = vec4(vec3(linearDepth), 1.0);
 

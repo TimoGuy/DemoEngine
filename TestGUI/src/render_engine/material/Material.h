@@ -8,7 +8,7 @@
 class Material
 {
 public:
-	Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, glm::vec4 offsetTiling = glm::vec4(1, 1, 0, 0));
+	Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, float fadeAlpha = 1.0f, glm::vec4 offsetTiling = glm::vec4(1, 1, 0, 0));
 
 	// TODO: would need to set the shader in this function to be used
 	virtual void applyTextureUniforms();		// @Future: This'll be a virtual function that just gets called when needed. If there are different types of shaders that require different types of materials, then this'll use that different type (Maybe: it'll require that the shader func glUseProgram(id) will have to be taken care of in this material system too.... hmmmmmm
@@ -20,6 +20,7 @@ public:
 
 	static bool resetFlag;
 
+	float fadeAlpha;
 	bool isTransparent = false;
 
 protected:

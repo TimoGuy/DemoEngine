@@ -843,6 +843,11 @@ void RenderManager::renderScene()
 		MainLoop::getInstance().renderObjects[i]->render(&cookedViewFrustum);
 	}
 
+	// @TEMP: this is bc the transparent render queue really needs backface culling!!!!!!!
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
 	//
 	// TRANSPARENT RENDER QUEUE
 	// 
@@ -867,8 +872,8 @@ void RenderManager::renderScene()
 	transparentBoneMatrixMemAddrs.clear();
 	transparentDistancesToCamera.clear();
 
-	//// End of main render queues: turn off face culling
-	//glDisable(GL_CULL_FACE);
+	// End of main render queues: turn off face culling		@TEMP: for transparent render queue
+	glDisable(GL_CULL_FACE);
 
 #ifdef _DEVELOP
 	//

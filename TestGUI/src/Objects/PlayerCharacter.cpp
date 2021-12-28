@@ -131,7 +131,7 @@ void PlayerCharacter::refreshResources()
 	{
 		// Now for the bottle model!
 		bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrSlimeEye");
+		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrBottleBody");
 		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
 

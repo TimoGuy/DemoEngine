@@ -26,7 +26,7 @@ void* loadHDRTexture2D(const std::string& textureName, bool isUnloading, const s
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path);
 void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<std::string> animationNames);
 
-void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName);
+void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha=1.0f);
 void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
 void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
 
@@ -413,7 +413,7 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	}
 }
 
-void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName)
+void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha)
 {
 	if (!isUnloading)
 	{
@@ -423,7 +423,8 @@ void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const s
 				(GLuint*)Resources::getResource(albedoName),
 				(GLuint*)Resources::getResource(normalName),
 				(GLuint*)Resources::getResource(metallicName),
-				(GLuint*)Resources::getResource(roughnessName)
+				(GLuint*)Resources::getResource(roughnessName),
+				fadeAlpha
 			);
 		return material;
 	}
@@ -555,6 +556,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
 	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);
+
+	if (resourceName == "material;pbrBottleBody")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrBottleBodyAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value", 0.5f);
+	if (resourceName == "texture;pbrBottleBodyAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);		// @Incomplete: there's no real bottle texture, so make a quick white thingo
 
 	if (resourceName == "material;pbrSlimeEye")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyeAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
 	if (resourceName == "texture;pbrSlimeEyeAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);

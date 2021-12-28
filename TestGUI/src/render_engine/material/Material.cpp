@@ -54,21 +54,17 @@ void setupShader(GLuint shaderId)
 //
 // Material
 //
-Material::Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, glm::vec4 offsetTiling)
+Material::Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, float fadeAlpha, glm::vec4 offsetTiling)
 {
 	Material::myShaderId = myShaderId;
 	Material::albedoMapPtr = albedoMap;
 	Material::normalMapPtr = normalMap;
 	Material::metallicMapPtr = metallicMap;
 	Material::roughnessMapPtr = roughnessMap;
+	Material::fadeAlpha = fadeAlpha;
 	Material::tilingAndOffset = offsetTiling;
 
-
-	/* TODO: figgure out why doesn't work! (New impl where glGenTextures is run prematurely, and then configured later*/
-	/*Material::albedoMap = *albedoMapPtr;
-	Material::normalMap = *normalMapPtr;
-	Material::metallicMap = *metallicMapPtr;
-	Material::roughnessMap = *roughnessMapPtr;*/
+	isTransparent = (fadeAlpha != 1.0f);
 }
 
 void Material::applyTextureUniforms()
@@ -122,6 +118,7 @@ void Material::applyTextureUniforms()
 
 	glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
 
+	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 }
 
@@ -145,7 +142,7 @@ void Material::setTilingAndOffset(glm::vec4 tilingAndOffset)
 // ZellyMaterial
 //
 ZellyMaterial::ZellyMaterial(glm::vec3 color) :
-	Material(*(unsigned int*)Resources::getResource("shader;zelly"), 0, 0, 0, 0, glm::vec4(0.0f))
+	Material(*(unsigned int*)Resources::getResource("shader;zelly"), 0, 0, 0, 0, 0.0f, glm::vec4(0.0f))
 {
 	ZellyMaterial::color = color;
 	isTransparent = true;
@@ -183,7 +180,7 @@ void ZellyMaterial::applyTextureUniforms()
 // LvlGridMaterial
 //
 LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
-	Material(*(unsigned int*)Resources::getResource("shader;lvlGrid"), 0, 0, 0, 0, glm::vec4(50, 50, 0, 0))
+	Material(*(unsigned int*)Resources::getResource("shader;lvlGrid"), 0, 0, 0, 0, 0.0f, glm::vec4(50, 50, 0, 0))
 {
 	LvlGridMaterial::color = color;
 	isTransparent = true;
