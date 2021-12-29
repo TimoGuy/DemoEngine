@@ -25,11 +25,8 @@ VoxelGroup::VoxelGroup()
 	name = "Voxel Group (unnamed)";
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
-	resizeVoxelArea(chunk_increments, chunk_increments, chunk_increments);				// For now default. (Needs loading system to do different branch)
-	setVoxelBitAtPosition(voxel_group_offset, true);									// Default: center cube is enabled
-	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 0, 0), true);
-	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 1, 0), true);
-	setVoxelBitAtPosition(voxel_group_offset + glm::i64vec3(1, 1, 1), true);
+	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
+	setVoxelBitAtPosition(glm::i64vec3(0), true);									// Default: center cube is enabled
 
 	renderComponent = new RenderComponent(this);
 	refreshResources();
@@ -54,7 +51,22 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 
 	//
-	// Load bitfield
+	// Prepare bitfield sizing
+	//
+	{
+		glm::i64vec3 voxelGroupSize = glm::i64vec3(32);
+		if (object.contains("voxel_group_size"))
+			voxelGroupSize = glm::i64vec3(object["voxel_group_size"][0], object["voxel_group_size"][1], object["voxel_group_size"][2]);
+
+		glm::i64vec3 voxelGroupOffset = voxelGroupSize / (glm::i64)2;
+		if (object.contains("voxel_group_offset"))
+			voxelGroupOffset = glm::i64vec3(object["voxel_group_offset"][0], object["voxel_group_offset"][1], object["voxel_group_offset"][2]);
+
+		resizeVoxelArea(voxelGroupSize, voxelGroupOffset);
+	}
+
+	//
+	// Load actual bitfield
 	//
 	if (object.contains("voxel_bit_field"))
 	{
@@ -120,6 +132,12 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 
 	//
+	// Save bitfield sizing
+	//
+	j["voxel_group_size"] = { voxel_group_size.x, voxel_group_size.y, voxel_group_size.z };
+	j["voxel_group_offset"] = { voxel_group_offset.x, voxel_group_offset.y, voxel_group_offset.z };
+
+	//
 	// Save bitfield
 	//
 	std::string bigBitfield = "";
@@ -168,6 +186,7 @@ void VoxelGroup::refreshResources()
 	if (is_voxel_bit_field_dirty)
 	{
 		// Create quadmesh
+		renderComponent->clearAllModels();
 		updateQuadMeshFromBitField();
 
 		if (voxel_model != nullptr)
@@ -176,7 +195,6 @@ void VoxelGroup::refreshResources()
 			// Create cooked collision mesh
 			//
 			INTERNALrecreatePhysicsComponent();
-			renderComponent->clearAllModels();
 			renderComponent->addModelToRender({ voxel_model, true, nullptr });
 		}
 
@@ -191,57 +209,57 @@ void VoxelGroup::refreshResources()
 	}
 }
 
-void VoxelGroup::resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offset)
+void VoxelGroup::resizeVoxelArea(glm::i64vec3 size, glm::i64vec3 offset)
 {
 	//
 	// Create new voxel_bit_field
 	//
 	std::vector<bool> zVoxels;
-	zVoxels.resize(z, false);
+	zVoxels.resize(size.z, false);
 	std::vector<std::vector<bool>> yzVoxels;
-	yzVoxels.resize(y, zVoxels);
+	yzVoxels.resize(size.y, zVoxels);
 	std::vector<std::vector<std::vector<bool>>> xyzVoxels;
-	xyzVoxels.resize(y, yzVoxels);
+	xyzVoxels.resize(size.x, yzVoxels);
 
 	// Fill it!
 	if (voxel_bit_field.size() == 0)
 	{
 		// From scratch
-		voxel_group_offset = glm::i64vec3(x, y, z) / (glm::i64)2;		// TODO: figure this out, bc this line breaks the voxel creation system (and probs the deletion system too)
+		voxel_group_offset = size / (glm::i64)2;		// TODO: figure this out, bc this line breaks the voxel creation system (and probs the deletion system too)
 		//voxel_group_offset = glm::i64vec3(0);
 	}
 	else
 	{
-		// With existing
-		voxel_group_offset += offset;
-
 		// 
 		// (NOTE: this is an unsafe operation and if offset is incorrectly set, there could be some bad joojoo with out-of-bounds stuff)
 		// I trust ya tho ;)
 		//
 		for (size_t i = 0; i < voxel_bit_field.size(); i++)
 		{
-			size_t offsetX = offset.x;
+			size_t offsetX = offset.x - voxel_group_offset.x;
 
 			for (size_t j = 0; j < voxel_bit_field[i].size(); j++)
 			{
-				size_t offsetY = offset.y;
+				size_t offsetY = offset.y - voxel_group_offset.y;
 
 				for (size_t k = 0; k < voxel_bit_field[i][j].size(); k++)
 				{
-					size_t offsetZ = offset.z;
+					size_t offsetZ = offset.z - voxel_group_offset.z;
 
 					xyzVoxels[offsetX + i][offsetY + j][offsetZ + k] = voxel_bit_field[i][j][k];
 				}
 			}
 		}
+
+		// With existing
+		voxel_group_offset = offset;
 	}
 
 	// Apply the new voxels
 	voxel_bit_field = xyzVoxels;
 
 	// Update size
-	voxel_group_size = { x, y, z };
+	voxel_group_size = size;
 	is_voxel_bit_field_dirty = true;
 }
 
@@ -581,13 +599,33 @@ void VoxelGroup::preRenderUpdate()
 		}
 		else
 		{
-			//
-			// Fill in all that area specified while holding SHIFT+(C/X)
-			//
 			glm::i64vec3 offset = mode == APPENDING_VOXELS && fromPosition - toPosition == glm::i64vec3(0) ? glm::i64vec3(cookedNormal) : glm::i64vec3(0);
 			glm::i64vec3 startPlacementPosition = fromPosition + offset;
 			glm::i64vec3 currentPlacementPosition = fromPosition + offset;
 			glm::i64vec3 targetPlacementPosition = toPosition + offset;
+
+			//
+			// Check to see if need to resize
+			//
+			const glm::i64vec3 minIndex = glm::i64vec3(0);
+			const glm::i64vec3 maxIndex = voxel_group_size - (glm::i64)1;
+			glm::i64vec3 newMin = glm::min(minIndex, targetPlacementPosition);
+			glm::i64vec3 newMax = glm::max(maxIndex, targetPlacementPosition);
+			if (newMin != minIndex || newMax != maxIndex)
+			{
+				const glm::i64vec3 addToSize = glm::abs(newMin) + newMax - maxIndex;
+				const glm::i64vec3 addToOffset = glm::abs(newMin);
+				resizeVoxelArea(voxel_group_size + addToSize, voxel_group_offset + addToOffset);
+
+				// Update the operation about to be done
+				startPlacementPosition += addToOffset;
+				currentPlacementPosition += addToOffset;
+				targetPlacementPosition += addToOffset;
+			}
+
+			//
+			// Fill in all that area specified while holding SHIFT+(C/X)
+			//
 			bool breakX, breakY, breakZ;
 			for (currentPlacementPosition.x = startPlacementPosition.x, breakX = false; !breakX; currentPlacementPosition.x = PhysicsUtils::moveTowards(currentPlacementPosition.x, targetPlacementPosition.x, 1))
 			{

@@ -46,13 +46,12 @@ private:
 	// Some voxel props
 	//
 	const float voxel_render_size = 2.0f;
-	size_t chunk_increments = 32;
 	glm::i64vec3 voxel_group_size;
 	glm::i64vec3 voxel_group_offset;
 	std::vector<std::vector<std::vector<bool>>> voxel_bit_field;
 	bool is_voxel_bit_field_dirty = false;
 
-	void resizeVoxelArea(size_t x, size_t y, size_t z, glm::i64vec3 offset = glm::i64vec3(0));
+	void resizeVoxelArea(glm::i64vec3 size, glm::i64vec3 offset = glm::i64vec3(0));
 	void setVoxelBitAtPosition(glm::i64vec3 pos, bool flag);
 	bool getVoxelBitAtPosition(glm::i64vec3 pos);
 	void updateQuadMeshFromBitField();
