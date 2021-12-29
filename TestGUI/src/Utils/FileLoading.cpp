@@ -28,7 +28,22 @@ FileLoading& FileLoading::getInstance()
 
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
+	// Load all info of the level
 	char* fname = (char*)"res\\level\\level1.hsfs";
+	{
+		std::ifstream i("res\\solanine_editor_settings.json");
+		if (i.is_open())
+		{
+			nlohmann::json j;
+			i >> j;
+
+			if (j.contains("startup_level"))
+			{
+				fname = (char*)std::string(j["startup_level"]).c_str();		// @NOTE: apparently this is ng
+			}
+		}
+	}
+
 
 	if (withPrompt)
 	{

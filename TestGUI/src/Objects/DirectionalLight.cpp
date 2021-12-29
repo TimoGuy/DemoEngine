@@ -417,9 +417,6 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 #ifdef _DEVELOP
 void DirectionalLight::imguiPropertyPanel()
 {
-	ImGui::InputText("Name", &name);
-	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
 
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);

@@ -112,12 +112,6 @@ void YosemiteTerrain::preRenderUpdate()
 #ifdef _DEVELOP
 void YosemiteTerrain::imguiPropertyPanel()
 {
-	ImGui::InputText("Name", &name);
-	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
-
-	ImGui::Separator();
-
 	// Changing the model resource name
 	static std::string tempModelResourceName = modelResourceName;
 	ImGui::InputText("Model Resource", &tempModelResourceName);

@@ -15,6 +15,7 @@
 
 #ifdef _DEVELOP
 #include "../../imgui/imgui.h"
+#include "../../imgui/imgui_stdlib.h"
 #include "../../imgui/imgui_impl_glfw.h"
 #include "../../imgui/imgui_impl_opengl3.h"
 #include "../../imgui/ImGuizmo.h"
@@ -1599,10 +1600,26 @@ void RenderManager::renderImGuiContents()
 		if (currentSelectedObjectIndex >= 0 &&
 			currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
 		{
-			ImGui::Text((MainLoop::getInstance().objects[currentSelectedObjectIndex]->name + " -- Properties").c_str());
+			//
+			// Property panel stuff that's the same with all objects
+			//
+			BaseObject* obj = MainLoop::getInstance().objects[currentSelectedObjectIndex];
+			ImGui::Text((obj->name + " -- Properties").c_str());
+			ImGui::Text(("GUID: " + obj->guid).c_str());
 			ImGui::Separator();
 
-			MainLoop::getInstance().objects[currentSelectedObjectIndex]->imguiPropertyPanel();
+			ImGui::InputText("Name", &obj->name);
+			ImGui::Separator();
+
+			glm::mat4& trans = obj->getTransform();
+			PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(trans));
+			glm::vec3 newPos = PhysicsUtils::getPosition(trans);
+			obj->setTransform(trans);		// To propogate the transform!!
+
+			ImGui::Separator();
+
+			// Other property panel stuff
+			obj->imguiPropertyPanel();
 		}
 		else
 		{

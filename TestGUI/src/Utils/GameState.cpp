@@ -33,15 +33,19 @@ physx::PxRigidActor* GameState::getCurrentTriggerHold()
 
 void GameState::inputStaminaEvent(StaminaEvent staminaEvent, float deltaTime)
 {
+	float staminaDepletionMultiplier = 1.0f;
+	if (playerIsHoldingWater)
+		staminaDepletionMultiplier = 2.0f;
+
 	switch (staminaEvent)
 	{
 	case StaminaEvent::JUMP:
-		currentPlayerStaminaAmount -= 1.0f;
+		currentPlayerStaminaAmount -= 1.0f * staminaDepletionMultiplier;
 		std::cout << "Jumped!" << std::endl;		// TODO: there's a problem here: the player jumps twice sometimes
 		break;
 
 	case StaminaEvent::MOVE:
-		currentPlayerStaminaAmount -= 1.0f * deltaTime;
+		currentPlayerStaminaAmount -= 1.0f * staminaDepletionMultiplier * deltaTime;
 		break;
 
 	default:

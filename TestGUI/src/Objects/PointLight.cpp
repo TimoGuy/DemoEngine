@@ -197,10 +197,6 @@ void PointLightLight::refreshResources()
 #ifdef _DEVELOP
 void PointLight::imguiPropertyPanel()
 {
-	ImGui::InputText("Name", &name);
-	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
-
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier", &lightComponent->colorIntensity);
 

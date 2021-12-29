@@ -524,7 +524,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	
-	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.25f);
+	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
 
 	//
 	// Set pieces

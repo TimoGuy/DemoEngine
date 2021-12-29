@@ -630,12 +630,6 @@ void VoxelGroup::preRenderUpdate()
 #ifdef _DEVELOP
 void VoxelGroup::imguiPropertyPanel()
 {
-	ImGui::InputText("Name", &name);
-	ImGui::Separator();
-	PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(getTransform()));
-
-	ImGui::Separator();
-
 	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
 	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
 }

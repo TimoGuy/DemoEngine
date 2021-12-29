@@ -174,6 +174,7 @@ void MainLoop::run()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::AllowAxisFlip(false);
 		ImGuizmo::BeginFrame();
 
 		if (!io.WantCaptureMouse || prevImGuiMouseCursor == ImGuiMouseCursor_None)
