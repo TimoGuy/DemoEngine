@@ -48,8 +48,12 @@ namespace Resources
 	};
 	std::vector<AsyncResource> asyncResources;
 
+	static std::mutex loadTextureToGPUMutex;
+
 	void allowAsyncResourcesToFinishLoading()
 	{
+		std::lock_guard<std::mutex> resLock(loadTextureToGPUMutex);
+
 		while (asyncResources.size() > 0)
 		{
 			//
@@ -261,7 +265,6 @@ void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, con
 
 #pragma region Texture Resources Utils
 
-static std::mutex loadTextureToGPUMutex;
 static std::vector<std::future<void>> loadingFutures;
 
 void loadTexture2DAsync(
@@ -288,7 +291,7 @@ void loadTexture2DAsync(
 		assert(0);
 	}
 
-	std::lock_guard<std::mutex> resLock(loadTextureToGPUMutex);
+	std::lock_guard<std::mutex> resLock(Resources::loadTextureToGPUMutex);
 	Resources::AsyncResource res{ idToLoadIn, bytes, toTexture, minFilter, magFilter, wrapS, wrapT, imgWidth, imgHeight, numColorChannels };
 	Resources::asyncResources.push_back(res);
 }
