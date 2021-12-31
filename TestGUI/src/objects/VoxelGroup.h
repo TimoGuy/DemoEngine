@@ -45,7 +45,7 @@ private:
 	//
 	// Some voxel props
 	//
-	const float voxel_render_size = 2.0f;
+	/*const*/ float voxel_render_size = 4.0f;
 	glm::i64vec3 voxel_group_size;
 	glm::i64vec3 voxel_group_offset;
 	std::vector<std::vector<std::vector<bool>>> voxel_bit_field;

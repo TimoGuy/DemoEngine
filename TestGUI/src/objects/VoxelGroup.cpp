@@ -54,6 +54,10 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 	// Prepare bitfield sizing
 	//
 	{
+		voxel_render_size = 2.0f;			// @NOTE: Unfortunately, this is simply the deprecated size. The default size should've been 4.0f (what it's set at now) but that's just how it is I guess.  -Timo
+		if (object.contains("voxel_render_size"))
+			voxel_render_size = object["voxel_render_size"];
+
 		glm::i64vec3 voxelGroupSize = glm::i64vec3(32);
 		if (object.contains("voxel_group_size"))
 			voxelGroupSize = glm::i64vec3(object["voxel_group_size"][0], object["voxel_group_size"][1], object["voxel_group_size"][2]);
@@ -134,6 +138,7 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	//
 	// Save bitfield sizing
 	//
+	j["voxel_render_size"] = voxel_render_size;
 	j["voxel_group_size"] = { voxel_group_size.x, voxel_group_size.y, voxel_group_size.z };
 	j["voxel_group_offset"] = { voxel_group_offset.x, voxel_group_offset.y, voxel_group_offset.z };
 
@@ -668,6 +673,15 @@ void VoxelGroup::preRenderUpdate()
 #ifdef _DEVELOP
 void VoxelGroup::imguiPropertyPanel()
 {
+	static float editVoxelRenderSize = voxel_render_size;
+	ImGui::DragFloat("Voxel Render Size", &editVoxelRenderSize);
+	if (editVoxelRenderSize != voxel_render_size &&
+		ImGui::Button("Apply New Size"))
+	{
+		voxel_render_size = editVoxelRenderSize;
+		is_voxel_bit_field_dirty = true;
+	}
+
 	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
 	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
 }
