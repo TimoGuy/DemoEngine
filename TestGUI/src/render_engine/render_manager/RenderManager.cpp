@@ -350,6 +350,8 @@ void RenderManager::createHDRBuffer()
 	// Create bloom pingpong buffers
 	//
 	glm::vec2 bufferDimensions(MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	bufferDimensions /= 2.0f;		// NOTE: Bloom should start at 1/4 the size.
+
 	glGenFramebuffers(bloomBufferCount, bloomFBOs);
 	glGenTextures(bloomBufferCount, bloomColorBuffers);
 	for (size_t i = 0; i < bloomBufferCount / 2; i++)
@@ -359,7 +361,7 @@ void RenderManager::createHDRBuffer()
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[i * 2 + j]);
 			glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[i * 2 + j]);
-			glTexImage2D(
+			glTexImage2D(		// @TODO: We don't need the alpha channel for this yo.
 				GL_TEXTURE_2D, 0, GL_RGBA16F, (GLsizei)bufferDimensions.x, (GLsizei)bufferDimensions.y, 0, GL_RGBA, GL_FLOAT, NULL
 			);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -656,7 +658,7 @@ void RenderManager::render()
 	// Do bloom: breakdown-preprocessing
 	//
 	bool firstcopy = true;
-	float downscaledFactor = 2.0f;
+	float downscaledFactor = 4.0f;		// NOTE: bloom starts at 1/4 the size
 	for (size_t i = 0; i < bloomBufferCount / 2; i++)
 	{
 		for (size_t j = 0; j < 3; j++)																		// There are three stages in each pass: 1: copy, 2: horiz gauss, 3: vert gauss
