@@ -658,7 +658,7 @@ void RenderManager::render()
 	// Do bloom: breakdown-preprocessing
 	//
 	bool firstcopy = true;
-	float downscaledFactor = 4.0f;		// NOTE: bloom starts at 1/4 the size
+	float downscaledFactor = 4.0f;						// NOTE: bloom starts at 1/4 the size
 	for (size_t i = 0; i < bloomBufferCount / 2; i++)
 	{
 		for (size_t j = 0; j < 3; j++)																		// There are three stages in each pass: 1: copy, 2: horiz gauss, 3: vert gauss

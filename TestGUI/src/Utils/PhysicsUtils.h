@@ -48,6 +48,7 @@ namespace PhysicsUtils
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 
 	float moveTowards(float current, float target, float maxDistanceDelta);
+	float smoothStep(float edge0, float edge1, float t);
 	glm::i64 moveTowards(glm::i64 current, glm::i64 target, glm::i64 maxDistanceDelta);
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
@@ -100,5 +101,6 @@ namespace PhysicsUtils
 	RaySegmentHit raySegmentCollideWithAABB(glm::vec3 start, glm::vec3 end, RenderAABB bounds);
 
 	float lerp(float a, float b, float t);
+	glm::vec3 lerp(glm::vec3 a, glm::vec3 b, glm::vec3 t);
 	float lerpAngleDegrees(float a, float b, float t);
 }

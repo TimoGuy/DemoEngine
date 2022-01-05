@@ -21,7 +21,7 @@
 #endif
 
 
-PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f)))
+PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f))), useIndoorCamera(false)
 {
 	name = "Player Controller";
 
@@ -176,10 +176,33 @@ void PlayerCharacter::processMovement()
 #endif
 
 	//
+	// @Incomplete: Endgame is we want the player character to detect whether they're indoors or not
+	//
+	// Change whether using indoor or outdoor camera based off scroll wheel
+	//
+	static bool prevTransformPressed = false;
+	static float cameraTransitionRaw = (float)useIndoorCamera;
+	if (!prevTransformPressed && InputManager::getInstance().transformPressed)
+		useIndoorCamera = !useIndoorCamera;
+	prevTransformPressed = InputManager::getInstance().transformPressed;
+
+	glm::vec3 camOffset = useIndoorCamera ? playerCamOffsetIndoor : playerCamOffset;
+
+	static glm::vec3 playerCamOffsetCache = playerCamOffset;
+	static glm::vec3 playerCamOffsetIndoorCache = playerCamOffsetIndoor;
+
+	const bool cameraInTransition = (cameraTransitionRaw != 0.0f && !useIndoorCamera) || (cameraTransitionRaw != 1.0f && useIndoorCamera);
+	if (cameraInTransition)
+	{
+		cameraTransitionRaw = PhysicsUtils::moveTowards(cameraTransitionRaw, (float)useIndoorCamera, 2.0f * MainLoop::getInstance().deltaTime);
+		camOffset = PhysicsUtils::lerp(playerCamOffsetCache, playerCamOffsetIndoorCache, glm::vec3(PhysicsUtils::smoothStep(0, 1, cameraTransitionRaw)));
+	}
+
+	//
 	// Update playercam pos
 	//
-	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(getTransform()) + glm::vec3(playerCamOffset.x, playerCamOffset.y, 0);
-	float cameraDistance = playerCamOffset.z;
+	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(getTransform()) + glm::vec3(camOffset.x, camOffset.y, 0);
+	float cameraDistance = camOffset.z;
 
 	// Setup camera orientation
 	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
@@ -198,10 +221,14 @@ void PlayerCharacter::processMovement()
 		//
 		// Update max distance member var
 		//
-		if (currentMaxCamDistance <= cameraDistance)
+		static float scoochBackStartPointCache = currentMaxCamDistance;
+		static float scoochBackTransitionRaw = 0.0f;
+		if (cameraInTransition || currentMaxCamDistance <= cameraDistance)
 		{
 			// Reset timer
 			currentMaxCamDistance = cameraDistance;
+			scoochBackStartPointCache = currentMaxCamDistance;
+			scoochBackTransitionRaw = 0.0f;
 			maxCamDistanceHoldTimer = maxCamDistanceHoldTime;
 		}
 		else
@@ -210,11 +237,33 @@ void PlayerCharacter::processMovement()
 			maxCamDistanceHoldTimer -= MainLoop::getInstance().deltaTime;
 			if (maxCamDistanceHoldTimer < 0)
 			{
+				scoochBackTransitionRaw =
+					PhysicsUtils::moveTowards(
+						scoochBackTransitionRaw,
+						1.0f,
+						maxCamDistanceShiftSpeed * MainLoop::getInstance().deltaTime
+					);
+
 				currentMaxCamDistance =
-					PhysicsUtils::moveTowards(currentMaxCamDistance, cameraDistance, maxCamDistanceShiftSpeed * MainLoop::getInstance().deltaTime);
+					PhysicsUtils::lerp(scoochBackStartPointCache, cameraDistance, PhysicsUtils::smoothStep(0, 1, scoochBackTransitionRaw));
 			}
 		}
 	}
+
+	//
+	// Cache the camera positions
+	//
+	if (!cameraInTransition)
+		if (useIndoorCamera)
+		{
+			playerCamOffsetCache.z = playerCamOffset.z;
+			playerCamOffsetIndoorCache.z = currentMaxCamDistance;
+		}
+		else
+		{
+			playerCamOffsetCache.z = currentMaxCamDistance;
+			playerCamOffsetIndoorCache.z = playerCamOffsetIndoor.z;
+		}
 
 	// Setup camera position based off distance
 	const glm::vec3 depthOffset(0, 0, currentMaxCamDistance);
@@ -691,6 +740,7 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
 	ImGui::DragFloat3("VirtualCamPosition", &playerCamOffset[0]);
+	ImGui::DragFloat3("VirtualCamPosition (Indoor)", &playerCamOffsetIndoor[0]);
 	ImGui::DragFloat2("Looking Input", &lookingInput[0]);
 	ImGui::DragFloat2("Looking Sensitivity", &lookingSensitivity[0]);
 

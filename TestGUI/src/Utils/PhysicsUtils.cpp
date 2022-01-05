@@ -163,6 +163,12 @@ namespace PhysicsUtils
 		return (maxDistanceDelta >= std::abs(delta)) ? target : (current + std::copysignf(1.0f, delta) * maxDistanceDelta);
 	}
 
+	float smoothStep(float edge0, float edge1, float t)
+	{
+		t = std::clamp((t - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+		return t * t * (3 - 2 * t);
+	}
+
 	glm::i64 moveTowards(glm::i64 current, glm::i64 target, glm::i64 maxDistanceDelta)
 	{
 		glm::i64 delta = target - current;
@@ -546,6 +552,11 @@ namespace PhysicsUtils
 	float lerp(float a, float b, float t)
 	{
 		return ((1.0f - t) * a) + (t * b);
+	}
+
+	glm::vec3 lerp(glm::vec3 a, glm::vec3 b, glm::vec3 t)
+	{
+		return glm::vec3(lerp(a.x, b.x, t.x), lerp(a.y, b.y, t.y), lerp(a.z, b.z, t.z));
 	}
 
 	float lerpAngleDegrees(float a, float b, float t)
