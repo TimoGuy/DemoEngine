@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include "../objects/BaseObject.h"
 #include "../render_engine/render_manager/RenderManager.h"
+#include "../render_engine/material/Texture.h"
 #include "../render_engine/camera/Camera.h"
 
 #ifdef _DEVELOP
@@ -36,17 +37,40 @@ void physicsUpdate();
 #ifdef _DEVELOP
 void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)
-		return;
+	auto const src_str = [source]() {
+		switch (source)
+		{
+		case GL_DEBUG_SOURCE_API: return "API";
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM: return "WINDOW SYSTEM";
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: return "SHADER COMPILER";
+		case GL_DEBUG_SOURCE_THIRD_PARTY: return "THIRD PARTY";
+		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
+		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
+		}
+	}();
 
-	fprintf(
-		stderr,
-		"GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-		(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-		type,
-		severity,
-		message
-	);
+	auto const type_str = [type]() {
+		switch (type)
+		{
+		case GL_DEBUG_TYPE_ERROR: return "ERROR";
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: return "DEPRECATED_BEHAVIOR";
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: return "UNDEFINED_BEHAVIOR";
+		case GL_DEBUG_TYPE_PORTABILITY: return "PORTABILITY";
+		case GL_DEBUG_TYPE_PERFORMANCE: return "PERFORMANCE";
+		case GL_DEBUG_TYPE_MARKER: return "MARKER";
+		case GL_DEBUG_TYPE_OTHER: return "OTHER";
+		}
+	}();
+
+	auto const severity_str = [severity]() {
+		switch (severity) {
+		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
+		case GL_DEBUG_SEVERITY_LOW: return "LOW";
+		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
+		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
+		}
+	}();
+	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
 }
 #endif
 
@@ -90,7 +114,8 @@ void MainLoop::initialize()
 	setupImGui();
 #endif
 
-	std::cout << "OpenGL Version and Vendor:\t" << glGetString(GL_VERSION) << std::endl << std::endl;
+	std::cout << "Graphics Renderer:\t" << glGetString(GL_RENDERER) << std::endl;
+	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -195,6 +220,7 @@ void MainLoop::run()
 		// Load async loaded resources to GPU (textures, VAO's, etc.)
 		//
 		Resources::allowAsyncResourcesToFinishLoading();
+		Texture::INTERNALtriggerCreateGraphicsAPITextureHandles();
 
 		//
 		// Update the input manager
