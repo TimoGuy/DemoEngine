@@ -81,7 +81,7 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	lightType = LightType::DIRECTIONAL;
 
 	color = glm::vec3(1.0f, 1.0f, 0.984f);		// http://planetpixelemporium.com/tutorialpages/light.html (High Noon Sun)
-	maxColorIntensity = 150.0f;
+	maxColorIntensity = 10.0f;
 	colorIntensityMaxAtY = 0.707106781f;		// NOTE: sin(45)
 
 	// @Hardcode
