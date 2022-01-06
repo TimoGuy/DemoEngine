@@ -16,12 +16,15 @@ struct ImageFile
 	bool generateMipmaps;
 };
 
+
 struct ImageDataLoaded
 {
 	int imgWidth, imgHeight;
 	GLenum internalFormat, pixelType;
 	void* pixels;
+	int optionalId;
 };
+
 
 class Texture
 {
@@ -60,3 +63,17 @@ private:
 	GLuint toTexture, minFilter, magFilter, wrapS, wrapT;
 };
 
+
+class TextureCubemapFromFile : public Texture
+{
+public:
+	TextureCubemapFromFile(const std::vector<const ImageFile> files, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
+
+private:
+	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data);
+
+	const std::vector<const ImageFile> files;
+	std::vector<ImageDataLoaded> imageDatasCache;
+	int numImagesLoaded;
+	GLuint toTexture, minFilter, magFilter, wrapS, wrapT, wrapR;
+};

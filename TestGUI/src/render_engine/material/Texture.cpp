@@ -17,7 +17,7 @@ std::vector<ImageDataLoaded>	Texture::syncTexturesToLoadParams;
 
 namespace INTERNALTextureHelper
 {
-	void loadTexture2DAsync(Texture* you, const ImageFile& file)
+	void loadTexture2DAsync(Texture* you, const ImageFile& file, int optionalId = -1)
 	{
 		ImageDataLoaded idl;
 
@@ -36,6 +36,14 @@ namespace INTERNALTextureHelper
 
 			idl.pixelType = GL_FLOAT;
 			idl.pixels = pixels;
+
+			idl.internalFormat = GL_R16F;
+			if (numColorChannels == 2)
+				idl.internalFormat = GL_RG16F;
+			else if (numColorChannels == 3)
+				idl.internalFormat = GL_RGB16F;
+			else if (numColorChannels == 4)
+				idl.internalFormat = GL_RGBA16F;
 		}
 		else
 		{
@@ -50,19 +58,19 @@ namespace INTERNALTextureHelper
 
 			idl.pixelType = GL_UNSIGNED_BYTE;
 			idl.pixels = bytes;
-		}
 
-		GLenum internalFormat = GL_RED;
-		if (numColorChannels == 2)
-			internalFormat = GL_RG;
-		else if (numColorChannels == 3)
-			internalFormat = GL_RGB;
-		else if (numColorChannels == 4)
-			internalFormat = GL_RGBA;
+			idl.internalFormat = GL_RED;
+			if (numColorChannels == 2)
+				idl.internalFormat = GL_RG;
+			else if (numColorChannels == 3)
+				idl.internalFormat = GL_RGB;
+			else if (numColorChannels == 4)
+				idl.internalFormat = GL_RGBA;
+		}
 
 		idl.imgWidth = imgWidth;
 		idl.imgHeight = imgHeight;
-		idl.internalFormat = internalFormat;
+		idl.optionalId = optionalId;
 
 		Texture::INTERNALaddTextureToLoadSynchronously(you, idl);
 	}
@@ -98,9 +106,20 @@ void Texture::INTERNALaddTextureToLoadSynchronously(Texture* tex, const ImageDat
 	syncTexturesToLoadParams.push_back(idl);
 }
 
-Texture2DFromFile::Texture2DFromFile(const ImageFile file, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT) : file(file), toTexture(toTexture), minFilter(minFilter), magFilter(magFilter), wrapS(wrapS), wrapT(wrapT)
+Texture2DFromFile::Texture2DFromFile(const ImageFile file,
+	GLuint toTexture,
+	GLuint minFilter,
+	GLuint magFilter,
+	GLuint wrapS,
+	GLuint wrapT) :
+		file(file),
+		toTexture(toTexture),
+		minFilter(minFilter),
+		magFilter(magFilter),
+		wrapS(wrapS),
+		wrapT(wrapT)
 {
-	asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, file));
+	asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, file, -1));
 }
 
 void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data)
@@ -119,6 +138,64 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 		glGenerateTextureMipmap(textureHandle);
 
 	stbi_image_free(data.pixels);
+
+	loaded = true;
+}
+
+TextureCubemapFromFile::TextureCubemapFromFile(
+	const std::vector<const ImageFile> files,
+	GLuint toTexture,
+	GLuint minFilter,
+	GLuint magFilter,
+	GLuint wrapS,
+	GLuint wrapT,
+	GLuint wrapR) :
+		files(files),
+		toTexture(toTexture),
+		minFilter(minFilter),
+		magFilter(magFilter),
+		wrapS(wrapS),
+		wrapT(wrapT),
+		wrapR(wrapR)
+{
+	assert(files.size() >= 6);
+
+	imageDatasCache.resize(6);
+	numImagesLoaded = 0;
+
+	for (size_t i = 0; i < 6; i++)
+	{
+		asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, files[i], i));
+	}
+}
+
+void TextureCubemapFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data)
+{
+	if (loaded)		// NOTE: just in case....
+		return;
+
+	imageDatasCache[data.optionalId] = data;
+	numImagesLoaded++;
+
+	if (numImagesLoaded < 6)
+		return;
+
+	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &textureHandle);
+
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_R, wrapR);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTextureStorage2D(textureHandle, 1, data.internalFormat, data.imgWidth, data.imgHeight);
+
+	for (size_t i = 0; i < 6; i++)
+	{
+		ImageDataLoaded& imgData = imageDatasCache[i];
+		glTextureSubImage3D(textureHandle, 0, 0, 0, i, imgData.imgWidth, imgData.imgHeight, 1, toTexture, imgData.pixelType, imgData.pixels);
+		stbi_image_free(imgData.pixels);
+	}
 
 	loaded = true;
 }
