@@ -225,6 +225,12 @@ namespace PhysicsUtils
 		return MainLoop::getInstance().physicsScene->raycast(origin, unitDirection, distance, hitInfo, physx::PxHitFlag::eDEFAULT, filterData);
 	}
 
+	bool overlap(const physx::PxGeometry& geom, const physx::PxTransform& pose, physx::PxOverlapHit& overlapInfo)
+	{
+		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC);
+		return physx::PxSceneQueryExt::overlapAny(*MainLoop::getInstance().physicsScene, geom, pose, overlapInfo, filterData);
+	}
+
 #pragma endregion
 
 #pragma region simple glm decomposition functions

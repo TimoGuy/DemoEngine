@@ -22,7 +22,7 @@
 // NOTE: if 0, then use close fit shadows
 #define STABLE_FIT_CSM_SHADOWS 1
 
-static float multiplier = 2.0f;
+static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
 static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)

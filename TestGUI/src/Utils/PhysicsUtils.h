@@ -53,6 +53,7 @@ namespace PhysicsUtils
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
 	bool raycast(physx::PxVec3 origin, physx::PxVec3 unitDirection, physx::PxReal distance, physx::PxRaycastBuffer& hitInfo);
+	bool overlap(const physx::PxGeometry& geom, const physx::PxTransform& pose, physx::PxOverlapHit& overlapInfo);
 
 #pragma endregion
 

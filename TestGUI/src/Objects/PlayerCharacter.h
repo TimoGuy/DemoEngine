@@ -111,6 +111,9 @@ private:
 
 	VirtualCamera playerCamera;
 	bool useIndoorCamera;
+	float indoorOverlapCheckRadius = 0.75f;
+	float indoorOverlapCheckHeight = 20.0f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
+	float indoorOverlapCheckOffY = 17.5f;
 
 	//
 	// Animation Variables

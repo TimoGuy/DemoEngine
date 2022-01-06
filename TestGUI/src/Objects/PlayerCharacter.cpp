@@ -180,12 +180,42 @@ void PlayerCharacter::processMovement()
 	//
 	// Change whether using indoor or outdoor camera based off scroll wheel
 	//
-	static bool prevTransformPressed = false;
+	//static bool prevTransformPressed = false;
 	static float cameraTransitionRaw = (float)useIndoorCamera;
-	if (!prevTransformPressed && InputManager::getInstance().transformPressed)
-		useIndoorCamera = !useIndoorCamera;
-	prevTransformPressed = InputManager::getInstance().transformPressed;
+	//if (!prevTransformPressed && InputManager::getInstance().transformPressed)
+	//	useIndoorCamera = !useIndoorCamera;
+	//prevTransformPressed = InputManager::getInstance().transformPressed;
 
+	const glm::vec3 playerPos = PhysicsUtils::getPosition(getTransform());
+
+	{
+		//
+		// Check if indoors if ceiling is low
+		//
+		const physx::PxCapsuleGeometry capsuleGeom(indoorOverlapCheckRadius, indoorOverlapCheckHeight);
+		const physx::PxTransform capsulePose(
+			PhysicsUtils::toPxVec3(playerPos + glm::vec3(0, indoorOverlapCheckOffY, 0)),
+			physx::PxQuat(glm::radians(90.0f), physx::PxVec3(0, 0, 1))
+		);
+
+		physx::PxOverlapHit overlapInfo;
+		if (PhysicsUtils::overlap(capsuleGeom, capsulePose, overlapInfo))
+		{
+			useIndoorCamera = true;
+		}
+		else
+		{
+			//
+			// Just check if perhaps not surrounded by stuff!!
+			//
+			useIndoorCamera = false;
+		}
+	}
+
+
+	//
+	// Do cam offset transition depending on if indoors or not
+	//
 	glm::vec3 camOffset = useIndoorCamera ? playerCamOffsetIndoor : playerCamOffset;
 
 	static glm::vec3 playerCamOffsetCache = playerCamOffset;
@@ -201,7 +231,7 @@ void PlayerCharacter::processMovement()
 	//
 	// Update playercam pos
 	//
-	const glm::vec3 cameraPointingToPosition = PhysicsUtils::getPosition(getTransform()) + glm::vec3(camOffset.x, camOffset.y, 0);
+	const glm::vec3 cameraPointingToPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
 	float cameraDistance = camOffset.z;
 
 	// Setup camera orientation
@@ -233,10 +263,12 @@ void PlayerCharacter::processMovement()
 		}
 		else
 		{
-			// Slowly move back once timer is down
+			// Scooch back once timer is down
 			maxCamDistanceHoldTimer -= MainLoop::getInstance().deltaTime;
-			if (maxCamDistanceHoldTimer < 0)
+			if (isMoving || maxCamDistanceHoldTimer < 0)						// NOTE: Skip over this wait if moving already
 			{
+				maxCamDistanceHoldTimer = -1;
+
 				scoochBackTransitionRaw =
 					PhysicsUtils::moveTowards(
 						scoochBackTransitionRaw,
@@ -732,6 +764,8 @@ void PlayerCharacter::preRenderUpdate()
 }
 
 #ifdef _DEVELOP
+bool showPlayerIndoorDetectionCapsuleOverlap = false;
+
 void PlayerCharacter::imguiPropertyPanel()
 {
 	ImGui::DragFloat3("Controller up direction", &((PlayerPhysics*)getPhysicsComponent())->tempUp[0]);			// @NOTE: this doesn't seem necessary with the gameplay... but may be in the future????
@@ -768,6 +802,14 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);
 
+	ImGui::Separator();
+	ImGui::Checkbox("Indoor check show visual", &showPlayerIndoorDetectionCapsuleOverlap);
+	ImGui::DragFloat("Indoor check radius", &indoorOverlapCheckRadius);
+	ImGui::DragFloat("Indoor check height", &indoorOverlapCheckHeight);
+	ImGui::DragFloat("Indoor check offset y", &indoorOverlapCheckOffY);
+
+	
+	
 	// @Tune: these will mess up the matrices bc of how the imguiTransformMatrixProps() func works
 	//ImGui::Separator();
 	//ImGui::Text("Bottle Model Matrix");
@@ -778,6 +820,15 @@ void PlayerCharacter::imguiPropertyPanel()
 
 void PlayerCharacter::imguiRender()
 {
+	if (showPlayerIndoorDetectionCapsuleOverlap)
+	{
+		physx::PxCapsuleGeometry capsuleGeom(indoorOverlapCheckRadius, indoorOverlapCheckHeight);
+		PhysicsUtils::imguiRenderCapsuleCollider(
+			glm::translate(getTransform(), glm::vec3(0, indoorOverlapCheckOffY, 0)) *
+				glm::toMat4(glm::quat({ 0.0f, 0.0f, glm::radians(90.0f) })),
+			capsuleGeom
+		);
+	}
 }
 #endif
 
