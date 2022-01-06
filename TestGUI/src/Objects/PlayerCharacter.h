@@ -73,7 +73,7 @@ public:
 	float maxCamDistanceHoldTime = 1.0f, maxCamDistanceHoldTimer = 0;
 	float maxCamDistanceShiftSpeed = 1.0f;
 	glm::vec3 playerCamOffset = glm::vec3(0, 3, -30);
-	glm::vec3 playerCamOffsetIndoor = glm::vec3(0, 1.5f, -7.5f);
+	glm::vec3 playerCamOffsetIndoor = glm::vec3(0, 1.5f, -10.5f);
 	glm::vec2 lookingInput = glm::vec2(0, 0);					// [0-360) on x axis (degrees), [-1,1] on y axis
 	glm::vec2 lookingSensitivity = glm::vec2(0.5f, 0.0025f);	// Sensitivity for how much the amount moves
 
