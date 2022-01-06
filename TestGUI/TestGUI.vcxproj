@@ -176,6 +176,7 @@
     <ClCompile Include="src\render_engine\render_manager\RenderManager.cpp" />
     <ClCompile Include="src\stb.cpp" />
     <ClCompile Include="src\utils\Utils.cpp" />
+    <ClCompile Include="src\render_engine\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\bloom_postprocessing.frag" />
@@ -291,6 +292,7 @@
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
     <ClInclude Include="src\utils\Utils.h" />
+    <ClInclude Include="src\render_engine\material\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\skybox\bluecloud_bk.jpg" />
