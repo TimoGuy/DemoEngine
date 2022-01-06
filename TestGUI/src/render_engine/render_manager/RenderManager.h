@@ -45,6 +45,21 @@ struct PixelInfo
 #endif
 
 
+struct SkyboxParams
+{
+	glm::vec3 sunOrientation = { 0, 1, 0 };		// NOTE: this is different from facingDirection of the main directional light, bc this is used for dayNightCycle (See https://www.youtube.com/watch?v=RRR-rI9zzgk)
+	float sunRadius = 0.085f;
+	glm::vec3 sunColor{ 1, 1, 1 };
+	glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
+	glm::vec3 groundColor{ 0.51,0.27, 0.11 };
+	float sunIntensity = 25;
+	float globalExposure = 1;
+	float cloudHeight = -50;
+	float perlinDim = 2;
+	float perlinTime = 0;
+};
+
+
 class RenderManager
 {
 public:
@@ -92,8 +107,11 @@ public:
 	static bool renderPhysicsDebug;
 	static bool renderMeshRenderAABB;
 
+	// Skybox Params handle
+	inline SkyboxParams& getSkyboxParams() { return skyboxParams; }
+
 private:
-	GLuint skybox_program_id, debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
+	GLuint debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
@@ -103,6 +121,9 @@ private:
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
+	// Skybox Rendering
+	GLuint skybox_program_id;
+	SkyboxParams skyboxParams;
 	static const size_t numSkyMaps = 5;
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
 	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f };			// NOTE: these values must be listed in descending order

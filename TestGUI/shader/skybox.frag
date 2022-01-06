@@ -6,6 +6,7 @@ in vec3 localPos;               // TODO: unusued I think, but we can use it!!!
 uniform vec3 sunOrientation;
 uniform float sunRadius;
 
+// UNUSED //
 uniform vec3 sunColor;
 uniform vec3 skyColor1;
 uniform vec3 groundColor;
@@ -16,6 +17,7 @@ uniform float globalExposure;
 uniform float cloudHeight;
 uniform float perlinDim;
 uniform float perlinTime;
+////////////
 
 uniform bool showSun;
 

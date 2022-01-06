@@ -47,7 +47,7 @@ uniform float nearPlane;
 uniform float farPlane;
 
 // OTHER
-layout (location=28) uniform vec3 viewPosition;
+uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------

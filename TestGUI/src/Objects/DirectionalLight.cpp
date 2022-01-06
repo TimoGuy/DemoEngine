@@ -7,6 +7,7 @@
 #include "../mainloop/MainLoop.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
+#include "../utils/GameState.h"
 
 #define LERP(a, b, t) (a) + (t) * ((b) - (a))
 #define REMAP(value, istart, istop, ostart, ostop) ((value) - (istart)) / ((istop) - (istart)) * ((ostop) - (ostart)) + (ostart)
@@ -23,7 +24,6 @@
 #define STABLE_FIT_CSM_SHADOWS 1
 
 static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
-static int followCascade = -1;				// NOTE: this is so that it's off by default
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
@@ -247,8 +247,6 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
-bool doThis = false;
-float divisor = 1024;
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
 	if (MainLoop::getInstance().camera.width == 0.0f || MainLoop::getInstance().camera.height == 0.0f)
@@ -304,14 +302,6 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 			transformedCenter + facingDirection,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
-
-	// @DEBUG: Tanjiro centers himself onto the center of the view frustum (close fit)
-	if (doThis)
-	{
-		doThis = false;
-		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
-		trans = glm::translate(trans, glm::vec3(glm::vec4(transformedCenter, 1.0f)) - PhysicsUtils::getPosition(trans));
-	}
 #else
 	//
 	// Close fit shadows
@@ -380,8 +370,6 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 	{
-		if (followCascade == i)
-			doThis = true;
 		if (i == 0)
 		{
 			ret.push_back(getLightSpaceMatrix(MainLoop::getInstance().camera.zNear, shadowCascadeLevels[i]));
@@ -398,27 +386,53 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	return ret;
 }
 
+float shadowDisappearMultiplier = 20.0f;
 void DirectionalLight::setLookDirection(glm::quat rotation)
 {
-	glm::vec3 lookDirection(0.0f, 0.0f, 1.0f);
-	lookDirection = rotation * lookDirection;
-	lookDirection = glm::normalize(lookDirection);
+	glm::vec3 sunOrientation(0.0f, 0.0f, 1.0f);
+	sunOrientation = rotation * sunOrientation;
+	sunOrientation = glm::normalize(sunOrientation);
 
-	lightComponent->facingDirection = lookDirection;
-	lightComponent->colorIntensity =
-		std::max(
-			0.0f,
-			(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
-			((DirectionalLightLight*)lightComponent)->maxColorIntensity :
-			LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f))
-		);
+	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
+
+	glm::vec3 lightDirection = sunOrientation;
+	lightDirection.y -= 0.5f;
+	lightDirection = glm::normalize(lightDirection);
+
+	const float clampY = -0.45f;
+	float overflowYAmount = 0.0f;
+	if (lightDirection.y > clampY)
+	{
+		overflowYAmount = glm::abs(lightDirection.y - clampY) * shadowDisappearMultiplier;
+
+		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);
+		float clampYAsin = glm::asin(clampY);
+		lightDirXZ = glm::normalize(lightDirXZ) * glm::cos(clampYAsin);
+
+		lightDirection = lightDirXZ;
+		lightDirection.y = clampY;
+	}
+
+	lightComponent->facingDirection = lightDirection;
+	//lightComponent->colorIntensity =
+	//	std::max(
+	//		0.0f,
+	//		(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
+	//		((DirectionalLightLight*)lightComponent)->maxColorIntensity :
+	//		LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f))
+	//	);
+	lightComponent->colorIntensity = glm::max(((DirectionalLightLight*)lightComponent)->maxColorIntensity - overflowYAmount, 0.0f);
+}
+
+void DirectionalLight::preRenderUpdate()
+{
+	const float angle = PhysicsUtils::lerp(0.0f, 180.0f, GameState::getInstance().dayNightTime);
+	setLookDirection(glm::quat(glm::radians(glm::vec3(angle, -75.0f, 15.0f))));
 }
 
 #ifdef _DEVELOP
 void DirectionalLight::imguiPropertyPanel()
 {
-	setLookDirection(PhysicsUtils::getRotation(getTransform()));
-
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier (Max)", &((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 
@@ -426,26 +440,24 @@ void DirectionalLight::imguiPropertyPanel()
 
 	ImGui::InputFloat3("DEBUG", &lightComponent->facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
-	ImGui::InputInt("Shadow Cascade center follow", &followCascade);
-	ImGui::DragFloat("TEMP DivisorForStableShadows", &divisor);
 
-	static bool plsFollow = false;
-	ImGui::Checkbox("Follow ndc mouse pos", &plsFollow);
-	if (plsFollow)
-	{
-		double xpos, ypos;
-		glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
-		xpos /= MainLoop::getInstance().camera.width;
-		ypos /= MainLoop::getInstance().camera.height;
-		ypos = 1.0 - ypos;
-		xpos = xpos * 2.0f - 1.0f;
-		ypos = ypos * 2.0f - 1.0f;
-		glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
-		glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
-
-		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
-		trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
-	}
+	//static bool plsFollow = false;
+	//ImGui::Checkbox("Follow ndc mouse pos", &plsFollow);
+	//if (plsFollow)
+	//{
+	//	double xpos, ypos;
+	//	glfwGetCursorPos(MainLoop::getInstance().window, &xpos, &ypos);
+	//	xpos /= MainLoop::getInstance().camera.width;
+	//	ypos /= MainLoop::getInstance().camera.height;
+	//	ypos = 1.0 - ypos;
+	//	xpos = xpos * 2.0f - 1.0f;
+	//	ypos = ypos * 2.0f - 1.0f;
+	//	glm::vec3 clipSpacePosition(xpos, ypos, 1.0f);
+	//	glm::vec3 worldSpacePosition = MainLoop::getInstance().camera.clipSpacePositionToWordSpace(clipSpacePosition);
+	//
+	//	glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
+	//	trans = glm::translate(trans, glm::vec3(glm::vec4(worldSpacePosition, 1.0f)) - PhysicsUtils::getPosition(trans));
+	//}
 
 	//
 	// Define the cascades for the shadows!
@@ -466,6 +478,13 @@ void DirectionalLight::imguiPropertyPanel()
 		getLightComponent()->castsShadows = !getLightComponent()->castsShadows;
 		((DirectionalLightLight*)getLightComponent())->refreshRenderBuffers();
 	}
+
+	//
+	// Day night cycle
+	//
+	ImGui::Separator();
+	ImGui::Text("Day night cycle");
+	ImGui::DragFloat("Shadow Disappear mult", &shadowDisappearMultiplier);
 }
 
 void DirectionalLight::imguiRender()

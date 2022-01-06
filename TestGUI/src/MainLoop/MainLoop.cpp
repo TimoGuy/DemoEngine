@@ -234,7 +234,7 @@ void MainLoop::run()
 		{
 			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
-			
+
 		//
 		// Do all pre-render updates
 		//
