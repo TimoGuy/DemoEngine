@@ -22,8 +22,8 @@ public:
 	int							roomEnteringId;
 
 	bool						isDayNightTimeMoving			= true;
-	float						dayNightTimeSpeed				= 0.01f;
-	float						dayNightTime					= 0.0f;		// [0-1], and 1 is dusk
+	float						dayNightTimeSpeed				= 0.0008333333f;	// 20 minutes: 1 / (20 * 60)
+	float						dayNightTime					= 0.0f;				// [0-1], and 1 is dusk
 
 
 	static GameState& getInstance();

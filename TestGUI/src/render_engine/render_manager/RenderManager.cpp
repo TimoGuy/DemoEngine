@@ -160,8 +160,8 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
+	glUniformMatrix3fv(glGetUniformLocation(skybox_program_id, "nightSkyTransform"), 1, GL_FALSE, glm::value_ptr(skyboxParams.nightSkyTransform));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
-	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), 0.0f);		// NOTE: the hdr skies should get generated with default camera position
 	
 	glBindTextureUnit(0, nightSkybox->getHandle());
 	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);
@@ -760,9 +760,9 @@ void RenderManager::renderScene()
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
+	glUniformMatrix3fv(glGetUniformLocation(skybox_program_id, "nightSkyTransform"), 1, GL_FALSE, glm::value_ptr(skyboxParams.nightSkyTransform));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
-	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), MainLoop::getInstance().camera.position.y);
 
 	glBindTextureUnit(0, nightSkybox->getHandle());
 	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);

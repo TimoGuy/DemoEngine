@@ -419,13 +419,13 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha = sunOrientation.y > 0.0f ? 0.0f : glm::pow(glm::abs(sunOrientation.y), 0.8f);
-	std::cout << MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha << std::endl;
 }
 
 void DirectionalLight::preRenderUpdate()
 {
 	const float angle = PhysicsUtils::lerp(0.0f, 180.0f, GameState::getInstance().dayNightTime);
 	setLookDirection(glm::quat(glm::radians(glm::vec3(angle, -75.0f, 15.0f))));
+	MainLoop::getInstance().renderManager->getSkyboxParams().nightSkyTransform = glm::toMat3(glm::quat(glm::radians(glm::vec3(0.0f, 0.0f, -angle / 1.5f))));
 }
 
 #ifdef _DEVELOP

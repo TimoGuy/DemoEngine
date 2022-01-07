@@ -59,6 +59,7 @@ struct SkyboxParams
 	float cloudHeight = -50;
 	float perlinDim = 2;
 	float perlinTime = 0;
+	glm::mat3 nightSkyTransform;
 };
 
 

@@ -8,6 +8,7 @@ uniform float sunRadius;
 uniform float sunAlpha;
 
 uniform samplerCube nightSkybox;
+uniform mat3 nightSkyTransform;
 
 // UNUSED //
 uniform vec3 sunColor;
@@ -21,10 +22,6 @@ uniform float cloudHeight;
 uniform float perlinDim;
 uniform float perlinTime;
 ////////////
-
-
-
-uniform float cameraHeight;
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -181,7 +178,7 @@ void main()
 
     vec3 out_Color = atmosphere(
         ray_world,        	            // normalized ray direction
-        vec3(0, 6372e3 + cameraHeight, 0),              	// ray origin
+        vec3(0, 6372e3, 0),            	// ray origin
         v_Sun,                  		// position of the sun
         22.0,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters
@@ -193,7 +190,7 @@ void main()
         0.758                           // Mie preferred scattering direction
     );
 
-    out_Color += texture(nightSkybox, ray_world).rgb * 0.15;       // TIMO
+    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.15;       // TIMO
 	
 	// Apply exposure.
     out_Color = 1.0 - exp(-1.0 * out_Color);
