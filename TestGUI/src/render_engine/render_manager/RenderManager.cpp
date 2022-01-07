@@ -151,6 +151,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glUseProgram(skybox_program_id);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), skyboxParams.sunRadius);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunAlpha"), 0.0f);				// NOTE: don't include sun in the hdr skies.
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &skyboxParams.sunColor[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyboxParams.skyColor1[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &skyboxParams.groundColor[0]);
@@ -159,7 +160,6 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
-	glUniform1i(glGetUniformLocation(skybox_program_id, "showSun"), 0);				// NOTE: don't include sun in the hdr skies.
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), 0.0f);		// NOTE: the hdr skies should get generated with default camera position
 	
@@ -751,6 +751,7 @@ void RenderManager::renderScene()
 	glUseProgram(skybox_program_id);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &skyboxParams.sunOrientation[0]);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), skyboxParams.sunRadius);
+	glUniform1f(glGetUniformLocation(skybox_program_id, "sunAlpha"), skyboxParams.sunAlpha);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &skyboxParams.sunColor[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyboxParams.skyColor1[0]);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &skyboxParams.groundColor[0]);
@@ -759,7 +760,6 @@ void RenderManager::renderScene()
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
-	glUniform1i(glGetUniformLocation(skybox_program_id, "showSun"), 1);
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), MainLoop::getInstance().camera.position.y);

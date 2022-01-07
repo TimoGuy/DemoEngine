@@ -395,8 +395,6 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	sunOrientation = rotation * sunOrientation;
 	sunOrientation = glm::normalize(sunOrientation);
 
-	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
-
 	// Modify the light direction
 	glm::vec3 lightDirection = sunOrientation;
 	lightDirection.y -= 0.5f;
@@ -406,7 +404,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 	// Color intensity
 	const float clampY = -0.45f;
-	float overflowYAmount = glm::max((lightDirection.y - clampY) * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f);
+	float overflowYAmount = glm::max((lightDirection.y - clampY) * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f);		// Man I wish I could show you the desmos graph I had to make to get this to work the way I wanted. -Timo
 	if (lightDirection.y > clampY)
 	{
 		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);
@@ -418,6 +416,10 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	}
 
 	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity - overflowYAmount, 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
+	
+	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
+	MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha = sunOrientation.y > 0.0f ? 0.0f : glm::pow(glm::abs(sunOrientation.y), 0.8f);
+	std::cout << MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha << std::endl;
 }
 
 void DirectionalLight::preRenderUpdate()

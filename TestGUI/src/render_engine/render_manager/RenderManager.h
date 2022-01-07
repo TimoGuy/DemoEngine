@@ -50,6 +50,7 @@ struct SkyboxParams
 {
 	glm::vec3 sunOrientation = { 0, 1, 0 };		// NOTE: this is different from facingDirection of the main directional light, bc this is used for dayNightCycle (See https://www.youtube.com/watch?v=RRR-rI9zzgk)
 	float sunRadius = 0.085f;
+	float sunAlpha = 1.0f;
 	glm::vec3 sunColor{ 1, 1, 1 };
 	glm::vec3 skyColor1{ 0.043 , 0.182 ,0.985 };
 	glm::vec3 groundColor{ 0.51,0.27, 0.11 };

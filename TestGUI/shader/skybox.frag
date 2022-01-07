@@ -5,6 +5,7 @@ in vec3 localPos;               // TODO: unusued I think, but we can use it!!!
 
 uniform vec3 sunOrientation;
 uniform float sunRadius;
+uniform float sunAlpha;
 
 uniform samplerCube nightSkybox;
 
@@ -20,8 +21,6 @@ uniform float cloudHeight;
 uniform float perlinDim;
 uniform float perlinTime;
 ////////////
-
-uniform bool showSun;
 
 
 
@@ -175,7 +174,7 @@ void main()
 {
     vec3 ray_world = normalize(localPos);           // TIMO: Does this work??? I guess so...
 	
-	vec3 out_LightScattering = vec3(0);
+	vec3 out_LightScattering = vec3(0);             // @TODO: see if this is important. Perhaps this is for volumetric lighting?????? We'll see I guess
 	
     // TIMO
     vec3 v_Sun = sunOrientation * -2600.0;
@@ -184,7 +183,7 @@ void main()
         ray_world,        	            // normalized ray direction
         vec3(0, 6372e3 + cameraHeight, 0),              	// ray origin
         v_Sun,                  		// position of the sun
-        22.0,//showSun ? 48.0 : 22.0,          // intensity of the sun
+        22.0,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
@@ -202,11 +201,11 @@ void main()
 	float _sunRadius = length(normalize(ray_world)- normalize(v_Sun));
 	
 	// no sun rendering when scene reflection
-	if(_sunRadius < sunRadius && ray_world.y >= 0.0 && showSun)
+	if(_sunRadius < sunRadius)
 	{
 		_sunRadius /= sunRadius;
 		float smoothRadius = smoothstep(0,1,0.1f/_sunRadius-0.1f);
-		out_Color = mix(out_Color, sunBaseColor * 4, smoothRadius);
+		out_Color = mix(out_Color, sunBaseColor * 4, smoothRadius * sunAlpha);
 		
 		smoothRadius = smoothstep(0,1,0.18f/_sunRadius-0.2f);
 		out_LightScattering = mix(vec3(0), sunBaseColor, smoothRadius);
