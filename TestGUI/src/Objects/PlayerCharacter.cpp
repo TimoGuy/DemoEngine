@@ -761,8 +761,6 @@ void PlayerCharacter::preRenderUpdate()
 	processMovement();
 	processActions();
 	processAnimation();
-
-	GameState::getInstance().dayNightTime += 0.1f * MainLoop::getInstance().deltaTime;
 }
 
 #ifdef _DEVELOP

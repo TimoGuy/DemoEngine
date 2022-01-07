@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+
 bool Material::resetFlag = false;
 
 //

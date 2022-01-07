@@ -21,6 +21,8 @@ public:
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;
 
+	bool						isDayNightTimeMoving			= true;
+	float						dayNightTimeSpeed				= 0.01f;
 	float						dayNightTime					= 0.0f;		// [0-1], and 1 is dusk
 
 
@@ -32,6 +34,8 @@ public:
 
 	void inputStaminaEvent(StaminaEvent staminaEvent, float deltaTime = 1.0f);
 	void updateStaminaDepletionChaser(float deltaTime = 1.0f);
+
+	void updateDayNightTime(float deltaTime);
 
 private:
 	std::vector<physx::PxRigidActor*> currentHeldTriggerActorQueue;

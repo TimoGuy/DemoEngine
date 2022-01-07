@@ -18,6 +18,12 @@ void unregisterResource(const std::string& resourceName);
 void* loadResource(const std::string& resourceName, bool isUnloading);
 
 
+struct CubemapTextureFnames
+{
+	std::vector<std::string> fnames;
+};
+
+
 namespace Resources
 {
 	// Resource map
@@ -226,6 +232,46 @@ void* loadTexture2D(
 	}
 }
 
+void* loadTextureCube(
+	const std::string& textureName,
+	bool isUnloading,
+	const CubemapTextureFnames texFnames,
+	GLuint toTexture = GL_RGB,
+	GLuint minFilter = GL_LINEAR,
+	GLuint magFilter = GL_LINEAR,
+	GLuint wrapS = GL_CLAMP_TO_EDGE,
+	GLuint wrapT = GL_CLAMP_TO_EDGE,
+	GLuint wrapR = GL_CLAMP_TO_EDGE,
+	bool isHDR = false,
+	bool flipVertical = true)
+{
+	if (!isUnloading)
+	{
+		assert(texFnames.fnames.size() == 6);
+
+		std::vector<ImageFile> files;
+		for (size_t i = 0; i < 6; i++)
+		{
+			ImageFile imgFile;
+			imgFile.fname = texFnames.fnames[i];
+			imgFile.flipVertical = flipVertical;
+			imgFile.isHDR = isHDR;
+			imgFile.generateMipmaps = true;
+
+			files.push_back(imgFile);
+		}
+
+		Texture* tex = new TextureCubemapFromFile(files, toTexture, minFilter, magFilter, wrapS, wrapT, wrapR);
+		registerResource(textureName, tex);
+		return tex;
+	}
+	else
+	{
+		delete findResource(textureName);
+		return nullptr;
+	}
+}
+
 #pragma endregion
 
 
@@ -311,7 +357,6 @@ void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm
 
 #pragma endregion
 
-
 void* loadResource(const std::string& resourceName, bool isUnloading)
 {
 	//
@@ -325,7 +370,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/point_shadow.vert", "shader/point_shadow.geom", "shader/point_shadow.frag");
 	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/debug_csm.vert", "shader/debug_csm.frag");
 	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/text.vert", "shader/text.frag");
-	//if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/hdri_equirectangular.frag");
+	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/hdri_equirectangular.frag");		// NOTE: may not be used in the future
 	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/irradiance_convolution.frag");
 	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/prefilter.frag");
 	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/brdf.vert", "shader/brdf.frag");
@@ -338,6 +383,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 #endif
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
+	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo
 
 	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });
 	if (resourceName == "texture;lvlGridTexture")						return loadTexture2D(resourceName, isUnloading, "res/_debug/lvl_grid_texture.png", GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);

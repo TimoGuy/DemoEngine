@@ -14,6 +14,7 @@
 #include "../camera/Camera.h"
 
 
+class Texture;
 typedef unsigned int GLuint;
 
 namespace PhysicsUtils
@@ -149,6 +150,7 @@ private:
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
 	float mapInterpolationAmt;
+	Texture* nightSkybox;
 
 
 	glm::mat4 cameraProjection, cameraView;

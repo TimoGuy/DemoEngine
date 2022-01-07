@@ -190,12 +190,12 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     //
     // Do far shadow fadeaway       (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
     //
-    //if (layer == cascadeCount)
-    //{
-    //    float fadingEdgeAmount = 10.0;
-    //    float visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
-    //    shadow *= visibleAmount;
-    //}
+    if (layer == cascadeCount)
+    {
+        float fadingEdgeAmount = 10.0;
+        float visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
+        shadow *= visibleAmount;
+    }
 
     //if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
     //    return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?

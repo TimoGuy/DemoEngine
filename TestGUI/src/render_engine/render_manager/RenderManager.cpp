@@ -21,6 +21,7 @@
 #include "../../imgui/ImGuizmo.h"
 #endif
 
+#include "../material/Texture.h"
 #include "../resources/Resources.h"
 #include "../../utils/FileLoading.h"
 #include "../../utils/PhysicsUtils.h"
@@ -140,9 +141,13 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
-		
-	// convert HDR equirectangular environment map to cubemap equivalent
 
+	// Get the nightsky texture from disk
+	Texture::setLoadSync(true);
+	nightSkybox = (Texture*)Resources::getResource("texture;nightSkybox");
+	Texture::setLoadSync(false);
+
+	// Convert HDR dynamic skybox to cubemap equivalent
 	glUseProgram(skybox_program_id);
 	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
 	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), skyboxParams.sunRadius);
@@ -157,6 +162,9 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glUniform1i(glGetUniformLocation(skybox_program_id, "showSun"), 0);				// NOTE: don't include sun in the hdr skies.
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), 0.0f);		// NOTE: the hdr skies should get generated with default camera position
+	
+	glBindTextureUnit(0, nightSkybox->getHandle());
+	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
@@ -755,6 +763,9 @@ void RenderManager::renderScene()
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
 	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
 	glUniform1f(glGetUniformLocation(skybox_program_id, "cameraHeight"), MainLoop::getInstance().camera.position.y);
+
+	glBindTextureUnit(0, nightSkybox->getHandle());
+	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);
 	//perlinTime += MainLoop::getInstance().deltaTime;
 
 	renderCube();
@@ -1559,6 +1570,9 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::Separator();
 			ImGui::Text("Skybox properties");
+			ImGui::DragFloat("Time of Day", &GameState::getInstance().dayNightTime, 0.005f);
+			ImGui::DragFloat("Time of Day susumu sokudo", &GameState::getInstance().dayNightTimeSpeed, 0.001f);
+			ImGui::Checkbox("Is Daynight Time moving", &GameState::getInstance().isDayNightTimeMoving);
 			ImGui::DragFloat("Sun Radius", &skyboxParams.sunRadius, 0.01f);
 			ImGui::ColorEdit3("sunColor", &skyboxParams.sunColor[0]);
 			ImGui::ColorEdit3("skyColor1", &skyboxParams.skyColor1[0]);

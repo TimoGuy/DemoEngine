@@ -7,6 +7,7 @@
 #include <stb/stb_image.h>
 
 
+bool							Texture::loadSync = false;
 std::vector<std::future<void>>	Texture::asyncFutures;
 std::mutex						Texture::textureMutex;
 std::vector<Texture*>			Texture::syncTexturesToLoad;
@@ -121,6 +122,10 @@ Texture2DFromFile::Texture2DFromFile(
 		wrapT(wrapT)
 {
 	asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, file, -1));
+
+	// Synchronous loading spinning lock
+	while (Texture::loadSync && !loaded)
+		Texture::INTERNALtriggerCreateGraphicsAPITextureHandles();
 }
 
 void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data)
@@ -159,7 +164,7 @@ TextureCubemapFromFile::TextureCubemapFromFile(
 		wrapT(wrapT),
 		wrapR(wrapR)
 {
-	assert(files.size() >= 6);
+	assert(files.size() == 6);
 
 	imageDatasCache.resize(6);
 	numImagesLoaded = 0;
@@ -168,6 +173,10 @@ TextureCubemapFromFile::TextureCubemapFromFile(
 	{
 		asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, files[i], i));
 	}
+
+	// Synchronous loading spinning lock
+	while (Texture::loadSync && !loaded)
+		Texture::INTERNALtriggerCreateGraphicsAPITextureHandles();
 }
 
 void TextureCubemapFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data)

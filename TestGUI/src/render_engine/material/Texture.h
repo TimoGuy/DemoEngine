@@ -36,14 +36,17 @@ public:
 
 	static void INTERNALtriggerCreateGraphicsAPITextureHandles();
 	static void INTERNALaddTextureToLoadSynchronously(Texture* tex, const ImageDataLoaded& idl);
+	inline static void setLoadSync(bool flag) { loadSync = flag; }
 
 protected:
+	static bool loadSync;
 	bool loaded;
 	GLuint textureHandle;
 
 	static std::mutex textureMutex;
 	static std::vector<std::future<void>> asyncFutures;
 	virtual void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data) = 0;
+
 
 private:
 	static std::vector<Texture*> syncTexturesToLoad;

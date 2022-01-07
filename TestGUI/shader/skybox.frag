@@ -6,6 +6,8 @@ in vec3 localPos;               // TODO: unusued I think, but we can use it!!!
 uniform vec3 sunOrientation;
 uniform float sunRadius;
 
+uniform samplerCube nightSkybox;
+
 // UNUSED //
 uniform vec3 sunColor;
 uniform vec3 skyColor1;
@@ -171,22 +173,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 
 void main()
 {
-	//vec2 ndc = vec2(gl_FragCoord.x/width * 2 -1,gl_FragCoord.y/height * 2 -1);
-	//vec4 ray_clip = vec4(ndc, -1.0, 1.0);
-	//vec4 ray_eye = inverse(projection) * ray_clip;
-	//ray_eye = vec4(ray_eye.xy, 1.0, 0.0);
-	//vec3 ray_world = (inverse(view) * ray_eye).xyz;
-    vec3 ray_world = normalize(localPos);           // Does this work??? I guess so...
-	
-	if (!showSun)
-    {
-		//ray_world.y *= -1;
-		//ray_world.y += reflectionVerticalShift;
-	}
-	else
-    {
-		//ray_world.y += horizonVerticalShift;
-	}
+    vec3 ray_world = normalize(localPos);           // TIMO: Does this work??? I guess so...
 	
 	vec3 out_LightScattering = vec3(0);
 	
@@ -194,7 +181,7 @@ void main()
     vec3 v_Sun = sunOrientation * -2600.0;
 
     vec3 out_Color = atmosphere(
-        normalize(ray_world),        	// normalized ray direction
+        ray_world,        	            // normalized ray direction
         vec3(0, 6372e3 + cameraHeight, 0),              	// ray origin
         v_Sun,                  		// position of the sun
         22.0,//showSun ? 48.0 : 22.0,          // intensity of the sun
@@ -206,6 +193,8 @@ void main()
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
     );
+
+    out_Color += texture(nightSkybox, ray_world).rgb * 0.15;       // TIMO
 	
 	// Apply exposure.
     out_Color = 1.0 - exp(-1.0 * out_Color);

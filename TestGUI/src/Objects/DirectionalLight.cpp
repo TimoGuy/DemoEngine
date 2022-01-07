@@ -387,7 +387,8 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	return ret;
 }
 
-float shadowDisappearMultiplier = 20.0f;
+float shadowDisappearMultiplier = 30.0f;
+float shadowDisappearOffset = 2.0f;
 void DirectionalLight::setLookDirection(glm::quat rotation)
 {
 	glm::vec3 sunOrientation(0.0f, 0.0f, 1.0f);
@@ -396,16 +397,18 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
 
+	// Modify the light direction
 	glm::vec3 lightDirection = sunOrientation;
 	lightDirection.y -= 0.5f;
 	lightDirection = glm::normalize(lightDirection);
 
+	lightComponent->facingDirection = lightDirection;
+
+	// Color intensity
 	const float clampY = -0.45f;
-	float overflowYAmount = 0.0f;
+	float overflowYAmount = glm::max((lightDirection.y - clampY) * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f);
 	if (lightDirection.y > clampY)
 	{
-		overflowYAmount = glm::abs(lightDirection.y - clampY) * shadowDisappearMultiplier;
-
 		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);
 		float clampYAsin = glm::asin(clampY);
 		lightDirXZ = glm::normalize(lightDirXZ) * glm::cos(clampYAsin);
@@ -414,15 +417,7 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 		lightDirection.y = clampY;
 	}
 
-	lightComponent->facingDirection = lightDirection;
-	//lightComponent->colorIntensity =
-	//	std::max(
-	//		0.0f,
-	//		(-lookDirection.y > ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY) ?
-	//		((DirectionalLightLight*)lightComponent)->maxColorIntensity :
-	//		LERP(0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity, REMAP(-lookDirection.y, 0.0f, ((DirectionalLightLight*)lightComponent)->colorIntensityMaxAtY, 0.0f, 1.0f))
-	//	);
-	lightComponent->colorIntensity = glm::max(((DirectionalLightLight*)lightComponent)->maxColorIntensity - overflowYAmount, 0.0f);
+	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity - overflowYAmount, 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 }
 
 void DirectionalLight::preRenderUpdate()
@@ -486,6 +481,7 @@ void DirectionalLight::imguiPropertyPanel()
 	ImGui::Separator();
 	ImGui::Text("Day night cycle");
 	ImGui::DragFloat("Shadow Disappear mult", &shadowDisappearMultiplier);
+	ImGui::DragFloat("Shadow Disappear offset", &shadowDisappearOffset);
 }
 
 void DirectionalLight::imguiRender()

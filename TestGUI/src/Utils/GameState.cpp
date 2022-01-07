@@ -73,3 +73,11 @@ void GameState::updateStaminaDepletionChaser(float deltaTime)
 		PhysicsUtils::moveTowards(playerStaminaDepleteChaser, currentPlayerStaminaAmount + (staminaWasDepletedThisFrame ? barPadding : 0.0f), staminaDepletionSpeed * 60.0f * deltaTime);
 	staminaWasDepletedThisFrame = false;
 }
+
+void GameState::updateDayNightTime(float deltaTime)
+{
+	if (!isDayNightTimeMoving)
+		return;
+
+	dayNightTime += dayNightTimeSpeed * deltaTime;
+}

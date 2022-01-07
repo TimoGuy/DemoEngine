@@ -17,6 +17,7 @@
 
 #include "../utils/InputManager.h"
 #include "../utils/FileLoading.h"
+#include "../utils/GameState.h"
 #include "../render_engine/resources/Resources.h"
 
 
@@ -259,6 +260,9 @@ void MainLoop::run()
 		{
 			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
+
+		// Update time of day
+		GameState::getInstance().updateDayNightTime(deltaTime);
 
 		//
 		// Do all pre-render updates
