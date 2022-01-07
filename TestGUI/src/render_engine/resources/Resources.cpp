@@ -15,22 +15,6 @@
 void* findResource(const std::string& resourceName);
 void registerResource(const std::string& resourceName, void* resource);
 void unregisterResource(const std::string& resourceName);
-
-const GLchar* readFile(const char* filename);
-GLuint compileShader(GLenum type, const char* fname);
-void* loadShaderProgramVF(const std::string& programName, bool isUnloading, const std::string& vertFname, const std::string& fragFname);
-void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, const std::string& vertFname, const std::string& geomFname, const std::string& fragFname);
-
-void* loadTexture2D(const std::string& textureName, bool isUnloading, const std::string& fname, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, bool flipVertical);
-void* loadHDRTexture2D(const std::string& textureName, bool isUnloading, const std::string& fname, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, bool flipVertical);
-
-void* loadModel(const std::string& modelName, bool isUnloading, const char* path);
-void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<std::string> animationNames);
-
-void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha=1.0f);
-void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
-void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color);
-
 void* loadResource(const std::string& resourceName, bool isUnloading);
 
 
@@ -220,6 +204,7 @@ void* loadTexture2D(
 	GLuint magFilter = GL_NEAREST,
 	GLuint wrapS = GL_REPEAT,
 	GLuint wrapT = GL_REPEAT,
+	bool isHDR = false,
 	bool flipVertical = true)
 {
 	if (!isUnloading)
@@ -227,38 +212,7 @@ void* loadTexture2D(
 		ImageFile imgFile;
 		imgFile.fname = fname;
 		imgFile.flipVertical = flipVertical;
-		imgFile.isHDR = false;
-		imgFile.generateMipmaps = true;
-
-		Texture* tex = new Texture2DFromFile(imgFile, toTexture, minFilter, magFilter, wrapS, wrapT);
-		registerResource(textureName, tex);
-		return tex;
-	}
-	else
-	{
-		delete findResource(textureName);
-		return nullptr;
-	}
-}
-
-
-void* loadHDRTexture2D(
-	const std::string& textureName,
-	bool isUnloading,
-	const std::string& fname,
-	GLuint toTexture = GL_RGB,
-	GLuint minFilter = GL_NEAREST,
-	GLuint magFilter = GL_NEAREST,
-	GLuint wrapS = GL_REPEAT,
-	GLuint wrapT = GL_REPEAT,
-	bool flipVertical = true)
-{
-	if (!isUnloading)
-	{
-		ImageFile imgFile;
-		imgFile.fname = fname;
-		imgFile.flipVertical = flipVertical;
-		imgFile.isHDR = true;
+		imgFile.isHDR = isHDR;
 		imgFile.generateMipmaps = true;
 
 		Texture* tex = new Texture2DFromFile(imgFile, toTexture, minFilter, magFilter, wrapS, wrapT);
@@ -305,7 +259,7 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	}
 }
 
-void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha)
+void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha = 1.0f)
 {
 	if (!isUnloading)
 	{
@@ -383,7 +337,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
 #endif
 
-	if (resourceName == "texture;hdrEnvironmentMap")					return loadHDRTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB16F, GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
 
 	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });
 	if (resourceName == "texture;lvlGridTexture")						return loadTexture2D(resourceName, isUnloading, "res/_debug/lvl_grid_texture.png", GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
@@ -449,13 +403,13 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "material;pbrSlimeHair")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0.5, 0.5, 1));
 
 	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
-	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);
+	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, false);
 
 	if (resourceName == "material;pbrBottleBody")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrBottleBodyAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value", 0.5f);
-	if (resourceName == "texture;pbrBottleBodyAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);		// @Incomplete: there's no real bottle texture, so make a quick white thingo
+	if (resourceName == "texture;pbrBottleBodyAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, false);		// @Incomplete: there's no real bottle texture, so make a quick white thingo
 
 	if (resourceName == "material;pbrSlimeEye")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyeAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
-	if (resourceName == "texture;pbrSlimeEyeAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false);
+	if (resourceName == "texture;pbrSlimeEyeAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/eye_blue_solid.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, false);
 
 	if (resourceName == "material;pbrSlimeShoeAccent")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShoeAccentAlbedo", "texture;pbrSlimeShoeAccentNormal", "texture;pbr0Value", "texture;pbrSlimeShoeAccentRoughness");
 	if (resourceName == "texture;pbrSlimeShoeAccentAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/material_plastic_shoe/albedo.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);

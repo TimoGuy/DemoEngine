@@ -72,39 +72,43 @@ void Material::applyTextureUniforms()
 {
 	setupShader(myShaderId);
 
-	glBindTextureUnit(0, albedoMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "albedoMap"), 0);
+	GLuint texUnit = 0;
 
-	glBindTextureUnit(1, normalMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "normalMap"), 1);
+	glBindTextureUnit(texUnit, albedoMap->getHandle());
+	glUniform1i(glGetUniformLocation(myShaderId, "albedoMap"), texUnit);
+	texUnit++;
 
-	glBindTextureUnit(2, metallicMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "metallicMap"), 2);
+	glBindTextureUnit(texUnit, normalMap->getHandle());
+	glUniform1i(glGetUniformLocation(myShaderId, "normalMap"), texUnit);
+	texUnit++;
 
-	glBindTextureUnit(3, roughnessMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "roughnessMap"), 3);
+	glBindTextureUnit(texUnit, metallicMap->getHandle());
+	glUniform1i(glGetUniformLocation(myShaderId, "metallicMap"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 4);
+	glBindTextureUnit(texUnit, roughnessMap->getHandle());
+	glUniform1i(glGetUniformLocation(myShaderId, "roughnessMap"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), 5);
+	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getIrradianceMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE6);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 6);
+	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getIrradianceMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE7);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), 7);
+	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE8);
-	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 8);
+	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getPrefilterMap2());
+	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), texUnit);
+	texUnit++;
 
-	glActiveTexture(GL_TEXTURE0);       // Reset before drawing mesh
+	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
+	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), texUnit);
+	texUnit++;
 
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
@@ -142,24 +146,19 @@ void ZellyMaterial::applyTextureUniforms()
 
 	glUniform3fv(glGetUniformLocation(myShaderId, "zellyColor"), 1, &color.x);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap());
+	glBindTextureUnit(0, MainLoop::getInstance().renderManager->getIrradianceMap());
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 0);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getIrradianceMap2());
+	glBindTextureUnit(1, MainLoop::getInstance().renderManager->getIrradianceMap2());
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), 1);
 
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glBindTextureUnit(2, MainLoop::getInstance().renderManager->getPrefilterMap());
 	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 2);
 
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, MainLoop::getInstance().renderManager->getPrefilterMap2());
+	glBindTextureUnit(3, MainLoop::getInstance().renderManager->getPrefilterMap2());
 	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), 3);
 
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
+	glBindTextureUnit(4, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
 }
 

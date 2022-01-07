@@ -21,7 +21,7 @@ namespace INTERNALTextureHelper
 	{
 		ImageDataLoaded idl;
 
-		stbi_set_flip_vertically_on_load(file.flipVertical);
+		stbi_set_flip_vertically_on_load_thread(file.flipVertical);		// Thank you nothings!!! (Author of stb_image for making a thread-safe version of this function. NOT SARCASM)
 		int imgWidth, imgHeight, numColorChannels;
 		if (file.isHDR)
 		{
