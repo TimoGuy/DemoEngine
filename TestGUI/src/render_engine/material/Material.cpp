@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "Texture.h"
 #include "../resources/Resources.h"
 #include "../render_manager/RenderManager.h"
 #include "../../mainloop/MainLoop.h"
@@ -54,13 +55,13 @@ void setupShader(GLuint shaderId)
 //
 // Material
 //
-Material::Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, float fadeAlpha, glm::vec4 offsetTiling)
+Material::Material(unsigned int myShaderId, Texture* albedoMap, Texture* normalMap, Texture* metallicMap, Texture* roughnessMap, float fadeAlpha, glm::vec4 offsetTiling)
 {
 	Material::myShaderId = myShaderId;
-	Material::albedoMapPtr = albedoMap;
-	Material::normalMapPtr = normalMap;
-	Material::metallicMapPtr = metallicMap;
-	Material::roughnessMapPtr = roughnessMap;
+	Material::albedoMap = albedoMap;
+	Material::normalMap = normalMap;
+	Material::metallicMap = metallicMap;
+	Material::roughnessMap = roughnessMap;
 	Material::fadeAlpha = fadeAlpha;
 	Material::tilingAndOffset = offsetTiling;
 
@@ -71,29 +72,16 @@ void Material::applyTextureUniforms()
 {
 	setupShader(myShaderId);
 
-	if (albedoMapPtr != nullptr)
-		albedoMap = *albedoMapPtr;
-	if (normalMapPtr != nullptr)
-		normalMap = *normalMapPtr;
-	if (metallicMapPtr != nullptr)
-		metallicMap = *metallicMapPtr;
-	if (roughnessMapPtr != nullptr)
-		roughnessMap = *roughnessMapPtr;
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, albedoMap);
+	glBindTextureUnit(0, albedoMap->getHandle());
 	glUniform1i(glGetUniformLocation(myShaderId, "albedoMap"), 0);
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, normalMap);
+	glBindTextureUnit(1, normalMap->getHandle());
 	glUniform1i(glGetUniformLocation(myShaderId, "normalMap"), 1);
 
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, metallicMap);
+	glBindTextureUnit(2, metallicMap->getHandle());
 	glUniform1i(glGetUniformLocation(myShaderId, "metallicMap"), 2);
 
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, roughnessMap);
+	glBindTextureUnit(3, roughnessMap->getHandle());
 	glUniform1i(glGetUniformLocation(myShaderId, "roughnessMap"), 3);
 
 	glActiveTexture(GL_TEXTURE4);
@@ -193,7 +181,7 @@ void LvlGridMaterial::applyTextureUniforms()
 	glUniform3fv(glGetUniformLocation(myShaderId, "gridColor"), 1, &color.x);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 
-	GLuint gridTexture = *(GLuint*)Resources::getResource("texture;lvlGridTexture");
+	GLuint gridTexture = ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gridTexture);
 	glUniform1i(glGetUniformLocation(myShaderId, "gridTexture"), 0);

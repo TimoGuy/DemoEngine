@@ -5,6 +5,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../mainloop/MainLoop.h"
+#include "../render_engine/material/Texture.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../utils/GameState.h"
@@ -71,7 +72,7 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 
 void DirectionalLight::refreshResources()
 {
-	lightGizmoTextureId = *(GLuint*)Resources::getResource("texture;lightIcon");
+	lightGizmoTextureId = ((Texture*)Resources::getResource("texture;lightIcon"))->getHandle();
 }
 
 DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) : LightComponent(bo)

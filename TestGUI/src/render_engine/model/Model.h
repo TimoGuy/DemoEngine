@@ -44,7 +44,6 @@ public:
 	glm::mat4 localTransform = glm::mat4(1.0f);
 
 private:
-	std::vector<Texture> loadedTextures;
 	std::vector<Mesh> meshes;
 	std::string directory;
 

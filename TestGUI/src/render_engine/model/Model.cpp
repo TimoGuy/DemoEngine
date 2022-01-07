@@ -237,7 +237,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<Texture> textures;
 
 	glm::vec3* minAABBPoint = nullptr;
 	glm::vec3* maxAABBPoint = nullptr;

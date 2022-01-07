@@ -4,11 +4,13 @@
 #include <vector>
 
 
+class Texture;
+
 // NOTE: this implementation is simply a pbr standard shader-like implementation btw (metallic workflow)
 class Material
 {
 public:
-	Material(unsigned int myShaderId, unsigned int* albedoMap, unsigned int* normalMap, unsigned int* metallicMap, unsigned int* roughnessMap, float fadeAlpha = 1.0f, glm::vec4 offsetTiling = glm::vec4(1, 1, 0, 0));
+	Material(unsigned int myShaderId, Texture* albedoMap, Texture* normalMap, Texture* metallicMap, Texture* roughnessMap, float fadeAlpha = 1.0f, glm::vec4 offsetTiling = glm::vec4(1, 1, 0, 0));
 
 	// TODO: would need to set the shader in this function to be used
 	virtual void applyTextureUniforms();		// @Future: This'll be a virtual function that just gets called when needed. If there are different types of shaders that require different types of materials, then this'll use that different type (Maybe: it'll require that the shader func glUseProgram(id) will have to be taken care of in this material system too.... hmmmmmm
@@ -24,17 +26,11 @@ public:
 	bool isTransparent = false;
 
 protected:
-	unsigned int
-		albedoMap,
-		normalMap,
-		metallicMap,
-		roughnessMap;
-
-	unsigned int
-		*albedoMapPtr,
-		*normalMapPtr,
-		*metallicMapPtr,
-		*roughnessMapPtr;
+	Texture
+		*albedoMap,
+		*normalMap,
+		*metallicMap,
+		*roughnessMap;
 
 	glm::vec4 tilingAndOffset;
 	unsigned int myShaderId;

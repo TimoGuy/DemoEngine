@@ -217,9 +217,8 @@ void MainLoop::run()
 #endif
 
 		//
-		// Load async loaded resources to GPU (textures, VAO's, etc.)
+		// Load async loaded resources to GPU
 		//
-		Resources::allowAsyncResourcesToFinishLoading();
 		Texture::INTERNALtriggerCreateGraphicsAPITextureHandles();
 
 		//

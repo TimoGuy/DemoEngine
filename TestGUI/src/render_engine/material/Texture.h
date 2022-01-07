@@ -10,7 +10,7 @@ typedef unsigned int GLenum;
 
 struct ImageFile
 {
-	const std::string fname;
+	std::string fname;
 	bool flipVertical;
 	bool isHDR;
 	bool generateMipmaps;
@@ -54,26 +54,28 @@ private:
 class Texture2DFromFile : public Texture
 {
 public:
-	Texture2DFromFile(const ImageFile file, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
+	Texture2DFromFile(const ImageFile& file, GLenum toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT);
 
 private:
 	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data);
 
 	const ImageFile file;
-	GLuint toTexture, minFilter, magFilter, wrapS, wrapT;
+	GLenum toTexture;
+	GLuint minFilter, magFilter, wrapS, wrapT;
 };
 
 
 class TextureCubemapFromFile : public Texture
 {
 public:
-	TextureCubemapFromFile(const std::vector<const ImageFile> files, GLuint toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
+	TextureCubemapFromFile(const std::vector<ImageFile>& files, GLenum toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
 
 private:
 	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data);
 
-	const std::vector<const ImageFile> files;
+	const std::vector<ImageFile> files;
 	std::vector<ImageDataLoaded> imageDatasCache;
 	int numImagesLoaded;
-	GLuint toTexture, minFilter, magFilter, wrapS, wrapT, wrapR;
+	GLenum toTexture;
+	GLuint minFilter, magFilter, wrapS, wrapT, wrapR;
 };

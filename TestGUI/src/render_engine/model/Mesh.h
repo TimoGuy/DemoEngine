@@ -29,13 +29,6 @@ struct Vertex
 	int numWeights = 0;
 };
 
-struct Texture
-{
-	unsigned int id;
-	std::string type;
-	std::string path;
-};
-
 class Mesh
 {
 public:

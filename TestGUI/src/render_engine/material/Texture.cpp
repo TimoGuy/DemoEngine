@@ -59,13 +59,13 @@ namespace INTERNALTextureHelper
 			idl.pixelType = GL_UNSIGNED_BYTE;
 			idl.pixels = bytes;
 
-			idl.internalFormat = GL_RED;
+			idl.internalFormat = GL_R8;
 			if (numColorChannels == 2)
-				idl.internalFormat = GL_RG;
+				idl.internalFormat = GL_RG8;
 			else if (numColorChannels == 3)
-				idl.internalFormat = GL_RGB;
+				idl.internalFormat = GL_RGB8;
 			else if (numColorChannels == 4)
-				idl.internalFormat = GL_RGBA;
+				idl.internalFormat = GL_RGBA8;
 		}
 
 		idl.imgWidth = imgWidth;
@@ -106,8 +106,9 @@ void Texture::INTERNALaddTextureToLoadSynchronously(Texture* tex, const ImageDat
 	syncTexturesToLoadParams.push_back(idl);
 }
 
-Texture2DFromFile::Texture2DFromFile(const ImageFile file,
-	GLuint toTexture,
+Texture2DFromFile::Texture2DFromFile(
+	const ImageFile& file,
+	GLenum toTexture,
 	GLuint minFilter,
 	GLuint magFilter,
 	GLuint wrapS,
@@ -143,8 +144,8 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 }
 
 TextureCubemapFromFile::TextureCubemapFromFile(
-	const std::vector<const ImageFile> files,
-	GLuint toTexture,
+	const std::vector<ImageFile>& files,
+	GLenum toTexture,
 	GLuint minFilter,
 	GLuint magFilter,
 	GLuint wrapS,
