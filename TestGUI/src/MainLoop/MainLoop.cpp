@@ -22,7 +22,7 @@
 
 
 #define FULLSCREEN_MODE 0
-#define V_SYNC 0
+#define V_SYNC 1
 
 
 void createWindow(const char* windowName);
@@ -115,12 +115,21 @@ void MainLoop::initialize()
 	setupImGui();
 #endif
 
-	int maxUBOSize = 0;
+	int maxUBOSize, maxTexSize, maxArrayLayers, max3DTexSize, maxTexUnits;
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
+	glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArrayLayers);
+	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &max3DTexSize);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexUnits);
 
 	std::cout << "Graphics Renderer:\t" << glGetString(GL_RENDERER) << std::endl;
 	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl;
-	std::cout << "Max UBO Size:\t\t" << maxUBOSize << std::endl;
+	std::cout << std::endl;
+	std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE:\t\t" << maxUBOSize << std::endl;
+	std::cout << "GL_MAX_TEXTURE_SIZE:\t\t\t" << maxTexSize << std::endl;
+	std::cout << "GL_MAX_ARRAY_TEXTURE_LAYERS:\t\t" << maxArrayLayers << std::endl;
+	std::cout << "GL_MAX_3D_TEXTURE_SIZE:\t\t\t" << max3DTexSize << std::endl;
+	std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:\t" << maxTexUnits << std::endl;
 	std::cout << std::endl;
 
 	glEnable(GL_DEPTH_TEST);

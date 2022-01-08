@@ -6,6 +6,8 @@
 #include <glad/glad.h>
 #include <stb/stb_image.h>
 
+#define NUM_MIPMAPS_TO_GENERATE 5
+
 
 bool							Texture::loadSync = false;
 std::vector<std::future<void>>	Texture::asyncFutures;
@@ -137,7 +139,7 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
 
-	glTextureStorage2D(textureHandle, 1, data.internalFormat, data.imgWidth, data.imgHeight);
+	glTextureStorage2D(textureHandle, file.generateMipmaps ? NUM_MIPMAPS_TO_GENERATE : 1, data.internalFormat, data.imgWidth, data.imgHeight);
 	glTextureSubImage2D(textureHandle, 0, 0, 0, data.imgWidth, data.imgHeight, toTexture, data.pixelType, data.pixels);
 
 	if (file.generateMipmaps)

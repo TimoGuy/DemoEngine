@@ -211,7 +211,8 @@ void* loadTexture2D(
 	GLuint wrapS = GL_REPEAT,
 	GLuint wrapT = GL_REPEAT,
 	bool isHDR = false,
-	bool flipVertical = true)
+	bool flipVertical = true,
+	bool generateMipmaps = true)
 {
 	if (!isUnloading)
 	{
@@ -219,7 +220,7 @@ void* loadTexture2D(
 		imgFile.fname = fname;
 		imgFile.flipVertical = flipVertical;
 		imgFile.isHDR = isHDR;
-		imgFile.generateMipmaps = true;
+		imgFile.generateMipmaps = generateMipmaps;
 
 		Texture* tex = new Texture2DFromFile(imgFile, toTexture, minFilter, magFilter, wrapS, wrapT);
 		registerResource(textureName, tex);
@@ -243,7 +244,8 @@ void* loadTextureCube(
 	GLuint wrapT = GL_CLAMP_TO_EDGE,
 	GLuint wrapR = GL_CLAMP_TO_EDGE,
 	bool isHDR = false,
-	bool flipVertical = true)
+	bool flipVertical = true,
+	bool generateMipmaps = true)
 {
 	if (!isUnloading)
 	{
@@ -256,7 +258,7 @@ void* loadTextureCube(
 			imgFile.fname = texFnames.fnames[i];
 			imgFile.flipVertical = flipVertical;
 			imgFile.isHDR = isHDR;
-			imgFile.generateMipmaps = true;
+			imgFile.generateMipmaps = generateMipmaps;
 
 			files.push_back(imgFile);
 		}
@@ -413,9 +415,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	// Commons
 	//
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/_debug/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
+	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
+	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	
 	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
 
