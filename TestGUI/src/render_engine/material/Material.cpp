@@ -30,7 +30,7 @@ void setupShader(GLuint shaderId)
 
 		glUseProgram(shaderId);
 		glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
-		MainLoop::getInstance().renderManager->setupSceneLights(shaderId);			// tODO: I'd really like to move to UBO's so we don't have to do this anymore
+		MainLoop::getInstance().renderManager->setupSceneShadows(shaderId);			// @TODO: is this the best method to do shadows???
 		
 		currentShaderId = shaderId;
 	}

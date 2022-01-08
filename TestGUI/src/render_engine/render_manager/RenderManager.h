@@ -81,6 +81,18 @@ struct TransparentRenderQueue
 };
 
 
+struct RenderLightInformation
+{
+	static constexpr int MAX_LIGHTS = 256;
+
+	glm::vec4 lightPositions[MAX_LIGHTS];
+	glm::vec4 lightDirections[MAX_LIGHTS];		// .a contains if has shadow or not
+	glm::vec4 lightColors[MAX_LIGHTS];
+	glm::vec4 viewPosition;
+	glm::ivec4 numLightsToRender;		// Dumb std140 padding, making all these vec4's
+};
+
+
 class RenderManager
 {
 public:
@@ -129,7 +141,7 @@ public:
 		return mapInterpolationAmt;
 	}
 
-	void setupSceneLights(GLuint programId);
+	void setupSceneShadows(GLuint programId);
 
 	void INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms);
 
@@ -231,4 +243,10 @@ private:
 	GLuint skeletalAnimationUBO;
 	void createSkeletalAnimationUBO();
 	const std::vector<glm::mat4>* assignedBoneMatricesMemAddr = nullptr;
+
+	// Light information UBO
+	GLuint lightInformationUBO;
+	RenderLightInformation lightInformation;
+	void createLightInformationUBO();
+	void updateLightInformationUBO();
 };

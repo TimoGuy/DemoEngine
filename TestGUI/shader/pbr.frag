@@ -24,19 +24,23 @@ uniform float mapInterpolationAmt;
 uniform sampler2D brdfLUT;
 uniform mat3 sunSpinAmount;
 
-// lights
-const int MAX_LIGHTS = 8;
-uniform int numLights;
-uniform vec4 lightPositions[MAX_LIGHTS];            // TODO: make this separate with arrays containing directional lights, point lights, and spot lights (if we even need them), that way there doesn't need to have branching if's and we can save on gpu computation
-uniform vec3 lightDirections[MAX_LIGHTS];
-uniform vec3 lightColors[MAX_LIGHTS];
+// Lights
+const int MAX_LIGHTS = 256;
+layout (std140, binding = 2) uniform LightInformation
+{
+    vec4 lightPositions[MAX_LIGHTS];
+	vec4 lightDirections[MAX_LIGHTS];       // .a contains if has shadow or not
+	vec4 lightColors[MAX_LIGHTS];
+    vec4 viewPosition;
+    ivec4 numLightsToRender;
+};
 
 // Shadow map
+const int MAX_SHADOWS = 8;
 uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
-uniform sampler2D spotLightShadowMaps[MAX_LIGHTS];
-uniform samplerCube pointLightShadowMaps[MAX_LIGHTS];
-uniform float pointLightShadowFarPlanes[MAX_LIGHTS];
-uniform bool hasShadow[MAX_LIGHTS];
+uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
+uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];
+uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 
 // CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
@@ -46,8 +50,6 @@ uniform mat4 cameraView;
 uniform float nearPlane;
 uniform float farPlane;
 
-// OTHER
-uniform vec3 viewPosition;
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -227,7 +229,7 @@ float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
     float shadow = 0.0;
     float bias = 0.15;
     int samples = 20;
-    float viewDistance = length(viewPosition - fragPosition);
+    float viewDistance = length(viewPosition.xyz - fragPosition);
     float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[lightIndex])) / 25.0;
     for (int i = 0; i < samples; ++i)
     {
@@ -335,7 +337,7 @@ void main()
     //float ao          = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
 
     vec3 N = getNormalFromMap();
-    vec3 V = normalize(viewPosition - fragPosition);
+    vec3 V = normalize(viewPosition.xyz - fragPosition);
     vec3 R = reflect(-V, N);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
@@ -346,39 +348,44 @@ void main()
     // reflectance equation
     vec3 Lo = vec3(0.0);
     float shadow = 0.0;
-    for(int i = 0; i < numLights; ++i)      // NOTE: Change this depending on the number of lights being looped over
+    int shadowIndex = 0;
+    for(int i = 0; i < numLightsToRender.x; ++i)      // NOTE: Change this depending on the number of lights being looped over
     {
         // calculate per-light radiance
         vec3 L, H, radiance;
         float attenuation;//, shadow = 0.0;
 
-        if (length(lightDirections[i]) == 0.0f)
+        if (length(lightDirections[i].xyz) == 0.0f)
         {
             // Point light
             L = normalize(lightPositions[i].xyz - fragPosition);
             H = normalize(V + L);
             float distance = length(lightPositions[i].xyz - fragPosition);
             attenuation = 1.0 / (distance * distance);
-            radiance = lightColors[i] * attenuation;
+            radiance = lightColors[i].xyz * attenuation;
 
-            if (hasShadow[i])
-                shadow = shadowCalculationPoint(i, fragPosition);
+            if (lightDirections[i].a == 1)
+                shadow = shadowCalculationPoint(shadowIndex, fragPosition);
         }
         else if (lightPositions[i].w == 0.0f)
         {
             // Directional light
-            L = -lightDirections[i];                    // NOTE: this SHOULD be put into the uniform already normalized so no need to do this step here
+            L = -lightDirections[i].xyz;                    // NOTE: this SHOULD be put into the uniform already normalized so no need to do this step here
             H = normalize(V + L);
             attenuation = 1.0f;
-            radiance = lightColors[i] * attenuation;
+            radiance = lightColors[i].xyz * attenuation;
 
-	        if (hasShadow[i])
+	        if (lightDirections[i].a == 1)
                 shadow = shadowCalculationCSM(-L, fragPosition);
         }
         else
         {
             // Spot light (TODO)
         }
+
+        // Bump up if shadow was used
+        if (lightColors[i].a == 1)
+            shadowIndex++;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   

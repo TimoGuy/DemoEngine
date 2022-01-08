@@ -74,7 +74,7 @@ private:
 // This indicates that a light is extractable
 // from this object. Will be placed in the lightobjects queue.
 //
-enum LightType { DIRECTIONAL, POINT, SPOT };
+enum class LightType { DIRECTIONAL, POINT, SPOT };
 class LightComponent
 {
 public:
