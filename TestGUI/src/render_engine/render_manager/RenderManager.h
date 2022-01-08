@@ -59,7 +59,25 @@ struct SkyboxParams
 	float cloudHeight = -50;
 	float perlinDim = 2;
 	float perlinTime = 0;
-	glm::mat3 nightSkyTransform;
+	glm::mat3 nightSkyTransform = glm::mat3(1.0f);
+};
+
+
+struct OpaqueRenderQueue
+{
+	std::vector<Mesh*> meshesToRender;
+	std::vector<glm::mat4> modelMatrices;
+	std::vector<const std::vector<glm::mat4>*> boneMatrixMemAddrs;
+};
+
+
+struct TransparentRenderQueue
+{
+	std::vector<size_t> commandingIndices;
+	std::vector<Mesh*> meshesToRender;
+	std::vector<glm::mat4> modelMatrices;
+	std::vector<const std::vector<glm::mat4>*> boneMatrixMemAddrs;
+	std::vector<float> distancesToCamera;
 };
 
 
@@ -113,10 +131,11 @@ public:
 
 	void setupSceneLights(GLuint programId);
 
-	void updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms);
+	void INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms);
 
-	// Transparent rendering
-	void INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix);
+	// Render Queues
+	void INTERNALaddMeshToOpaqueRenderQueue(Mesh* mesh, const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneTransforms);
+	void INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneTransforms);
 
 #ifdef _DEVELOP
 	// @PHYSX_VISUALIZATION
@@ -169,12 +188,12 @@ private:
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
-	// Transparency rendering stuff
-	std::vector<size_t> transparentCommandingIndices;
-	std::vector<Mesh*> transparentMeshesToRender;
-	std::vector<glm::mat4> transparentModelMatrices;
-	std::vector<const std::vector<glm::mat4>*> transparentBoneMatrixMemAddrs;
-	std::vector<float> transparentDistancesToCamera;
+	// Render Queues
+	GLuint INTERNALzPassShader;
+	GLuint zPrePassFBO;
+	Texture* zPrePassDepthTexture;
+	OpaqueRenderQueue opaqueRQ;
+	TransparentRenderQueue transparentRQ;
 
 #ifdef _DEVELOP
 	// ImGui Debug stuff

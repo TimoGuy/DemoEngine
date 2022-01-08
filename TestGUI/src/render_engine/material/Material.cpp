@@ -115,6 +115,11 @@ void Material::applyTextureUniforms()
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 }
 
+Texture* Material::getMainTexture()
+{
+	return albedoMap;
+}
+
 float* Material::getTilingPtr()
 {
 	return &tilingAndOffset.x;
@@ -163,6 +168,11 @@ void ZellyMaterial::applyTextureUniforms()
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
 }
 
+Texture* ZellyMaterial::getMainTexture()
+{
+	return nullptr;
+}
+
 
 //
 // LvlGridMaterial
@@ -185,4 +195,9 @@ void LvlGridMaterial::applyTextureUniforms()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gridTexture);
 	glUniform1i(glGetUniformLocation(myShaderId, "gridTexture"), 0);
+}
+
+Texture* LvlGridMaterial::getMainTexture()
+{
+	return (Texture*)Resources::getResource("texture;lvlGridTexture");
 }

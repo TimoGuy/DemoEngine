@@ -148,6 +148,23 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	loaded = true;
 }
 
+Texture2D::Texture2D(GLsizei width, GLsizei height, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT)
+{
+	glCreateTextures(GL_TEXTURE_2D, 1, &textureHandle);
+
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTextureStorage2D(textureHandle, 1, internalFormat, width, height);
+
+	if (pixels != nullptr)
+		glTextureSubImage2D(textureHandle, 0, 0, 0, width, height, format, pixelType, pixels);
+
+	loaded = true;
+}
+
 TextureCubemapFromFile::TextureCubemapFromFile(
 	const std::vector<ImageFile>& files,
 	GLenum toTexture,

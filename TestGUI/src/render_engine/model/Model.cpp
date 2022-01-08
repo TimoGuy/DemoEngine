@@ -7,6 +7,8 @@
 #include "animation/Animation.h"
 #include "../../utils/PhysicsUtils.h"
 #include "../camera/Camera.h"
+#include "../../mainloop/MainLoop.h"
+#include "../render_manager/RenderManager.h"
 
 
 Model::Model() { scene = nullptr; }
@@ -146,12 +148,12 @@ bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* 
 }
 
 
-void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView)
+void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
 {
-	for (unsigned int i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < meshes.size(); i++)
 	{
 		if (whichMeshesInView == nullptr || (*whichMeshesInView)[i])
-			meshes[i].render(modelMatrix * localTransform, shaderIdOverride, false);			// NOTE: inside this render function, transparent meshes are extracted and then placed into a queue at the rendermanager level. Then, they're rendered after all opaque materials have fimished!
+			meshes[i].render(modelMatrix * localTransform, shaderIdOverride, boneTransforms, renderStage);
 	}
 }
 
@@ -206,7 +208,7 @@ void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 	//
 	// Load in animations
 	//
-	for (unsigned int i = 0; i < animationNames.size(); i++)
+	for (size_t i = 0; i < animationNames.size(); i++)
 	{
 		Animation newAnimation(scene, this, animationNames[i]);
 		animations.push_back(newAnimation);
@@ -219,14 +221,14 @@ void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 void Model::processNode(aiNode* node, const aiScene* scene)
 {
 	// process all of the node's meshes (if any)
-	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 		meshes.push_back(processMesh(mesh, scene));
 	}
 
 	// Recursive part: continue going down the children
-	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	for (size_t i = 0; i < node->mNumChildren; i++)
 	{
 		processNode(node->mChildren[i], scene);
 	}
@@ -241,7 +243,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	glm::vec3* minAABBPoint = nullptr;
 	glm::vec3* maxAABBPoint = nullptr;
 
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	for (size_t i = 0; i < mesh->mNumVertices; i++)
 	{
 		Vertex vertex;
 		setVertexBoneDataToDefault(vertex);
@@ -299,7 +301,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	//
 	// Process indices
 	//
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	for (size_t i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
@@ -339,7 +341,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 void Model::setVertexBoneDataToDefault(Vertex& vertex)
 {
-	for (unsigned int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	for (size_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		vertex.boneIds[i] = -1;
 		vertex.boneWeights[i] = 0.0f;
@@ -359,7 +361,7 @@ void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
 
 	//boneId = 3;
 	int smallestBoneWeightIndex = -1;
-	for (unsigned int i = 0; i < MAX_BONE_INFLUENCE; i++)
+	for (size_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (vertex.boneIds[i] < 0)
 		{

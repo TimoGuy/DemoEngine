@@ -8,6 +8,7 @@
 
 #define MAX_BONE_INFLUENCE 4
 
+
 typedef unsigned int GLuint;
 
 //
@@ -19,6 +20,7 @@ struct RenderAABB
 	glm::vec3 extents;		// NOTE: this is half the size of the aabb box
 };
 
+
 struct Vertex
 {
 	glm::vec3 position;
@@ -29,13 +31,23 @@ struct Vertex
 	int numWeights = 0;
 };
 
+
+enum class RenderStage
+{
+	OVERRIDE,
+	Z_PASS,
+	OPAQUE_RENDER_QUEUE,
+	TRANSPARENT_RENDER_QUEUE
+};
+
+
 class Mesh
 {
 public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName);
 	~Mesh();
 
-	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, bool isTransparentQueue);
+	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 

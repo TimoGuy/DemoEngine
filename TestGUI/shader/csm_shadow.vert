@@ -6,6 +6,8 @@ layout (location=2) in vec2 uvCoordinate;
 layout (location=3) in ivec4 boneIds;
 layout (location=4) in vec4 boneWeights;
 
+out vec2 texCoord;
+
 uniform mat4 modelMatrix;
 
 const int MAX_BONES = 100;
@@ -44,6 +46,7 @@ void main()
 			normTransform = mat3(finalBoneMatrices[selectedBone] * boneWeights[i]);
 		}
 	}
-
+	
+	texCoord = uvCoordinate;
 	gl_Position = modelMatrix * boneTransform * vec4(vertexPosition, 1.0);
 }

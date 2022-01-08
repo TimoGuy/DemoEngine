@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "../../mainloop/MainLoop.h"
 #include "../render_manager/RenderManager.h"
+#include "../material/Texture.h"
 
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName)
@@ -53,37 +54,59 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, bool isTransparentQueue)
+void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
 {
-    bool shaderOverriden = (shaderIdOverride != 0);
+    bool needMainTexture = false;
 
-    // Apply material
-    if (!shaderOverriden)
+    // Apply stage's needs
+    if (renderStage == RenderStage::OVERRIDE)
+    {
+        needMainTexture = true;
+    }
+    else if (renderStage == RenderStage::Z_PASS)
+    {
+        needMainTexture = true;
+
+        if (material->isTransparent)
+        {
+            MainLoop::getInstance().renderManager->INTERNALaddMeshToTransparentRenderQueue(this, modelMatrix, boneTransforms);
+            return;  // Bail early; transparents aren't included in Z-pass
+        }
+        else
+        {
+            MainLoop::getInstance().renderManager->INTERNALaddMeshToOpaqueRenderQueue(this, modelMatrix, boneTransforms);
+        }
+    }
+    else if (renderStage == RenderStage::OPAQUE_RENDER_QUEUE || renderStage == RenderStage::TRANSPARENT_RENDER_QUEUE)
     {
         if (material != nullptr)
         {
-            // Ignore this if statement if it's actually the transparent renderqueue
-            if (!isTransparentQueue && material->isTransparent)
-            {
-                // Bail early so that rendermanager can take care of transparents l8r
-                MainLoop::getInstance().renderManager->INTERNALaddTransparentMeshToDeferRender(this, modelMatrix);
-                return;
-            }
             material->applyTextureUniforms();
-
-            // Apply shaderId
             shaderIdOverride = material->getShaderId();
+        }
+    }
+
+    // Apply main texture to pass if overriding
+    if (needMainTexture && material != nullptr)
+    {
+        Texture* mainTexture = material->getMainTexture();
+        if (mainTexture != nullptr)
+        {
+            glBindTextureUnit(0, mainTexture->getHandle());
+            glUniform1i(glGetUniformLocation(shaderIdOverride, "ubauTexture"), 0);      // @Hardcode: when abstracted shaders come, pls make sure this is gone!
         }
     }
 
     // Apply the model matrix
     glUniformMatrix4fv(glGetUniformLocation(shaderIdOverride, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    if (!shaderOverriden)
+    if (renderStage != RenderStage::OVERRIDE)           // @TODO: when abstracting the shaders, do this kinda logic in the shader instead!
         glUniformMatrix3fv(glGetUniformLocation(shaderIdOverride, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix)))));
 
-    //
+    // Apply bone transformations
+    if (boneTransforms != nullptr)
+        MainLoop::getInstance().renderManager->INTERNALupdateSkeletalBonesUBO(boneTransforms);
+
     // Draw the mesh
-    //
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);

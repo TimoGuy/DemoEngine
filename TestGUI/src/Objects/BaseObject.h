@@ -151,7 +151,7 @@ public:
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
 	void clearAllModels();
 
-	void render(const ViewFrustum* viewFrustum);
+	void render(const ViewFrustum* viewFrustum, GLuint zPassProgramId);
 	void renderShadow(GLuint programId);
 
 #ifdef _DEVELOP

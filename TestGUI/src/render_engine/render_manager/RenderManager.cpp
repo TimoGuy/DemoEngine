@@ -57,6 +57,7 @@ RenderManager::RenderManager()
 {
 	createShaderPrograms();
 
+	createHDRBuffer();
 	bool firstSkyMap = true;
 	for (size_t i = 0; i < numSkyMaps; i++)
 	{
@@ -72,7 +73,6 @@ RenderManager::RenderManager()
 		firstSkyMap = false;
 	}
 
-	createHDRBuffer();
 #ifdef _DEVELOP
 	createPickingBuffer();
 #endif
@@ -324,24 +324,27 @@ void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* li
 
 void RenderManager::createHDRBuffer()
 {
-	glGenFramebuffers(1, &hdrFBO);
+	//
+	// Create HDR framebuffer
+	//
+	glCreateFramebuffers(1, &hdrFBO);
 	// Create floating point color buffer
-	glGenTextures(1, &hdrColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, 0, GL_RGBA, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glCreateTextures(GL_TEXTURE_2D, 1, &hdrColorBuffer);
+	glTextureParameteri(hdrColorBuffer, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hdrColorBuffer, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hdrColorBuffer, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(hdrColorBuffer, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureStorage2D(hdrColorBuffer, 1, GL_RGBA16F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+	//glTextureSubImage2D(hdrColorBuffer, 0, 0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height, GL_RGBA, GL_FLOAT, NULL);
 	// Create depth buffer (renderbuffer)
 	glGenRenderbuffers(1, &hdrDepthRBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, hdrDepthRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	// Attach buffers
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrColorBuffer, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthRBO);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	glNamedFramebufferTexture(hdrFBO, GL_COLOR_ATTACHMENT0, hdrColorBuffer, 0);
+	glNamedFramebufferRenderbuffer(hdrFBO, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, hdrDepthRBO);
+	if (glCheckNamedFramebufferStatus(hdrFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (HDR Render Buffer)" << std::endl;
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//
 	// Create bloom pingpong buffers
@@ -370,10 +373,38 @@ void RenderManager::createHDRBuffer()
 			);
 		}
 	}
+
+	//
+	// Create Z-Prepass framebuffer
+	//
+	zPrePassDepthTexture =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			GL_DEPTH_COMPONENT24,
+			GL_DEPTH_COMPONENT,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+
+	glCreateFramebuffers(1, &zPrePassFBO);
+	glNamedFramebufferTexture(zPrePassFBO, GL_DEPTH_ATTACHMENT, zPrePassDepthTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
+
+	glDrawBuffer(GL_NONE);		// @Check: are these lines needed? I don't know if they are with DSA OpenGL
+	glReadBuffer(GL_NONE);
 }
 
 void RenderManager::destroyHDRBuffer()
 {
+	delete zPrePassDepthTexture;
+	glDeleteFramebuffers(1, &zPrePassFBO);
+
 	glDeleteTextures(1, &hdrColorBuffer);
 	glDeleteRenderbuffers(1, &hdrDepthRBO);
 	glDeleteFramebuffers(1, &hdrFBO);
@@ -394,6 +425,7 @@ void RenderManager::createShaderPrograms()
 	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	hudUIProgramId = *(GLuint*)Resources::getResource("shader;hudUI");
+	INTERNALzPassShader = *(GLuint*)Resources::getResource("shader;zPassShader");
 }
 
 void RenderManager::createFonts()
@@ -588,16 +620,7 @@ void RenderManager::render()
 
 #endif
 
-	//
-	// Render scene normally
-	//
-	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	renderScene();
-	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	renderUI();
 
@@ -743,6 +766,39 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 
 void RenderManager::renderScene()
 {
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	//
+	// Z-PASS and RENDER QUEUE SORTING
+	//
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, zPrePassFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(INTERNALzPassShader);
+	glUniformMatrix4fv(glGetUniformLocation(INTERNALzPassShader, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
+	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+	{
+		// NOTE: viewfrustum culling is handled at the mesh level with some magic. Peek in if ya wanna. -Timo
+		MainLoop::getInstance().renderObjects[i]->render(&cookedViewFrustum, INTERNALzPassShader);
+	}
+
+	glBlitNamedFramebuffer(
+		zPrePassFBO,
+		hdrFBO,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		GL_DEPTH_BUFFER_BIT,
+		GL_NEAREST
+	);
+
+	//
+	// Render scene normally
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+
 	//
 	// Draw skybox
 	//
@@ -826,17 +882,17 @@ void RenderManager::renderScene()
 
 	//
 	// OPAQUE RENDER QUEUE
-	// 
-	// (ALSO: pull out transparent objects here and defer them while rendering out the opaque ones lol)
-	// Draw objects but cull them
-	// (NOTE: the culling step doesn't happen in the shadowmaps)
 	//
-	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
-	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+	glDepthFunc(GL_EQUAL);		// NOTE: this is so that the Z prepass gets used and only fragments that are actually visible will get rendered
+	for (size_t i = 0; i < opaqueRQ.meshesToRender.size(); i++)
 	{
-		// NOTE: viewfrustum culling is handled at the mesh level with some magic. Peek in if ya wanna. -Timo
-		MainLoop::getInstance().renderObjects[i]->render(&cookedViewFrustum);
+		opaqueRQ.meshesToRender[i]->render(opaqueRQ.modelMatrices[i], 0, opaqueRQ.boneMatrixMemAddrs[i], RenderStage::OPAQUE_RENDER_QUEUE);
 	}
+	opaqueRQ.meshesToRender.clear();
+	opaqueRQ.modelMatrices.clear();
+	opaqueRQ.boneMatrixMemAddrs.clear();
+	glDepthFunc(GL_LEQUAL);
+
 
 	// @TEMP: this is bc the transparent render queue really needs backface culling!!!!!!!
 	glEnable(GL_CULL_FACE);
@@ -845,30 +901,29 @@ void RenderManager::renderScene()
 
 	//
 	// TRANSPARENT RENDER QUEUE
-	// 
-	// Take the developed transparent render queue and render it out!
 	//
 	std::sort(
-		transparentCommandingIndices.begin(),
-		transparentCommandingIndices.end(),
+		transparentRQ.commandingIndices.begin(),
+		transparentRQ.commandingIndices.end(),
 		[this](const size_t& index1, const size_t& index2)
 		{
-			return transparentDistancesToCamera[index1] > transparentDistancesToCamera[index2];
+			return transparentRQ.distancesToCamera[index1] > transparentRQ.distancesToCamera[index2];
 		}
 	);
-	for (size_t& index : transparentCommandingIndices)
+	for (size_t& index : transparentRQ.commandingIndices)
 	{
-		updateSkeletalBonesUBO(transparentBoneMatrixMemAddrs[index]);
-		transparentMeshesToRender[index]->render(transparentModelMatrices[index], 0, true);
+		transparentRQ.meshesToRender[index]->render(transparentRQ.modelMatrices[index], 0, transparentRQ.boneMatrixMemAddrs[index], RenderStage::TRANSPARENT_RENDER_QUEUE);
 	}
-	transparentCommandingIndices.clear();
-	transparentMeshesToRender.clear();
-	transparentModelMatrices.clear();
-	transparentBoneMatrixMemAddrs.clear();
-	transparentDistancesToCamera.clear();
+	transparentRQ.commandingIndices.clear();
+	transparentRQ.meshesToRender.clear();
+	transparentRQ.modelMatrices.clear();
+	transparentRQ.boneMatrixMemAddrs.clear();
+	transparentRQ.distancesToCamera.clear();
 
 	// End of main render queues: turn off face culling		@TEMP: for transparent render queue
 	glDisable(GL_CULL_FACE);
+
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 #ifdef _DEVELOP
 	//
@@ -941,7 +996,7 @@ void RenderManager::renderScene()
 
 		glm::mat4 position = glm::translate(glm::mat4(1.0f), positionVector);
 		glm::mat4 rotation = glm::toMat4(PhysicsUtils::getRotation(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()));
-		glm::mat4 scale = glm::scale(glm::mat4(1.0f), {100, 100, 100});
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), { 100, 100, 100 });
 		constexpr float divisor = 4.0f;
 		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
 
@@ -1088,7 +1143,7 @@ void RenderManager::setupSceneLights(GLuint programId)
 }
 
 
-void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms)
+void RenderManager::INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms)
 {
 	if (!repopulateAnimationUBO && boneTransforms == assignedBoneMatricesMemAddr)
 		return;
@@ -1103,15 +1158,22 @@ void RenderManager::updateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTra
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void RenderManager::INTERNALaddTransparentMeshToDeferRender(Mesh* mesh, const glm::mat4& modelMatrix)
+void RenderManager::INTERNALaddMeshToOpaqueRenderQueue(Mesh* mesh, const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneTransforms)
 {
-	transparentCommandingIndices.push_back(transparentMeshesToRender.size());
-	transparentMeshesToRender.push_back(mesh);
-	transparentModelMatrices.push_back(modelMatrix);
-	transparentBoneMatrixMemAddrs.push_back(assignedBoneMatricesMemAddr);		// NOTE: This is to save the bone matrix so that we can render in the transparent queue with it (maybe that was self explanatory baaaaka)
+	opaqueRQ.meshesToRender.push_back(mesh);
+	opaqueRQ.modelMatrices.push_back(modelMatrix);
+	opaqueRQ.boneMatrixMemAddrs.push_back(boneTransforms);
+}
+
+void RenderManager::INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneTransforms)
+{
+	transparentRQ.commandingIndices.push_back(transparentRQ.meshesToRender.size());
+	transparentRQ.meshesToRender.push_back(mesh);
+	transparentRQ.modelMatrices.push_back(modelMatrix);
+	transparentRQ.boneMatrixMemAddrs.push_back(boneTransforms);
 
 	float distanceToCamera = (cameraProjection * cameraView * modelMatrix * glm::vec4(0, 0, 0, 1)).z;
-	transparentDistancesToCamera.push_back(distanceToCamera);
+	transparentRQ.distancesToCamera.push_back(distanceToCamera);
 }
 
 void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)

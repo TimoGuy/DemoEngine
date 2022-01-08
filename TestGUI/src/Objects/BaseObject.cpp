@@ -4,6 +4,7 @@
 #include <random>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glad/glad.h>
 
 #include "../mainloop/MainLoop.h"
 #include "../utils/PhysicsUtils.h"
@@ -11,6 +12,7 @@
 #include "../render_engine/camera/Camera.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/model/animation/Animator.h"
+#include "../render_engine/resources/Resources.h"
 
 
 //
@@ -257,7 +259,7 @@ void RenderComponent::clearAllModels()
 	modelsWithMetadata.clear();
 }
 
-void RenderComponent::render(const ViewFrustum* viewFrustum)								// @Copypasta
+void RenderComponent::render(const ViewFrustum* viewFrustum, GLuint zPassProgramId)								// @Copypasta
 {
 #ifdef _DEVELOP
 	refreshResources();
@@ -273,12 +275,11 @@ void RenderComponent::render(const ViewFrustum* viewFrustum)								// @Copypast
 		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform(), viewFrustum, whichMeshesInView))
 			continue;
 		
+		std::vector<glm::mat4>* boneTransforms = nullptr;
 		if (mwmd.modelAnimator != nullptr)
-		{
-			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
-			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-		}
-		mwmd.model->render(baseObject->getTransform(), 0, &whichMeshesInView);
+			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
+
+		mwmd.model->render(baseObject->getTransform(), zPassProgramId, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
 	}
 }
 
@@ -291,12 +292,11 @@ void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
 	{
 		const ModelWithMetadata& mwmd = modelsWithMetadata[i];
+		std::vector<glm::mat4>* boneTransforms = nullptr;
 		if (mwmd.modelAnimator != nullptr)
-		{
-			const std::vector<glm::mat4>* boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
-			MainLoop::getInstance().renderManager->updateSkeletalBonesUBO(boneTransforms);
-		}
-		mwmd.model->render(baseObject->getTransform(), programId, nullptr);
+			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
+
+		mwmd.model->render(baseObject->getTransform(), programId, nullptr, boneTransforms, RenderStage::OVERRIDE);
 	}
 }
 
