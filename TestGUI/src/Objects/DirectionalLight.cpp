@@ -65,7 +65,7 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	j["lightComponent"] = lightComponent->savePropertiesToJson();
 
 	j["color"] = { lightComponent->color.r, lightComponent->color.g, lightComponent->color.b };
-	j["color_multiplier"] = lightComponent->colorIntensity;
+	j["color_multiplier"] = ((DirectionalLightLight*)lightComponent)->maxColorIntensity;
 
 	return j;
 }
