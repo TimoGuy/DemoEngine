@@ -22,7 +22,7 @@
 
 
 #define FULLSCREEN_MODE 0
-#define V_SYNC 1
+#define V_SYNC 0
 
 
 void createWindow(const char* windowName);
@@ -115,8 +115,13 @@ void MainLoop::initialize()
 	setupImGui();
 #endif
 
+	int maxUBOSize = 0;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
+
 	std::cout << "Graphics Renderer:\t" << glGetString(GL_RENDERER) << std::endl;
-	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl << std::endl;
+	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl;
+	std::cout << "Max UBO Size:\t\t" << maxUBOSize << std::endl;
+	std::cout << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);

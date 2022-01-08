@@ -83,7 +83,7 @@ struct TransparentRenderQueue
 
 struct RenderLightInformation
 {
-	static constexpr int MAX_LIGHTS = 256;
+	static constexpr int MAX_LIGHTS = 1024;
 
 	glm::vec4 lightPositions[MAX_LIGHTS];
 	glm::vec4 lightDirections[MAX_LIGHTS];		// .a contains if has shadow or not

@@ -25,7 +25,7 @@ uniform sampler2D brdfLUT;
 uniform mat3 sunSpinAmount;
 
 // Lights
-const int MAX_LIGHTS = 256;
+const int MAX_LIGHTS = 1024;
 layout (std140, binding = 2) uniform LightInformation
 {
     vec4 lightPositions[MAX_LIGHTS];
