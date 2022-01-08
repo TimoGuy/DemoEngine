@@ -395,9 +395,6 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(zPrePassFBO, GL_DEPTH_ATTACHMENT, zPrePassDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
-
-	glDrawBuffer(GL_NONE);		// @Check: are these lines needed? I don't know if they are with DSA OpenGL
-	glReadBuffer(GL_NONE);
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -617,7 +614,6 @@ void RenderManager::render()
 		DEBUGdoPicking = false;
 	}
 	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
-
 #endif
 
 	renderScene();
