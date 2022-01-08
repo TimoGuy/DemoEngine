@@ -336,7 +336,7 @@ void main()
         }
 
         // Bump up if shadow was used
-        if (lightColors[i].a == 1)
+        if (lightDirections[i].a == 1)
             shadowIndex++;
 
         // Cook-Torrance BRDF
