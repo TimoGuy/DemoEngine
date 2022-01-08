@@ -220,7 +220,8 @@ vec3 gridSamplingDisk[20] = vec3[]          // TODO: optimize this sampling disk
    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
 
-float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
+
+float shadowCalculationPoint(int lightIndex, int shadowIndex, vec3 fragPosition)
 {
     vec3 fragToLight = fragPosition - lightPositions[lightIndex].xyz;
     float currentDepth = length(fragToLight);
@@ -230,18 +231,18 @@ float shadowCalculationPoint(int lightIndex, vec3 fragPosition)
     float bias = 0.15;
     int samples = 20;
     float viewDistance = length(viewPosition.xyz - fragPosition);
-    float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[lightIndex])) / 25.0;
+    float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[shadowIndex])) / 25.0;
     for (int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(pointLightShadowMaps[lightIndex], fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= pointLightShadowFarPlanes[lightIndex];   // undo mapping [0;1]
+        float closestDepth = texture(pointLightShadowMaps[shadowIndex], fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= pointLightShadowFarPlanes[shadowIndex];   // undo mapping [0;1]
         if (currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
         
     // display closestDepth as debug (to visualize depth cubemap)
-    // FragColor = vec4(vec3(closestDepth / pointLightShadowFarPlanes[lightIndex]), 1.0);    
+    // FragColor = vec4(vec3(closestDepth / pointLightShadowFarPlanes[shadowIndex]), 1.0);    
         
     return shadow;
 }
@@ -347,13 +348,12 @@ void main()
 
     // reflectance equation
     vec3 Lo = vec3(0.0);
-    float shadow = 0.0;
     int shadowIndex = 0;
     for(int i = 0; i < numLightsToRender.x; ++i)      // NOTE: Change this depending on the number of lights being looped over
     {
         // calculate per-light radiance
         vec3 L, H, radiance;
-        float attenuation;//, shadow = 0.0;
+        float attenuation, shadow = 0.0;
 
         if (length(lightDirections[i].xyz) == 0.0f)
         {
@@ -365,7 +365,7 @@ void main()
             radiance = lightColors[i].xyz * attenuation;
 
             if (lightDirections[i].a == 1)
-                shadow = shadowCalculationPoint(shadowIndex, fragPosition);
+                shadow = shadowCalculationPoint(i, shadowIndex, fragPosition);
         }
         else if (lightPositions[i].w == 0.0f)
         {
