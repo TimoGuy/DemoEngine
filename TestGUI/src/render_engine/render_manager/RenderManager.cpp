@@ -1944,10 +1944,7 @@ void RenderManager::INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>*
 	assignedBoneMatricesMemAddr = boneTransforms;
 
 	glBindBuffer(GL_UNIFORM_BUFFER, skeletalAnimationUBO);
-	for (size_t i = 0; i < boneTransforms->size(); i++)
-	{
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &(*boneTransforms)[i]);
-	}
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4x4) * boneTransforms->size(), &(*boneTransforms)[0]);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -1990,18 +1987,16 @@ void RenderManager::updateLightInformationUBO()
 	lightInformation.numLightsToRender = glm::ivec4(numLights, 0, 0, 0);
 
 	// Stuff into the UBO
-	/*static*/ const GLintptr lightPosOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 0;
-	/*static*/ const GLintptr lightDirOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 1;
-	/*static*/ const GLintptr lightColOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 2;
-	/*static*/ const GLintptr viewPosOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 3;
-	/*static*/ const GLintptr numLightsOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 3 + sizeof(glm::vec4);
+	const GLintptr lightPosOffset =		sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 0;
+	const GLintptr lightDirOffset =		sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 1;
+	const GLintptr lightColOffset =		sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 2;
+	const GLintptr viewPosOffset =		sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 3;
+	const GLintptr numLightsOffset =	sizeof(glm::vec4) * RenderLightInformation::MAX_LIGHTS * 3 + sizeof(glm::vec4);
+
 	glBindBuffer(GL_UNIFORM_BUFFER, lightInformationUBO);
-	for (size_t i = 0; i < RenderLightInformation::MAX_LIGHTS; i++)
-	{
-		glBufferSubData(GL_UNIFORM_BUFFER, lightPosOffset + i * sizeof(glm::vec4),		sizeof(glm::vec4),		&lightInformation.lightPositions[i]);
-		glBufferSubData(GL_UNIFORM_BUFFER, lightDirOffset + i * sizeof(glm::vec4),		sizeof(glm::vec4),		&lightInformation.lightDirections[i]);
-		glBufferSubData(GL_UNIFORM_BUFFER, lightColOffset + i * sizeof(glm::vec4),		sizeof(glm::vec4),		&lightInformation.lightColors[i]);
-	}
+	glBufferSubData(GL_UNIFORM_BUFFER, lightPosOffset, sizeof(glm::vec4) * numLights, &lightInformation.lightPositions[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, lightDirOffset, sizeof(glm::vec4) * numLights, &lightInformation.lightDirections[0]);
+	glBufferSubData(GL_UNIFORM_BUFFER, lightColOffset, sizeof(glm::vec4) * numLights, &lightInformation.lightColors[0]);
 	glBufferSubData(GL_UNIFORM_BUFFER, viewPosOffset, sizeof(glm::vec4), glm::value_ptr(lightInformation.viewPosition));
 	glBufferSubData(GL_UNIFORM_BUFFER, numLightsOffset, sizeof(lightInformation.numLightsToRender), &lightInformation.numLightsToRender);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);

@@ -21,7 +21,9 @@
 
 #include "../utils/PhysicsUtils.h"
 
-// NOTE: if 0, then use close fit shadows
+// NOTE: if 0, then use close fit shadows; if 1, then use stable fit
+// NOTE: So bc there's a day night cycle, I think it'd be better if we used close fit. -Timo (2022-01-09)
+// RESPONSE: Hmmm, so after looking at close fit shadows swimming again, I think stable fit is still better... umm, but @TODO look at this again. -Timo (2022-01-09, 2:54p)
 #define STABLE_FIT_CSM_SHADOWS 1
 
 static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
@@ -350,17 +352,9 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxZ *= zMult;
 	}
 
-	std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
+	//std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
 
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-
-	// @DEBUG: Tanjiro centers himself onto the center of the view frustum (close fit)
-	if (doThis)
-	{
-		doThis = false;
-		glm::mat4& trans = MainLoop::getInstance().lightObjects[0]->baseObject->getTransform();
-		trans = glm::translate(trans, glm::vec3(glm::vec4(center, 1.0f)) - PhysicsUtils::getPosition(trans));
-	}
 #endif
 
 	return lightProjection * lightView;
