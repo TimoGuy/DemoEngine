@@ -176,16 +176,9 @@ void PlayerCharacter::processMovement()
 #endif
 
 	//
-	// @Incomplete: Endgame is we want the player character to detect whether they're indoors or not
-	//
 	// Change whether using indoor or outdoor camera based off scroll wheel
 	//
-	//static bool prevTransformPressed = false;
 	static float cameraTransitionRaw = (float)useIndoorCamera;
-	//if (!prevTransformPressed && InputManager::getInstance().transformPressed)
-	//	useIndoorCamera = !useIndoorCamera;
-	//prevTransformPressed = InputManager::getInstance().transformPressed;
-
 	const glm::vec3 playerPos = PhysicsUtils::getPosition(getTransform());
 
 	{

@@ -115,7 +115,8 @@ void MainLoop::initialize()
 	setupImGui();
 #endif
 
-	int maxUBOSize, maxTexSize, maxArrayLayers, max3DTexSize, maxTexUnits;
+	int maxUBOBinds, maxUBOSize, maxTexSize, maxArrayLayers, max3DTexSize, maxTexUnits;
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxUBOBinds);
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUBOSize);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
 	glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArrayLayers);
@@ -125,6 +126,7 @@ void MainLoop::initialize()
 	std::cout << "Graphics Renderer:\t" << glGetString(GL_RENDERER) << std::endl;
 	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl;
 	std::cout << std::endl;
+	std::cout << "GL_MAX_UNIFORM_BUFFER_BINDINGS:\t\t" << maxUBOBinds << std::endl;
 	std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE:\t\t" << maxUBOSize << std::endl;
 	std::cout << "GL_MAX_TEXTURE_SIZE:\t\t\t" << maxTexSize << std::endl;
 	std::cout << "GL_MAX_ARRAY_TEXTURE_LAYERS:\t\t" << maxArrayLayers << std::endl;
