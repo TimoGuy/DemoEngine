@@ -69,6 +69,9 @@ public:
 	std::map<std::string, Material*> bottleModelMaterials;
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
+	glm::vec3 cameraPosition;
+	float cameraSpeedMultiplier = 10.0f;
+
 	float currentMaxCamDistance = 0;
 	float maxCamDistanceHoldTime = 1.0f, maxCamDistanceHoldTimer = 0;
 	float maxCamDistanceShiftSpeed = 1.0f;

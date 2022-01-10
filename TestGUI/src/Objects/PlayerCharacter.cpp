@@ -221,8 +221,17 @@ void PlayerCharacter::processMovement()
 	//
 	// Update playercam pos
 	//
-	const glm::vec3 cameraPointingToPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
-	float cameraDistance = camOffset.z;
+	{
+		glm::vec3 cameraTargetPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
+		const float lengthToCamTarget = glm::abs(cameraTargetPosition.y - cameraPosition.y);
+		cameraTargetPosition.y =
+			PhysicsUtils::moveTowards(
+				cameraPosition.y,
+				cameraTargetPosition.y,
+				lengthToCamTarget * cameraSpeedMultiplier * MainLoop::getInstance().deltaTime
+			);
+		cameraPosition = cameraTargetPosition;
+	}
 
 	// Setup camera orientation
 	glm::quat lookingRotation(glm::radians(glm::vec3(lookingInput.y * 85.0f, -lookingInput.x, 0.0f)));
@@ -233,7 +242,8 @@ void PlayerCharacter::processMovement()
 		physx::PxRaycastBuffer hitInfo;
 		const float hitDistancePadding = 0.75f;
 
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPointingToPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
+		float cameraDistance = camOffset.z;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
 			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
@@ -289,7 +299,7 @@ void PlayerCharacter::processMovement()
 
 	// Setup camera position based off distance
 	const glm::vec3 depthOffset(0, 0, currentMaxCamDistance);
-	playerCamera.position = cameraPointingToPosition + lookingRotation * depthOffset;
+	playerCamera.position = cameraPosition + lookingRotation * depthOffset;
 
 	//
 	// Update movement
@@ -763,6 +773,7 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::Text("Virtual Camera");
+	ImGui::DragFloat("Camera Speed Multiplier", &cameraSpeedMultiplier);
 	ImGui::DragFloat3("VirtualCamPosition", &playerCamOffset[0]);
 	ImGui::DragFloat3("VirtualCamPosition (Indoor)", &playerCamOffsetIndoor[0]);
 	ImGui::DragFloat2("Looking Input", &lookingInput[0]);
