@@ -312,8 +312,7 @@ void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const s
 	if (!isUnloading)
 	{
 		Material* material =
-			new Material(
-				*(GLuint*)Resources::getResource("shader;pbr"),
+			new PBRMaterial(
 				(Texture*)Resources::getResource(albedoName),
 				(Texture*)Resources::getResource(normalName),
 				(Texture*)Resources::getResource(metallicName),

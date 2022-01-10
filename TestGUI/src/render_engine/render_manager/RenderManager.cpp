@@ -1699,72 +1699,73 @@ void RenderManager::renderImGuiContents()
 
 	//
 	// Materials manager window
+	// @NOTE: bc of how materials are created, I decided to remove this manager window. Maybe in the future we can have a different one that has insertable textures and whatnot eh.
 	//
 	if (showMaterialsManager)
 	{
-		if (ImGui::Begin("Materials Manager", &showMaterialsManager))
-		{
-			//
-			// List all materials
-			//
-			//std::map<std::string, void*>::iterator it;
-			//static std::string selectedKey;
-			//std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
-			//if (ImGui::BeginListBox("##listbox Current Materials", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
-			//{
-			//	int index = 0;
-			//	for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
-			//	{
-			//		const bool isSelected = (currentSelectLoadedResource == index);
-			//		if (ImGui::Selectable(
-			//			(it->first).c_str(),
-			//			isSelected
-			//		))
-			//		{
-			//			selectedKey = it->first;
-			//			currentSelectLoadedResource = index;
-			//		}
-			//
-			//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			//		if (isSelected)
-			//			ImGui::SetItemDefaultFocus();
-			//	}
-			//	ImGui::EndListBox();
-			//}
+		//if (ImGui::Begin("Materials Manager", &showMaterialsManager))
+		//{
+		//	//
+		//	// List all materials
+		//	//
+		//	//std::map<std::string, void*>::iterator it;
+		//	//static std::string selectedKey;
+		//	//std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
+		//	//if (ImGui::BeginListBox("##listbox Current Materials", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
+		//	//{
+		//	//	int index = 0;
+		//	//	for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
+		//	//	{
+		//	//		const bool isSelected = (currentSelectLoadedResource == index);
+		//	//		if (ImGui::Selectable(
+		//	//			(it->first).c_str(),
+		//	//			isSelected
+		//	//		))
+		//	//		{
+		//	//			selectedKey = it->first;
+		//	//			currentSelectLoadedResource = index;
+		//	//		}
+		//	//
+		//	//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+		//	//		if (isSelected)
+		//	//			ImGui::SetItemDefaultFocus();
+		//	//	}
+		//	//	ImGui::EndListBox();
+		//	//}
 
-			//
-			// Find if a material is being selected
-			//
-			Material* materialSelected = nullptr;
-			std::string materialName;
-			if (currentSelectLoadedResource != -1)
-			{
-				auto iterator = Resources::getResourceMap().begin();
-				std::advance(iterator, currentSelectLoadedResource);
+		//	//
+		//	// Find if a material is being selected
+		//	//
+		//	Material* materialSelected = nullptr;
+		//	std::string materialName;
+		//	if (currentSelectLoadedResource != -1)
+		//	{
+		//		auto iterator = Resources::getResourceMap().begin();
+		//		std::advance(iterator, currentSelectLoadedResource);
 
-				// Check if starts with "material;"
-				if (iterator->first.find("material;") == 0)
-				{
-					materialName = iterator->first;
-					materialSelected = (Material*)iterator->second;
-				}
-			}
+		//		// Check if starts with "material;"
+		//		if (iterator->first.find("material;") == 0)
+		//		{
+		//			materialName = iterator->first;
+		//			materialSelected = (Material*)iterator->second;
+		//		}
+		//	}
 
-			//
-			// Display material properties!!!
-			//
-			if (materialSelected == nullptr)
-			{
-				ImGui::Text("No material is currently selected from Loaded Resources");
-			}
-			else
-			{
-				ImGui::Text((materialName + " -- Properties").c_str());
-				ImGui::DragFloat2("Tiling", materialSelected->getTilingPtr(), 0.05f);
-				ImGui::DragFloat2("Offset", materialSelected->getOffsetPtr(), 0.05f);
-			}
-		}
-		ImGui::End();
+		//	//
+		//	// Display material properties!!!
+		//	//
+		//	if (materialSelected == nullptr)
+		//	{
+		//		ImGui::Text("No material is currently selected from Loaded Resources");
+		//	}
+		//	else
+		//	{
+		//		ImGui::Text((materialName + " -- Properties").c_str());
+		//		ImGui::DragFloat2("Tiling", materialSelected->getTilingPtr(), 0.05f);
+		//		ImGui::DragFloat2("Offset", materialSelected->getOffsetPtr(), 0.05f);
+		//	}
+		//}
+		//ImGui::End();
 	}
 
 	//

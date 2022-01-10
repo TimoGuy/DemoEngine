@@ -12,6 +12,9 @@
 
 bool Material::resetFlag = false;
 
+Material::Material(GLuint myShaderId, float fadeAlpha, bool isTransparent) : myShaderId(myShaderId), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
+
+
 //
 // Helper funks
 //
@@ -54,22 +57,25 @@ void setupShader(GLuint shaderId)
 
 
 //
-// Material
+// PBR Material
 //
-Material::Material(unsigned int myShaderId, Texture* albedoMap, Texture* normalMap, Texture* metallicMap, Texture* roughnessMap, float fadeAlpha, glm::vec4 offsetTiling)
+PBRMaterial::PBRMaterial(
+	Texture* albedoMap,
+	Texture* normalMap,
+	Texture* metallicMap,
+	Texture* roughnessMap,
+	float fadeAlpha,
+	glm::vec4 offsetTiling) :
+		Material(*(GLuint*)Resources::getResource("shader;pbr"), fadeAlpha, (fadeAlpha != 1.0f))
 {
-	Material::myShaderId = myShaderId;
-	Material::albedoMap = albedoMap;
-	Material::normalMap = normalMap;
-	Material::metallicMap = metallicMap;
-	Material::roughnessMap = roughnessMap;
-	Material::fadeAlpha = fadeAlpha;
-	Material::tilingAndOffset = offsetTiling;
-
-	isTransparent = (fadeAlpha != 1.0f);
+	PBRMaterial::albedoMap = albedoMap;
+	PBRMaterial::normalMap = normalMap;
+	PBRMaterial::metallicMap = metallicMap;
+	PBRMaterial::roughnessMap = roughnessMap;
+	PBRMaterial::tilingAndOffset = offsetTiling;
 }
 
-void Material::applyTextureUniforms()
+void PBRMaterial::applyTextureUniforms()
 {
 	setupShader(myShaderId);
 
@@ -115,24 +121,9 @@ void Material::applyTextureUniforms()
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 }
 
-Texture* Material::getMainTexture()
+Texture* PBRMaterial::getMainTexture()
 {
 	return albedoMap;
-}
-
-float* Material::getTilingPtr()
-{
-	return &tilingAndOffset.x;
-}
-
-float* Material::getOffsetPtr()
-{
-	return &tilingAndOffset.z;
-}
-
-void Material::setTilingAndOffset(glm::vec4 tilingAndOffset)
-{
-	Material::tilingAndOffset = tilingAndOffset;
 }
 
 
@@ -140,10 +131,9 @@ void Material::setTilingAndOffset(glm::vec4 tilingAndOffset)
 // ZellyMaterial
 //
 ZellyMaterial::ZellyMaterial(glm::vec3 color) :
-	Material(*(unsigned int*)Resources::getResource("shader;zelly"), 0, 0, 0, 0, 0.0f, glm::vec4(0.0f))
+	Material(*(GLuint*)Resources::getResource("shader;zelly"), 0.0f, true)
 {
 	ZellyMaterial::color = color;
-	isTransparent = true;
 }
 
 void ZellyMaterial::applyTextureUniforms()
@@ -178,10 +168,10 @@ Texture* ZellyMaterial::getMainTexture()
 // LvlGridMaterial
 //
 LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
-	Material(*(unsigned int*)Resources::getResource("shader;lvlGrid"), 0, 0, 0, 0, 0.0f, glm::vec4(50, 50, 0, 0))
+	Material(*(GLuint*)Resources::getResource("shader;lvlGrid"), 0.0f, true)
 {
 	LvlGridMaterial::color = color;
-	isTransparent = true;
+	LvlGridMaterial::tilingAndOffset = glm::vec4(50, 50, 0, 0);
 }
 
 void LvlGridMaterial::applyTextureUniforms()
@@ -191,9 +181,7 @@ void LvlGridMaterial::applyTextureUniforms()
 	glUniform3fv(glGetUniformLocation(myShaderId, "gridColor"), 1, &color.x);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 
-	GLuint gridTexture = ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle();
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, gridTexture);
+	glBindTextureUnit(0, ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle());
 	glUniform1i(glGetUniformLocation(myShaderId, "gridTexture"), 0);
 }
 

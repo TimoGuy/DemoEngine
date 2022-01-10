@@ -118,9 +118,9 @@ void PlayerCharacter::refreshResources()
 		materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
 		materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
 
-		materials["Sweater"]->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
-		materials["Vest"]->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
-		materials["Shoes"]->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
+		((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
+		((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
+		((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
 		model->setMaterials(materials);
 	}
