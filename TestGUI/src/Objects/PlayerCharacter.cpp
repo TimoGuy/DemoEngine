@@ -176,15 +176,12 @@ void PlayerCharacter::processMovement()
 #endif
 
 	//
-	// Change whether using indoor or outdoor camera based off scroll wheel
+	// Change whether using indoor or outdoor camera based off environmental cues (ceiling height)
 	//
-	static float cameraTransitionRaw = (float)useIndoorCamera;
 	const glm::vec3 playerPos = PhysicsUtils::getPosition(getTransform());
-
+	static float cameraTransitionRaw = (float)useIndoorCamera;
 	{
-		//
 		// Check if indoors if ceiling is low
-		//
 		const physx::PxCapsuleGeometry capsuleGeom(indoorOverlapCheckRadius, indoorOverlapCheckHeight);
 		const physx::PxTransform capsulePose(
 			PhysicsUtils::toPxVec3(playerPos + glm::vec3(0, indoorOverlapCheckOffY, 0)),
@@ -652,6 +649,8 @@ void PlayerCharacter::processAnimation()
 	if (MainLoop::getInstance().playMode)
 #endif
 	{
+		const glm::mat4 globalTransform = getTransform() * model->localTransform;
+
 		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime || backAttachment.isFirstTime)
 		{
 			//
@@ -659,25 +658,25 @@ void PlayerCharacter::processAnimation()
 			//
 			std::vector<glm::vec3> rightSideburnPoints;
 			const glm::vec4 neutralPosition(0, 0, 0, 1);
-			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
-			rightSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn2.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn3.R").globalTransformation * neutralPosition);
+			rightSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn4.R").globalTransformation * neutralPosition);
 			rightSideburn.initializePoints(rightSideburnPoints);
 
 			std::vector<glm::vec3> leftSideburnPoints;
-			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
-			leftSideburnPoints.push_back(model->localTransform * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn2.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn3.L").globalTransformation * neutralPosition);
+			leftSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
 			leftSideburn.initializePoints(leftSideburnPoints);
 
 			std::vector<glm::vec3> backAttachmentPoints;
-			backAttachmentPoints.push_back(model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			backAttachmentPoints.push_back(model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
+			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
 			backAttachment.initializePoints(backAttachmentPoints);
 			backAttachment.limitTo45degrees = true;
-			
+
 			rightSideburn.isFirstTime = false;
 			leftSideburn.isFirstTime = false;
 			backAttachment.isFirstTime = false;
@@ -688,10 +687,10 @@ void PlayerCharacter::processAnimation()
 			// Just reset/lock the first bone
 			//
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
-			leftSideburn.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-			rightSideburn.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			backAttachment.setPointPosition(0, model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			
+			leftSideburn.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			rightSideburn.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			backAttachment.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
 			backAttachment.simulateRope(850.0f);
@@ -699,7 +698,7 @@ void PlayerCharacter::processAnimation()
 			//
 			// Do ik calculations for sideburns
 			//
-			const glm::mat4 inverseRenderTransform = glm::inverse(model->localTransform);
+			const glm::mat4 inverseRenderTransform = glm::inverse(globalTransform);
 
 			const glm::vec3 r0 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(0), 1);
 			const glm::vec3 r1 = inverseRenderTransform * glm::vec4(rightSideburn.getPoint(1), 1);
@@ -736,17 +735,15 @@ void PlayerCharacter::processAnimation()
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(b1 - b0));
 			animator.setBoneTransformation("Back Attachment", glm::translate(glm::mat4(1.0f), b0) * glm::toMat4(rotation * rotation180));
 		}
+
+		//
+		// Calculate the bottle transformation matrix
+		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
+		if (animationState == 3 || animationState == 4 || animationState == 5)
+			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+		else
+			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 	}
-
-	//
-	// Calculate the bottle transformation matrix
-	// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-	if (animationState == 3 || animationState == 4 || animationState == 5)
-		bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
-	else
-		bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
-
-	prevIsGrounded = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded();
 }
 
 void PlayerCharacter::preRenderUpdate()
@@ -840,7 +837,7 @@ void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
 	}
 }
 
-void RopeSimulation::setPointPosition(size_t index, const glm::vec3& position)
+void RopeSimulation::setPointPosition(size_t index, float trickleRate, const glm::vec3& position)
 {
 	glm::vec3 deltaMovement = position - points[index];
 	points[index] = position;
@@ -848,7 +845,9 @@ void RopeSimulation::setPointPosition(size_t index, const glm::vec3& position)
 	// NOTE: this is for alleviating glitchyness when point moves too much.
 	// This code propogates the movement from this new set operation to the other points of the rope
 	for (size_t i = 0; i < prevPoints.size(); i++)
-		prevPoints[i] += deltaMovement;
+	{
+		prevPoints[i] += deltaMovement * glm::pow(trickleRate, (float)i);
+	}
 }
 
 void RopeSimulation::simulateRope(float gravityMultiplier)

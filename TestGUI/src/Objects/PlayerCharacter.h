@@ -15,7 +15,7 @@ class RopeSimulation
 {
 public:
 	void initializePoints(const std::vector<glm::vec3>& points);
-	void setPointPosition(size_t index, const glm::vec3& position);
+	void setPointPosition(size_t index, float trickleRate, const glm::vec3& position);
 
 	void simulateRope(float gravityMultiplier);
 
@@ -125,7 +125,6 @@ private:
 	float characterLeanValue = 0.0f;		// [-1, 1], where 0 is no lean
 	bool isMoving = false;
 	bool waitUntilAnimationFinished = false;
-	bool prevIsGrounded;
 
 	bool lockFacingDirection = false;
 	bool lockJumping = false;
