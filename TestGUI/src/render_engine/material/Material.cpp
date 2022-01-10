@@ -12,7 +12,7 @@
 
 bool Material::resetFlag = false;
 
-Material::Material(GLuint myShaderId, float fadeAlpha, bool isTransparent) : myShaderId(myShaderId), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
+Material::Material(GLuint myShaderId, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShaderId(myShaderId), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
 
 
 //
@@ -66,7 +66,7 @@ PBRMaterial::PBRMaterial(
 	Texture* roughnessMap,
 	float fadeAlpha,
 	glm::vec4 offsetTiling) :
-		Material(*(GLuint*)Resources::getResource("shader;pbr"), fadeAlpha, (fadeAlpha != 1.0f))
+		Material(*(GLuint*)Resources::getResource("shader;pbr"), 1.0f, fadeAlpha, (fadeAlpha != 1.0f))
 {
 	PBRMaterial::albedoMap = albedoMap;
 	PBRMaterial::normalMap = normalMap;
@@ -131,7 +131,7 @@ Texture* PBRMaterial::getMainTexture()
 // ZellyMaterial
 //
 ZellyMaterial::ZellyMaterial(glm::vec3 color) :
-	Material(*(GLuint*)Resources::getResource("shader;zelly"), 0.0f, true)
+	Material(*(GLuint*)Resources::getResource("shader;zelly"), 1.0f, 0.0f, true)
 {
 	ZellyMaterial::color = color;
 }
@@ -168,7 +168,7 @@ Texture* ZellyMaterial::getMainTexture()
 // LvlGridMaterial
 //
 LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
-	Material(*(GLuint*)Resources::getResource("shader;lvlGrid"), 0.0f, true)
+	Material(*(GLuint*)Resources::getResource("shader;lvlGrid"), 1.0f, 0.0f, true)
 {
 	LvlGridMaterial::color = color;
 	LvlGridMaterial::tilingAndOffset = glm::vec4(50, 50, 0, 0);

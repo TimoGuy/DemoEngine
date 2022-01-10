@@ -761,6 +761,15 @@ void PlayerCharacter::preRenderUpdate()
 	processMovement();
 	processActions();
 	processAnimation();
+
+	//
+	// Process ditherAlpha
+	//
+	float lengthFromCamera = glm::length(MainLoop::getInstance().camera.position - PhysicsUtils::getPosition(getTransform()));
+	for (auto it = materials.begin(); it != materials.end(); it++)
+	{
+		it->second->ditherAlpha = (lengthFromCamera - 1.0f) * 0.25f;
+	}
 }
 
 #ifdef _DEVELOP

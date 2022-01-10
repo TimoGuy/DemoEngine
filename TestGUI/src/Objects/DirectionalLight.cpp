@@ -194,12 +194,7 @@ void DirectionalLightLight::renderPassShadowMap()
 
 	// Setup UBOs
 	const auto lightMatrices = getLightSpaceMatrices();
-	glBindBuffer(GL_UNIFORM_BUFFER, matricesUBO);
-	for (size_t i = 0; i < lightMatrices.size(); i++)
-	{
-		glBufferSubData(GL_UNIFORM_BUFFER, i * sizeof(glm::mat4x4), sizeof(glm::mat4x4), &lightMatrices[i]);
-	}
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glNamedBufferSubData(matricesUBO, 0, sizeof(glm::mat4x4) * lightMatrices.size(), &lightMatrices[0]);
 
 	// Render depth of scene
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);

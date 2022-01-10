@@ -10,7 +10,7 @@ class Texture;
 class Material
 {
 public:
-	Material(GLuint myShaderId, float fadeAlpha = 1.0f, bool isTransparent = false);
+	Material(GLuint myShaderId, float ditherAlpha, float fadeAlpha, bool isTransparent);
 
 	virtual void applyTextureUniforms() = 0;
 	virtual Texture* getMainTexture() = 0;
@@ -18,6 +18,7 @@ public:
 
 	static bool resetFlag;
 
+	float ditherAlpha;
 	float fadeAlpha;
 	bool isTransparent;
 
