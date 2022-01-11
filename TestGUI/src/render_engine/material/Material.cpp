@@ -117,6 +117,7 @@ void PBRMaterial::applyTextureUniforms()
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), texUnit);
 	texUnit++;
 
+	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
 }
@@ -156,6 +157,8 @@ void ZellyMaterial::applyTextureUniforms()
 
 	glBindTextureUnit(4, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
+
+	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 }
 
 Texture* ZellyMaterial::getMainTexture()

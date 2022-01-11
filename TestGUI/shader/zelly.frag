@@ -7,6 +7,7 @@ in vec3 normalVector;
 
 // material parameters
 uniform vec3 zellyColor;
+uniform float ditherAlpha;
 
 // PBR stuff
 uniform samplerCube irradianceMap;
@@ -276,8 +277,25 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 // ----------------------------------------------------------------------------
+float ditherTransparency(float transparency)   // https://docs.unity3d.com/Packages/com.unity.shadergraph@6.9/manual/Dither-Node.html
+{
+    vec2 uv = gl_FragCoord.xy;
+    float DITHER_THRESHOLDS[16] =
+    {
+        1.0 / 17.0,  9.0 / 17.0,  3.0 / 17.0, 11.0 / 17.0,
+        13.0 / 17.0,  5.0 / 17.0, 15.0 / 17.0,  7.0 / 17.0,
+        4.0 / 17.0, 12.0 / 17.0,  2.0 / 17.0, 10.0 / 17.0,
+        16.0 / 17.0,  8.0 / 17.0, 14.0 / 17.0,  6.0 / 17.0
+    };
+    uint index = (uint(uv.x) % 4) * 4 + uint(uv.y) % 4;
+    return transparency - DITHER_THRESHOLDS[index];
+}
+// ----------------------------------------------------------------------------
 void main()
 {
+    if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
+        discard;
+
     vec3 N = normalVector;//getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);
     float fresnelValue = fresnelSchlick(max(dot(N, V), 0.0), vec3(0.0), 3).r;

@@ -765,10 +765,15 @@ void PlayerCharacter::preRenderUpdate()
 	//
 	// Process ditherAlpha
 	//
-	float lengthFromCamera = glm::length(MainLoop::getInstance().camera.position - PhysicsUtils::getPosition(getTransform()));
+	const float lengthFromCamera = glm::length(MainLoop::getInstance().camera.position - PhysicsUtils::getPosition(getTransform()));
+	const float ditherAlpha = (lengthFromCamera - 1.0f) * 0.2f;
 	for (auto it = materials.begin(); it != materials.end(); it++)
 	{
-		it->second->ditherAlpha = (lengthFromCamera - 1.0f) * 0.25f;
+		it->second->ditherAlpha = ditherAlpha;
+	}
+	for (auto it = bottleModelMaterials.begin(); it != bottleModelMaterials.end(); it++)
+	{
+		it->second->ditherAlpha = ditherAlpha;
 	}
 }
 
