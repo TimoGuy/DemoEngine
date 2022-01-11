@@ -261,6 +261,7 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 		);
 
 	GameState::getInstance().playerActorPointer = controller->getActor();
+	body = controller->getActor();
 }
 
 PlayerPhysics::~PlayerPhysics()

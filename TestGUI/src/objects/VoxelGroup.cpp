@@ -162,8 +162,8 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	std::string bigBitfield = "";
 
 	VoxelSaveLoadGroup vslg;
-	vslg.numBits = 0;
 	vslg.currentBit = 'S';
+	vslg.numBits = 0;
 	
 	for (size_t i = 0; i < (size_t)voxel_group_size.x; i++)
 	{
@@ -176,14 +176,11 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 				//
 				char sampledBit = getVoxelBitAtPosition({ i, j, k }) ? '1' : '0';
 				const bool isLast = (i == (size_t)(voxel_group_size.x - 1) && j == (size_t)(voxel_group_size.y - 1) && k == (size_t)(voxel_group_size.z - 1));
-				if (vslg.currentBit != sampledBit || isLast)
+				if (vslg.currentBit != sampledBit)
 				{
 					if (vslg.currentBit != 'S')
 					{
-						if (isLast)
-							vslg.numBits++;		// NOTE: the count is off by 1 for the last group, since vslg.numBits++ is normally run at the end of the block. This fixes that bug.
-
-						// Write the amount of previous bits there were!
+						// Write the amount of previous bits there were before we switch to new bit!
 						bigBitfield += std::to_string(vslg.numBits) + ":" + vslg.currentBit + ";";
 					}
 
@@ -192,6 +189,12 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 					vslg.numBits = 0;
 				}
 				vslg.numBits++;
+
+				if (isLast)
+				{
+					// Final write
+					bigBitfield += std::to_string(vslg.numBits) + ":" + vslg.currentBit + ";";
+				}
 			}
 		}
 	}

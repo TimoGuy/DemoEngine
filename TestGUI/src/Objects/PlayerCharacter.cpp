@@ -245,7 +245,15 @@ void PlayerCharacter::processMovement()
 		float cameraDistance = camOffset.z;
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
-			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+			uint32_t hitNum = 0;
+			physx::PxRaycastHit hit = hitInfo.getAnyHit(hitNum);
+			while (hit.actor == getPhysicsComponent()->getActor() &&
+				hitNum < hitInfo.getNbAnyHits())
+			{
+				hit = hitInfo.getAnyHit(++hitNum);
+			}
+			if (hitNum != hitInfo.getNbAnyHits())
+				cameraDistance = -hit.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
 
 		//

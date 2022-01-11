@@ -148,7 +148,7 @@ namespace PhysicsUtils
 		desc.radius = radius;
 		desc.height = height;
 		desc.slopeLimit = slopeLimit;
-		desc.stepOffset = 0.3f;
+		desc.stepOffset = 1.0f;		// @NOTE: blocks of size <=1.5 are steppable with stepOffset of 1.0 and the other params (slimegirl)
 		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;	// @NOTE: This is better... and that is because force sliding prevents input to move side-to-side. @TODO: perhaps in the future, making a "sliding down" state would be good. This is mainly because of me adding a raycast downward to check if the controller is standing on too steep of a slope. When the controller is on a lip, the -y velocity builds up for the automatic sliding down algorithm. Another reason why, is bc if the character brushes against a steep slope in ePREVENT_ANDFORCE_SLIDING mode, then the character cannot move except in one single direction.    //ePREVENT_CLIMBING_AND_FORCE_SLIDING;
 		desc.upDirection = upDirection;
 		desc.reportCallback = hitReport;
@@ -221,13 +221,13 @@ namespace PhysicsUtils
 	{		
 		// Raycast against all static & dynamic objects (no filtering)
 		// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC);
+		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC/* | physx::PxQueryFlag::eDYNAMIC*/);
 		return MainLoop::getInstance().physicsScene->raycast(origin, unitDirection, distance, hitInfo, physx::PxHitFlag::eDEFAULT, filterData);
 	}
 
 	bool overlap(const physx::PxGeometry& geom, const physx::PxTransform& pose, physx::PxOverlapHit& overlapInfo)
 	{
-		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC);
+		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC/* | physx::PxQueryFlag::eDYNAMIC*/);
 		return physx::PxSceneQueryExt::overlapAny(*MainLoop::getInstance().physicsScene, geom, pose, overlapInfo, filterData);
 	}
 
