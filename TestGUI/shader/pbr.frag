@@ -7,6 +7,7 @@ in vec3 normalVector;
 
 // material parameters
 uniform sampler2D albedoMap;
+uniform vec3 color;
 uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
@@ -344,7 +345,7 @@ void main()
     if (rawAlbedo.a < 0.5)      // NOTE: optimization defecit here... this is just to test out the princess eyebrows texture
         discard;
     
-    vec3 albedo         = pow(rawAlbedo.rgb, vec3(2.2));
+    vec3 albedo         = pow(rawAlbedo.rgb, vec3(2.2)) * color;
 
     mipmapLevel         = textureQueryLod(metallicMap, adjustedTexCoord).x;
     float metallic      = textureLod(metallicMap, adjustedTexCoord, mipmapLevel).r;

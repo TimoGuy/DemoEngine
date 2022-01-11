@@ -39,7 +39,7 @@ public:
 
 	void setMaterials(std::map<std::string, Material*> materialMap);
 
-	const std::vector<Mesh>& getMeshes() { return meshes; }
+	std::vector<Mesh>& getMeshes() { return meshes; }
 
 	glm::mat4 localTransform = glm::mat4(1.0f);
 

@@ -75,7 +75,7 @@ PBRMaterial::PBRMaterial(
 	PBRMaterial::tilingAndOffset = offsetTiling;
 }
 
-void PBRMaterial::applyTextureUniforms()
+void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	setupShader(myShaderId);
 
@@ -120,6 +120,12 @@ void PBRMaterial::applyTextureUniforms()
 	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
+
+	glm::vec3 color(1.0f);
+	if (injection != nullptr && injection.contains("color"))
+		color = { injection["color"][0], injection["color"][1], injection["color"][2] };
+
+	glUniform3fv(glGetUniformLocation(myShaderId, "color"), 1, &color.x);
 }
 
 Texture* PBRMaterial::getMainTexture()
@@ -137,7 +143,7 @@ ZellyMaterial::ZellyMaterial(glm::vec3 color) :
 	ZellyMaterial::color = color;
 }
 
-void ZellyMaterial::applyTextureUniforms()
+void ZellyMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	setupShader(myShaderId);
 
@@ -177,7 +183,7 @@ LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
 	LvlGridMaterial::tilingAndOffset = glm::vec4(50, 50, 0, 0);
 }
 
-void LvlGridMaterial::applyTextureUniforms()
+void LvlGridMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	setupShader(myShaderId);
 

@@ -23,6 +23,9 @@
 VoxelGroup::VoxelGroup()
 {
 	name = "Voxel Group (unnamed)";
+	temp_voxel_render_size = voxel_render_size;
+	voxel_group_color = glm::vec3(1);
+	temp_voxel_group_color = voxel_group_color;
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
@@ -57,6 +60,16 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 		voxel_render_size = 2.0f;			// @NOTE: Unfortunately, this is simply the deprecated size. The default size should've been 4.0f (what it's set at now) but that's just how it is I guess.  -Timo
 		if (object.contains("voxel_render_size"))
 			voxel_render_size = object["voxel_render_size"];
+
+		temp_voxel_render_size = voxel_render_size;
+
+		if (object.contains("voxel_group_color"))
+		{
+			voxel_group_color.r = object["voxel_group_color"][0];
+			voxel_group_color.g = object["voxel_group_color"][1];
+			voxel_group_color.b = object["voxel_group_color"][2];
+			temp_voxel_group_color = voxel_group_color;
+		}
 
 		glm::i64vec3 voxelGroupSize = glm::i64vec3(32);
 		if (object.contains("voxel_group_size"))
@@ -139,6 +152,7 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	// Save bitfield sizing
 	//
 	j["voxel_render_size"] = voxel_render_size;
+	j["voxel_group_color"] = { voxel_group_color.r, voxel_group_color.g, voxel_group_color.b };
 	j["voxel_group_size"] = { voxel_group_size.x, voxel_group_size.y, voxel_group_size.z };
 	j["voxel_group_offset"] = { voxel_group_offset.x, voxel_group_offset.y, voxel_group_offset.z };
 
@@ -411,7 +425,17 @@ void VoxelGroup::updateQuadMeshFromBitField()
 	}
 
 	if (quadMesh.size() > 0)
+	{
 		voxel_model = new Model(quadMesh);
+
+		std::vector<Mesh>& meshes = voxel_model->getMeshes();
+		nlohmann::json j;
+		j["color"] = { voxel_group_color.r, voxel_group_color.g, voxel_group_color.b };
+		for (size_t i = 0; i < meshes.size(); i++)
+		{
+			meshes[i].setMaterialInjections(j);
+		}
+	}
 	else
 		// DELETE IF NO VOXELS
 		MainLoop::getInstance().deleteObject(this);
@@ -673,12 +697,19 @@ void VoxelGroup::preRenderUpdate()
 #ifdef _DEVELOP
 void VoxelGroup::imguiPropertyPanel()
 {
-	static float editVoxelRenderSize = voxel_render_size;
-	ImGui::DragFloat("Voxel Render Size", &editVoxelRenderSize);
-	if (editVoxelRenderSize != voxel_render_size &&
+	ImGui::DragFloat("Voxel Render Size", &temp_voxel_render_size);
+	if (temp_voxel_render_size != voxel_render_size &&
 		ImGui::Button("Apply New Size"))
 	{
-		voxel_render_size = editVoxelRenderSize;
+		voxel_render_size = temp_voxel_render_size;
+		is_voxel_bit_field_dirty = true;
+	}
+
+	ImGui::ColorEdit3("Voxel Group Color", &temp_voxel_group_color.x);
+	if (temp_voxel_group_color != voxel_group_color &&
+		ImGui::Button("Apply New Color"))
+	{
+		voxel_group_color = temp_voxel_group_color;
 		is_voxel_bit_field_dirty = true;
 	}
 

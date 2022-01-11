@@ -81,7 +81,7 @@ void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const s
     {
         if (material != nullptr)
         {
-            material->applyTextureUniforms();
+            material->applyTextureUniforms(materialInjections);
             shaderIdOverride = material->getShaderId();
         }
     }

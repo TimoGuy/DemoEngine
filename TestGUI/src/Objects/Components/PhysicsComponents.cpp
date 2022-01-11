@@ -288,21 +288,21 @@ void PlayerPhysics::physicsUpdate()
 
 	physx::PxVec3 cookedVelocity = velocity;
 
-	// (Last minute) convert -y to y along the face you're sliding down
-	if (isSliding || (!isGrounded && isCeilingSliding))
-	{
-		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
-		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
-	
-		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
-		cookedVelocity.y = 0.0f;
-		cookedVelocity += physx::PxVec3(
-			slidingVector.x * flatSlidingUmph,
-			slidingVector.y,
-			slidingVector.z * flatSlidingUmph
-		);
-	}
+	//// (Last minute) convert -y to y along the face you're sliding down
+	//if (isSliding || (!isGrounded && isCeilingSliding))
+	//{
+	//	const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+	//	const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+	//	const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
+	//
+	//	const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
+	//	cookedVelocity.y = 0.0f;
+	//	cookedVelocity += physx::PxVec3(
+	//		slidingVector.x * flatSlidingUmph,
+	//		slidingVector.y,
+	//		slidingVector.z * flatSlidingUmph
+	//	);
+	//}
 
 	//
 	// Do the deed
@@ -322,7 +322,7 @@ void PlayerPhysics::physicsUpdate()
 		else
 		{
 			// Slide down!
-			isSliding = true;
+			//isSliding = true;
 		}
 	}
 
@@ -370,6 +370,7 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 
 void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
+	//hit. @TODO: fimish
 	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
 }
 void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }

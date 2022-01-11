@@ -53,6 +53,7 @@ public:
 
 	const std::vector<Vertex>& getVertices() const { return vertices; }
 	const std::vector<uint32_t>& getIndices() const { return indices; }
+	inline void setMaterialInjections(const nlohmann::json j) { materialInjections = j; }
 
 	RenderAABB bounds;
 
@@ -64,5 +65,6 @@ private:
 	std::vector<uint32_t>		indices;
 	Material*					material;
 	std::string					materialName;
+	nlohmann::json				materialInjections;			// @Debug: Hard to know whether this will simply be a debug feature or not. But it'll be there for pbrmaterials.
 };
 

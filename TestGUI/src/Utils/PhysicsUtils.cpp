@@ -221,13 +221,13 @@ namespace PhysicsUtils
 	{		
 		// Raycast against all static & dynamic objects (no filtering)
 		// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC);
+		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC);
 		return MainLoop::getInstance().physicsScene->raycast(origin, unitDirection, distance, hitInfo, physx::PxHitFlag::eDEFAULT, filterData);
 	}
 
 	bool overlap(const physx::PxGeometry& geom, const physx::PxTransform& pose, physx::PxOverlapHit& overlapInfo)
 	{
-		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC);
+		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC);
 		return physx::PxSceneQueryExt::overlapAny(*MainLoop::getInstance().physicsScene, geom, pose, overlapInfo, filterData);
 	}
 
