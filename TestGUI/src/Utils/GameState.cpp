@@ -49,7 +49,8 @@ void GameState::inputStaminaEvent(StaminaEvent staminaEvent, float deltaTime)
 		break;
 
 	default:
-		std::cout << "Stamina Event " << staminaEvent << " unknown." << std::endl;
+		int toInt = (int)staminaEvent;
+		std::cout << "Stamina Event " << toInt << " unknown." << std::endl;
 		break;
 	}
 

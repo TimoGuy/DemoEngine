@@ -5,7 +5,7 @@
 #include <PxPhysicsAPI.h>
 
 
-enum StaminaEvent
+enum class StaminaEvent
 {
 	JUMP, MOVE
 };
@@ -15,8 +15,8 @@ class GameState
 public:
 	physx::PxRigidActor*		playerActorPointer				= nullptr;
 	bool						playerIsHoldingWater			= false;
-	int							maxPlayerStaminaAmount			= 100;
-	float						currentPlayerStaminaAmount		= 100;
+	int							maxPlayerStaminaAmount			= 500;
+	float						currentPlayerStaminaAmount		= 500;
 	float						playerStaminaDepleteChaser		= 100;		// NOTE: this shows how much the stamina is depleting, so it will essentially follow the currentPlayerStaminaAmount
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;

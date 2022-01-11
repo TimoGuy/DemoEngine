@@ -87,6 +87,8 @@ public:
 	float airAcceleration = 2.5f;
 	float groundRunSpeed = 0.75f;						// TODO: may wanna change that variable name eh
 	float jumpSpeed[2] = { 1.4f, 1.0f };
+	float jumpCoyoteTime = 0.25f;
+	float jumpCoyoteTimer;
 
 	float currentRunSpeed = 0.0f;						// This is the value that gets changed
 	float immediateTurningRequiredSpeed = 0.1f;			// The maximum velocity you can have to keep the ability to immediately turn (while grounded)

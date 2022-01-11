@@ -309,9 +309,29 @@ void PlayerCharacter::processMovement()
 
 	physx::PxVec3 velocity(0.0f);
 	if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
+	{
 		velocity = processGroundedMovement(movementVector);
+		jumpCoyoteTimer = jumpCoyoteTime;
+	}
 	else
+	{
 		velocity = processAirMovement(movementVector);
+		jumpCoyoteTimer -= MainLoop::getInstance().deltaTime;
+	}
+
+	// Jump (but not if sliding)
+	static bool prevJumpPressed = false;
+	if (!lockJumping &&
+		!((PlayerPhysics*)getPhysicsComponent())->getIsSliding() &&
+		!prevJumpPressed &&
+		InputManager::getInstance().jumpPressed &&
+		jumpCoyoteTimer > 0.0f)
+	{
+		jumpCoyoteTimer = -1.0f;
+		velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
+		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
+	}
+	prevJumpPressed = InputManager::getInstance().jumpPressed;
 
 	if (isMoving)
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
@@ -332,8 +352,6 @@ void PlayerCharacter::processMovement()
 
 physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movementVector)
 {
-	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
-
 	//
 	// Set Movement Vector
 	//
@@ -433,15 +451,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		velocity.y = std::min(((PlayerPhysics*)getPhysicsComponent())->velocity.y, velocity.y);
 	else
 		velocity.y = ((PlayerPhysics*)getPhysicsComponent())->velocity.y;
-
-	// Jump (but not if sliding)
-	if (!lockJumping &&
-		!((PlayerPhysics*)getPhysicsComponent())->getIsSliding() &&
-		InputManager::getInstance().jumpPressed)
-	{
-		velocity.y = jumpSpeed[isCarryingWater];
-		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
-	}
 
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
