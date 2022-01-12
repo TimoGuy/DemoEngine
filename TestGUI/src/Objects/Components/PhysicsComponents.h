@@ -78,7 +78,6 @@ public:
 	void setIsGrounded(bool flag) { isGrounded = flag; }
 	bool getIsGrounded() { return isGrounded; }
 	bool getIsSliding() { return isSliding; }
-	bool getIsCeilingSliding() { return isCeilingSliding; }
 
 	// NOTE: this should not be accessed while !isGrounded, bc it isn't updated unless if on ground <45degrees
 	glm::vec3 getGroundedNormal() { return currentHitNormal; }
@@ -97,6 +96,5 @@ public:
 private:
 	bool isGrounded = false;
 	bool isSliding = false;
-	bool isCeilingSliding = false;
 	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
 };
