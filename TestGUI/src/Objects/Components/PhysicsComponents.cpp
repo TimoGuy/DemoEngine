@@ -324,20 +324,23 @@ void PlayerPhysics::physicsUpdate()
 	physx::PxVec3 cookedVelocity = velocity;
 
 	//// (Last minute) convert -y to y along the face you're sliding down
-	//if (isSliding || (!isGrounded && isCeilingSliding))
-	//{
-	//	const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
-	//	const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-	//	const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
-	//
-	//	const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
-	//	cookedVelocity.y = 0.0f;
-	//	cookedVelocity += physx::PxVec3(
-	//		slidingVector.x * flatSlidingUmph,
-	//		slidingVector.y,
-	//		slidingVector.z * flatSlidingUmph
-	//	);
-	//}
+	if (isSliding)
+	{
+		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
+	
+		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
+		cookedVelocity.y = 0.0f;
+		cookedVelocity += physx::PxVec3(
+			slidingVector.x * flatSlidingUmph,
+			slidingVector.y,
+			slidingVector.z * flatSlidingUmph
+		);
+	}
+
+	if (isGrounded && !isSliding)
+		cookedVelocity.y = -controller->getStepOffset();
 
 	//
 	// Do the deed
@@ -350,15 +353,20 @@ void PlayerPhysics::physicsUpdate()
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		isGrounded = true;
-		if (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+
+		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f);		// NOTE: 0.7... is cos(45deg)
+		if (!isFlatGround)
 		{
+			// Try again
+			physx::PxRaycastBuffer hitInfo;
+			if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()), physx::PxVec3(0, -1, 0), controller->getStepOffset(), hitInfo))
+				isFlatGround = (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.707106781f);
+		}
+
+		if (isFlatGround)
 			velocity.y = 0.0f;		// Remove gravity
-		}
 		else
-		{
-			// Slide down!
-			//isSliding = true;
-		}
+			isSliding = true;		// Slide down!
 	}
 
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)

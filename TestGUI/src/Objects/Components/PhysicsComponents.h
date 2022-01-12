@@ -74,7 +74,8 @@ public:
 
 	physx::PxCapsuleController* controller;
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
-
+	
+	void setIsGrounded(bool flag) { isGrounded = flag; }
 	bool getIsGrounded() { return isGrounded; }
 	bool getIsSliding() { return isSliding; }
 	bool getIsCeilingSliding() { return isCeilingSliding; }

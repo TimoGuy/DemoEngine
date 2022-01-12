@@ -239,21 +239,13 @@ void PlayerCharacter::processMovement()
 
 	// Do raycast to see what the camera distance should be
 	{
-		physx::PxRaycastBuffer hitInfo;
 		const float hitDistancePadding = 0.75f;
-
 		float cameraDistance = camOffset.z;
+
+		physx::PxRaycastBuffer hitInfo;
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
 		{
-			//uint32_t hitNum = 0;
-			//physx::PxRaycastHit hit = hitInfo.getAnyHit(hitNum);
-			//while (hit.actor == getPhysicsComponent()->getActor() &&
-			//	hitNum < hitInfo.getNbAnyHits())
-			//{
-			//	hit = hitInfo.getAnyHit(++hitNum);
-			//}
-			//if (hitNum != hitInfo.getNbAnyHits())
-				cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}
 
 		//
@@ -338,6 +330,7 @@ void PlayerCharacter::processMovement()
 		jumpCoyoteTimer = -1.0f;
 		velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
+		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 	}
 	prevJumpPressed = InputManager::getInstance().jumpPressed;
 
@@ -434,12 +427,16 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
 
-	if (((PlayerPhysics*)getPhysicsComponent())->getIsSliding() || ((PlayerPhysics*)getPhysicsComponent())->getIsCeilingSliding())
+	if (((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
 	{
 		// Cut off movement towards uphill if supposed to be sliding
-		glm::vec3 normal = ((PlayerPhysics*)getPhysicsComponent())->getGroundedNormal();
-		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
-		velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
+		const glm::vec3 normal = ((PlayerPhysics*)getPhysicsComponent())->getGroundedNormal();
+		const glm::vec3 flatNormal = glm::normalize(glm::vec3(normal.x, 0, normal.z));
+		if (glm::dot(flatNormal, glm::vec3(facingDirection.x, 0, facingDirection.y)) < 0.0f)	// If going against the direction it's supposed to slide
+		{
+			glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
+			velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
+		}
 	}
 	else
 	{

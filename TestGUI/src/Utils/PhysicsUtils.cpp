@@ -148,8 +148,9 @@ namespace PhysicsUtils
 		desc.radius = radius;
 		desc.height = height;
 		desc.slopeLimit = slopeLimit;
-		desc.stepOffset = 1.0f;		// @NOTE: blocks of size <=1.5 are steppable with stepOffset of 1.0 and the other params (slimegirl)
+		desc.stepOffset = 1.0f + 0.3f;		// @NOTE: Just gave it a 0.3f bump so it can for sure get over the bumps eh
 		desc.nonWalkableMode = physx::PxControllerNonWalkableMode::ePREVENT_CLIMBING;	// @NOTE: This is better... and that is because force sliding prevents input to move side-to-side. @TODO: perhaps in the future, making a "sliding down" state would be good. This is mainly because of me adding a raycast downward to check if the controller is standing on too steep of a slope. When the controller is on a lip, the -y velocity builds up for the automatic sliding down algorithm. Another reason why, is bc if the character brushes against a steep slope in ePREVENT_ANDFORCE_SLIDING mode, then the character cannot move except in one single direction.    //ePREVENT_CLIMBING_AND_FORCE_SLIDING;
+		desc.climbingMode = physx::PxCapsuleClimbingMode::eCONSTRAINED;
 		desc.upDirection = upDirection;
 		desc.reportCallback = hitReport;
 		desc.behaviorCallback = behaviorReport;
