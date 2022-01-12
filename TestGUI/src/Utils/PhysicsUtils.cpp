@@ -221,7 +221,8 @@ namespace PhysicsUtils
 	{		
 		// Raycast against all static & dynamic objects (no filtering)
 		// The main result from this call is the closest hit, stored in the 'hit.block' structure
-		const physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC/* | physx::PxQueryFlag::eDYNAMIC*/);
+		physx::PxQueryFilterData filterData(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC);
+		filterData.data.word0 = ~(physx::PxU32)Word0Tags::ENTITY;
 		return MainLoop::getInstance().physicsScene->raycast(origin, unitDirection, distance, hitInfo, physx::PxHitFlag::eDEFAULT, filterData);
 	}
 

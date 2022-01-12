@@ -14,6 +14,13 @@ struct RenderAABB;
 
 namespace PhysicsUtils
 {
+	enum class Word0Tags
+	{
+		UNTAGGED = (1 << 0),
+		ENTITY = (1 << 1),
+		COLLISION_GEOMETRY = (1 << 2),
+	};
+
 #pragma region Factory functions
 
 	physx::PxVec3 toPxVec3(const physx::PxExtendedVec3& in);

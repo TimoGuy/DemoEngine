@@ -79,6 +79,11 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
 	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+	shape->setQueryFilterData(filterData);
+
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -131,6 +136,11 @@ BoxCollider::BoxCollider(BaseObject* bo, const glm::vec3& extents, RigidActorTyp
 
 	geom = new physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z);
 	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+	shape->setQueryFilterData(filterData);
+
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -166,6 +176,11 @@ void BoxCollider::propagateNewTransform(const glm::mat4& newTransform)
 
 	geom = new physx::PxBoxGeometry(realExtents.x, realExtents.y, realExtents.z);
 	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+	shape->setQueryFilterData(filterData);
+
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -194,6 +209,11 @@ SphereCollider::SphereCollider(BaseObject* bo, float radius, RigidActorTypes rig
 
 	geom = new physx::PxSphereGeometry(maxScale * radius);
 	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+	shape->setQueryFilterData(filterData);
+
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -228,6 +248,11 @@ void SphereCollider::propagateNewTransform(const glm::mat4& newTransform)
 
 	geom = new physx::PxSphereGeometry(maxScale * radius);
 	shape = MainLoop::getInstance().physicsPhysics->createShape(*geom, *MainLoop::getInstance().defaultPhysicsMaterial);
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+	shape->setQueryFilterData(filterData);
+
 	if (shapeType == ShapeTypes::TRIGGER)
 	{
 		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
@@ -262,6 +287,15 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 
 	GameState::getInstance().playerActorPointer = controller->getActor();
 	body = controller->getActor();
+
+	physx::PxFilterData filterData;
+	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::ENTITY;
+
+	std::vector<physx::PxShape*> shapes;
+	shapes.resize(body->getNbShapes());
+	int numShapes = body->getShapes(&shapes[0], shapes.size());
+	for (size_t i = 0; i < numShapes; i++)
+		shapes[i]->setQueryFilterData(filterData);
 }
 
 PlayerPhysics::~PlayerPhysics()
