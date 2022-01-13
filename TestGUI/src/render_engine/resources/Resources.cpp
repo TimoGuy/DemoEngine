@@ -367,7 +367,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/zelly.frag");
 	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/lvlGrid.vert", "shader/lvlGrid.frag");		// @DEBUG
 	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/skybox.frag");
-	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/csm_shadow.vert", "shader/csm_shadow.geom", "shader/do_nothing.frag");
+	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/csm_shadow.vert", "shader/csm_shadow.geom", "shader/shadow.frag");
 	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/point_shadow.vert", "shader/point_shadow.geom", "shader/point_shadow.frag");
 	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/debug_csm.vert", "shader/debug_csm.frag");
 	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/text.vert", "shader/text.frag");
@@ -378,7 +378,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/bloom_postprocessing.vert", "shader/bloom_postprocessing.frag");
 	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/postprocessing.frag");
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/hudUI.vert", "shader/hudUI.frag");
-	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/do_nothing.frag");
+	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/z_prepass.frag");
 #ifdef _DEVELOP
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");

@@ -91,8 +91,6 @@ void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const s
     {
         if (renderStage == RenderStage::Z_PASS)
             glUniform1f(glGetUniformLocation(shaderIdOverride, "ditherAlpha"), material->ditherAlpha);
-        else
-            glUniform1f(glGetUniformLocation(shaderIdOverride, "ditherAlpha"), 1.0f);
 
         Texture* mainTexture = material->getMainTexture();
         if (mainTexture != nullptr)

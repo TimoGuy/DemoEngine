@@ -373,21 +373,21 @@ void PlayerPhysics::physicsUpdate()
 		//std::cout << "\tSide Collision";
 	}
 
-	////
-	//// Check if head/ceiling sliding
-	//if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
-	//{
-	//	if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
-	//	{
-	//		velocity.y = 0.0f;		// Hit your head on the ceiling
-	//	}
-	//	else
-	//	{
-	//		// Slide on ceiling!
-	//		isCeilingSliding = true;
-	//	}
-	//}
-	////std::cout << std::endl;
+	//
+	// Check if head/ceiling sliding
+	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
+	{
+		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		{
+			velocity.y = 0.0f;		// Hit your head on the ceiling
+		}
+		//else
+		//{
+		//	// Slide on ceiling!
+		//	isCeilingSliding = true;
+		//}
+	}
+	//std::cout << std::endl;
 
 	//
 	// Apply transform

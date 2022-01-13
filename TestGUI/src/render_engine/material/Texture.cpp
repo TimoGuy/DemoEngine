@@ -4,9 +4,8 @@
 #include <iostream>
 #include <mutex>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <stb/stb_image.h>
-
-#define NUM_MIPMAPS_TO_GENERATE 5
 
 
 bool							Texture::loadSync = false;
@@ -139,7 +138,7 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
 
-	glTextureStorage2D(textureHandle, file.generateMipmaps ? NUM_MIPMAPS_TO_GENERATE : 1, data.internalFormat, data.imgWidth, data.imgHeight);
+	glTextureStorage2D(textureHandle, file.generateMipmaps ? glm::floor(glm::log2((float_t)glm::max(data.imgWidth, data.imgHeight))) : 1, data.internalFormat, data.imgWidth, data.imgHeight);
 	glTextureSubImage2D(textureHandle, 0, 0, 0, data.imgWidth, data.imgHeight, toTexture, data.pixelType, data.pixels);
 
 	if (file.generateMipmaps)

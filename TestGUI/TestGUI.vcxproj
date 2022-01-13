@@ -226,7 +226,6 @@
     <None Include="shader\debug_csm.frag" />
     <None Include="shader\debug_csm.vert" />
     <None Include="shader\debug_picking.frag" />
-    <None Include="shader\do_nothing.frag" />
     <None Include="shader\hudUI.frag" />
     <None Include="shader\hudUI.vert" />
     <None Include="shader\irradiance_convolution.frag" />
@@ -240,10 +239,12 @@
     <None Include="shader\postprocessing.frag" />
     <None Include="shader\postprocessing.vert" />
     <None Include="shader\prefilter.frag" />
+    <None Include="shader\shadow.frag" />
     <None Include="shader\skybox.frag" />
     <None Include="shader\text.frag" />
     <None Include="shader\text.vert" />
     <None Include="shader\zelly.frag" />
+    <None Include="shader\z_prepass.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\imgui\GraphEditor.h" />
