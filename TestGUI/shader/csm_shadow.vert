@@ -1,4 +1,4 @@
-#version 430
+#version 450
 
 layout (location=0) in vec3 vertexPosition;
 layout (location=1) in vec3 normal;
@@ -6,7 +6,7 @@ layout (location=2) in vec2 uvCoordinate;
 layout (location=3) in ivec4 boneIds;
 layout (location=4) in vec4 boneWeights;
 
-out vec2 texCoord;
+out vec2 texCoordToGeom;
 
 uniform mat4 modelMatrix;
 
@@ -47,6 +47,6 @@ void main()
 		}
 	}
 	
-	texCoord = uvCoordinate;
+	texCoordToGeom = uvCoordinate;
 	gl_Position = modelMatrix * boneTransform * vec4(vertexPosition, 1.0);
 }
