@@ -416,14 +416,15 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteFramebuffers(bloomBufferCount, bloomFBOs);
 }
 
+constexpr GLsizei luminanceTextureSize = 64;
 void RenderManager::createLumenAdaptationTextures()
 {
 	// NOTE: these are always gonna be a constant 64x64 mipmapped so yeah, no need to recreate
 	hdrLumDownsampling =
 		new Texture2D(
-			64,
-			64,
-			7,		// log_2(64) == 6, and add 1 (i.e.: 64, 32, 16, 8, 4, 2, 1 :: 7 levels)
+			luminanceTextureSize,
+			luminanceTextureSize,
+			glm::floor(glm::log2((float_t)luminanceTextureSize)) + 1,		// log_2(64) == 6, and add 1 (i.e.: 64, 32, 16, 8, 4, 2, 1 :: 7 levels)
 			GL_R16F,
 			GL_RED,
 			GL_FLOAT,
@@ -471,7 +472,7 @@ void RenderManager::createLumenAdaptationTextures()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
-	const glm::vec4 startingPixel(glm::vec3(50.0f), 1.0f);		// NOTE: I presume this'll be mega bright
+	const glm::vec4 startingPixel(glm::vec3(0.00005f), 1.0f);		// NOTE: I presume this'll be mega bright
 	glTextureSubImage2D(hdrLumAdaptationPrevious->getHandle(), 0, 0, 0, 1, 1, GL_RED, GL_FLOAT, glm::value_ptr(startingPixel));
 }
 
@@ -694,6 +695,7 @@ void RenderManager::render()
 	glUseProgram(hdrLuminanceProgramId);
 	glBindTextureUnit(0, hdrColorBuffer);
 	glProgramUniform1i(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "hdrColorBuffer"), 0);
+	glProgramUniform2f(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "uvStretchAmount"), MainLoop::getInstance().camera.width / (float_t)luminanceTextureSize, MainLoop::getInstance().camera.height / (float_t)luminanceTextureSize);
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
 
@@ -705,7 +707,7 @@ void RenderManager::render()
 	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
-	glProgramUniform1f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 10.0f * MainLoop::getInstance().deltaTime);
+	glProgramUniform2f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 0.5f * MainLoop::getInstance().deltaTime, 2.5f * MainLoop::getInstance().deltaTime);
 	glDispatchCompute(1, 1, 1);
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 
@@ -1664,6 +1666,15 @@ void RenderManager::renderImGuiContents()
 		if (ImGui::Begin("Scene Properties", &showScenePropterties))
 		{
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
+
+			static bool showLuminanceTextures = false;
+			ImGui::Checkbox("Show Luminance Texture", &showLuminanceTextures);
+			if (showLuminanceTextures)
+			{
+				ImGui::Image((void*)(intptr_t)hdrLumDownsampling->getHandle(), ImVec2(256, 256));
+				ImGui::Image((void*)(intptr_t)hdrLumAdaptation1x1, ImVec2(256, 256));
+				ImGui::Image((void*)(intptr_t)hdrLumAdaptationProcessed->getHandle(), ImVec2(256, 256));
+			}
 
 			static bool showBloomProcessingBuffers = false;
 			ImGui::Checkbox("Show Bloom preprocessing buffers", &showBloomProcessingBuffers);

@@ -190,7 +190,7 @@ void main()
         0.758                           // Mie preferred scattering direction
     );
 
-    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.05;       // TIMO
+    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.005;       // TIMO
 	
 	// Apply exposure.
     out_Color = 1.0 - exp(-1.0 * out_Color);
