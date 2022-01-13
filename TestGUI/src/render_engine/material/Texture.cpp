@@ -138,7 +138,7 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
 
-	glTextureStorage2D(textureHandle, file.generateMipmaps ? glm::floor(glm::log2((float_t)glm::max(data.imgWidth, data.imgHeight))) : 1, data.internalFormat, data.imgWidth, data.imgHeight);
+	glTextureStorage2D(textureHandle, file.generateMipmaps ? glm::floor(glm::log2((float_t)glm::max(data.imgWidth, data.imgHeight))) + 1 : 1, data.internalFormat, data.imgWidth, data.imgHeight);
 	glTextureSubImage2D(textureHandle, 0, 0, 0, data.imgWidth, data.imgHeight, toTexture, data.pixelType, data.pixels);
 
 	if (file.generateMipmaps)
@@ -149,7 +149,7 @@ void Texture2DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	loaded = true;
 }
 
-Texture2D::Texture2D(GLsizei width, GLsizei height, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT)
+Texture2D::Texture2D(GLsizei width, GLsizei height, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT)
 {
 	glCreateTextures(GL_TEXTURE_2D, 1, &textureHandle);
 
@@ -158,7 +158,7 @@ Texture2D::Texture2D(GLsizei width, GLsizei height, GLenum internalFormat, GLenu
 	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
 
-	glTextureStorage2D(textureHandle, 1, internalFormat, width, height);
+	glTextureStorage2D(textureHandle, levels, internalFormat, width, height);
 
 	if (pixels != nullptr)
 		glTextureSubImage2D(textureHandle, 0, 0, 0, width, height, format, pixelType, pixels);

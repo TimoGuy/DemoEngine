@@ -216,7 +216,6 @@
     <None Include="shaders\lvlGrid.vert" />
     <None Include="shaders\zelly.frag" />
     <None Include="shader\bloom_postprocessing.frag" />
-    <None Include="shader\bloom_postprocessing.vert" />
     <None Include="shader\brdf.frag" />
     <None Include="shader\brdf.vert" />
     <None Include="shader\color.frag" />
@@ -229,6 +228,8 @@
     <None Include="shader\hudUI.frag" />
     <None Include="shader\hudUI.vert" />
     <None Include="shader\irradiance_convolution.frag" />
+    <None Include="shader\luminance_adaptation.comp" />
+    <None Include="shader\luminance_postprocessing.frag" />
     <None Include="shader\lvlGrid.frag" />
     <None Include="shader\lvlGrid.vert" />
     <None Include="shader\pbr.frag" />

@@ -202,7 +202,6 @@
     <None Include="shaders\debug_picking.frag" />
     <None Include="shaders\lvlGrid.frag" />
     <None Include="shader\bloom_postprocessing.frag" />
-    <None Include="shader\bloom_postprocessing.vert" />
     <None Include="shader\brdf.frag" />
     <None Include="shader\brdf.vert" />
     <None Include="shader\color.frag" />
@@ -231,6 +230,8 @@
     <None Include="shader\postprocessing.vert" />
     <None Include="shader\shadow.frag" />
     <None Include="shader\z_prepass.frag" />
+    <None Include="shader\luminance_adaptation.comp" />
+    <None Include="shader\luminance_postprocessing.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

@@ -61,6 +61,7 @@ RenderManager::RenderManager()
 	createShaderPrograms();
 
 	createHDRBuffer();
+	createLumenAdaptationTextures();
 
 #ifdef _DEVELOP
 	createPickingBuffer();
@@ -385,6 +386,7 @@ void RenderManager::createHDRBuffer()
 		new Texture2D(
 			(GLsizei)MainLoop::getInstance().camera.width,
 			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
 			GL_DEPTH_COMPONENT24,
 			GL_DEPTH_COMPONENT,
 			GL_FLOAT,
@@ -414,6 +416,65 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteFramebuffers(bloomBufferCount, bloomFBOs);
 }
 
+void RenderManager::createLumenAdaptationTextures()
+{
+	// NOTE: these are always gonna be a constant 64x64 mipmapped so yeah, no need to recreate
+	hdrLumDownsampling =
+		new Texture2D(
+			64,
+			64,
+			7,		// log_2(64) == 6, and add 1 (i.e.: 64, 32, 16, 8, 4, 2, 1 :: 7 levels)
+			GL_R16F,
+			GL_RED,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	glCreateFramebuffers(1, &hdrLumFBO);
+	glNamedFramebufferTexture(hdrLumFBO, GL_COLOR_ATTACHMENT0, hdrLumDownsampling->getHandle(), 0);		// First level will get populated, and when we need to read the luminance, we'll generate mipmaps and get the lowest luminance value
+	if (glCheckNamedFramebufferStatus(hdrLumFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (HDR Luminance Sampling Framebuffer)" << std::endl;
+
+	// Create Sampling buffer
+	glGenTextures(1, &hdrLumAdaptation1x1);
+	glTextureView(hdrLumAdaptation1x1, GL_TEXTURE_2D, hdrLumDownsampling->getHandle(), GL_R16F, 6, 1, 0, 1);
+
+	// Create prev/processed buffers (will be used for ping pong)
+	hdrLumAdaptationPrevious =
+		new Texture2D(
+			1,
+			1,
+			1,
+			GL_R16F,
+			GL_RED,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	hdrLumAdaptationProcessed =
+		new Texture2D(
+			1,
+			1,
+			1,
+			GL_R16F,
+			GL_RED,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	const glm::vec4 startingPixel(glm::vec3(50.0f), 1.0f);		// NOTE: I presume this'll be mega bright
+	glTextureSubImage2D(hdrLumAdaptationPrevious->getHandle(), 0, 0, 0, 1, 1, GL_RED, GL_FLOAT, glm::value_ptr(startingPixel));
+}
+
 void RenderManager::createShaderPrograms()
 {
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
@@ -422,6 +483,8 @@ void RenderManager::createShaderPrograms()
 	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
 	prefilter_program_id = *(GLuint*)Resources::getResource("shader;pbrPrefilterGeneration");
 	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
+	hdrLuminanceProgramId = *(GLuint*)Resources::getResource("shader;luminance_postprocessing");
+	hdrLumAdaptationComputeProgramId = *(GLuint*)Resources::getResource("shader;computeLuminanceAdaptation");
 	bloom_postprocessing_program_id = *(GLuint*)Resources::getResource("shader;bloom_postprocessing");
 	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
@@ -622,6 +685,31 @@ void RenderManager::render()
 
 	updateLightInformationUBO();
 	renderScene();
+
+	//
+	// Do luminance
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrLumFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(hdrLuminanceProgramId);
+	glBindTextureUnit(0, hdrColorBuffer);
+	glProgramUniform1i(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "hdrColorBuffer"), 0);
+	renderQuad();
+	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
+
+	//
+	// Kick off light adaptation compute shader
+	//
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glUseProgram(hdrLumAdaptationComputeProgramId);
+	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
+	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
+	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
+	glProgramUniform1f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 10.0f * MainLoop::getInstance().deltaTime);
+	glDispatchCompute(1, 1, 1);
+	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
+
+	// Render ui
 	renderUI();
 
 #ifdef _DEVELOP
@@ -734,6 +822,9 @@ void RenderManager::render()
 		firstReconstruction = false;
 	}
 
+	// Check to make sure the luminance adaptation compute shader is fimished
+	glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+
 	//
 	// Do tonemapping and post-processing
 	// with the fbo and render to a quad
@@ -741,14 +832,20 @@ void RenderManager::render()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(postprocessing_program_id);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, hdrColorBuffer);
+
+	glBindTextureUnit(0, hdrColorBuffer);
 	glUniform1i(glGetUniformLocation(postprocessing_program_id, "hdrColorBuffer"), 0);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
+	glBindTextureUnit(1, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
 	glUniform1i(glGetUniformLocation(postprocessing_program_id, "bloomColorBuffer"), 1);
+	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
+	glUniform1i(glGetUniformLocation(postprocessing_program_id, "luminanceProcessed"), 2);
+
+	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
+
+	// Swap the hdrLumAdaptation ping-pong textures
+	std::swap(hdrLumAdaptationPrevious, hdrLumAdaptationProcessed);
 
 #ifdef _DEVELOP
 	// ImGui buffer swap
@@ -1178,6 +1275,7 @@ void RenderManager::renderUI()
 		);
 	glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), staminaBarPosition), glm::vec3(staminaBarExtents.x + padding, staminaBarExtents.y + padding, 1.0f));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
 
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(hudUIProgramId);
@@ -1576,6 +1674,7 @@ void RenderManager::renderImGuiContents()
 				ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
 			}
 
+			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
 			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
 
 			ImGui::Separator();

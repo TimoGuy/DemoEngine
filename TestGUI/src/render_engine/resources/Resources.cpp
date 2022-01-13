@@ -196,6 +196,28 @@ void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, con
 	}
 }
 
+
+void* loadShaderProgramC(const std::string& programName, bool isUnloading, const std::string& compFname)
+{
+	if (!isUnloading)
+	{
+		GLuint programId = glCreateProgram();
+		GLuint cShader = compileShader(GL_COMPUTE_SHADER, compFname.c_str());
+		glAttachShader(programId, cShader);
+		glLinkProgram(programId);
+		glDeleteShader(cShader);
+
+		GLuint* payload = new GLuint();
+		*payload = programId;
+		return payload;
+	}
+	else
+	{
+		glDeleteProgram(*(GLuint*)findResource(programName));
+		return nullptr;
+	}
+}
+
 #pragma endregion
 
 
@@ -375,10 +397,12 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/irradiance_convolution.frag");
 	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/prefilter.frag");
 	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/brdf.vert", "shader/brdf.frag");
-	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/bloom_postprocessing.vert", "shader/bloom_postprocessing.frag");
+	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/bloom_postprocessing.frag");
 	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/postprocessing.frag");
 	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/hudUI.vert", "shader/hudUI.frag");
 	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/z_prepass.frag");
+	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/luminance_postprocessing.frag");
+	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/luminance_adaptation.comp");
 #ifdef _DEVELOP
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");

@@ -47,7 +47,7 @@
                 1.0,
                 1.0
             ],
-            "color_multiplier": 5.0,
+            "color_multiplier": 1.0,
             "lightComponent": {
                 "casts_shadows": true
             },

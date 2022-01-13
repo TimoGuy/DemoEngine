@@ -168,8 +168,12 @@ private:
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
+	GLuint hdrLuminanceProgramId, hdrLumAdaptationComputeProgramId, hdrLumFBO, hdrLumAdaptation1x1;
+	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
+
 	static const uint32_t bloomBufferCount = 7 * 2;			// 7 passes with 2 pingpong buffers each
 	GLuint bloomFBOs[bloomBufferCount], bloomColorBuffers[bloomBufferCount];
+	float exposure = 0.15f;
 	float bloomIntensity = 0.005f;
 
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
@@ -192,6 +196,7 @@ private:
     void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
 	void createHDRBuffer();
 	void destroyHDRBuffer();
+	void createLumenAdaptationTextures();
 
 
 	std::map<char, TextCharacter> characters;
