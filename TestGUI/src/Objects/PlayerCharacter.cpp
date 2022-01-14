@@ -359,6 +359,15 @@ void PlayerCharacter::processMovement()
 physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movementVector)
 {
 	//
+	// Update external forces
+	//
+	float externalStandingAngularVelocityYRadians;
+	if (((PlayerPhysics*)getPhysicsComponent())->getStandingOnAngularVelocityY(externalStandingAngularVelocityYRadians))
+	{
+		facingDirection = glm::quat(glm::vec3(0.0f, 0.0f, MainLoop::getInstance().deltaTime * -externalStandingAngularVelocityYRadians)) * glm::vec3(facingDirection, 0.0f);
+	}
+
+	//
 	// Set Movement Vector
 	//
 	const float movementVectorLength = glm::length(movementVector);

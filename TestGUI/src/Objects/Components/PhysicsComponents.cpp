@@ -348,22 +348,29 @@ void PlayerPhysics::physicsUpdate()
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
 	isSliding = false;
+	hasValidStandingOnAngularVelocityY = false;
 
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		isGrounded = true;
-
 		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f);		// NOTE: 0.7... is cos(45deg)
-		if (!isFlatGround)
-		{
-			// Try again
-			physx::PxRaycastBuffer hitInfo;
-			if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()), physx::PxVec3(0, -1, 0), controller->getStepOffset(), hitInfo))
-				isFlatGround = (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.707106781f);
-		}
+
+		// Try to retrieve grounded info
+		physx::PxRaycastBuffer hitInfo;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()), physx::PxVec3(0, -1, 0), controller->getStepOffset(), hitInfo))
+			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.707106781f);
 
 		if (isFlatGround)
+		{
 			velocity.y = 0.0f;		// Remove gravity
+			
+			if (hitInfo.hasBlock && (hitInfo.block.actor->getType() & physx::PxActorType::eRIGID_DYNAMIC))
+			{
+				physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)hitInfo.block.actor;
+				standingOnAngularVelocityYRadians = body->getAngularVelocity().y;
+				hasValidStandingOnAngularVelocityY = true;
+			}
+		}
 		else
 			isSliding = true;		// Slide down!
 	}
