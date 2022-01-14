@@ -221,7 +221,7 @@ float shadowCalculationPoint(int lightIndex, int shadowIndex, vec3 fragPosition)
 
     // PCF modded edition
     float shadow = 0.0;
-    float bias = max((0.00065 * currentDepth * currentDepth + 0.15) * (1.0 - dot(normalize(normalVector), normalize(fragToLight))), 0.005);
+    float bias = max((0.00065 * currentDepth * currentDepth + 0.2) * (1.0 - dot(normalize(normalVector), normalize(fragToLight))), 0.005);
     int samples = 20;
     float viewDistance = length(viewPosition.xyz - fragPosition);
     float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[shadowIndex])) / 25.0;
