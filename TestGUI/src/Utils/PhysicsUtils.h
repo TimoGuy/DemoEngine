@@ -85,9 +85,9 @@ namespace PhysicsUtils
 
 	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));
 
-	void imguiRenderSphereCollider(glm::mat4 modelMatrix, physx::PxSphereGeometry& sphereGeometry);
+	void imguiRenderSphereCollider(glm::mat4 modelMatrix, float radius);
 
-	void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, physx::PxCapsuleGeometry& capsuleGeometry);
+	void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, float radius, float halfHeight);
 
 	void imguiRenderCharacterController(glm::mat4 modelMatrix, physx::PxCapsuleController& controller);
 

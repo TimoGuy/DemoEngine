@@ -341,20 +341,20 @@ namespace PhysicsUtils
 		}
 	}
 
-	void imguiRenderSphereCollider(glm::mat4 modelMatrix, physx::PxSphereGeometry& sphereGeometry)
+	void imguiRenderSphereCollider(glm::mat4 modelMatrix, float radius)
 	{
-		imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 16);
-		imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f), 16);
-		imguiRenderCircle(modelMatrix, sphereGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(0.0f), 16);
+		imguiRenderCircle(modelMatrix, radius, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 16);
+		imguiRenderCircle(modelMatrix, radius, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), glm::vec3(0.0f), 16);
+		imguiRenderCircle(modelMatrix, radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(0.0f), 16);
 	}
 
-	void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, physx::PxCapsuleGeometry& capsuleGeometry)
+	void imguiRenderCapsuleCollider(glm::mat4 modelMatrix, float radius, float halfHeight)
 	{
 		// Capsules by default extend along the x axis
-		imguiRenderSausage(modelMatrix, capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(0.0f, 0.0f, 0.0f), 16);
-		imguiRenderSausage(modelMatrix, capsuleGeometry.radius, capsuleGeometry.halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), 16);
-		imguiRenderCircle(modelMatrix, capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(-capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
-		imguiRenderCircle(modelMatrix, capsuleGeometry.radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(capsuleGeometry.halfHeight, 0.0f, 0.0f), 16);
+		imguiRenderSausage(modelMatrix, radius, halfHeight, glm::vec3(0.0f, 0.0f, 0.0f), 16);
+		imguiRenderSausage(modelMatrix, radius, halfHeight, glm::vec3(glm::radians(90.0f), 0.0f, 0.0f), 16);
+		imguiRenderCircle(modelMatrix, radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(-halfHeight, 0.0f, 0.0f), 16);
+		imguiRenderCircle(modelMatrix, radius, glm::vec3(0.0f, glm::radians(90.0f), 0.0f), glm::vec3(halfHeight, 0.0f, 0.0f), 16);
 	}
 
 	void imguiRenderCharacterController(glm::mat4 modelMatrix, physx::PxCapsuleController& controller)

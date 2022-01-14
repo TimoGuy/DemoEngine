@@ -234,7 +234,7 @@ float shadowCalculationPoint(int lightIndex, int shadowIndex, vec3 fragPosition)
 
     // PCF modded edition
     float shadow = 0.0;
-    float bias = 0.15;
+    float bias = max((0.00065 * currentDepth * currentDepth + 0.2) * (1.0 - dot(normalize(normalVector), normalize(fragToLight))), 0.005);
     int samples = 20;
     float viewDistance = length(viewPosition.xyz - fragPosition);
     float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[shadowIndex])) / 25.0;
@@ -381,11 +381,12 @@ void main()
         if (length(lightDirections[i].xyz) == 0.0f)
         {
             // Point light
+            const float lightAttenuationThreshold = 0.025;
             L = normalize(lightPositions[i].xyz - fragPosition);
             H = normalize(V + L);
             float distance = length(lightPositions[i].xyz - fragPosition);
             attenuation = 1.0 / (distance * distance);
-            radiance = lightColors[i].xyz * attenuation;
+            radiance = max(lightColors[i].xyz * attenuation - lightAttenuationThreshold, 0.0);
 
             if (lightDirections[i].a == 1)
                 shadow = shadowCalculationPoint(i, shadowIndex, fragPosition);

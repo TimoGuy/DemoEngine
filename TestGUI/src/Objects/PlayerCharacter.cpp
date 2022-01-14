@@ -851,11 +851,11 @@ void PlayerCharacter::imguiRender()
 {
 	if (showPlayerIndoorDetectionCapsuleOverlap)
 	{
-		physx::PxCapsuleGeometry capsuleGeom(indoorOverlapCheckRadius, indoorOverlapCheckHeight);
 		PhysicsUtils::imguiRenderCapsuleCollider(
 			glm::translate(getTransform(), glm::vec3(0, indoorOverlapCheckOffY, 0)) *
 				glm::toMat4(glm::quat({ 0.0f, 0.0f, glm::radians(90.0f) })),
-			capsuleGeom
+			indoorOverlapCheckRadius,
+			indoorOverlapCheckHeight
 		);
 	}
 }

@@ -109,6 +109,58 @@ float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float com
     return mix(mixA, mixB, fracPart.x);
 }
 
+float shadowSampleCSMLayer(vec3 lightDir, int layer)
+{
+    vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    if (currentDepth > 1.0)
+    {
+        return 0.0;
+    }
+    // calculate bias (based on depth map resolution and slope)     // NOTE: This is tuned for 1024x1024 stable shadow maps
+    vec3 normal = normalize(normalVector);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float distanceMultiplier = pow(0.45, layer);
+
+    if (layer == cascadeCount)
+    {
+        bias *= 1 / (farPlane * distanceMultiplier);
+    }
+    else
+    {
+        bias *= 1 / (cascadePlaneDistances[layer] * distanceMultiplier);
+    }
+
+    // PCF
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / vec2(textureSize(csmShadowMap, 0));
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;        // @Debug: not filtered shadows
+            //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+            shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
+        }
+    }
+    shadow /= 9.0;
+    shadow = 1.0 - shadow;
+    
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+    {
+        shadow = 0.0;
+    }
+
+    return shadow;
+}
+
 float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 {
 	// select cascade layer
@@ -128,71 +180,27 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     {
         layer = cascadeCount;
     }
-    //if (depthValue > farPlane)                   (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
-    //{
-    //    return 0.0;
-    //}
-
-    vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
-    // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-
-    // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
-    if (currentDepth > 1.0)
+    if (depthValue > farPlane)                  // (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
     {
         return 0.0;
     }
-    // calculate bias (based on depth map resolution and slope)
-    vec3 normal = normalize(normalVector);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    // Fading between shadow cascades
+    float fadingEdgeAmount = 2.5 * (layer + 1);
+    float visibleAmount = -1;
     if (layer == cascadeCount)
-    {
-        bias *= 1 / (farPlane * 0.5f);
-    }
+        visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
     else
-    {
-        bias *= 1 / (cascadePlaneDistances[layer] * 0.5f);
-    }
+        visibleAmount = clamp(cascadePlaneDistances[layer] - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
 
-    // PCF
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(csmShadowMap, 0));
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            //int x = 0, y = 0;      NOTE: only use this for furthest cascade
-            //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
-            //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
-            shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
-        }
-    }
-    shadow /= 9.0;
-    shadow = 1.0 - shadow;
-    
-    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
-    if(projCoords.z > 1.0)
-    {
-        shadow = 0.0;
-    }
+    // Sample the shadow map(s)
+    float shadow1 = 0, shadow2 = 0;
+    if (layer != cascadeCount && visibleAmount < 1.0)
+        shadow2 = shadowSampleCSMLayer(lightDir, layer + 1);
+    shadow1 = shadowSampleCSMLayer(lightDir, layer);
 
-    //
-    // Do far shadow fadeaway       (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
-    //
-    //if (layer == cascadeCount)
-    //{
-    //    float fadingEdgeAmount = 10.0;
-    //    float visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
-    //    shadow *= visibleAmount;
-    //}
-
-    //if (shadow < 0.5)       // NOTE: this is to remove some shadow acne for further cascades
-    //    return 0.0;         //              NOTE NOTE: After some thinking, we should do a separate renderbuffer to do all of the shadow rendering into the screen space, and then blur it, and then plop it onto the screen after the fact! After the blurring process we could probs do this shadow<0.5, discard dealio. This could speed up things too, maybe?
-
-    return shadow;
+    // Mix sampled shadows       (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
+    return mix(shadow2, shadow1, visibleAmount);
 }
 
 
@@ -213,7 +221,7 @@ float shadowCalculationPoint(int lightIndex, int shadowIndex, vec3 fragPosition)
 
     // PCF modded edition
     float shadow = 0.0;
-    float bias = 0.15;
+    float bias = max((0.00065 * currentDepth * currentDepth + 0.15) * (1.0 - dot(normalize(normalVector), normalize(fragToLight))), 0.005);
     int samples = 20;
     float viewDistance = length(viewPosition.xyz - fragPosition);
     float diskRadius = (1.0 + (viewDistance / pointLightShadowFarPlanes[shadowIndex])) / 25.0;
@@ -327,11 +335,12 @@ void main()
         if (length(lightDirections[i].xyz) == 0.0f)
         {
             // Point light
+            const float lightAttenuationThreshold = 0.025;
             L = normalize(lightPositions[i].xyz - fragPosition);
             H = normalize(V + L);
             float distance = length(lightPositions[i].xyz - fragPosition);
             attenuation = 1.0 / (distance * distance);
-            radiance = lightColors[i].xyz * attenuation;
+            radiance = max(lightColors[i].xyz * attenuation - lightAttenuationThreshold, 0.0);
 
             if (lightDirections[i].a == 1)
                 shadow = shadowCalculationPoint(i, shadowIndex, fragPosition);

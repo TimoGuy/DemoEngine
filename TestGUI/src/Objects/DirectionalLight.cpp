@@ -521,7 +521,5 @@ void DirectionalLight::imguiRender()
 
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
 	}
-
-	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
 }
 #endif

@@ -181,9 +181,9 @@ private:
 	// Skybox Rendering
 	GLuint skybox_program_id;
 	SkyboxParams skyboxParams;
-	static const size_t numSkyMaps = 5;
+	static const size_t numSkyMaps = 6;
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
-	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f };			// NOTE: these values must be listed in descending order
+	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f, -30.0f };			// NOTE: these values must be listed in descending order
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
 	float mapInterpolationAmt;

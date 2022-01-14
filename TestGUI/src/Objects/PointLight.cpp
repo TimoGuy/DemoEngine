@@ -82,6 +82,9 @@ PointLightLight::~PointLightLight()
 
 void PointLightLight::refreshShadowBuffers()
 {
+	constexpr float lightAttenuationThreshold = 0.025f;		// If the attenuation gets below here, then the light is done (also where the shadowmap ends)
+	farPlane = glm::sqrt(colorIntensity / lightAttenuationThreshold);
+
 	if (castsShadows)
 		createShadowBuffers();
 	else
@@ -199,7 +202,14 @@ void PointLightLight::refreshResources()
 void PointLight::imguiPropertyPanel()
 {
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
+
+	static float cachedColorIntensity = lightComponent->colorIntensity;
 	ImGui::DragFloat("Light color multiplier", &lightComponent->colorIntensity);
+	if (cachedColorIntensity != lightComponent->colorIntensity)
+	{
+		cachedColorIntensity = lightComponent->colorIntensity;
+		((PointLightLight*)lightComponent)->refreshShadowBuffers();
+	}
 
 	//
 	// Toggle shadows
@@ -248,6 +258,6 @@ void PointLight::imguiRender()
 		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
-	PhysicsUtils::imguiRenderCircle(getTransform(), 0.25f, glm::vec3(0.0f), glm::vec3(0.0f), 16, ImColor::HSV(0.1083f, 0.66f, 0.91f));
+	PhysicsUtils::imguiRenderSphereCollider(getTransform(), ((PointLightLight*)getLightComponent())->farPlane);
 }
 #endif
