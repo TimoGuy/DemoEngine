@@ -122,6 +122,14 @@ void MainLoop::initialize()
 	glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxArrayLayers);
 	glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &max3DTexSize);
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxTexUnits);
+	int workGroupSizes[3] = { 0 };
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &workGroupSizes[0]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &workGroupSizes[1]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &workGroupSizes[2]);
+	int workGroupCounts[3] = { 0 };
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &workGroupCounts[0]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &workGroupCounts[1]);
+	glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &workGroupCounts[2]);
 
 	std::cout << "Graphics Renderer:\t" << glGetString(GL_RENDERER) << std::endl;
 	std::cout << "OpenGL Version:\t\t" << glGetString(GL_VERSION) << std::endl;
@@ -132,6 +140,8 @@ void MainLoop::initialize()
 	std::cout << "GL_MAX_ARRAY_TEXTURE_LAYERS:\t\t" << maxArrayLayers << std::endl;
 	std::cout << "GL_MAX_3D_TEXTURE_SIZE:\t\t\t" << max3DTexSize << std::endl;
 	std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:\t" << maxTexUnits << std::endl;
+	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE:\t\t{ " << workGroupSizes[0] << ", " << workGroupSizes[1] << ", " << workGroupSizes[2] << "}" << std::endl;
+	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT:\t{ " << workGroupCounts[0] << ", " << workGroupCounts[1] << ", " << workGroupCounts[2] << "}" << std::endl;
 	std::cout << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
