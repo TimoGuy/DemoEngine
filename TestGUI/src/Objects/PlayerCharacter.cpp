@@ -319,20 +319,25 @@ void PlayerCharacter::processMovement()
 		jumpCoyoteTimer -= MainLoop::getInstance().deltaTime;
 	}
 
-	// Jump (but not if sliding)
+	// Poll input for the jump (include debounce input)
+	jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
 	static bool prevJumpPressed = false;
+	if (!prevJumpPressed && InputManager::getInstance().jumpPressed)
+		jumpInputDebounceTimer = jumpInputDebounceTime;
+	prevJumpPressed = InputManager::getInstance().jumpPressed;
+
+	// Jump (but not if sliding)
 	if (!lockJumping &&
 		!((PlayerPhysics*)getPhysicsComponent())->getIsSliding() &&
-		!prevJumpPressed &&
-		InputManager::getInstance().jumpPressed &&
+		jumpInputDebounceTimer > 0.0f &&
 		jumpCoyoteTimer > 0.0f)
 	{
+		jumpInputDebounceTimer = -1.0f;
 		jumpCoyoteTimer = -1.0f;
 		velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 	}
-	prevJumpPressed = InputManager::getInstance().jumpPressed;
 
 	if (isMoving)
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);

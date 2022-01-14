@@ -89,6 +89,8 @@ public:
 	float jumpSpeed[2] = { 1.4f, 1.0f };
 	float jumpCoyoteTime = 0.25f;
 	float jumpCoyoteTimer;
+	float jumpInputDebounceTime = 0.25f;
+	float jumpInputDebounceTimer;
 
 	float currentRunSpeed = 0.0f;						// This is the value that gets changed
 	float immediateTurningRequiredSpeed = 0.1f;			// The maximum velocity you can have to keep the ability to immediately turn (while grounded)
