@@ -35,8 +35,6 @@ public:
 	void imguiRender();
 #endif
 
-	// TODO: this should be private, with all the components just referring back to the single main one
-	physx::PxVec3 velocity, angularVelocity;
 
 	// TODO: This needs to stop (having a bad loading function) bc this function should be private, but it's not. Kuso.
 	void refreshResources();
@@ -73,4 +71,8 @@ private:
 		glm::i64vec3 select_to_pos;
 	};
 	ImguiRenderVariables irv;
+
+	// TODO: this should be private, with all the components just referring back to the single main one
+	bool rigidbodyIsDynamic;
+	physx::PxVec3 velocity, angularVelocity;
 };

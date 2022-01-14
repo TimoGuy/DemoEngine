@@ -28,16 +28,13 @@ namespace PhysicsUtils
 	glm::vec3 toGLMVec3(const physx::PxVec3& in);
 
 	physx::PxQuat createQuatFromEulerDegrees(glm::vec3 eulerAnglesDegrees);
-
 	glm::mat4 createGLMTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees = glm::vec3(0.0f), glm::vec3 scale = glm::vec3(1.0f));
-
 	physx::PxTransform createTransform(glm::vec3 position, glm::vec3 eulerAnglesDegrees = glm::vec3(0.0f));
-
 	physx::PxTransform createTransform(glm::mat4 transform);
-
 	glm::mat4 physxTransformToGlmMatrix(physx::PxTransform transform);
-
 	physx::PxRigidActor* createRigidActor(physx::PxPhysics* physics, physx::PxTransform transform, RigidActorTypes rigidActorType);
+
+	bool epsilonEqualsMatrix(glm::mat4& m1, glm::mat4& m2, float epsilon = 0.001f);
 
 	//physx::PxBoxGeometry createBoxCollider;				// TODO: Idk if these functions would be worth it to build... let's just keep going and see if they are
 	//physx::PxSphereGeometry sphereCollider;

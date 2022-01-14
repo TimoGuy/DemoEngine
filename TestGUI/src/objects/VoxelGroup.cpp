@@ -26,6 +26,9 @@ VoxelGroup::VoxelGroup()
 	temp_voxel_render_size = voxel_render_size;
 	voxel_group_color = glm::vec3(1);
 	temp_voxel_group_color = voxel_group_color;
+	velocity = physx::PxVec3(0.0f);
+	angularVelocity = physx::PxVec3(0.0f);
+	rigidbodyIsDynamic = false;
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
@@ -446,7 +449,14 @@ void VoxelGroup::updateQuadMeshFromBitField()
 
 void VoxelGroup::physicsUpdate()
 {
-	if (velocity.isZero() && angularVelocity.isZero())
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero());
+	if (rigidbodyIsDynamic != shouldBeDynamicRigidbody)
+	{
+		is_voxel_bit_field_dirty = true;
+		return;
+	}
+
+	if (!shouldBeDynamicRigidbody)
 		return;
 
 	physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)getPhysicsComponent()->getActor();
@@ -454,7 +464,7 @@ void VoxelGroup::physicsUpdate()
 	trans.p += velocity;
 	trans.q *= PhysicsUtils::createQuatFromEulerDegrees(PhysicsUtils::toGLMVec3(angularVelocity));
 	body->setKinematicTarget(trans);
-	INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
+	INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(body->getGlobalPose()));
 }
 
 void VoxelGroup::INTERNALrecreatePhysicsComponent()
@@ -462,7 +472,10 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	if (physicsComponent != nullptr)
 		delete physicsComponent;
 
-	physicsComponent = new TriangleMeshCollider(this, voxel_model, RigidActorTypes::STATIC);
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero());
+	physicsComponent = new TriangleMeshCollider(this, voxel_model, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
+	rigidbodyIsDynamic = shouldBeDynamicRigidbody;
+	//setTransform(getTransform());		// NOTE: this is to prevent weird interpolation skipping
 }
 
 

@@ -1735,12 +1735,12 @@ void RenderManager::renderImGuiContents()
 			ImGui::InputText("Name", &obj->name);
 			ImGui::Separator();
 
-			const glm::mat4& transOriginal = obj->getTransform();
+			glm::mat4& transOriginal = obj->getTransform();
 			glm::mat4 transCopy = transOriginal;
 			PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(transCopy));
 
 			// To propogate the transform!!
-			if (transCopy != transOriginal)
+			if (!PhysicsUtils::epsilonEqualsMatrix(transOriginal, transCopy))
 				obj->setTransform(transCopy);
 
 			ImGui::Separator();
