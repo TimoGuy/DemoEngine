@@ -37,6 +37,7 @@
 #include "../../objects/WaterPuddle.h"
 #include "../../objects/RiverDropoff.h"
 #include "../../objects/VoxelGroup.h"
+#include "../../objects/Spline.h"
 
 
 void renderCube();
@@ -1648,6 +1649,7 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Collectable Water Puddle"))	newObject = new WaterPuddle();
 				if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
 				if (ImGui::Selectable("Voxel Group"))				newObject = new VoxelGroup();
+				if (ImGui::Selectable("Spline Tool"))				newObject = new Spline();
 
 				if (newObject != nullptr)
 					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;

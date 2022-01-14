@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\objects\Spline.cpp" />
     <ClCompile Include="src\imgui\GraphEditor.cpp" />
     <ClCompile Include="src\imgui\ImCurveEdit.cpp" />
     <ClCompile Include="src\imgui\ImGradient.cpp" />
@@ -248,6 +249,7 @@
     <None Include="shader\z_prepass.frag" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\objects\Spline.h" />
     <ClInclude Include="src\imgui\GraphEditor.h" />
     <ClInclude Include="src\imgui\ImCurveEdit.h" />
     <ClInclude Include="src\imgui\ImGradient.h" />

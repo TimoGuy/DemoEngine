@@ -29,6 +29,9 @@ public:
 	BaseObject();
 	virtual ~BaseObject() = 0;		// NOTE: no compilation error occurs if the destructor isn't defined dang nabbit
 
+	//
+	// Required functions
+	//
 	virtual void refreshResources() = 0;		// NOTE: this inserts in models, materials, etc. into the various components. This doesn't recreate the physics shapes or anything.
 
 	virtual void loadPropertiesFromJson(nlohmann::json& object) = 0;
