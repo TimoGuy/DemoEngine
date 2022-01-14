@@ -364,7 +364,8 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	float externalStandingAngularVelocityYRadians;
 	if (((PlayerPhysics*)getPhysicsComponent())->getStandingOnAngularVelocityY(externalStandingAngularVelocityYRadians))
 	{
-		facingDirection = glm::quat(glm::vec3(0.0f, 0.0f, MainLoop::getInstance().deltaTime * -externalStandingAngularVelocityYRadians)) * glm::vec3(facingDirection, 0.0f);
+		// NOTE: bc this is a physics-based value, we need to multiply by the physics delta time, not the regular delta time
+		facingDirection = glm::quat(glm::vec3(0.0f, 0.0f, MainLoop::getInstance().physicsDeltaTime * -externalStandingAngularVelocityYRadians)) * glm::vec3(facingDirection, 0.0f);
 	}
 
 	//
