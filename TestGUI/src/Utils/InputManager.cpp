@@ -108,20 +108,28 @@ void InputManager::updateInputState()
 			float _tempRightStickX = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
-			const float deadzoneLeftStick = 0.5f;
-			const float deadzoneRightStickX = 0.3f;
+			const float deadzoneLeftStick = 0.3f;
+			const float deadzoneRightStickX = 0.2f;
 			const float deadzoneRightStickY = 0.5f;
-			const float rightStickSensitivity = 5.0f;
+			const float rightStickSensitivity = 6.75f;
 
 			if (abs(_tempLeftStickX) > deadzoneLeftStick || abs(_tempLeftStickY) > deadzoneLeftStick)
 			{
-				leftStickX += _tempLeftStickX;
-				leftStickY += _tempLeftStickY * -1.0f;
+				leftStickX += glm::sign(_tempLeftStickX) * glm::pow(abs(_tempLeftStickX), 1.7f);
+				leftStickY += glm::sign(_tempLeftStickY) * glm::pow(abs(_tempLeftStickY), 1.7f) * -1.0f;
 			}
+
 			if (abs(_tempRightStickX) > deadzoneRightStickX)
-				rightStickX += (_tempRightStickX + (_tempRightStickX < 0 ? deadzoneRightStickX : -deadzoneRightStickX)) / (1.0f - deadzoneRightStickX) * rightStickSensitivity;
+			{
+				const float rightStickGamepadX = (_tempRightStickX + (_tempRightStickX < 0 ? deadzoneRightStickX : -deadzoneRightStickX)) / (1.0f - deadzoneRightStickX);
+				rightStickX += glm::sign(rightStickGamepadX) * glm::pow(abs(rightStickGamepadX), 2.2f) * rightStickSensitivity * MainLoop::getInstance().deltaTime * 60.0f;
+			}
+
 			if (abs(_tempRightStickY) > deadzoneRightStickY)
-				rightStickY += (_tempRightStickY + (_tempRightStickY < 0 ? deadzoneRightStickY : -deadzoneRightStickY)) / (1.0f - deadzoneRightStickY) * rightStickSensitivity;
+			{
+				const float rightStickGamepadY = (_tempRightStickY + (_tempRightStickY < 0 ? deadzoneRightStickY : -deadzoneRightStickY)) / (1.0f - deadzoneRightStickY);
+				rightStickY += glm::sign(rightStickGamepadY) * glm::pow(abs(rightStickGamepadY), 1.7f) * rightStickSensitivity * MainLoop::getInstance().deltaTime * 60.0f;
+			}
 		}
 	}
 
