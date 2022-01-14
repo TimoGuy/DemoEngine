@@ -47,6 +47,7 @@ public:
 	RenderComponent* getRenderComponent() { return nullptr; }
 
 #ifdef _DEVELOP
+	static bool showLightVolumes;
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif

@@ -199,6 +199,8 @@ void PointLightLight::refreshResources()
 }
 
 #ifdef _DEVELOP
+bool PointLight::showLightVolumes = false;
+
 void PointLight::imguiPropertyPanel()
 {
 	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
@@ -210,6 +212,9 @@ void PointLight::imguiPropertyPanel()
 		cachedColorIntensity = lightComponent->colorIntensity;
 		((PointLightLight*)lightComponent)->refreshShadowBuffers();
 	}
+
+	// Show light volumes
+	ImGui::Checkbox("Show light volumes (Global)", &showLightVolumes);
 
 	//
 	// Toggle shadows
@@ -258,6 +263,7 @@ void PointLight::imguiRender()
 		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)(intptr_t)lightGizmoTextureId, p_min, p_max);
 	}
 
-	PhysicsUtils::imguiRenderSphereCollider(getTransform(), ((PointLightLight*)getLightComponent())->farPlane);
+	if (showLightVolumes)
+		PhysicsUtils::imguiRenderSphereCollider(getTransform(), ((PointLightLight*)getLightComponent())->farPlane);
 }
 #endif
