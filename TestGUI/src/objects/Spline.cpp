@@ -11,10 +11,10 @@
 Spline::Spline()
 {
     name = "Spline (unnamed)";
-    m_control_points.push_back(glm::vec3(0, 0, 0));
-    m_control_points.push_back(glm::vec3(0, 0, 1));
+    m_control_modules.push_back({ glm::vec3(0, 0, 0), glm::vec3(1, 0, 0) });
+    m_control_modules.push_back({ glm::vec3(0, 0, 1), glm::vec3(1, 0, 0) });
     m_total_distance_cache = calculateTotalDistance();
-    m_debug_show_spline = false;
+    m_debug_show_spline = true;
 }
 
 Spline::~Spline()
@@ -39,19 +39,26 @@ void Spline::imguiPropertyPanel()
 {
     ImGui::Text("Control Points");
     ImGui::Checkbox("Show Debug Visualization", &m_debug_show_spline);
-    for (size_t i = 0; i < m_control_points.size(); i++)
+    for (size_t i = 0; i < m_control_modules.size(); i++)
     {
-        const glm::vec3 savedControlPoint = m_control_points[i];
-        ImGui::DragFloat3(("Point " + std::to_string(i) + "##" + guid).c_str(), &m_control_points[i].x);
+        std::string pointName = "Point " + std::to_string(i) + "##" + guid;
+        ImGui::Text(pointName.c_str());
+        const SplineControlModule savedControlPoint = m_control_modules[i];
+        ImGui::DragFloat3(("Position (Local-Space)##" + pointName).c_str(), &m_control_modules[i].position.x);
+        ImGui::DragFloat3(("Control Point (Relative to Position)##" + pointName).c_str(), &m_control_modules[i].localControlPoint.x);
 
-        if (savedControlPoint != m_control_points[i])
+        if (savedControlPoint.position != m_control_modules[i].position ||
+            savedControlPoint.localControlPoint != m_control_modules[i].localControlPoint)
             m_total_distance_cache_dirty = true;
     }
 }
 
 void Spline::imguiRender()
 {
-    for (size_t i = 1; i < m_calculated_points_cache.size(); i++)
+    if (!m_debug_show_spline || m_control_modules.size() < 2)
+        return;
+
+    for (size_t i = 1; i < m_control_modules.size(); i++)
     {
         //
         // Convert to screen space
@@ -60,10 +67,12 @@ void Spline::imguiRender()
 
         bool willBeOnScreen = true;
         glm::vec3 pointsOnScreen[] = {
-            MainLoop::getInstance().camera.PositionToClipSpace(m_calculated_points_cache[i - 1]),
-            MainLoop::getInstance().camera.PositionToClipSpace(m_calculated_points_cache[i])
+            MainLoop::getInstance().camera.PositionToClipSpace(glm::vec3(getTransform() * glm::vec4(m_control_modules[i - 1].position,                                                  1.0f))),
+            MainLoop::getInstance().camera.PositionToClipSpace(glm::vec3(getTransform() * glm::vec4(m_control_modules[i - 1].position   + m_control_modules[i - 1].localControlPoint,   1.0f))),
+            MainLoop::getInstance().camera.PositionToClipSpace(glm::vec3(getTransform() * glm::vec4(m_control_modules[i].position       - m_control_modules[i].localControlPoint,       1.0f))),
+            MainLoop::getInstance().camera.PositionToClipSpace(glm::vec3(getTransform() * glm::vec4(m_control_modules[i].position,                                                      1.0f))),
         };
-        for (size_t ii = 0; ii < 2; ii++)
+        for (size_t ii = 0; ii < 4; ii++)
         {
             if (pointsOnScreen[ii].z < 0.0f)
             {
@@ -82,7 +91,9 @@ void Spline::imguiRender()
 
         ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
         ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
-        ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
+        ImVec2 point3(pointsOnScreen[2].x, pointsOnScreen[2].y);
+        ImVec2 point4(pointsOnScreen[3].x, pointsOnScreen[3].y);
+        ImGui::GetBackgroundDrawList()->AddBezierCubic(point1, point2, point3, point4, lineColor, 1.0f);        // NOTE: with num_segments set to 0, it's auto-tesselated. Let's see how this goes eh
     }
 }
 #endif
@@ -101,31 +112,31 @@ glm::vec3 Spline::getPositionFromLengthAlongPath(float length)
 
 float Spline::calculateTotalDistance()
 {
-    if (m_control_points.size() < 2)
+    if (m_control_modules.size() < 2)
         return 0.0f;
 
-    m_total_distance_cache = 1.0f;    // Reset length for getPositionFromLengthAlongPath()
-    m_calculated_points_cache.clear();
-
-    constexpr float scoochInterval = 1.0f / 1000.0f;        // 1.0 / numSamples
-    float currentSamplePosition = scoochInterval;
-
-    float totalDistance = 0.0f;
-    glm::vec3 prevPosition = m_control_points[0];
-    m_calculated_points_cache.push_back(prevPosition);
-    
-    while (currentSamplePosition <= 1.0f)
-    {
-        glm::vec3 nextPosition = getPositionFromLengthAlongPath(currentSamplePosition);     // NOTE: this is normalized now bc we set the distance_cache variable to 1.0
-        m_calculated_points_cache.push_back(nextPosition);
-        totalDistance += glm::length(nextPosition - prevPosition);
-
-        currentSamplePosition += scoochInterval;
-        prevPosition = nextPosition;
-    }
+    //m_total_distance_cache = 1.0f;    // Reset length for getPositionFromLengthAlongPath()
+    //m_calculated_points_cache.clear();
+    //
+    //constexpr float scoochInterval = 1.0f / 100.0f;        // 1.0 / numSamples
+    //float currentSamplePosition = scoochInterval;
+    //
+    //float totalDistance = 0.0f;
+    //glm::vec3 prevPosition = m_control_points[0];
+    //m_calculated_spline_curve_cache.push_back(prevPosition);
+    //
+    //while (currentSamplePosition <= 1.0f)
+    //{
+    //    glm::vec3 nextPosition = getPositionFromLengthAlongPath(currentSamplePosition);     // NOTE: this is normalized now bc we set the distance_cache variable to 1.0
+    //    m_calculated_spline_curve_cache.push_back(nextPosition);
+    //    totalDistance += glm::length(nextPosition - prevPosition);
+    //
+    //    currentSamplePosition += scoochInterval;
+    //    prevPosition = nextPosition;
+    //}
 
     // Spit it out!
-    m_total_distance_cache = totalDistance;
+    m_total_distance_cache = 0;// totalDistance;
     m_total_distance_cache_dirty = false;
     return m_total_distance_cache;
 }

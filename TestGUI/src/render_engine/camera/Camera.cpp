@@ -223,11 +223,11 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 			position += speed * orientation * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			position += speed * -glm::cross(orientation, up) * MainLoop::getInstance().deltaTime;
+			position += speed * -glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 			position += speed * -orientation * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			position += speed * glm::cross(orientation, up) * MainLoop::getInstance().deltaTime;
+			position += speed * glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
 			position += speed * -up * MainLoop::getInstance().deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)

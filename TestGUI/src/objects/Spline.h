@@ -3,6 +3,13 @@
 #include "BaseObject.h"
 
 
+struct SplineControlModule
+{
+	glm::vec3 position;
+	glm::vec3 localControlPoint;		// NOTE: to get the mirrored version of this, multiply by -1
+	float cacheDistance;
+};
+
 //
 // NOTE: this is more of an editor tool right here.
 //		You use it to assign a moving platform to.
@@ -35,8 +42,8 @@ public:
 	inline float getTotalLengthOfPath() { return m_total_distance_cache; }
 
 private:
-	std::vector<glm::vec3> m_control_points;
-	std::vector<glm::vec3> m_calculated_points_cache;
+	std::vector<SplineControlModule> m_control_modules;
+	std::vector<glm::vec3> m_calculated_spline_curve_cache;
 	float m_total_distance_cache;
 	bool m_total_distance_cache_dirty;
 	bool m_debug_show_spline;
