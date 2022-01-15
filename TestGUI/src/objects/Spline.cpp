@@ -168,15 +168,14 @@ float Spline::calculateTotalDistance()
     m_calculated_spline_curve_cache.clear();
     m_calculated_spline_curve_distances_cache.clear();    // Signal to let getPositionFromLengthAlongPath() that length needs to be 1.0 for each curve
 
+    glm::vec3 prevPosition = m_control_modules[0].position;
+    m_calculated_spline_curve_cache.push_back(prevPosition);     // Only log the first one, or else we get repeats for last point in curve and first point in next curve
+
     std::vector<float_t> calculatedDistances;
     for (size_t i = 1; i < m_control_modules.size(); i++)
     {
         constexpr float scoochInterval = 1.0f / 100.0f;        // 1.0 / numSamples
         float currentSamplePosition = scoochInterval;
-
-        glm::vec3 prevPosition = m_control_modules[i - 1].position;
-        if (i - 1 == 0)
-            m_calculated_spline_curve_cache.push_back(prevPosition);     // Only log the first one, or else we get repeats for last point in curve and first point in next curve
 
         float segmentDistance = 0.0f;
         while (currentSamplePosition <= 1.0f)
