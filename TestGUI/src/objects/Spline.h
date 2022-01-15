@@ -7,7 +7,6 @@ struct SplineControlModule
 {
 	glm::vec3 position;
 	glm::vec3 localControlPoint;		// NOTE: to get the mirrored version of this, multiply by -1
-	float cacheDistance;
 };
 
 //
@@ -44,8 +43,9 @@ public:
 private:
 	std::vector<SplineControlModule> m_control_modules;
 	std::vector<glm::vec3> m_calculated_spline_curve_cache;
+	std::vector<float_t> m_calculated_spline_curve_distances_cache;
 	float m_total_distance_cache;
-	bool m_total_distance_cache_dirty;
+	bool m_cache_dirty;
 	bool m_debug_show_spline;
 
 	float calculateTotalDistance();
