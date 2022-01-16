@@ -32,6 +32,7 @@ VoxelGroup::VoxelGroup()
 	rigidbodyIsDynamic = false;
 	assignedSplineGUID = "";
 	movingPlatformMoveBackwards = false;
+	pingPongHoldTime = 0.0f;
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
@@ -161,6 +162,8 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 		movingPlatformMoveBackwards = object["moving_platform_spline_move_backwards"];
 	if (object.contains("moving_platform_spline_mvt_mode"))
 		splineMovementMode = (MOVING_PLATFORM_MODE)object["moving_platform_spline_mvt_mode"];
+	if (object.contains("moving_platform_spline_pp_hold_time"))
+		pingPongHoldTime = object["moving_platform_spline_pp_hold_time"];
 
 	// TODO: make it so that you don't have to retrigger this every time you load
 	refreshResources();
@@ -234,6 +237,7 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 	j["moving_platform_spline_position_in_time"] = currentSplinePosition;
 	j["moving_platform_spline_move_backwards"] = movingPlatformMoveBackwards;
 	j["moving_platform_spline_mvt_mode"] = (int)splineMovementMode;
+	j["moving_platform_spline_pp_hold_time"] = pingPongHoldTime;
 
 	return j;
 }
@@ -518,15 +522,27 @@ void VoxelGroup::physicsUpdate()
 		// Ping-pong mode
 		else if (splineMovementMode == MOVING_PLATFORM_MODE::PING_PONG)
 		{
+			// Push up against the end and hold
 			if (currentSplinePosition > totalLengthOfPath - 0.001f)
 			{
 				currentSplinePosition = totalLengthOfPath - 0.001f;
-				movingPlatformMoveBackwards = true;
+				pingPongHoldTimer += MainLoop::getInstance().physicsDeltaTime;
 			}
 			else if (currentSplinePosition < 0.0f)
 			{
 				currentSplinePosition = 0;
-				movingPlatformMoveBackwards = false;
+				pingPongHoldTimer += MainLoop::getInstance().physicsDeltaTime;
+			}
+			else
+			{
+				pingPongHoldTimer = 0.0f;
+			}
+
+			// End the holding once timer reaches the required time
+			if (pingPongHoldTimer > pingPongHoldTime)
+			{
+				movingPlatformMoveBackwards = !movingPlatformMoveBackwards;
+				pingPongHoldTimer = 0.0f;
 			}
 		}
 	}
@@ -839,6 +855,9 @@ void VoxelGroup::imguiPropertyPanel()
 		int splineMvtModeAsInt = (int)splineMovementMode;
 		ImGui::Combo("Moving platform mvt mode", &splineMvtModeAsInt, "Loop\0Stop at End\0Ping pong");
 		splineMovementMode = (MOVING_PLATFORM_MODE)splineMvtModeAsInt;
+
+		if (splineMovementMode == MOVING_PLATFORM_MODE::PING_PONG)
+			ImGui::DragFloat("Ping Pong Hold Time", &pingPongHoldTime);
 	}
 }
 

@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    44.17533874511719,
-                    171.35000610351563,
-                    101.76608276367188
+                    46.382080078125,
+                    171.34999084472656,
+                    100.57770538330078
                 ],
                 "rotation": [
                     0.0,
@@ -32,14 +32,14 @@
                     -300.592529296875
                 ],
                 "rotation": [
-                    76.84969329833984,
-                    43.8307991027832,
+                    76.8497085571289,
+                    43.83079147338867,
                     -42.006561279296875
                 ],
                 "scale": [
                     0.9999989867210388,
-                    1.000001072883606,
-                    0.9999998807907104
+                    1.0000011920928955,
+                    0.9999999403953552
                 ]
             },
             "color": [
@@ -82,6 +82,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -136,6 +137,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -190,6 +192,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -244,6 +247,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -298,6 +302,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -352,6 +357,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -414,9 +420,9 @@
                     -23.978450775146484
                 ],
                 "scale": [
-                    0.999998927116394,
+                    0.9999985694885254,
                     0.9999967813491821,
-                    0.9999996423721313
+                    0.9999992847442627
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -428,6 +434,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -482,6 +489,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -536,6 +544,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -590,6 +599,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -675,6 +685,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -729,6 +740,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -783,6 +795,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -818,9 +831,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.6077988596616706e-08,
+                    -3.607799925475774e-08,
                     -0.019804134964942932,
-                    0.0002085479791276157
+                    0.00020854802278336138
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -837,6 +850,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -891,6 +905,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -945,6 +960,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -999,6 +1015,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1053,6 +1070,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1107,6 +1125,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1161,6 +1180,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1215,6 +1235,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1269,6 +1290,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1323,6 +1345,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1358,9 +1381,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.6077988596616706e-08,
+                    -3.607799925475774e-08,
                     -0.019804134964942932,
-                    0.0002085479791276157
+                    0.00020854802278336138
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -1377,6 +1400,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1431,6 +1455,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1485,6 +1510,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1539,6 +1565,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1593,6 +1620,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1647,6 +1675,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 0.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1946,9 +1975,10 @@
                 0.0
             ],
             "moving_platform_spline_guid": "aa4b269fa5c2babbb1ce4f1d272f3424714fe122291e612a874a9e7a2925b03f",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
                 0.0,
@@ -1977,7 +2007,7 @@
         {
             "baseObject": {
                 "guid": "aa4b269fa5c2babbb1ce4f1d272f3424714fe122291e612a874a9e7a2925b03f",
-                "name": "Spline (unnamed)",
+                "name": "Spline (wholeisland MP)",
                 "position": [
                     60.0,
                     168.0,
@@ -2026,7 +2056,7 @@
         {
             "baseObject": {
                 "guid": "c1d62a54beb1d2a0b7c6792b9c48d5ff17dae5a789b154a439be2130ad5228e0",
-                "name": "Spline (unnamed)",
+                "name": "Spline (Updown)",
                 "position": [
                     73.01878356933594,
                     167.5154571533203,
@@ -2075,7 +2105,7 @@
         {
             "baseObject": {
                 "guid": "a8989d548ee7639c6ffacf5b7c744fba4cb8259755f47f027393dfbdf35ee976",
-                "name": "Voxel Group (wholeisland MP)",
+                "name": "Voxel Group (Updown)",
                 "position": [
                     73.01878356933594,
                     167.5154571533203,
@@ -2101,6 +2131,7 @@
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
             "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
                 0.0,

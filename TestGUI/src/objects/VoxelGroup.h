@@ -89,4 +89,6 @@ private:
 	float currentSplinePosition;
 	bool movingPlatformMoveBackwards;
 	MOVING_PLATFORM_MODE splineMovementMode;
+	float pingPongHoldTime;
+	float pingPongHoldTimer;	// INTERNAL
 };
