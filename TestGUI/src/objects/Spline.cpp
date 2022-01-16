@@ -14,13 +14,25 @@
 
 std::vector<Spline*> Spline::m_all_splines;
 
+Spline* Spline::getSplineFromGUID(const std::string& guid)
+{
+    for (size_t i = 0; i < m_all_splines.size(); i++)
+    {
+        if (m_all_splines[i]->guid == guid)
+            return m_all_splines[i];
+    }
+    std::cout << "ERROR: SPLINE: spline with guid " << guid << " not found." << std::endl;
+    assert(false);
+    return nullptr;
+}
+
 Spline::Spline()
 {
     name = "Spline (unnamed)";
 
     m_closed_loop = false;
-    m_control_modules.push_back({ glm::vec3(0, 0, 0), glm::vec3(1, 0, 0) });
-    m_control_modules.push_back({ glm::vec3(0, 0, 1), glm::vec3(1, 0, 0) });
+    m_control_modules.push_back({ glm::vec3(0, 0, 0), glm::vec3(10, 0, 0) });
+    m_control_modules.push_back({ glm::vec3(0, 0, 10), glm::vec3(10, 0, 0) });
     m_total_distance_cache = calculateTotalDistance();
     m_debug_show_spline = true;
     m_debug_edit_spline = false;
@@ -51,11 +63,51 @@ void Spline::refreshResources()
 
 void Spline::loadPropertiesFromJson(nlohmann::json& object)
 {
+    // NOTE: "Type" is taken care of not here, but at the very beginning when the object is getting created.
+    BaseObject::loadPropertiesFromJson(object["baseObject"]);
+
+    //
+    // Load Props
+    //
+    m_control_modules.clear();
+
+    nlohmann::json& splineControlPoints = object["spline_control_points"];
+    for (auto& splineControlPoint : splineControlPoints)
+    {
+        SplineControlModule scm;
+        scm.position = { splineControlPoint["position"][0], splineControlPoint["position"][1], splineControlPoint["position"][2] };
+        scm.localControlPoint = { splineControlPoint["local_control_point"][0], splineControlPoint["local_control_point"][1], splineControlPoint["local_control_point"][2] };
+        m_control_modules.push_back(scm);
+    }
+    m_closed_loop = object["closed_loop"];
+
+    // Rerun the initialization
+    calculateTotalDistance();
 }
 
 nlohmann::json Spline::savePropertiesToJson()
 {
-    return nlohmann::json();
+    nlohmann::json j;
+    j["type"] = TYPE_NAME;
+    j["baseObject"] = BaseObject::savePropertiesToJson();
+
+    //
+    // Save Props
+    //
+    std::vector<nlohmann::json> splineControlPoints;
+    for (size_t i = 0; i < m_control_modules.size(); i++)
+    {
+        const glm::vec3 position = m_control_modules[i].position;
+        const glm::vec3 ctrlpt = m_control_modules[i].localControlPoint;
+        nlohmann::json controlPoint;
+        controlPoint["position"] = { position.x, position.y, position.z };
+        controlPoint["local_control_point"] = { ctrlpt.x, ctrlpt.y, ctrlpt.z };
+        splineControlPoints.push_back(controlPoint);
+    }
+    j["spline_control_points"] = splineControlPoints;
+    j["closed_loop"] = m_closed_loop;
+
+    return j;
 }
 
 #ifdef _DEVELOP

@@ -84,8 +84,9 @@ private:
 	bool rigidbodyIsDynamic;	// INTERNAL
 	physx::PxVec3 velocity, angularVelocity;
 
-	Spline* assignedSpline;
+	std::string assignedSplineGUID;
 	float splineSpeed;
 	float currentSplinePosition;
+	bool movingPlatformMoveBackwards;
 	MOVING_PLATFORM_MODE splineMovementMode;
 };

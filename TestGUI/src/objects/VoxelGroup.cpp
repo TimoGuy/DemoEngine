@@ -30,7 +30,8 @@ VoxelGroup::VoxelGroup()
 	velocity = physx::PxVec3(0.0f);
 	angularVelocity = physx::PxVec3(0.0f);
 	rigidbodyIsDynamic = false;
-	assignedSpline = nullptr;
+	assignedSplineGUID = "";
+	movingPlatformMoveBackwards = false;
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
@@ -143,6 +144,24 @@ void VoxelGroup::loadPropertiesFromJson(nlohmann::json& object)
 		}
 	}
 
+	//
+	// Load Moving Platform Properties
+	//
+	if (object.contains("moving_platform_velocity"))
+		velocity = physx::PxVec3(object["moving_platform_velocity"][0], object["moving_platform_velocity"][1], object["moving_platform_velocity"][2]);
+	if (object.contains("moving_platform_angular_velocity"))
+		angularVelocity = physx::PxVec3(object["moving_platform_angular_velocity"][0], object["moving_platform_angular_velocity"][1], object["moving_platform_angular_velocity"][2]);
+	if (object.contains("moving_platform_spline_guid"))
+		assignedSplineGUID = object["moving_platform_spline_guid"];
+	if (object.contains("moving_platform_spline_speed"))
+		splineSpeed = object["moving_platform_spline_speed"];
+	if (object.contains("moving_platform_spline_position_in_time"))
+		currentSplinePosition = object["moving_platform_spline_position_in_time"];
+	if (object.contains("moving_platform_spline_move_backwards"))
+		movingPlatformMoveBackwards = object["moving_platform_spline_move_backwards"];
+	if (object.contains("moving_platform_spline_mvt_mode"))
+		splineMovementMode = (MOVING_PLATFORM_MODE)object["moving_platform_spline_mvt_mode"];
+
 	// TODO: make it so that you don't have to retrigger this every time you load
 	refreshResources();
 }
@@ -204,6 +223,17 @@ nlohmann::json VoxelGroup::savePropertiesToJson()
 		}
 	}
 	j["voxel_bit_field"] = bigBitfield;
+
+	//
+	// Save Moving Platform Properties
+	//
+	j["moving_platform_velocity"] = { velocity.x, velocity.y, velocity.z };
+	j["moving_platform_angular_velocity"] = { angularVelocity.x, angularVelocity.y, angularVelocity.z };
+	j["moving_platform_spline_guid"] = assignedSplineGUID;
+	j["moving_platform_spline_speed"] = splineSpeed;
+	j["moving_platform_spline_position_in_time"] = currentSplinePosition;
+	j["moving_platform_spline_move_backwards"] = movingPlatformMoveBackwards;
+	j["moving_platform_spline_mvt_mode"] = (int)splineMovementMode;
 
 	return j;
 }
@@ -451,7 +481,7 @@ void VoxelGroup::updateQuadMeshFromBitField()
 
 void VoxelGroup::physicsUpdate()
 {
-	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSpline == nullptr);
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSplineGUID.empty());
 	if (rigidbodyIsDynamic != shouldBeDynamicRigidbody)
 	{
 		is_voxel_bit_field_dirty = true;
@@ -464,10 +494,41 @@ void VoxelGroup::physicsUpdate()
 	physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)getPhysicsComponent()->getActor();
 	physx::PxTransform trans = body->getGlobalPose();
 
-	if (assignedSpline != nullptr)
+	if (!assignedSplineGUID.empty())
 	{
-		trans.p = PhysicsUtils::toPxVec3(assignedSpline->getPositionFromLengthAlongPath(currentSplinePosition));
-		currentSplinePosition += splineSpeed * MainLoop::getInstance().physicsDeltaTime;
+		Spline* splineRef = Spline::getSplineFromGUID(assignedSplineGUID);
+		trans.p = PhysicsUtils::toPxVec3(
+			splineRef->getPositionFromLengthAlongPath(currentSplinePosition)
+		);
+
+		// Move along
+		const float totalLengthOfPath = splineRef->getTotalLengthOfPath();
+		currentSplinePosition += splineSpeed * MainLoop::getInstance().physicsDeltaTime * (movingPlatformMoveBackwards ? -1.0f : 1.0f);
+
+		// Loop mode
+		if (splineMovementMode == MOVING_PLATFORM_MODE::LOOP)
+		{
+			currentSplinePosition = glm::mod(currentSplinePosition, totalLengthOfPath);
+		}
+		// Stop at end mode
+		else if (splineMovementMode == MOVING_PLATFORM_MODE::STOP_AT_END)
+		{
+			currentSplinePosition = glm::min(currentSplinePosition, totalLengthOfPath - 0.0001f);
+		}
+		// Ping-pong mode
+		else if (splineMovementMode == MOVING_PLATFORM_MODE::PING_PONG)
+		{
+			if (currentSplinePosition > totalLengthOfPath)
+			{
+				currentSplinePosition = totalLengthOfPath - 0.0001f;
+				movingPlatformMoveBackwards = true;
+			}
+			else if (currentSplinePosition < 0.0f)
+			{
+				currentSplinePosition = 0;
+				movingPlatformMoveBackwards = false;
+			}
+		}
 	}
 	else
 		trans.p += velocity;		// Unfortunately, I think we need to turn off velocity if there's an assigned spline path
@@ -483,7 +544,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	if (physicsComponent != nullptr)
 		delete physicsComponent;
 
-	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSpline == nullptr);
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSplineGUID.empty());
 	physicsComponent = new TriangleMeshCollider(this, voxel_model, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
 	rigidbodyIsDynamic = shouldBeDynamicRigidbody;
 	//setTransform(getTransform());		// NOTE: this is to prevent weird interpolation skipping
@@ -751,20 +812,22 @@ void VoxelGroup::imguiPropertyPanel()
 		ImGui::OpenPopup("assign_spline_popup");
 	if (ImGui::BeginPopup("assign_spline_popup"))
 	{
-		if (ImGui::Selectable(("<None>##" + guid).c_str(), assignedSpline == nullptr))
-			assignedSpline = nullptr;
+		if (ImGui::Selectable(("<None>##" + guid).c_str(), assignedSplineGUID.empty()))
+			assignedSplineGUID = "";
 
 		for (size_t i = 0; i < Spline::m_all_splines.size(); i++)
 		{
-			if (ImGui::Selectable((Spline::m_all_splines[i]->name + " ::: " + Spline::m_all_splines[i]->guid).c_str(), assignedSpline == Spline::m_all_splines[i]))
-				assignedSpline = Spline::m_all_splines[i];		// NOTE: we may have a problem in the future where splines get deleted.
+			if (ImGui::Selectable((Spline::m_all_splines[i]->name + " ::: " + Spline::m_all_splines[i]->guid).c_str(), assignedSplineGUID == Spline::m_all_splines[i]->guid))
+				assignedSplineGUID = Spline::m_all_splines[i]->guid;		// NOTE: we may have a problem in the future where splines get deleted.
 		}
+		ImGui::EndPopup();
 	}
 
-	if (assignedSpline != nullptr)
+	if (!assignedSplineGUID.empty())
 	{
 		ImGui::DragFloat("Spline Speed", &splineSpeed);
 		ImGui::DragFloat("Current Spline Position", &currentSplinePosition);
+		ImGui::Checkbox("Spline Move Thru Backwards", &movingPlatformMoveBackwards);
 
 		int splineMvtModeAsInt = (int)splineMovementMode;
 		ImGui::Combo("Moving platform mvt mode", &splineMvtModeAsInt, "Loop\0Stop at End\0Ping pong");

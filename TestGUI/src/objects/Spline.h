@@ -18,6 +18,7 @@ class Spline : public BaseObject
 public:
 	static const std::string TYPE_NAME;
 	static std::vector<Spline*> m_all_splines;
+	static Spline* getSplineFromGUID(const std::string& guid);
 
 	Spline();
 	~Spline();
