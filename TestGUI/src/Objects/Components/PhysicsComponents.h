@@ -100,4 +100,8 @@ private:
 	bool hasValidStandingOnAngularVelocityY = false;
 	float standingOnAngularVelocityYRadians;
 	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
+
+	// For retaining velocity when leaving the ground
+	bool prevIsGrounded = false;
+	physx::PxVec3 prevPositionWhileGrounded;
 };

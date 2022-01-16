@@ -403,6 +403,18 @@ void PlayerPhysics::physicsUpdate()
 	glm::mat4 trans = baseObject->getTransform();
 	trans[3] = glm::vec4(pos.x, pos.y, pos.z, 1.0f);
 	baseObject->INTERNALsubmitPhysicsCalculation(trans);
+
+	//
+	// Gather a jumping off velocity
+	//
+	if (prevIsGrounded && !isGrounded)
+	{
+		// Set the velocity!
+		velocity = PhysicsUtils::toPxVec3(pos) - prevPositionWhileGrounded;
+	}
+	if (isGrounded)
+		prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);
+	prevIsGrounded = isGrounded;
 }
 
 void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)
