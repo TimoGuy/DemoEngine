@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    81.17718505859375,
-                    71.3499984741211,
-                    -16.991331100463867
+                    44.17533874511719,
+                    171.35000610351563,
+                    101.76608276367188
                 ],
                 "rotation": [
                     0.0,
@@ -32,14 +32,14 @@
                     -300.592529296875
                 ],
                 "rotation": [
-                    76.84970092773438,
-                    43.83079147338867,
-                    -42.00655746459961
+                    76.84969329833984,
+                    43.8307991027832,
+                    -42.006561279296875
                 ],
                 "scale": [
-                    0.9999990463256836,
-                    1.000001311302185,
-                    0.9999999403953552
+                    0.9999989867210388,
+                    1.000001072883606,
+                    0.9999998807907104
                 ]
             },
             "color": [
@@ -414,9 +414,9 @@
                     -23.978450775146484
                 ],
                 "scale": [
-                    0.9999990463256836,
+                    0.999998927116394,
                     0.9999967813491821,
-                    0.9999997615814209
+                    0.9999996423721313
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -818,9 +818,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.607798504390303e-08,
+                    -3.6077988596616706e-08,
                     -0.019804134964942932,
-                    0.00020854796457570046
+                    0.0002085479791276157
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -1358,9 +1358,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.607798504390303e-08,
+                    -3.6077988596616706e-08,
                     -0.019804134964942932,
-                    0.00020854796457570046
+                    0.0002085479791276157
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -1946,7 +1946,7 @@
                 0.0
             ],
             "moving_platform_spline_guid": "aa4b269fa5c2babbb1ce4f1d272f3424714fe122291e612a874a9e7a2925b03f",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
             "moving_platform_spline_position_in_time": 0.0,
             "moving_platform_spline_speed": 100.0,
@@ -2022,6 +2022,109 @@
                 }
             ],
             "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "c1d62a54beb1d2a0b7c6792b9c48d5ff17dae5a789b154a439be2130ad5228e0",
+                "name": "Spline (unnamed)",
+                "position": [
+                    73.01878356933594,
+                    167.5154571533203,
+                    97.85981750488281
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        64.0,
+                        0.0
+                    ]
+                }
+            ],
+            "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "a8989d548ee7639c6ffacf5b7c744fba4cb8259755f47f027393dfbdf35ee976",
+                "name": "Voxel Group (wholeisland MP)",
+                "position": [
+                    73.01878356933594,
+                    167.5154571533203,
+                    97.85981750488281
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "c1d62a54beb1d2a0b7c6792b9c48d5ff17dae5a789b154a439be2130ad5228e0",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_speed": 100.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "25:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                5,
+                1,
+                5
+            ],
+            "voxel_render_size": 4.0
         }
     ]
 }
