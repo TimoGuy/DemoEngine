@@ -513,14 +513,14 @@ void VoxelGroup::physicsUpdate()
 		// Stop at end mode
 		else if (splineMovementMode == MOVING_PLATFORM_MODE::STOP_AT_END)
 		{
-			currentSplinePosition = glm::min(currentSplinePosition, totalLengthOfPath - 0.0001f);
+			currentSplinePosition = glm::clamp(currentSplinePosition, 0.0f, totalLengthOfPath - 0.001f);
 		}
 		// Ping-pong mode
 		else if (splineMovementMode == MOVING_PLATFORM_MODE::PING_PONG)
 		{
-			if (currentSplinePosition > totalLengthOfPath)
+			if (currentSplinePosition > totalLengthOfPath - 0.001f)
 			{
-				currentSplinePosition = totalLengthOfPath - 0.0001f;
+				currentSplinePosition = totalLengthOfPath - 0.001f;
 				movingPlatformMoveBackwards = true;
 			}
 			else if (currentSplinePosition < 0.0f)
@@ -828,7 +828,7 @@ void VoxelGroup::imguiPropertyPanel()
 		ImGui::DragFloat("Spline Speed", &splineSpeed);
 
 		Spline* mySpline = Spline::getSplineFromGUID(assignedSplineGUID);
-		if (ImGui::DragFloat("Current Spline Position", &currentSplinePosition, 1.0f, 0.0f, mySpline->getTotalLengthOfPath() - 0.0001f))
+		if (ImGui::DragFloat("Current Spline Position", &currentSplinePosition, 1.0f, 0.0f, mySpline->getTotalLengthOfPath() - 0.001f))
 		{
 			glm::vec3 newPos = mySpline->getPositionFromLengthAlongPath(currentSplinePosition);
 			setTransform(glm::translate(glm::mat4(1.0f), newPos) * glm::toMat4(PhysicsUtils::getRotation(getTransform())) * glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform())));
