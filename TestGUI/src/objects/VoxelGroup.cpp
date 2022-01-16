@@ -826,7 +826,14 @@ void VoxelGroup::imguiPropertyPanel()
 	if (!assignedSplineGUID.empty())
 	{
 		ImGui::DragFloat("Spline Speed", &splineSpeed);
-		ImGui::DragFloat("Current Spline Position", &currentSplinePosition);
+
+		Spline* mySpline = Spline::getSplineFromGUID(assignedSplineGUID);
+		if (ImGui::DragFloat("Current Spline Position", &currentSplinePosition, 1.0f, 0.0f, mySpline->getTotalLengthOfPath() - 0.0001f))
+		{
+			glm::vec3 newPos = mySpline->getPositionFromLengthAlongPath(currentSplinePosition);
+			setTransform(glm::translate(glm::mat4(1.0f), newPos) * glm::toMat4(PhysicsUtils::getRotation(getTransform())) * glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform())));
+		}
+
 		ImGui::Checkbox("Spline Move Thru Backwards", &movingPlatformMoveBackwards);
 
 		int splineMvtModeAsInt = (int)splineMovementMode;

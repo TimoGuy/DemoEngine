@@ -70,7 +70,7 @@ public:
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	glm::vec3 cameraPosition;
-	float cameraSpeedMultiplier = 10.0f;
+	float cameraSpeedMultiplier = 1000.0f;		// Originally was 10.0f
 
 	float currentMaxCamDistance = 0;
 	float maxCamDistanceHoldTime = 1.0f, maxCamDistanceHoldTimer = 0;
@@ -119,8 +119,8 @@ private:
 	VirtualCamera playerCamera;
 	bool useIndoorCamera;
 	float indoorOverlapCheckRadius = 0.75f;
-	float indoorOverlapCheckHeight = 20.0f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
-	float indoorOverlapCheckOffY = 17.5f;
+	float indoorOverlapCheckHeight = 17.5f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
+	float indoorOverlapCheckOffY = 20.0f;
 
 	//
 	// Animation Variables
