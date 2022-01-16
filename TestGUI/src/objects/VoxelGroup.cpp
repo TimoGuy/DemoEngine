@@ -11,6 +11,7 @@
 #include "../mainloop/MainLoop.h"
 #include "../render_engine/resources/Resources.h"
 #include "../utils/PhysicsUtils.h"
+#include "Spline.h"
 
 #ifdef _DEVELOP
 #include "../render_engine/render_manager/RenderManager.h"
@@ -29,6 +30,7 @@ VoxelGroup::VoxelGroup()
 	velocity = physx::PxVec3(0.0f);
 	angularVelocity = physx::PxVec3(0.0f);
 	rigidbodyIsDynamic = false;
+	assignedSpline = nullptr;
 
 	// @TODO: small rant: I need some way of not having to create the voxels and then right after load in the voxel data from loadPropertiesFromJson() !!! It's dumb to do it twice.
 	resizeVoxelArea(glm::i64vec3(1));												// For now default. (Needs loading system to do different branch)
@@ -449,7 +451,7 @@ void VoxelGroup::updateQuadMeshFromBitField()
 
 void VoxelGroup::physicsUpdate()
 {
-	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero());
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSpline == nullptr);
 	if (rigidbodyIsDynamic != shouldBeDynamicRigidbody)
 	{
 		is_voxel_bit_field_dirty = true;
@@ -461,8 +463,17 @@ void VoxelGroup::physicsUpdate()
 
 	physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)getPhysicsComponent()->getActor();
 	physx::PxTransform trans = body->getGlobalPose();
-	trans.p += velocity;
+
+	if (assignedSpline != nullptr)
+	{
+		trans.p = PhysicsUtils::toPxVec3(assignedSpline->getPositionFromLengthAlongPath(currentSplinePosition));
+		currentSplinePosition += splineSpeed * MainLoop::getInstance().physicsDeltaTime;
+	}
+	else
+		trans.p += velocity;		// Unfortunately, I think we need to turn off velocity if there's an assigned spline path
+
 	trans.q *= PhysicsUtils::createQuatFromEulerDegrees(PhysicsUtils::toGLMVec3(angularVelocity));
+	
 	body->setKinematicTarget(trans);
 	INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(body->getGlobalPose()));
 }
@@ -472,7 +483,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 	if (physicsComponent != nullptr)
 		delete physicsComponent;
 
-	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero());
+	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSpline == nullptr);
 	physicsComponent = new TriangleMeshCollider(this, voxel_model, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
 	rigidbodyIsDynamic = shouldBeDynamicRigidbody;
 	//setTransform(getTransform());		// NOTE: this is to prevent weird interpolation skipping
@@ -729,8 +740,36 @@ void VoxelGroup::imguiPropertyPanel()
 		is_voxel_bit_field_dirty = true;
 	}
 
+	ImGui::Separator();
+	ImGui::Text("Moving Platform Props");
+
 	ImGui::DragFloat3("Velocity", &velocity[0], 0.01f);
 	ImGui::DragFloat3("Ang Velocity", &angularVelocity[0], 0.01f);
+
+	// @TODO: make an object assigner... And this'd probably be what the interface would look like eh!
+	if (ImGui::Button("Assign Spline.."))
+		ImGui::OpenPopup("assign_spline_popup");
+	if (ImGui::BeginPopup("assign_spline_popup"))
+	{
+		if (ImGui::Selectable(("<None>##" + guid).c_str(), assignedSpline == nullptr))
+			assignedSpline = nullptr;
+
+		for (size_t i = 0; i < Spline::m_all_splines.size(); i++)
+		{
+			if (ImGui::Selectable((Spline::m_all_splines[i]->name + " ::: " + Spline::m_all_splines[i]->guid).c_str(), assignedSpline == Spline::m_all_splines[i]))
+				assignedSpline = Spline::m_all_splines[i];		// NOTE: we may have a problem in the future where splines get deleted.
+		}
+	}
+
+	if (assignedSpline != nullptr)
+	{
+		ImGui::DragFloat("Spline Speed", &splineSpeed);
+		ImGui::DragFloat("Current Spline Position", &currentSplinePosition);
+
+		int splineMvtModeAsInt = (int)splineMovementMode;
+		ImGui::Combo("Moving platform mvt mode", &splineMvtModeAsInt, "Loop\0Stop at End\0Ping pong");
+		splineMovementMode = (MOVING_PLATFORM_MODE)splineMvtModeAsInt;
+	}
 }
 
 void VoxelGroup::imguiRender()

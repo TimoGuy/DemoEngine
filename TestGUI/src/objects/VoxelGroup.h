@@ -6,6 +6,12 @@
 
 
 typedef unsigned int GLuint;
+class Spline;
+
+enum class MOVING_PLATFORM_MODE
+{
+	LOOP, STOP_AT_END, PING_PONG
+};
 
 class VoxelGroup : public BaseObject
 {
@@ -72,7 +78,14 @@ private:
 	};
 	ImguiRenderVariables irv;
 
-	// TODO: this should be private, with all the components just referring back to the single main one
-	bool rigidbodyIsDynamic;
+	//
+	// Moving platform props
+	//
+	bool rigidbodyIsDynamic;	// INTERNAL
 	physx::PxVec3 velocity, angularVelocity;
+
+	Spline* assignedSpline;
+	float splineSpeed;
+	float currentSplinePosition;
+	MOVING_PLATFORM_MODE splineMovementMode;
 };

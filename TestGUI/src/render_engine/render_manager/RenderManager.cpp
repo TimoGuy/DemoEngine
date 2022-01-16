@@ -1917,25 +1917,27 @@ void RenderManager::renderImGuiContents()
 		}
 		glm::vec3 snapValues(snapAmount);
 
-		if (!MainLoop::getInstance().playMode)
+		if (!MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
 		{
-			glm::mat4 transformCopy1 = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
-			glm::mat4 transformCopy2 = transformCopy1;
-			ImGuizmo::Manipulate(
-				glm::value_ptr(cameraView),
-				glm::value_ptr(cameraProjection),
-				transOperation,
-				transMode,
-				glm::value_ptr(transformCopy1),
-				NULL,
-				&snapValues.x
-			);
+			glm::mat4 transformCopy = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
+			bool changed =
+				ImGuizmo::Manipulate(
+					glm::value_ptr(cameraView),
+					glm::value_ptr(cameraProjection),
+					transOperation,
+					transMode,
+					glm::value_ptr(transformCopy),
+					NULL,
+					&snapValues.x
+				);
 
-			if (transformCopy1 != transformCopy2)
+			if (changed)
 			{
-				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(transformCopy1);
+				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(transformCopy);
 			}
 		}
+
+		tempDisableImGuizmoManipulateForOneFrame = false;
 	}
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.

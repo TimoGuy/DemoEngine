@@ -17,6 +17,7 @@ class Spline : public BaseObject
 {
 public:
 	static const std::string TYPE_NAME;
+	static std::vector<Spline*> m_all_splines;
 
 	Spline();
 	~Spline();
@@ -37,17 +38,24 @@ public:
 
 	void preRenderUpdate();
 
-	glm::vec3 getPositionFromLengthAlongPath(float length);
-	inline float getTotalLengthOfPath() { return m_total_distance_cache; }
+	glm::vec3 getPositionFromLengthAlongPath(float length, bool inWorldSpace = true);
+	float getTotalLengthOfPath(bool inWorldSpace = true);
 
 private:
+	bool m_closed_loop;
 	std::vector<SplineControlModule> m_control_modules;
 	std::vector<glm::vec3> m_calculated_spline_curve_cache;
-	std::vector<float_t> m_calculated_spline_curve_distances_cache;
-	float m_total_distance_cache;
+	std::vector<glm::vec3> m_calculated_spline_curve_distances_cache;
+	glm::vec3 m_total_distance_cache;
 	bool m_cache_dirty;
+
 	bool m_debug_show_spline;
+	bool m_debug_edit_spline;
+	bool m_debug_still_selected;
 
-	float calculateTotalDistance();
+	int m_imguizmo_using_index;
+	bool m_imguizmo_using_is_local_ctrl_pt;
+
+	glm::vec3 calculateTotalDistance();
+	float vec3DistanceToFloatDistance(const glm::vec3& in, bool inWorldSpace);
 };
-

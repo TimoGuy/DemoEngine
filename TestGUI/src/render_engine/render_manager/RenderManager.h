@@ -111,6 +111,7 @@ public:
 
 #ifdef _DEVELOP
 	int currentSelectedObjectIndex = -1;
+	bool tempDisableImGuizmoManipulateForOneFrame = false;
 #endif
 
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
