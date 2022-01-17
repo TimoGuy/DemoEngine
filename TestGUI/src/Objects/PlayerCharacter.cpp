@@ -162,6 +162,7 @@ void PlayerCharacter::processMovement()
 	}
 	else
 	{
+		// Reset camera!
 		float lerpSmoothStepped = PhysicsUtils::smoothStep(0, 1, lookingInputReturnToDefaultTime);
 		lookingInput.x = PhysicsUtils::lerpAngleDegrees(lookingInputReturnToDefaultCachedFromInput.x, lookingInputReturnToDefaultCachedToInput.x, lerpSmoothStepped);
 		lookingInput.y = PhysicsUtils::lerp(lookingInputReturnToDefaultCachedFromInput.y, lookingInputReturnToDefaultCachedToInput.y, lerpSmoothStepped);
