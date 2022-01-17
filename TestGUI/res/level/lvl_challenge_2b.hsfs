@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    -0.00845123827457428,
-                    0.3499998152256012,
-                    -0.9005306959152222
+                    0.0,
+                    0.3499995172023773,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -169,8 +169,8 @@
                 "name": "Voxel Group (1st mp)",
                 "position": [
                     0.0,
-                    7.235292434692383,
-                    54.693870544433594
+                    6.550829887390137,
+                    54.283138275146484
                 ],
                 "rotation": [
                     0.0,
@@ -191,7 +191,7 @@
             "moving_platform_spline_guid": "6698f321245c8f737ba4988385508887c46d9e94b088ca7fe4e5b5fa25a8ba80",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 33.99895477294922,
+            "moving_platform_spline_position_in_time": 32.99895477294922,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -327,7 +327,7 @@
                 "guid": "6e86f83b72397df03685b6b65141e915ef7d7ea7e9f0d00e671cb35326f0fccc",
                 "name": "Voxel Group (door 1)",
                 "position": [
-                    4.0,
+                    -12.0,
                     61.0,
                     136.0
                 ],
@@ -350,8 +350,8 @@
             "moving_platform_spline_guid": "f21a47322ac1dfb5bca2ce91efaf2edc41656d2fd8aae443b21783e418026358",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 2.0,
-            "moving_platform_spline_pp_hold_time": 4.0,
+            "moving_platform_spline_position_in_time": 15.99899959564209,
+            "moving_platform_spline_pp_hold_time": 0.5,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
                 0.0,
@@ -431,7 +431,7 @@
                 "guid": "f4c9790947afb271e63c69e4e2338e6748cd55b6af0e15258f2d61fc090378ba",
                 "name": "Voxel Group (door 2)",
                 "position": [
-                    4.0,
+                    -12.0,
                     61.0,
                     231.0
                 ],
@@ -454,8 +454,8 @@
             "moving_platform_spline_guid": "f3d39cf8ea9ef57a24eb77b9e02f894bdd4db2ad24aa8f9b2d6316d00adf49f6",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 2.0,
-            "moving_platform_spline_pp_hold_time": 4.0,
+            "moving_platform_spline_position_in_time": 15.99899959564209,
+            "moving_platform_spline_pp_hold_time": 0.5,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
                 0.0,
@@ -595,19 +595,19 @@
                     162.0
                 ],
                 "rotation": [
-                    -4.315112164476886e-06,
-                    -57.099849700927734,
-                    4.205271579849068e-06
+                    -180.0,
+                    -51.60041046142578,
+                    180.0
                 ],
                 "scale": [
-                    0.9999999403953552,
+                    0.9999998807907104,
                     1.0,
-                    0.9999999403953552
+                    0.9999998807907104
                 ]
             },
             "moving_platform_angular_velocity": [
                 0.0,
-                0.3499999940395355,
+                -1.0,
                 0.0
             ],
             "moving_platform_spline_guid": "",
@@ -672,9 +672,9 @@
                     209.0
                 ],
                 "rotation": [
-                    6.15453745922423e-06,
-                    -57.799842834472656,
-                    -3.984994236816419e-06
+                    3.3935953069885727e-06,
+                    14.900243759155273,
+                    2.0955014861101517e-06
                 ],
                 "scale": [
                     1.0,
@@ -684,7 +684,7 @@
             },
             "moving_platform_angular_velocity": [
                 0.0,
-                0.3499999940395355,
+                1.0,
                 0.0
             ],
             "moving_platform_spline_guid": "",
