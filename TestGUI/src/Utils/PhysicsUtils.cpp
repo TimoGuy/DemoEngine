@@ -298,11 +298,11 @@ namespace PhysicsUtils
 		ImGui::DragFloat3("Rotation", matrixRotation, 0.025f);
 		ImGui::DragFloat3("Scale", matrixScale, 0.025f);
 		
-		if (ImGui::Button("Snap Position to"))
+		if (ImGui::Button("Snap Position to") || glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_T))
 		{
-			matrixTranslation[0] = glm::round(matrixTranslation[0] * positionSnapAmount) / positionSnapAmount;
-			matrixTranslation[1] = glm::round(matrixTranslation[1] * positionSnapAmount) / positionSnapAmount;
-			matrixTranslation[2] = glm::round(matrixTranslation[2] * positionSnapAmount) / positionSnapAmount;
+			matrixTranslation[0] = glm::round(matrixTranslation[0] / positionSnapAmount) * positionSnapAmount;
+			matrixTranslation[1] = glm::round(matrixTranslation[1] / positionSnapAmount) * positionSnapAmount;
+			matrixTranslation[2] = glm::round(matrixTranslation[2] / positionSnapAmount) * positionSnapAmount;
 		}
 		ImGui::SameLine();
 		ImGui::DragFloat("##positionSnapAmount", &positionSnapAmount);

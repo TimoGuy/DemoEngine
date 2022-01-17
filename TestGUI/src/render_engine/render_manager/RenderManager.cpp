@@ -1381,7 +1381,7 @@ void RenderManager::renderImGuiContents()
 
 					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
 				}
-				if (ImGui::MenuItem("Delete", "Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
+				if (ImGui::MenuItem("Delete", "SHIFT+Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
 				{
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
@@ -1577,9 +1577,8 @@ void RenderManager::renderImGuiContents()
 					imGuizmoTransformOperation = 1;
 				if (glfwGetKey(windowRef, GLFW_KEY_R))
 					imGuizmoTransformOperation = 2;
-				if (glfwGetKey(windowRef, GLFW_KEY_T))
-					imGuizmoTransformOperation = 3;
-				if (glfwGetKey(windowRef, GLFW_KEY_DELETE))
+				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_SHIFT)) &&
+					glfwGetKey(windowRef, GLFW_KEY_DELETE))
 				{
 					// NOTE: This is copypasta
 					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
