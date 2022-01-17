@@ -415,6 +415,7 @@ void PlayerPhysics::physicsUpdate()
 	{
 		// Set the velocity!
 		velocity = PhysicsUtils::toPxVec3(pos) - prevPositionWhileGrounded;
+		velocity.y = glm::max(velocity.y, 0.0f);
 	}
 	if (isGrounded)
 		prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);

@@ -738,7 +738,7 @@ void PlayerCharacter::processAnimation()
 
 			std::vector<glm::vec3> backAttachmentPoints;
 			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -50, 0, 0)));
+			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -10, 0, 0)));
 			backAttachment.initializePoints(backAttachmentPoints);
 			backAttachment.limitTo45degrees = true;
 
@@ -752,13 +752,13 @@ void PlayerCharacter::processAnimation()
 			// Just reset/lock the first bone
 			//
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
-			leftSideburn.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
-			rightSideburn.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			backAttachment.setPointPosition(0, 0.15f, globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
+			leftSideburn.setPointPosition(0, 0.05f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
+			rightSideburn.setPointPosition(0, 0.05f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
+			backAttachment.setPointPosition(0, 0.025f, globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
-			backAttachment.simulateRope(850.0f);
+			backAttachment.simulateRope(hairWeightMult * 10.0f);
 
 			//
 			// Do ik calculations for sideburns
@@ -926,7 +926,7 @@ void RopeSimulation::setPointPosition(size_t index, float trickleRate, const glm
 	// This code propogates the movement from this new set operation to the other points of the rope
 	for (size_t i = 0; i < prevPoints.size(); i++)
 	{
-		prevPoints[i] += deltaMovement * glm::pow(trickleRate, (float)i);
+		prevPoints[i] += deltaMovement * glm::pow(trickleRate, (float)(i + 1));		// NOTE: I tried doing size-i, bc I thought that was more correct, but no, just doing i+1 for the exponent is correct -Timo 01-17-2022
 	}
 }
 

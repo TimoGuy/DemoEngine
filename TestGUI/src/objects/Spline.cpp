@@ -131,7 +131,7 @@ void Spline::imguiPropertyPanel()
         ImGui::Text(pointName.c_str());
         ImGui::SameLine();
 
-        if (ImGui::Button("Delete"))
+        if (ImGui::Button(("Delete##" + std::to_string(i)).c_str()))
             deleteRequest = (int)i;
 
         const SplineControlModule savedControlPoint = m_control_modules[i];
