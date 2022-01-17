@@ -5,6 +5,10 @@
 #include "../../utils/GameState.h"
 #include "../../render_engine/model/Model.h"
 
+#ifdef _DEVELOP
+#include "../../utils/InputManager.h"
+#endif
+
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // TriangleMeshCollider Class
@@ -415,6 +419,15 @@ void PlayerPhysics::physicsUpdate()
 	if (isGrounded)
 		prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);
 	prevIsGrounded = isGrounded;
+
+#ifdef _DEVELOP
+	// Reset position of player to 0, 0, 0!
+	if (InputManager::getInstance().inventoryPressed)
+	{
+		controller->setFootPosition({ 0, 0, 0 });
+		velocity = { 0, 0, 0 };
+	}
+#endif
 }
 
 void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)

@@ -140,7 +140,6 @@ void PlayerCharacter::refreshResources()
 
 void PlayerCharacter::processMovement()
 {
-
 	//
 	// Get looking input
 	//
@@ -335,7 +334,7 @@ void PlayerCharacter::processMovement()
 	isMoving = false;
 
 	physx::PxVec3 velocity(0.0f);
-	if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
+	if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)getPhysicsComponent())->getIsSliding())		// @TODO: for some reason sliding and trying to jump doesn't work... why???
 	{
 		velocity = processGroundedMovement(movementVector);
 		jumpCoyoteTimer = jumpCoyoteTime;
@@ -355,7 +354,6 @@ void PlayerCharacter::processMovement()
 
 	// Jump (but not if sliding)
 	if (!lockJumping &&
-		!((PlayerPhysics*)getPhysicsComponent())->getIsSliding() &&
 		jumpInputDebounceTimer > 0.0f &&
 		jumpCoyoteTimer > 0.0f)
 	{
@@ -364,6 +362,7 @@ void PlayerCharacter::processMovement()
 		velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
+		((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
 	}
 
 	if (isMoving)

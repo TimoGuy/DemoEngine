@@ -77,6 +77,7 @@ public:
 	
 	void setIsGrounded(bool flag) { isGrounded = flag; }
 	bool getIsGrounded() { return isGrounded; }
+	void setIsSliding(bool flag) { isSliding = flag; }
 	bool getIsSliding() { return isSliding; }
 	bool getStandingOnAngularVelocityY(float& dipstick) { dipstick = standingOnAngularVelocityYRadians; return hasValidStandingOnAngularVelocityY; }
 

@@ -288,13 +288,25 @@ namespace PhysicsUtils
 #ifdef _DEVELOP
 #pragma region imgui property panel functions
 
+	float positionSnapAmount = 1.0f;
 	void imguiTransformMatrixProps(float* matrixPtr)
 	{
 		float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 		ImGuizmo::DecomposeMatrixToComponents(matrixPtr, matrixTranslation, matrixRotation, matrixScale);
+		
 		ImGui::DragFloat3("Position", matrixTranslation, 0.025f);
 		ImGui::DragFloat3("Rotation", matrixRotation, 0.025f);
 		ImGui::DragFloat3("Scale", matrixScale, 0.025f);
+		
+		if (ImGui::Button("Snap Position to"))
+		{
+			matrixTranslation[0] = glm::round(matrixTranslation[0] * positionSnapAmount) / positionSnapAmount;
+			matrixTranslation[1] = glm::round(matrixTranslation[1] * positionSnapAmount) / positionSnapAmount;
+			matrixTranslation[2] = glm::round(matrixTranslation[2] * positionSnapAmount) / positionSnapAmount;
+		}
+		ImGui::SameLine();
+		ImGui::DragFloat("##positionSnapAmount", &positionSnapAmount);
+
 		ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrixPtr);
 	}
 

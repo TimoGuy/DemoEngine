@@ -498,9 +498,9 @@ void VoxelGroup::physicsUpdate()
 	physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)getPhysicsComponent()->getActor();
 	physx::PxTransform trans = body->getGlobalPose();
 
-	if (!assignedSplineGUID.empty())
+	Spline* splineRef = nullptr;
+	if (!assignedSplineGUID.empty() && (splineRef = Spline::getSplineFromGUID(assignedSplineGUID)) != nullptr)
 	{
-		Spline* splineRef = Spline::getSplineFromGUID(assignedSplineGUID);
 		trans.p = PhysicsUtils::toPxVec3(
 			splineRef->getPositionFromLengthAlongPath(currentSplinePosition)
 		);
@@ -839,14 +839,16 @@ void VoxelGroup::imguiPropertyPanel()
 		ImGui::EndPopup();
 	}
 
-	if (!assignedSplineGUID.empty())
+	Spline* splineRef = nullptr;
+	if (!assignedSplineGUID.empty() && (splineRef = Spline::getSplineFromGUID(assignedSplineGUID)) != nullptr)
 	{
+		ImGui::Text(("Spline Length: " + std::to_string(splineRef->getTotalLengthOfPath())).c_str());
+
 		ImGui::DragFloat("Spline Speed", &splineSpeed);
 
-		Spline* mySpline = Spline::getSplineFromGUID(assignedSplineGUID);
-		if (ImGui::DragFloat("Current Spline Position", &currentSplinePosition, 1.0f, 0.0f, mySpline->getTotalLengthOfPath() - 0.001f))
+		if (ImGui::DragFloat("Current Spline Position", &currentSplinePosition, 1.0f, 0.0f, splineRef->getTotalLengthOfPath() - 0.001f))
 		{
-			glm::vec3 newPos = mySpline->getPositionFromLengthAlongPath(currentSplinePosition);
+			glm::vec3 newPos = splineRef->getPositionFromLengthAlongPath(currentSplinePosition);
 			setTransform(glm::translate(glm::mat4(1.0f), newPos) * glm::toMat4(PhysicsUtils::getRotation(getTransform())) * glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform())));
 		}
 
