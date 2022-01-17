@@ -111,7 +111,7 @@ void InputManager::updateInputState()
 			const float deadzoneLeftStick = 0.3f;
 			const float deadzoneRightStickX = 0.2f;
 			const float deadzoneRightStickY = 0.5f;
-			const float rightStickSensitivity = 6.75f;
+			const float rightStickSensitivity = 16.75f;
 
 			if (abs(_tempLeftStickX) > deadzoneLeftStick || abs(_tempLeftStickY) > deadzoneLeftStick)
 			{

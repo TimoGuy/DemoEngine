@@ -140,14 +140,40 @@ void PlayerCharacter::refreshResources()
 
 void PlayerCharacter::processMovement()
 {
+
 	//
 	// Get looking input
 	//
-	lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
-	lookingInput.x = fmodf(lookingInput.x, 360.0f);
-	if (lookingInput.x < 0.0f)
-		lookingInput.x += 360.0f;
-	lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+	if (lookingInputReturnToDefaultTime >= 1.0f)
+	{
+		lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
+		lookingInput.x = fmodf(lookingInput.x, 360.0f);
+		if (lookingInput.x < 0.0f)
+			lookingInput.x += 360.0f;
+		lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+
+		// Reset to default if reset camera button pressed
+		if (InputManager::getInstance().resetCamPressed)
+		{
+			lookingInputReturnToDefaultTime = 0.0f;
+			lookingInputReturnToDefaultCachedFromInput = lookingInput;
+			lookingInputReturnToDefaultCachedToInput = glm::vec2(glm::degrees(std::atan2f(-facingDirection.x, facingDirection.y)), 0.25f);
+		}
+	}
+	else
+	{
+		float lerpSmoothStepped = PhysicsUtils::smoothStep(0, 1, lookingInputReturnToDefaultTime);
+		lookingInput.x = PhysicsUtils::lerpAngleDegrees(lookingInputReturnToDefaultCachedFromInput.x, lookingInputReturnToDefaultCachedToInput.x, lerpSmoothStepped);
+		lookingInput.y = PhysicsUtils::lerp(lookingInputReturnToDefaultCachedFromInput.y, lookingInputReturnToDefaultCachedToInput.y, lerpSmoothStepped);
+
+		lookingInputReturnToDefaultTime += 8.0f * MainLoop::getInstance().deltaTime;
+
+		// Keep in this state if still holding cam button
+		if (InputManager::getInstance().resetCamPressed)
+		{
+			lookingInputReturnToDefaultTime = glm::min(lookingInputReturnToDefaultTime, 0.999f);
+		}
+	}
 
 	//
 	// Movement
