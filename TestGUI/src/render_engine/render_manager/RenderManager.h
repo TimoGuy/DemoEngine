@@ -169,9 +169,20 @@ private:
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
+	// HDR screen luminance adjustment
 	GLuint hdrLuminanceProgramId, hdrLumAdaptationComputeProgramId, hdrLumFBO, hdrLumAdaptation1x1;
 	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
 
+	// SSAO effect
+	GLuint ssaoFBO;
+	Texture* ssaoRenderTexture;
+	float ssaoScale = 1.0f;
+	float ssaoBias = 0.2f;
+	float ssaoRadius = 0.2f;
+	float ssaoAttenScale = 1.0f;
+	float ssaoDistScale = 0.5f;
+
+	// Bloom effect
 	static const uint32_t bloomBufferCount = 7 * 2;			// 7 passes with 2 pingpong buffers each
 	GLuint bloomFBOs[bloomBufferCount], bloomColorBuffers[bloomBufferCount];
 	float exposure = 0.15f;

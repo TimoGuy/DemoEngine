@@ -402,10 +402,36 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(zPrePassFBO, GL_DEPTH_ATTACHMENT, zPrePassDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
+
+	//
+	// Create SSAO framebuffer
+	//
+	ssaoRenderTexture =
+		new Texture2D(
+			(GLsizei)(MainLoop::getInstance().camera.width * ssaoScale),
+			(GLsizei)(MainLoop::getInstance().camera.height * ssaoScale),
+			1,
+			GL_RED,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+
+	glCreateFramebuffers(1, &ssaoFBO);
+	glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoRenderTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(ssaoFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (SSAO Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
 {
+	delete ssaoRenderTexture;
+	glDeleteFramebuffers(1, &ssaoFBO);
+
 	delete zPrePassDepthTexture;
 	glDeleteFramebuffers(1, &zPrePassFBO);
 
