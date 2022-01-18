@@ -179,7 +179,7 @@ private:
 	Texture* ssaoRotationTexture;
 	Texture* ssaoTexture;
 	Texture* ssaoBlurTexture;
-	float ssaoScale = 1.0f;
+	float ssaoScale = 1.35f;
 	float ssaoBias = 0.2f;
 	float ssaoRadius = 0.2f;
 	float ssaoAttenScale = 1.0f;

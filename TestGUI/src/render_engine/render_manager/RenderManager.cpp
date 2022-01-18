@@ -1776,6 +1776,14 @@ void RenderManager::renderImGuiContents()
 				ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
 			}
 
+			ImGui::Separator();
+			ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
+			ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
+			ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
+			ImGui::DragFloat("SSAO Atten", &ssaoAttenScale, 0.001f);
+			ImGui::DragFloat("SSAO Dist", &ssaoDistScale, 0.001f);
+
+			ImGui::Separator();
 			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
 			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
 
