@@ -243,6 +243,9 @@
     <None Include="shader\prefilter.frag" />
     <None Include="shader\shadow.frag" />
     <None Include="shader\skybox.frag" />
+    <None Include="shader\ssao_blur_x.frag" />
+    <None Include="shader\ssao_blur_y.frag" />
+    <None Include="shader\ssao_postprocessing.frag" />
     <None Include="shader\text.frag" />
     <None Include="shader\text.vert" />
     <None Include="shader\zelly.frag" />

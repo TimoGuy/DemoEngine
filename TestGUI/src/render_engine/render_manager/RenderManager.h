@@ -174,8 +174,11 @@ private:
 	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
 
 	// SSAO effect
-	GLuint ssaoFBO;
-	Texture* ssaoRenderTexture;
+	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId, ssaoBlurXProgramId, ssaoBlurYProgramId;
+	float ssaoFBOSize = 1024;
+	Texture* ssaoRotationTexture;
+	Texture* ssaoTexture;
+	Texture* ssaoBlurTexture;
 	float ssaoScale = 1.0f;
 	float ssaoBias = 0.2f;
 	float ssaoRadius = 0.2f;

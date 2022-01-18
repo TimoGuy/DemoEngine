@@ -406,12 +406,27 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create SSAO framebuffer
 	//
-	ssaoRenderTexture =
+	ssaoRotationTexture = (Texture*)Resources::getResource("texture;ssaoRotation");
+	ssaoTexture =
 		new Texture2D(
-			(GLsizei)(MainLoop::getInstance().camera.width * ssaoScale),
-			(GLsizei)(MainLoop::getInstance().camera.height * ssaoScale),
+			(GLsizei)ssaoFBOSize,
+			(GLsizei)ssaoFBOSize,
 			1,
+			GL_R8,
 			GL_RED,
+			GL_UNSIGNED_BYTE,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	ssaoBlurTexture =
+		new Texture2D(
+			(GLsizei)ssaoFBOSize,
+			(GLsizei)ssaoFBOSize,
+			1,
+			GL_R8,
 			GL_RED,
 			GL_UNSIGNED_BYTE,
 			nullptr,
@@ -422,14 +437,21 @@ void RenderManager::createHDRBuffer()
 		);
 
 	glCreateFramebuffers(1, &ssaoFBO);
-	glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoRenderTexture->getHandle(), 0);
+	glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(ssaoFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (SSAO Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &ssaoBlurFBO);
+	glNamedFramebufferTexture(ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoBlurTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(ssaoBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (SSAO Blur Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
 {
-	delete ssaoRenderTexture;
+	delete ssaoBlurTexture;
+	glDeleteFramebuffers(1, &ssaoBlurFBO);
+	delete ssaoTexture;
 	glDeleteFramebuffers(1, &ssaoFBO);
 
 	delete zPrePassDepthTexture;
@@ -518,6 +540,9 @@ void RenderManager::createShaderPrograms()
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	hudUIProgramId = *(GLuint*)Resources::getResource("shader;hudUI");
 	INTERNALzPassShader = *(GLuint*)Resources::getResource("shader;zPassShader");
+	ssaoProgramId = *(GLuint*)Resources::getResource("shader;ssao");
+	ssaoBlurXProgramId = *(GLuint*)Resources::getResource("shader;ssaoBlurX");
+	ssaoBlurYProgramId = *(GLuint*)Resources::getResource("shader;ssaoBlurY");
 }
 
 void RenderManager::createFonts()
@@ -717,12 +742,12 @@ void RenderManager::render()
 	//
 	// Do luminance
 	//
+	glViewport(0, 0, luminanceTextureSize, luminanceTextureSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrLumFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(hdrLuminanceProgramId);
 	glBindTextureUnit(0, hdrColorBuffer);
 	glProgramUniform1i(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "hdrColorBuffer"), 0);
-	glProgramUniform2f(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "uvStretchAmount"), MainLoop::getInstance().camera.width / (float_t)luminanceTextureSize, MainLoop::getInstance().camera.height / (float_t)luminanceTextureSize);
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
 
@@ -737,6 +762,37 @@ void RenderManager::render()
 	glProgramUniform2f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 0.5f * MainLoop::getInstance().deltaTime, 2.5f * MainLoop::getInstance().deltaTime);
 	glDispatchCompute(1, 1, 1);
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
+
+	//
+	// Capture screen for SSAO
+	//
+	glViewport(0, 0, ssaoFBOSize, ssaoFBOSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(ssaoProgramId);
+	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
+	renderQuad();
+
+	//
+	// Blur SSAO pass
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(ssaoBlurXProgramId);
+	glBindTextureUnit(0, ssaoTexture->getHandle());
+	renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(ssaoBlurYProgramId);
+	glBindTextureUnit(0, ssaoBlurTexture->getHandle());
+	renderQuad();
 
 	// Render ui
 	renderUI();
@@ -863,12 +919,12 @@ void RenderManager::render()
 	glUseProgram(postprocessing_program_id);
 
 	glBindTextureUnit(0, hdrColorBuffer);
-	glUniform1i(glGetUniformLocation(postprocessing_program_id, "hdrColorBuffer"), 0);
 	glBindTextureUnit(1, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
-	glUniform1i(glGetUniformLocation(postprocessing_program_id, "bloomColorBuffer"), 1);
 	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
-	glUniform1i(glGetUniformLocation(postprocessing_program_id, "luminanceProcessed"), 2);
+	glBindTextureUnit(3, ssaoTexture->getHandle());
 
+	glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoScale"), ssaoScale);
+	glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoBias"), ssaoBias);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
@@ -1305,6 +1361,7 @@ void RenderManager::renderUI()
 	glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), staminaBarPosition), glm::vec3(staminaBarExtents.x + padding, staminaBarExtents.y + padding, 1.0f));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
 
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glViewport(0, 0, camWidth, camHeight);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(hudUIProgramId);
@@ -1701,6 +1758,13 @@ void RenderManager::renderImGuiContents()
 				ImGui::Image((void*)(intptr_t)hdrLumDownsampling->getHandle(), ImVec2(256, 256));
 				ImGui::Image((void*)(intptr_t)hdrLumAdaptation1x1, ImVec2(256, 256));
 				ImGui::Image((void*)(intptr_t)hdrLumAdaptationProcessed->getHandle(), ImVec2(256, 256));
+			}
+
+			static bool showSSAOTexture = false;
+			ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
+			if (showSSAOTexture)
+			{
+				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(256, 256));
 			}
 
 			static bool showBloomProcessingBuffers = false;
