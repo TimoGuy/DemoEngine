@@ -24,9 +24,14 @@
 // NOTE: if 0, then use close fit shadows; if 1, then use stable fit
 // NOTE: So bc there's a day night cycle, I think it'd be better if we used close fit. -Timo (2022-01-09)
 // RESPONSE: Hmmm, so after looking at close fit shadows swimming again, I think stable fit is still better... umm, but @TODO look at this again. -Timo (2022-01-09, 2:54p)
-#define STABLE_FIT_CSM_SHADOWS 1
+#define STABLE_FIT_CSM_SHADOWS 0
 
+#if STABLE_FIT_CSM_SHADOWS
 static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
+#else
+static float multiplier = 2.0f;
+static float planeOffset = 3.0f;
+#endif
 
 DirectionalLight::DirectionalLight(bool castsShadows)
 {
@@ -92,6 +97,7 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	//shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };			// This is unity's 4 cascade distribution
 	//shadowCascadeLevels = { shadowFarPlane * 0.1f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5f };
 	shadowCascadeLevels = { shadowFarPlane * 0.0625f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5625f };			// This one is x^2
+	//shadowFarPlane = 300.0f;
 
 	refreshRenderBuffers();
 }
@@ -254,7 +260,10 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	// Getting the light viewproj matrix
 	//
 	const auto proj = glm::perspective(
-		glm::radians(MainLoop::getInstance().camera.fov), MainLoop::getInstance().camera.width / MainLoop::getInstance().camera.height, nearPlane, farPlane
+		glm::radians(MainLoop::getInstance().camera.fov),
+		MainLoop::getInstance().camera.width / MainLoop::getInstance().camera.height,
+		nearPlane,
+		farPlane
 	);
 	const auto corners = getFrustumCornersWorldSpace(proj, MainLoop::getInstance().camera.calculateViewMatrix());
 
@@ -349,6 +358,13 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	//std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
 
+	glm::vec2 padding(glm::abs(minX - maxX) * 0.1f, glm::abs(minY - maxY) * 0.1f);
+
+	minX -= padding.x;
+	maxX += padding.x;
+	minY -= padding.y;
+	maxY += padding.y;
+
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 #endif
 
@@ -362,15 +378,15 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	{
 		if (i == 0)
 		{
-			ret.push_back(getLightSpaceMatrix(MainLoop::getInstance().camera.zNear, shadowCascadeLevels[i]));
+			ret.push_back(getLightSpaceMatrix(MainLoop::getInstance().camera.zNear, shadowCascadeLevels[i] + planeOffset));
 		}
 		else if (i < shadowCascadeLevels.size())
 		{
-			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], shadowCascadeLevels[i]));
+			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1] - planeOffset, shadowCascadeLevels[i] + planeOffset));
 		}
 		else
 		{
-			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1], shadowFarPlane));
+			ret.push_back(getLightSpaceMatrix(shadowCascadeLevels[i - 1] - planeOffset, shadowFarPlane));
 		}
 	}
 	return ret;
@@ -427,6 +443,7 @@ void DirectionalLight::imguiPropertyPanel()
 
 	ImGui::InputFloat3("DEBUG", &lightComponent->facingDirection[0]);
 	ImGui::DragFloat("Multiplier for shadow", &multiplier, 0.1f, 0.0f, 500.0f);
+	ImGui::DragFloat("Offset for shadow bounds", &planeOffset, 0.05f, 0.0f, 500.0f);
 
 	//static bool plsFollow = false;
 	//ImGui::Checkbox("Follow ndc mouse pos", &plsFollow);

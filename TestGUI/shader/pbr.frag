@@ -138,7 +138,8 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer)
     // calculate bias (based on depth map resolution and slope)     // NOTE: This is tuned for 1024x1024 stable shadow maps
     vec3 normal = normalize(normalVector);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float distanceMultiplier = pow(0.45, layer);
+    //float distanceMultiplier = pow(0.45, layer);      // NOTE: this worked for stable fit shadows
+    float distanceMultiplier = 0.5;
 
     if (layer == cascadeCount)
     {
@@ -163,6 +164,9 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer)
     }
     shadow /= 9.0;
     shadow = 1.0 - shadow;
+
+    if (shadow > 0.01)
+        shadow = 1.0;
     
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
@@ -198,7 +202,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     }
 
     // Fading between shadow cascades
-    float fadingEdgeAmount = 2.5 * (layer + 1);
+    float fadingEdgeAmount = (layer == cascadeCount) ? 15.0 : 2.5; //2.5 * (layer + 1);
     float visibleAmount = -1;
     if (layer == cascadeCount)
         visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
