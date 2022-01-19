@@ -291,13 +291,57 @@ namespace PhysicsUtils
 	float positionSnapAmount = 1.0f;
 	void imguiTransformMatrixProps(float* matrixPtr)
 	{
+		static glm::vec3 clipboardTranslation, clipboardRotation, clipboardScale;
+
 		float matrixTranslation[3], matrixRotation[3], matrixScale[3];
 		ImGuizmo::DecomposeMatrixToComponents(matrixPtr, matrixTranslation, matrixRotation, matrixScale);
 		
 		ImGui::DragFloat3("Position", matrixTranslation, 0.025f);
 		ImGui::DragFloat3("Rotation", matrixRotation, 0.025f);
 		ImGui::DragFloat3("Scale", matrixScale, 0.025f);
+
+		// Copy and paste for just these transforms
+		if (ImGui::Button("Copy.."))
+			ImGui::OpenPopup("copy_transform_popup");
+		if (ImGui::BeginPopup("copy_transform_popup"))
+		{
+			if (ImGui::Selectable("Position##Copyit"))
+				clipboardTranslation = { matrixTranslation[0], matrixTranslation[1], matrixTranslation[2] };
+			if (ImGui::Selectable("Rotation##Copyit"))
+				clipboardRotation = { matrixRotation[0], matrixRotation[1], matrixRotation[2] };
+			if (ImGui::Selectable("Scale##Copyit"))
+				clipboardScale = { matrixScale[0], matrixScale[1], matrixScale[2] };
+
+			ImGui::EndPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Paste.."))
+			ImGui::OpenPopup("paste_transform_popup");
+		if (ImGui::BeginPopup("paste_transform_popup"))
+		{
+			if (ImGui::Selectable("Position##Pasteit"))
+			{
+				matrixTranslation[0] = clipboardTranslation[0];
+				matrixTranslation[1] = clipboardTranslation[1];
+				matrixTranslation[2] = clipboardTranslation[2];
+			}
+			if (ImGui::Selectable("Rotation##Pasteit"))
+			{
+				matrixRotation[0] = clipboardRotation[0];
+				matrixRotation[1] = clipboardRotation[1];
+				matrixRotation[2] = clipboardRotation[2];
+			}
+			if (ImGui::Selectable("Scale##Pasteit"))
+			{
+				matrixScale[0] = clipboardScale[0];
+				matrixScale[1] = clipboardScale[1];
+				matrixScale[2] = clipboardScale[2];
+			}
+
+			ImGui::EndPopup();
+		}
 		
+		// Snap the position of the object
 		if (ImGui::Button("Snap Position to") || glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_T))
 		{
 			matrixTranslation[0] = glm::round(matrixTranslation[0] / positionSnapAmount) * positionSnapAmount;

@@ -48,7 +48,7 @@ namespace PhysicsUtils
 		float height,
 		physx::PxUserControllerHitReport* hitReport = nullptr,
 		physx::PxControllerBehaviorCallback* behaviorReport = nullptr,
-		float slopeLimit = 0.70710678118f,						// cosine of 45 degrees
+		float slopeLimit = 0.69465837f,  // Cosine of 46 degrees right here.    //0.70710678118f,						// cosine of 45 degrees
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 
 	float moveTowards(float current, float target, float maxDistanceDelta);

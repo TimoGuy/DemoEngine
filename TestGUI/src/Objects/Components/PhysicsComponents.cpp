@@ -357,12 +357,12 @@ void PlayerPhysics::physicsUpdate()
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		isGrounded = true;
-		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.707106781f);		// NOTE: 0.7... is cos(45deg)
+		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > controller->getSlopeLimit());
 
 		// Try to retrieve grounded info
 		physx::PxRaycastBuffer hitInfo;
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()), physx::PxVec3(0, -1, 0), controller->getStepOffset(), hitInfo))
-			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.707106781f);
+			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > controller->getSlopeLimit());
 
 		if (isFlatGround)
 		{
@@ -388,7 +388,7 @@ void PlayerPhysics::physicsUpdate()
 	// Check if head/ceiling sliding
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
 	{
-		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > 0.707106781f)		// NOTE: 0.7... is cos(45deg)
+		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > controller->getSlopeLimit())
 		{
 			velocity.y = 0.0f;		// Hit your head on the ceiling
 		}

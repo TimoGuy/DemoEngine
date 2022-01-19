@@ -115,7 +115,7 @@ void DirectionalLightLight::refreshRenderBuffers()
 		destroyCSMBuffers();
 }
 
-constexpr GLsizei depthMapResolution = 2048;
+constexpr GLsizei depthMapResolution = 1024;		// @Settings: You can change this to 2048 or 4096!
 void DirectionalLightLight::createCSMBuffers()
 {
 	if (shadowMapsCreated) return;

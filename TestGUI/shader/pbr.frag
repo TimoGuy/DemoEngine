@@ -202,7 +202,7 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
     }
 
     // Fading between shadow cascades
-    float fadingEdgeAmount = (layer == cascadeCount) ? 15.0 : 2.5; //2.5 * (layer + 1);
+    float fadingEdgeAmount = 2.5 * (layer + 1);  //(layer == cascadeCount) ? 15.0 : 2.5;        // <---- Method that I tried to implement with close fit shadows... but never really worked.
     float visibleAmount = -1;
     if (layer == cascadeCount)
         visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
