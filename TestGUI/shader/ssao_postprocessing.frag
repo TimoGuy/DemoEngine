@@ -44,7 +44,7 @@ void main()
 		float dist = max(zSample - Z, 0.0) / distScale;
 		float occl = 15.0 * max(dist * (2.0 - dist), 0.0);
         
-		att += 1.0 / (1.0 + occl*occl);
+		att += 1.0 / (1.0 + occl * occl);
 	}
     
 	att = clamp(att * att / 64.0 + 0.45, 0.0, 1.0) * attenScale;

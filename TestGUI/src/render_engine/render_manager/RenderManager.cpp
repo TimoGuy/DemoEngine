@@ -1764,7 +1764,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
 			if (showSSAOTexture)
 			{
-				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(256, 256));
+				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(1024, 1024));
 			}
 
 			static bool showBloomProcessingBuffers = false;
