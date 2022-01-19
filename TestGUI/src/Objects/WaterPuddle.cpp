@@ -67,28 +67,40 @@ void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 
 void WaterPuddle::collectWaterPuddle()
 {
-	if (isWaterPuddleCollected)
+	if (isWaterPuddleCollected && !GameState::getInstance().playerIsHoldingWater)
 	{
 		std::cout << "This water puddle is already collected. Unfortunate." << std::endl;
 		return;
 	}
-
-	if (GameState::getInstance().playerIsHoldingWater)
+	if (!isWaterPuddleCollected && GameState::getInstance().playerIsHoldingWater)
 	{
 		std::cout << "You're already carrying water. Drop if off or drink it to carry more" << std::endl;
 		return;
 	}
 
-	//
-	// Collect and log the puddle
-	//
-	Messages::getInstance().postMessage("PlayerCollectWater");
-	GameState::getInstance().playerIsHoldingWater = true;
-	GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
-	GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+	// Event!!!
+	if (!isWaterPuddleCollected)
+	{
+		// Collect and log the puddle
+		Messages::getInstance().postMessage("PlayerCollectWater");
+		GameState::getInstance().playerIsHoldingWater = true;
+		GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
+		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
-	std::cout << "Collected!!!!" << std::endl;
-	isWaterPuddleCollected = true;
+		std::cout << "Collected Water in Puddle!!!!" << std::endl;
+		isWaterPuddleCollected = true;
+	}
+	else
+	{
+		// Drop off the water into the hole
+		Messages::getInstance().postMessage("PlayerCollectWater");
+		GameState::getInstance().playerIsHoldingWater = false;
+		GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
+		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+
+		std::cout << "Dropped water off into Puddle!!!!" << std::endl;
+		isWaterPuddleCollected = false;
+	}
 }
 
 void WaterPuddle::preRenderUpdate()
@@ -98,7 +110,7 @@ void WaterPuddle::preRenderUpdate()
 	//
 	if (!isWaterPuddleCollected)
 	{
-		animator.playAnimation(0);
+		animator.playAnimation(0, 1.5f);
 	}
 	else
 	{
