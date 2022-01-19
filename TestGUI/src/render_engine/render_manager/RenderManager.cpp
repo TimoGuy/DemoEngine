@@ -1652,8 +1652,11 @@ void RenderManager::renderImGuiContents()
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
-				if (glfwGetKey(windowRef, GLFW_KEY_Q))
+				static bool heldQDownPrev = false;
+				if (!heldQDownPrev && glfwGetKey(windowRef, GLFW_KEY_Q))
 					imGuizmoTransformMode = (int)!(bool)imGuizmoTransformMode;		// Switch between local and world transformation
+				heldQDownPrev = glfwGetKey(windowRef, GLFW_KEY_Q) == GLFW_PRESS;
+
 				if (glfwGetKey(windowRef, GLFW_KEY_W))
 					imGuizmoTransformOperation = 0;
 				if (glfwGetKey(windowRef, GLFW_KEY_E))
