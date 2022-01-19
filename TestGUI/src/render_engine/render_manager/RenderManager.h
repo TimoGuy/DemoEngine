@@ -179,7 +179,7 @@ private:
 	Texture* ssaoRotationTexture;
 	Texture* ssaoTexture;
 	Texture* ssaoBlurTexture;
-	float ssaoScale = 1.0f;
+	float ssaoScale = 0.0f;			// NOTE: For now I'm just turning it off bc it's too noisy/bandy and it looks like the S word  -Timo
 	float ssaoBias = 0.2f;
 	float ssaoRadius = 0.2f;
 	float ssaoAttenScale = 1.0f;

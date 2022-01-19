@@ -24,10 +24,11 @@
 // NOTE: if 0, then use close fit shadows; if 1, then use stable fit
 // NOTE: So bc there's a day night cycle, I think it'd be better if we used close fit. -Timo (2022-01-09)
 // RESPONSE: Hmmm, so after looking at close fit shadows swimming again, I think stable fit is still better... umm, but @TODO look at this again. -Timo (2022-01-09, 2:54p)
-#define STABLE_FIT_CSM_SHADOWS 0
+#define STABLE_FIT_CSM_SHADOWS 1
 
 #if STABLE_FIT_CSM_SHADOWS
 static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
+static float planeOffset = 0.0f;
 #else
 static float multiplier = 2.0f;
 static float planeOffset = 3.0f;
@@ -97,7 +98,6 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	//shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };			// This is unity's 4 cascade distribution
 	//shadowCascadeLevels = { shadowFarPlane * 0.1f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5f };
 	shadowCascadeLevels = { shadowFarPlane * 0.0625f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5625f };			// This one is x^2
-	//shadowFarPlane = 300.0f;
 
 	refreshRenderBuffers();
 }
@@ -115,7 +115,7 @@ void DirectionalLightLight::refreshRenderBuffers()
 		destroyCSMBuffers();
 }
 
-constexpr GLsizei depthMapResolution = 1024;
+constexpr GLsizei depthMapResolution = 2048;
 void DirectionalLightLight::createCSMBuffers()
 {
 	if (shadowMapsCreated) return;
