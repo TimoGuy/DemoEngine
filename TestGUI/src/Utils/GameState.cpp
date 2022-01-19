@@ -10,6 +10,28 @@ GameState& GameState::getInstance()
 	return instance;
 }
 
+void GameState::addPuddleGUID(const std::string& guid)
+{
+	playerAllCollectedPuddleGUIDs.push_back(guid);
+}
+
+void GameState::removePuddleGUID(const std::string& guid)
+{
+	playerAllCollectedPuddleGUIDs.erase(
+		std::remove(
+			playerAllCollectedPuddleGUIDs.begin(),
+			playerAllCollectedPuddleGUIDs.end(),
+			guid
+		),
+		playerAllCollectedPuddleGUIDs.end()
+	);
+}
+
+bool GameState::isPuddleCollected(const std::string& guid)
+{
+	return (std::find(playerAllCollectedPuddleGUIDs.begin(), playerAllCollectedPuddleGUIDs.end(), guid) != playerAllCollectedPuddleGUIDs.end());
+}
+
 void GameState::requestTriggerHold(physx::PxRigidActor* triggerActor)
 {
 	// Add at the end of the queue

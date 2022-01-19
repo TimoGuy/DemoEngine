@@ -37,6 +37,9 @@ void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 	//
 	// I'll take the leftover tokens then
 	//
+
+
+	refreshResources();
 }
 
 nlohmann::json WaterPuddle::savePropertiesToJson()
@@ -84,7 +87,7 @@ void WaterPuddle::collectWaterPuddle()
 		// Collect and log the puddle
 		Messages::getInstance().postMessage("PlayerCollectWater");
 		GameState::getInstance().playerIsHoldingWater = true;
-		GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
+		GameState::getInstance().addPuddleGUID(guid);
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 		std::cout << "Collected Water in Puddle!!!!" << std::endl;
@@ -95,7 +98,7 @@ void WaterPuddle::collectWaterPuddle()
 		// Drop off the water into the hole
 		Messages::getInstance().postMessage("PlayerCollectWater");
 		GameState::getInstance().playerIsHoldingWater = false;
-		GameState::getInstance().playerAllCollectedPuddleGUIDs.push_back(guid);
+		GameState::getInstance().removePuddleGUID(guid);
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 		std::cout << "Dropped water off into Puddle!!!!" << std::endl;
@@ -153,6 +156,10 @@ void WaterPuddle::refreshResources()
 	materials["Water"] = (Material*)Resources::getResource("material;pbrWater");
 
 	model->setMaterials(materials);
+
+	// Check if I'm already collected
+	if (GameState::getInstance().isPuddleCollected(guid))
+		isWaterPuddleCollected = true;
 }
 
 #ifdef _DEVELOP

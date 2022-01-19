@@ -28,6 +28,10 @@ public:
 
 	static GameState& getInstance();
 
+	void addPuddleGUID(const std::string& guid);
+	void removePuddleGUID(const std::string& guid);
+	bool isPuddleCollected(const std::string& guid);
+
 	void requestTriggerHold(physx::PxRigidActor* triggerActor);
 	void requestTriggerRelease(physx::PxRigidActor* triggerActor);	// NOTE: this hsould remove the triggeractor from the stack... but it's not implemented yet
 	physx::PxRigidActor* getCurrentTriggerHold();
