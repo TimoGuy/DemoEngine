@@ -24,7 +24,7 @@ float vignette(vec2 uv, float radius, float smoothness) {
 //----------------------------------------------------------------
 void main()
 {
-	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb;
+	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + clamp(texture(volumetricLighting, texCoord).r, 0.0, 1.0) * vec3(20, 0, 0);
 
 	//float ssao = clamp(texture(ssaoTexture, texCoord).r + ssaoBias, 0.0, 1.0);		@Deprecate
 	//hdrColor = mix(hdrColor, hdrColor * ssao, ssaoScale);

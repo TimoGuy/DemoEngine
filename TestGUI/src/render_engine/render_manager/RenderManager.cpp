@@ -818,6 +818,27 @@ void RenderManager::render()
 	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
 	glUseProgram(volumetricProgramId);
 	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
+	{
+		if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
+		{
+			const LightComponent* mainlight = MainLoop::getInstance().lightObjects[i];
+			assert(mainlight->castsShadows);		// NOTE: turn off volumetric lighting if shadows are turned off
+			glBindTextureUnit(1, mainlight->shadowMapTexture);
+			glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
+			glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
+			for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
+				glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
+			glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
+			glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
+
+			break;
+		}
+	}
+	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
+	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
+	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
+	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
 	renderQuad();
 
 	//
