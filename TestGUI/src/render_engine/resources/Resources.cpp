@@ -533,6 +533,8 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
+	if (resourceName == "material;containedWater")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0, 0, .5));
+
 	// Out of luck, bud. Try the custom resources yo
 	std::cout << "ERROR:: Resource \"" << resourceName << "\" was not found." << std::endl;
 	assert(false);

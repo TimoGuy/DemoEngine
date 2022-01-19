@@ -38,6 +38,7 @@ public:
 	auto& getAnimations() { return animations; }
 
 	void setMaterials(std::map<std::string, Material*> materialMap);
+	void setDepthPriorityOfMeshesWithMaterial(const std::string& materialName, float depthPriority);		// NOTE: This doesn't matter except for the transparent render pass
 
 	std::vector<Mesh>& getMeshes() { return meshes; }
 

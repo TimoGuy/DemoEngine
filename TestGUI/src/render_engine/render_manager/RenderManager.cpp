@@ -1089,6 +1089,8 @@ void RenderManager::renderScene()
 		transparentRQ.commandingIndices.end(),
 		[this](const size_t& index1, const size_t& index2)
 		{
+			if (transparentRQ.distancesToCamera[index1] == transparentRQ.distancesToCamera[index2])
+				return transparentRQ.meshesToRender[index1]->getDepthPriority() > transparentRQ.meshesToRender[index2]->getDepthPriority();
 			return transparentRQ.distancesToCamera[index1] > transparentRQ.distancesToCamera[index2];
 		}
 	);

@@ -133,8 +133,12 @@ void PlayerCharacter::refreshResources()
 		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrBottleBody");
 		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
+		bottleModelMaterials["Water"] = (Material*)Resources::getResource("material;containedWater");
 
 		bottleModel->setMaterials(bottleModelMaterials);
+		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);
+		//bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// Make Water render before SeeThruRubber
+		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 	}
 }
 
@@ -676,11 +680,13 @@ void PlayerCharacter::processAnimation()
 		case 3:
 			// Draw water
 			animator.playAnimation(8, 1.0f, false, true);
+			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 4:
 			// Drink water
 			animator.playAnimation(9, 1.0f, false, true);
+			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 5:

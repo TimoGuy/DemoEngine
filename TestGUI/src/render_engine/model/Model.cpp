@@ -187,6 +187,16 @@ void Model::setMaterials(std::map<std::string, Material*> materialMap)
 }
 
 
+void Model::setDepthPriorityOfMeshesWithMaterial(const std::string& materialName, float depthPriority)
+{
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		if (meshes[i].getMaterialName() == materialName)
+			meshes[i].setDepthPriority(depthPriority);
+	}
+}
+
+
 void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 {
 	std::cout << "MODEL::" << path << "::Import Started" << std::endl;

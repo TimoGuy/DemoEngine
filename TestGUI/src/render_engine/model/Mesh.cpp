@@ -13,6 +13,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
     Mesh::indices = indices;
     Mesh::bounds = bounds;
     Mesh::materialName = materialName;
+    Mesh::depthPriority = 0.0f;
 
     setupMesh();
 }

@@ -51,6 +51,10 @@ public:
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 
+	inline std::string getMaterialName() { return materialName; }
+	inline void setDepthPriority(float priority) { depthPriority = priority; }
+	inline float getDepthPriority() { return depthPriority; }
+
 	const std::vector<Vertex>& getVertices() const { return vertices; }
 	const std::vector<uint32_t>& getIndices() const { return indices; }
 	inline void setMaterialInjections(const nlohmann::json j) { materialInjections = j; }
@@ -63,6 +67,7 @@ private:
 
 	std::vector<Vertex>			vertices;
 	std::vector<uint32_t>		indices;
+	float						depthPriority;
 	Material*					material;
 	std::string					materialName;
 	nlohmann::json				materialInjections;			// @Debug: Hard to know whether this will simply be a debug feature or not. But it'll be there for pbrmaterials.
