@@ -403,14 +403,56 @@ void RenderManager::createHDRBuffer()
 	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
 
+	////
+	//// Create SSAO framebuffer		@Deprecate
+	////
+	//ssaoRotationTexture = (Texture*)Resources::getResource("texture;ssaoRotation");
+	//ssaoTexture =
+	//	new Texture2D(
+	//		(GLsizei)ssaoFBOSize,
+	//		(GLsizei)ssaoFBOSize,
+	//		1,
+	//		GL_R8,
+	//		GL_RED,
+	//		GL_UNSIGNED_BYTE,
+	//		nullptr,
+	//		GL_LINEAR,
+	//		GL_LINEAR,
+	//		GL_CLAMP_TO_EDGE,
+	//		GL_CLAMP_TO_EDGE
+	//	);
+	//ssaoBlurTexture =
+	//	new Texture2D(
+	//		(GLsizei)ssaoFBOSize,
+	//		(GLsizei)ssaoFBOSize,
+	//		1,
+	//		GL_R8,
+	//		GL_RED,
+	//		GL_UNSIGNED_BYTE,
+	//		nullptr,
+	//		GL_LINEAR,
+	//		GL_LINEAR,
+	//		GL_CLAMP_TO_EDGE,
+	//		GL_CLAMP_TO_EDGE
+	//	);
 	//
-	// Create SSAO framebuffer
+	//glCreateFramebuffers(1, &ssaoFBO);
+	//glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoTexture->getHandle(), 0);
+	//if (glCheckNamedFramebufferStatus(ssaoFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//	std::cout << "Framebuffer not complete! (SSAO Framebuffer)" << std::endl;
 	//
-	ssaoRotationTexture = (Texture*)Resources::getResource("texture;ssaoRotation");
-	ssaoTexture =
+	//glCreateFramebuffers(1, &ssaoBlurFBO);
+	//glNamedFramebufferTexture(ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoBlurTexture->getHandle(), 0);
+	//if (glCheckNamedFramebufferStatus(ssaoBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	//	std::cout << "Framebuffer not complete! (SSAO Blur Framebuffer)" << std::endl;
+
+	//
+	// Create Volumetric Lighting framebuffer
+	//
+	volumetricTexture =
 		new Texture2D(
-			(GLsizei)ssaoFBOSize,
-			(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
 			1,
 			GL_R8,
 			GL_RED,
@@ -421,10 +463,10 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
-	ssaoBlurTexture =
+	volumetricBlurTexture =
 		new Texture2D(
-			(GLsizei)ssaoFBOSize,
-			(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
 			1,
 			GL_R8,
 			GL_RED,
@@ -436,23 +478,28 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE
 		);
 
-	glCreateFramebuffers(1, &ssaoFBO);
-	glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoTexture->getHandle(), 0);
-	if (glCheckNamedFramebufferStatus(ssaoFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (SSAO Framebuffer)" << std::endl;
+	glCreateFramebuffers(1, &volumetricFBO);
+	glNamedFramebufferTexture(volumetricFBO, GL_COLOR_ATTACHMENT0, volumetricTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(volumetricFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Volumetric Framebuffer)" << std::endl;
 
-	glCreateFramebuffers(1, &ssaoBlurFBO);
-	glNamedFramebufferTexture(ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoBlurTexture->getHandle(), 0);
-	if (glCheckNamedFramebufferStatus(ssaoBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (SSAO Blur Framebuffer)" << std::endl;
+	glCreateFramebuffers(1, &volumetricBlurFBO);
+	glNamedFramebufferTexture(volumetricBlurFBO, GL_COLOR_ATTACHMENT0, volumetricBlurTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(volumetricBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Volumetric Blur Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
 {
-	delete ssaoBlurTexture;
-	glDeleteFramebuffers(1, &ssaoBlurFBO);
-	delete ssaoTexture;
-	glDeleteFramebuffers(1, &ssaoFBO);
+	delete volumetricBlurTexture;
+	glDeleteFramebuffers(1, &volumetricBlurFBO);
+	delete volumetricTexture;
+	glDeleteFramebuffers(1, &volumetricFBO);
+
+	//delete ssaoBlurTexture;		@Deprecate
+	//glDeleteFramebuffers(1, &ssaoBlurFBO);
+	//delete ssaoTexture;
+	//glDeleteFramebuffers(1, &ssaoFBO);
 
 	delete zPrePassDepthTexture;
 	glDeleteFramebuffers(1, &zPrePassFBO);
@@ -540,9 +587,10 @@ void RenderManager::createShaderPrograms()
 	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
 	hudUIProgramId = *(GLuint*)Resources::getResource("shader;hudUI");
 	INTERNALzPassShader = *(GLuint*)Resources::getResource("shader;zPassShader");
-	ssaoProgramId = *(GLuint*)Resources::getResource("shader;ssao");
-	ssaoBlurXProgramId = *(GLuint*)Resources::getResource("shader;ssaoBlurX");
-	ssaoBlurYProgramId = *(GLuint*)Resources::getResource("shader;ssaoBlurY");
+	//ssaoProgramId = *(GLuint*)Resources::getResource("shader;ssao");		@Deprecate
+	volumetricProgramId = *(GLuint*)Resources::getResource("shader;volumetricLighting");
+	blurXProgramId = *(GLuint*)Resources::getResource("shader;blurX");
+	blurYProgramId = *(GLuint*)Resources::getResource("shader;blurY");
 }
 
 void RenderManager::createFonts()
@@ -764,35 +812,59 @@ void RenderManager::render()
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 
 	//
-	// Capture screen for SSAO
+	// Compute volumetric lighting for just main light (directional light)
 	//
-	glViewport(0, 0, ssaoFBOSize, ssaoFBOSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(ssaoProgramId);
+	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
+	glUseProgram(volumetricProgramId);
 	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
 	renderQuad();
 
 	//
-	// Blur SSAO pass
+	// Blur volumetric lighting pass
 	//
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, volumetricBlurFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(ssaoBlurXProgramId);
-	glBindTextureUnit(0, ssaoTexture->getHandle());
+	glUseProgram(blurXProgramId);
+	glBindTextureUnit(0, volumetricTexture->getHandle());
+	renderQuad();
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(blurYProgramId);
+	glBindTextureUnit(0, volumetricBlurTexture->getHandle());
 	renderQuad();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(ssaoBlurYProgramId);
-	glBindTextureUnit(0, ssaoBlurTexture->getHandle());
-	renderQuad();
+	////
+	//// Capture screen for SSAO		@Deprecate
+	////
+	//glViewport(0, 0, ssaoFBOSize, ssaoFBOSize);
+	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//glUseProgram(ssaoProgramId);
+	//glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+	//glBindTextureUnit(1, ssaoRotationTexture->getHandle());
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
+	//renderQuad();
+	//
+	////
+	//// Blur SSAO pass
+	////
+	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//glUseProgram(ssaoBlurXProgramId);
+	//glBindTextureUnit(0, ssaoTexture->getHandle());
+	//renderQuad();
+	//
+	//glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//glUseProgram(ssaoBlurYProgramId);
+	//glBindTextureUnit(0, ssaoBlurTexture->getHandle());
+	//renderQuad();
 
 	// Render ui
 	renderUI();
@@ -921,10 +993,11 @@ void RenderManager::render()
 	glBindTextureUnit(0, hdrColorBuffer);
 	glBindTextureUnit(1, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
 	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
-	glBindTextureUnit(3, ssaoTexture->getHandle());
+	//glBindTextureUnit(3, ssaoTexture->getHandle());		// @Deprecate
+	glBindTextureUnit(3, volumetricTexture->getHandle());
 
-	glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoScale"), ssaoScale);
-	glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoBias"), ssaoBias);
+	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoScale"), ssaoScale);		// @Deprecate
+	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoBias"), ssaoBias);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
 	renderQuad();
@@ -1765,12 +1838,12 @@ void RenderManager::renderImGuiContents()
 				ImGui::Image((void*)(intptr_t)hdrLumAdaptationProcessed->getHandle(), ImVec2(256, 256));
 			}
 
-			static bool showSSAOTexture = false;
-			ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
-			if (showSSAOTexture)
-			{
-				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(1024, 1024));
-			}
+			//static bool showSSAOTexture = false;			@Deprecate
+			//ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
+			//if (showSSAOTexture)
+			//{
+			//	ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(1024, 1024));
+			//}
 
 			static bool showBloomProcessingBuffers = false;
 			ImGui::Checkbox("Show Bloom preprocessing buffers", &showBloomProcessingBuffers);
@@ -1781,12 +1854,12 @@ void RenderManager::renderImGuiContents()
 				ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
 			}
 
-			ImGui::Separator();
-			ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
-			ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
-			ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
-			ImGui::DragFloat("SSAO Atten", &ssaoAttenScale, 0.001f);
-			ImGui::DragFloat("SSAO Dist", &ssaoDistScale, 0.001f);
+			//ImGui::Separator();									@Deprecate
+			//ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
+			//ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
+			//ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
+			//ImGui::DragFloat("SSAO Atten", &ssaoAttenScale, 0.001f);
+			//ImGui::DragFloat("SSAO Dist", &ssaoDistScale, 0.001f);
 
 			ImGui::Separator();
 			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);

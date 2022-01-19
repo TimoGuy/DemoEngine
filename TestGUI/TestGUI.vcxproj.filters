@@ -235,9 +235,10 @@
     <None Include="shader\z_prepass.frag" />
     <None Include="shader\luminance_adaptation.comp" />
     <None Include="shader\luminance_postprocessing.frag" />
-    <None Include="shader\ssao_blur_x.frag" />
-    <None Include="shader\ssao_blur_y.frag" />
     <None Include="shader\ssao_postprocessing.frag" />
+    <None Include="shader\volumetric_postprocessing.frag" />
+    <None Include="shader\blur_y.frag" />
+    <None Include="shader\blur_x.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

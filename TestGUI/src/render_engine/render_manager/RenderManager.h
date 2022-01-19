@@ -173,8 +173,13 @@ private:
 	GLuint hdrLuminanceProgramId, hdrLumAdaptationComputeProgramId, hdrLumFBO, hdrLumAdaptation1x1;
 	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
 
-	// SSAO effect
-	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId, ssaoBlurXProgramId, ssaoBlurYProgramId;
+	// Volumetric lighting
+	GLuint volumetricFBO, volumetricBlurFBO, volumetricProgramId, blurXProgramId, blurYProgramId;
+	Texture* volumetricTexture;
+	Texture* volumetricBlurTexture;
+
+	// SSAO effect			// @Deprecate: Looks like the S word
+	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;
 	float ssaoFBOSize = 1024;
 	Texture* ssaoRotationTexture;
 	Texture* ssaoTexture;

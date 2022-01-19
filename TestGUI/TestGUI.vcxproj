@@ -217,6 +217,8 @@
     <None Include="shaders\lvlGrid.vert" />
     <None Include="shaders\zelly.frag" />
     <None Include="shader\bloom_postprocessing.frag" />
+    <None Include="shader\blur_x.frag" />
+    <None Include="shader\blur_y.frag" />
     <None Include="shader\brdf.frag" />
     <None Include="shader\brdf.vert" />
     <None Include="shader\color.frag" />
@@ -243,11 +245,10 @@
     <None Include="shader\prefilter.frag" />
     <None Include="shader\shadow.frag" />
     <None Include="shader\skybox.frag" />
-    <None Include="shader\ssao_blur_x.frag" />
-    <None Include="shader\ssao_blur_y.frag" />
     <None Include="shader\ssao_postprocessing.frag" />
     <None Include="shader\text.frag" />
     <None Include="shader\text.vert" />
+    <None Include="shader\volumetric_postprocessing.frag" />
     <None Include="shader\zelly.frag" />
     <None Include="shader\z_prepass.frag" />
   </ItemGroup>

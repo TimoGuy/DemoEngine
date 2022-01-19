@@ -404,8 +404,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/luminance_postprocessing.frag");
 	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/luminance_adaptation.comp");
 	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/ssao_postprocessing.frag");
-	if (resourceName == "shader;ssaoBlurX")								return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/ssao_blur_x.frag");
-	if (resourceName == "shader;ssaoBlurY")								return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/ssao_blur_y.frag");
+	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/volumetric_postprocessing.frag");
+	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/blur_x.frag");
+	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/blur_y.frag");
 #ifdef _DEVELOP
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
