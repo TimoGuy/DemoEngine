@@ -272,7 +272,7 @@ namespace PhysicsUtils
 			glm::vec3(transform[1]) / scale[1],
 			glm::vec3(transform[2]) / scale[2]
 		);
-		return glm::quat_cast(unitScaledRotationMatrix);
+		return glm::normalize(glm::quat_cast(unitScaledRotationMatrix));		// NOTE: Seems like the quat created here needs to be normalized. Weird.  -Timo 2022-01-19
 	}
 
 	glm::vec3 getScale(glm::mat4 transform)

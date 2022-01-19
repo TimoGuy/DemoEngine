@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    0.07697933167219162,
-                    7.349999904632568,
-                    2.756321907043457
+                    -65.75450134277344,
+                    272.1078796386719,
+                    -1.490430235862732
                 ],
                 "rotation": [
                     0.0,
@@ -119,11 +119,11 @@
                 ],
                 "rotation": [
                     135.0,
-                    -3.6222559174348135e-06,
-                    -180.0
+                    -3.6222584185452433e-06,
+                    180.0
                 ],
                 "scale": [
-                    0.9999996423721313,
+                    0.9999988079071045,
                     0.9999999403953552,
                     0.9999998807907104
                 ]
@@ -333,8 +333,8 @@
                 "guid": "88a7008a2bb3946620138f61a5268c9dc90f0fc4be20e5067d4fbc396dbc3890",
                 "name": "Voxel Group (mp)",
                 "position": [
-                    -28.291156768798828,
-                    91.65137481689453,
+                    -64.675537109375,
+                    264.7579040527344,
                     0.0
                 ],
                 "rotation": [
@@ -354,9 +354,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "e52a9ffa79b8fddfcaf112a4539a529ba0b7a41331d695eb5b09462a9b2428a6",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 73.0,
+            "moving_platform_spline_position_in_time": 252.99893188476563,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -393,14 +393,14 @@
                     60.04479217529297
                 ],
                 "rotation": [
-                    -58.43655776977539,
-                    90.0,
-                    0.0
+                    175.562744140625,
+                    89.98021697998047,
+                    -145.40672302246094
                 ],
                 "scale": [
-                    0.9999997019767761,
-                    0.9999999403953552,
-                    0.9999999403953552
+                    1.0,
+                    1.0,
+                    1.0
                 ]
             },
             "moving_platform_angular_velocity": [
