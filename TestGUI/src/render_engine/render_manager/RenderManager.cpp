@@ -449,10 +449,11 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
+	volumetricLightingStrength = 0.02f;
+
 	constexpr float volumetricTextureScale = 0.5f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
 	volumetricTextureHeight = MainLoop::getInstance().camera.height * volumetricTextureScale;
-	volumetricLightingStrength = 0.5f;
 
 	volumetricTexture =
 		new Texture2D(
@@ -861,7 +862,9 @@ void RenderManager::render()
 	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
-	glProgramUniform2f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 0.5f * MainLoop::getInstance().deltaTime, 2.5f * MainLoop::getInstance().deltaTime);
+	//constexpr glm::vec2 adaptationSpeeds(0.5f, 2.5f);
+	constexpr glm::vec2 adaptationSpeeds(1.5f, 2.5f);
+	glProgramUniform2fv(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 1, glm::value_ptr(adaptationSpeeds * MainLoop::getInstance().deltaTime));
 	glDispatchCompute(1, 1, 1);
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 

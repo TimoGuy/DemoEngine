@@ -80,6 +80,7 @@ float simpleShadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 #define NB_RAYMARCH_STEPS 10
 const float PI = 3.14159265359;
 const float G_SCATTERING = 0.7;
+const float ACCUMULATION_CEILING = 15.0;        // NOTE: with the params above, the max seems to be 15.03
 
 float computeScattering(float lightDotView)
 {
@@ -104,7 +105,7 @@ void main()
     vec3 deltaPositionNormalized = deltaPosition / rayLength;
     float rayStepIncrement = min(rayLength, farPlane) / NB_RAYMARCH_STEPS;      // Clamp the furthest the rayLength can go is where shadows end (farPlane)
     vec3 stepVector = deltaPositionNormalized * rayStepIncrement;
-    float lightDotView = dot(deltaPositionNormalized, mainlightDirection);
+    float lightDotView = dot(deltaPositionNormalized, -mainlightDirection);
 
     // Offset the start position
     float ditherPattern[16] = {
@@ -127,6 +128,7 @@ void main()
         }
         currentPosition += stepVector;
     }
-
-	fragColor = vec4(vec3(accumulatedFog), 1.0);
+    
+    float remappedAccum = (1.0 - pow(1.0 - clamp(accumulatedFog / ACCUMULATION_CEILING, 0, 1), 4.0)) * ACCUMULATION_CEILING;
+	fragColor = vec4(vec3(remappedAccum), 1.0);
 }

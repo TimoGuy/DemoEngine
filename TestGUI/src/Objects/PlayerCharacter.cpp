@@ -764,7 +764,7 @@ void PlayerCharacter::processAnimation()
 
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
-			backAttachment.simulateRope(hairWeightMult * 10.0f);
+			backAttachment.simulateRope(hairWeightMult *10.0f);
 
 			//
 			// Do ik calculations for sideburns
