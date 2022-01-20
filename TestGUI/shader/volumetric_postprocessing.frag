@@ -11,6 +11,7 @@ uniform mat4 inverseViewMatrix;
 uniform float zNear;
 uniform float zFar;
 
+uniform vec3 mainCameraPosition;
 uniform vec3 mainlightDirection;
 
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
@@ -20,24 +21,7 @@ uniform mat4 cameraView;
 uniform float farPlane;
 
 
-float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float compare)           // https://www.youtube.com/watch?v=yn5UJzMqxj0 (29:27)
-{
-    vec2 pixelPos = coords / texelSize + vec2(0.5);
-    vec2 fracPart = fract(pixelPos);
-    vec2 startTexel = (pixelPos - fracPart - vec2(0.5)) * texelSize;                // NOTE: -vec2(0.5) fixes problem of one cascade being off from another.
-
-    float blTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, 0.0), layer)).r);
-    float brTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, 0.0), layer)).r);
-    float tlTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, texelSize.y), layer)).r);
-    float trTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, texelSize.y), layer)).r);
-    
-    float mixA = mix(blTexel, tlTexel, fracPart.y);
-    float mixB = mix(brTexel, trTexel, fracPart.y);
-
-    return mix(mixA, mixB, fracPart.x);
-}
-
-float shadowSampleCSMLayer(vec3 lightDir, int layer, vec3 fragPosition)
+float simpleShadowSampleCSMLayer(vec3 lightDir, int layer, vec3 fragPosition)
 {
     vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
     // perform perspective divide
@@ -51,38 +35,10 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer, vec3 fragPosition)
     {
         return 0.0;
     }
-    // calculate bias (based on depth map resolution and slope)     // NOTE: This is tuned for 1024x1024 stable shadow maps
-    vec3 normal = vec3(0, 1, 0);  //normalize(normalVector);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float distanceMultiplier = pow(0.45, layer);      // NOTE: this worked for stable fit shadows
-    //float distanceMultiplier = 0.5;                   // NOTE: this is for close fit shadows... but I cannot get them to look decent
 
-    if (layer == cascadeCount)
-    {
-        bias *= 1 / (farPlane * distanceMultiplier);
-    }
-    else
-    {
-        bias *= 1 / (cascadePlaneDistances[layer] * distanceMultiplier);
-    }
-
-    // PCF
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(csmShadowMap, 0));
-    for(int x = -1; x <= 1; ++x)
-    {
-        for(int y = -1; y <= 1; ++y)
-        {
-            //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;        // @Debug: not filtered shadows
-            //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
-            shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
-        }
-    }
-    shadow /= 9.0;
-    shadow = 1.0 - shadow;
-
-    //if (shadow > 0.01)        // For debugging purposes
-    //    shadow = 1.0;
+    // Shadow sampling
+    float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy, layer)).r;
+    float shadow = currentDepth > pcfDepth ? 1.0 : 0.0;
     
     // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
     if(projCoords.z > 1.0)
@@ -93,7 +49,7 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer, vec3 fragPosition)
     return shadow;
 }
 
-float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
+float simpleShadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
 {
 	// select cascade layer
     vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
@@ -117,37 +73,60 @@ float shadowCalculationCSM(vec3 lightDir, vec3 fragPosition)
         return 0.0;
     }
 
-    // Fading between shadow cascades
-    float fadingEdgeAmount = 2.5 * (layer + 1);  //(layer == cascadeCount) ? 15.0 : 2.5;        // <---- Method that I tried to implement with close fit shadows... but never really worked.
-    float visibleAmount = -1;
-    if (layer == cascadeCount)
-        visibleAmount = clamp(farPlane - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
-    else
-        visibleAmount = clamp(cascadePlaneDistances[layer] - depthValue, 0.0, fadingEdgeAmount) / fadingEdgeAmount;
+    return simpleShadowSampleCSMLayer(lightDir, layer, fragPosition);
+}
+//---------------------------------------------------------
+// Mie scattering approximated with Henyey-Greenstein phase function.
+#define NB_RAYMARCH_STEPS 10
+const float PI = 3.14159265359;
+const float G_SCATTERING = 0.7;
 
-    // Sample the shadow map(s)
-    float shadow1 = 0, shadow2 = 0;
-    if (layer != cascadeCount && visibleAmount < 1.0)
-        shadow2 = shadowSampleCSMLayer(lightDir, layer + 1, fragPosition);
-    shadow1 = shadowSampleCSMLayer(lightDir, layer, fragPosition);
-
-    // Mix sampled shadows       (TODO: This works, but I don't want it bc it can lop off more than half of the last cascade. This should probs account for the bounds of the shadow cascade (perhaps use projCoords.x and .y too????))
-    return mix(shadow2, shadow1, visibleAmount);
+float computeScattering(float lightDotView)
+{
+    float result = 1.0 - G_SCATTERING * G_SCATTERING;
+    result /= (4.0 * PI * pow(1.0 + G_SCATTERING * G_SCATTERING - (2.0 * G_SCATTERING) * lightDotView, 1.5));
+    return result;
 }
 //---------------------------------------------------------
 void main()
 {
     // Get WS position based off depth texture
     float z = texture(depthTexture, texCoord).x * 2.0 - 1.0;
-
     vec4 clipSpacePosition = vec4(texCoord * 2.0 - 1.0, z, 1.0);
     vec4 viewSpacePosition = inverseProjectionMatrix * clipSpacePosition;
-
     viewSpacePosition /= viewSpacePosition.w;   // Perspective division
-
     vec3 worldSpaceFragPosition = vec3(inverseViewMatrix * viewSpacePosition);
 
-    float shadow = shadowCalculationCSM(mainlightDirection, worldSpaceFragPosition);
+    // Setup raymarching
+    vec3 currentPosition = mainCameraPosition;
+    vec3 deltaPosition = worldSpaceFragPosition - mainCameraPosition;
+    float rayLength = length(deltaPosition);
+    vec3 deltaPositionNormalized = deltaPosition / rayLength;
+    float rayStepIncrement = min(rayLength, farPlane) / NB_RAYMARCH_STEPS;      // Clamp the furthest the rayLength can go is where shadows end (farPlane)
+    vec3 stepVector = deltaPositionNormalized * rayStepIncrement;
+    float lightDotView = dot(deltaPositionNormalized, mainlightDirection);
 
-	fragColor = vec4(vec3(shadow), 1.0);
+    // Offset the start position
+    float ditherPattern[16] = {
+        0.0, 0.5, 0.125, 0.625,
+        0.75, 0.22, 0.875, 0.375,
+        0.1875, 0.6875, 0.0625, 0.5625,
+        0.9375, 0.4375, 0.8125, 0.3125
+    };
+    uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
+    currentPosition += stepVector * ditherPattern[index];
+
+    float accumulatedFog = 0.0;
+
+    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
+    {
+        float shadow = simpleShadowCalculationCSM(mainlightDirection, currentPosition);
+        if (shadow < 0.5)
+        {
+            accumulatedFog += computeScattering(lightDotView);
+        }
+        currentPosition += stepVector;
+    }
+
+	fragColor = vec4(vec3(accumulatedFog), 1.0);
 }

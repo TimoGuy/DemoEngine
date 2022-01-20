@@ -177,6 +177,8 @@ private:
 	GLuint volumetricFBO, volumetricBlurFBO, volumetricProgramId, blurXProgramId, blurYProgramId;
 	Texture* volumetricTexture;
 	Texture* volumetricBlurTexture;
+	int volumetricTextureWidth, volumetricTextureHeight;
+	float volumetricLightingStrength;
 
 	// SSAO effect			// @Deprecate: Looks like the S word
 	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;

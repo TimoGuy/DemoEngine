@@ -449,30 +449,35 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
+	constexpr float volumetricTextureScale = 0.5f;
+	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
+	volumetricTextureHeight = MainLoop::getInstance().camera.height * volumetricTextureScale;
+	volumetricLightingStrength = 0.5f;
+
 	volumetricTexture =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)volumetricTextureWidth,
+			(GLsizei)volumetricTextureHeight,
 			1,
-			GL_R8,
+			GL_R32F,
 			GL_RED,
-			GL_UNSIGNED_BYTE,
+			GL_FLOAT,
 			nullptr,
-			GL_LINEAR,
+			GL_NEAREST,
 			GL_LINEAR,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
 	volumetricBlurTexture =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)volumetricTextureWidth,
+			(GLsizei)volumetricTextureHeight,
 			1,
-			GL_R8,
+			GL_R32F,
 			GL_RED,
-			GL_UNSIGNED_BYTE,
+			GL_FLOAT,
 			nullptr,
-			GL_LINEAR,
+			GL_NEAREST,
 			GL_LINEAR,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
@@ -788,53 +793,32 @@ void RenderManager::render()
 	renderScene();
 
 	//
-	// Do luminance
-	//
-	glViewport(0, 0, luminanceTextureSize, luminanceTextureSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrLumFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(hdrLuminanceProgramId);
-	glBindTextureUnit(0, hdrColorBuffer);
-	glProgramUniform1i(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "hdrColorBuffer"), 0);
-	renderQuad();
-	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
-
-	//
-	// Kick off light adaptation compute shader
-	//
-	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	glUseProgram(hdrLumAdaptationComputeProgramId);
-	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
-	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
-	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
-	glProgramUniform2f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 0.5f * MainLoop::getInstance().deltaTime, 2.5f * MainLoop::getInstance().deltaTime);
-	glDispatchCompute(1, 1, 1);
-	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
-
-	//
 	// Compute volumetric lighting for just main light (directional light)
 	//
-	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
-	glUseProgram(volumetricProgramId);
-	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+	LightComponent* mainlight = nullptr;
 	for (size_t i = 0; i < MainLoop::getInstance().lightObjects.size(); i++)
 	{
 		if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
 		{
-			const LightComponent* mainlight = MainLoop::getInstance().lightObjects[i];
+			mainlight = MainLoop::getInstance().lightObjects[i];
 			assert(mainlight->castsShadows);		// NOTE: turn off volumetric lighting if shadows are turned off
-			glBindTextureUnit(1, mainlight->shadowMapTexture);
-			glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
-			glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
-			for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
-				glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
-			glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
-			glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
-
 			break;
 		}
 	}
+	assert(mainlight != nullptr);		// NOTE: turn off volumetric lighting if shadows are turned off
+
+	glViewport(0, 0, volumetricTextureWidth, volumetricTextureHeight);
+	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
+	glUseProgram(volumetricProgramId);
+	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+	glBindTextureUnit(1, mainlight->shadowMapTexture);
+	glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainCameraPosition"), 1, glm::value_ptr(MainLoop::getInstance().camera.position));
+	glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
+	glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size());
+	for (size_t j = 0; j < ((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size(); ++j)
+		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)mainlight)->shadowCascadeLevels[j]);
+	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
+	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), mainlight->shadowFarPlane);
 	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
 	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
 	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
@@ -849,12 +833,37 @@ void RenderManager::render()
 	glUseProgram(blurXProgramId);
 	glBindTextureUnit(0, volumetricTexture->getHandle());
 	renderQuad();
-	
+
 	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(blurYProgramId);
 	glBindTextureUnit(0, volumetricBlurTexture->getHandle());
 	renderQuad();
+
+	//
+	// Do luminance
+	//
+	glViewport(0, 0, luminanceTextureSize, luminanceTextureSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrLumFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glUseProgram(hdrLuminanceProgramId);
+	glBindTextureUnit(0, hdrColorBuffer);
+	glBindTextureUnit(1, volumetricTexture->getHandle());
+	glProgramUniform3fv(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength));
+	renderQuad();
+	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
+
+	//
+	// Kick off light adaptation compute shader
+	//
+	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	glUseProgram(hdrLumAdaptationComputeProgramId);
+	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
+	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
+	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
+	glProgramUniform2f(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 0.5f * MainLoop::getInstance().deltaTime, 2.5f * MainLoop::getInstance().deltaTime);
+	glDispatchCompute(1, 1, 1);
+	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 
 	////
 	//// Capture screen for SSAO		@Deprecate
@@ -1016,7 +1025,7 @@ void RenderManager::render()
 	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
 	//glBindTextureUnit(3, ssaoTexture->getHandle());		// @Deprecate
 	glBindTextureUnit(3, volumetricTexture->getHandle());
-
+	glProgramUniform3fv(postprocessing_program_id, glGetUniformLocation(postprocessing_program_id, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength));
 	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoScale"), ssaoScale);		// @Deprecate
 	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoBias"), ssaoBias);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
@@ -1881,6 +1890,9 @@ void RenderManager::renderImGuiContents()
 			//ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
 			//ImGui::DragFloat("SSAO Atten", &ssaoAttenScale, 0.001f);
 			//ImGui::DragFloat("SSAO Dist", &ssaoDistScale, 0.001f);
+
+			ImGui::Separator();
+			ImGui::DragFloat("Volumetric Lighting Strength", &volumetricLightingStrength);
 
 			ImGui::Separator();
 			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
