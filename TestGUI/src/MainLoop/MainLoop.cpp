@@ -22,7 +22,7 @@
 
 
 #define FULLSCREEN_MODE 0
-#define V_SYNC 0
+#define V_SYNC 1
 
 
 void createWindow(const char* appName);

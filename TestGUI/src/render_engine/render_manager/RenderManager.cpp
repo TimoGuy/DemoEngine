@@ -449,7 +449,7 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
-	volumetricLightingStrength = 0.02f;
+	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol  -Timo 01-20-2022
 
 	constexpr float volumetricTextureScale = 0.5f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
@@ -850,7 +850,7 @@ void RenderManager::render()
 	glUseProgram(hdrLuminanceProgramId);
 	glBindTextureUnit(0, hdrColorBuffer);
 	glBindTextureUnit(1, volumetricTexture->getHandle());
-	glProgramUniform3fv(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength));
+	glProgramUniform3fv(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal));
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
 
@@ -1028,7 +1028,7 @@ void RenderManager::render()
 	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
 	//glBindTextureUnit(3, ssaoTexture->getHandle());		// @Deprecate
 	glBindTextureUnit(3, volumetricTexture->getHandle());
-	glProgramUniform3fv(postprocessing_program_id, glGetUniformLocation(postprocessing_program_id, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength));
+	glProgramUniform3fv(postprocessing_program_id, glGetUniformLocation(postprocessing_program_id, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal));
 	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoScale"), ssaoScale);		// @Deprecate
 	//glUniform1f(glGetUniformLocation(postprocessing_program_id, "ssaoBias"), ssaoBias);
 	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
@@ -1896,6 +1896,7 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::Separator();
 			ImGui::DragFloat("Volumetric Lighting Strength", &volumetricLightingStrength);
+			ImGui::DragFloat("External Volumetric Lighting Strength", &volumetricLightingStrengthExternal);
 
 			ImGui::Separator();
 			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);

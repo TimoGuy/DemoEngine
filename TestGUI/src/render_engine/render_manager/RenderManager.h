@@ -164,6 +164,9 @@ public:
 	// Skybox Params handle
 	inline SkyboxParams& getSkyboxParams() { return skyboxParams; }
 
+	// Volumetric setting
+	inline void setVolumetricLightingStrength(float amount) { volumetricLightingStrengthExternal = amount; }
+
 private:
 	GLuint debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
 
@@ -178,7 +181,7 @@ private:
 	Texture* volumetricTexture;
 	Texture* volumetricBlurTexture;
 	int volumetricTextureWidth, volumetricTextureHeight;
-	float volumetricLightingStrength;
+	float volumetricLightingStrength, volumetricLightingStrengthExternal;
 
 	// SSAO effect			// @Deprecate: Looks like the S word
 	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;

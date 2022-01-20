@@ -38,6 +38,9 @@ DirectionalLight::DirectionalLight(bool castsShadows)
 {
 	name = "Directional Light";
 
+	hirumaColor = glm::vec3(1.0f, 0.933f, 0.890f);		// https://andi-siess.de/rgb-to-color-temperature/ (5600k light)
+	hiokureColor = glm::vec3(1.0f, 0.722f, 0.447f);		// https://andi-siess.de/rgb-to-color-temperature/ (3100k light)
+
 	lightComponent = new DirectionalLightLight(this, castsShadows);
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
@@ -58,7 +61,11 @@ void DirectionalLight::loadPropertiesFromJson(nlohmann::json& object)
 	//
 	// I'll take the leftover tokens then
 	//
-	lightComponent->color = glm::vec3(object["color"][0], object["color"][1], object["color"][2]);
+	if (object.contains("hiruma_color") && object.contains("hiokure_color"))
+	{
+		hirumaColor = glm::vec3(object["hiruma_color"][0], object["hiruma_color"][1], object["hiruma_color"][2]);
+		hiokureColor = glm::vec3(object["hiokure_color"][0], object["hiokure_color"][1], object["hiokure_color"][2]);
+	}
 	((DirectionalLightLight*)lightComponent)->maxColorIntensity = object["color_multiplier"];
 
 	setLookDirection(PhysicsUtils::getRotation(getTransform()));
@@ -72,7 +79,8 @@ nlohmann::json DirectionalLight::savePropertiesToJson()
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 	j["lightComponent"] = lightComponent->savePropertiesToJson();
 
-	j["color"] = { lightComponent->color.r, lightComponent->color.g, lightComponent->color.b };
+	j["hiruma_color"] = { hirumaColor.r, hirumaColor.g, hirumaColor.b };
+	j["hiokure_color"] = { hiokureColor.r, hiokureColor.g, hiokureColor.b };
 	j["color_multiplier"] = ((DirectionalLightLight*)lightComponent)->maxColorIntensity;
 
 	return j;
@@ -89,7 +97,6 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 
 	lightType = LightType::DIRECTIONAL;
 
-	color = glm::vec3(1.0f, 1.0f, 0.984f);		// http://planetpixelemporium.com/tutorialpages/light.html (High Noon Sun)
 	maxColorIntensity = 10.0f;
 	colorIntensityMaxAtY = 0.707106781f;		// NOTE: sin(45)
 
@@ -392,8 +399,9 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	return ret;
 }
 
-float shadowDisappearMultiplier = 30.0f;
-float shadowDisappearOffset = 2.0f;
+float shadowDisappearMultiplier = 4.36395f;		// @Tuned value
+float shadowDisappearOffset = 1.0f;		// @Tuned value
+float overflowYAmountRaw;
 void DirectionalLight::setLookDirection(glm::quat rotation)
 {
 	glm::vec3 sunOrientation(0.0f, 0.0f, 1.0f);
@@ -402,14 +410,15 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 	// Modify the light direction
 	glm::vec3 lightDirection = sunOrientation;
-	lightDirection.y -= 0.5f;
+	lightDirection.y -= 0.2f;			// @NOTE: This seems to be the best one. There's a bit of shadow acne, however.
 	lightDirection = glm::normalize(lightDirection);
 
-	lightComponent->facingDirection = lightDirection;
-
 	// Color intensity
-	const float clampY = -0.45f;
-	float overflowYAmount = glm::max((lightDirection.y - clampY) * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f);		// Man I wish I could show you the desmos graph I had to make to get this to work the way I wanted. -Timo
+	const float clampY = -0.213f;		// @Tuned value
+	overflowYAmountRaw = (clampY - lightDirection.y);
+	float overflowYAmount = glm::clamp(overflowYAmountRaw * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f, 1.0f);		// Man I wish I could show you the desmos graph I had to make to get this to work the way I wanted. -Timo
+	overflowYAmount = glm::pow(overflowYAmount, 2.0f);
+
 	if (lightDirection.y > clampY)
 	{
 		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);
@@ -420,8 +429,11 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 		lightDirection.y = clampY;
 	}
 
-	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity - overflowYAmount, 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
+	lightComponent->facingDirection = lightDirection;
+	lightComponent->color = PhysicsUtils::lerp(hiokureColor, hirumaColor, glm::vec3(glm::clamp(-lightComponent->facingDirection.y, 0.0f, 1.0f)));
+	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity * overflowYAmount, 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 	
+	MainLoop::getInstance().renderManager->setVolumetricLightingStrength(overflowYAmount);
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha = sunOrientation.y > 0.0f ? 0.0f : glm::pow(glm::abs(sunOrientation.y), 0.8f);
 }
@@ -436,7 +448,8 @@ void DirectionalLight::preRenderUpdate()
 #ifdef _DEVELOP
 void DirectionalLight::imguiPropertyPanel()
 {
-	ImGui::ColorEdit3("Light base color", &lightComponent->color[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::ColorEdit3("Light base color (Hiruma)", &hirumaColor[0], ImGuiColorEditFlags_DisplayRGB);
+	ImGui::ColorEdit3("Light base color (Hiokure)", &hiokureColor[0], ImGuiColorEditFlags_DisplayRGB);
 	ImGui::DragFloat("Light color multiplier (Max)", &((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 
 	ImGui::DragInt("Cascade Shadow Map Debug", &MainLoop::getInstance().renderManager->debugCSMLayerNum);
@@ -487,9 +500,13 @@ void DirectionalLight::imguiPropertyPanel()
 	// Day night cycle
 	//
 	ImGui::Separator();
-	ImGui::Text("Day night cycle");
+	ImGui::Text("Day night cycle");		// @NOTE: set time of day to 0.075 for sunrise, -0.0793005 for when the offsetY happens
 	ImGui::DragFloat("Shadow Disappear mult", &shadowDisappearMultiplier);
 	ImGui::DragFloat("Shadow Disappear offset", &shadowDisappearOffset);
+
+	ImGui::Text(("lightDirection and Clamp Diff: " + std::to_string(overflowYAmountRaw)).c_str());
+	float jjjj = glm::clamp(overflowYAmountRaw * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f, 1.0f);
+	ImGui::Text(("Evaluated: " + std::to_string(jjjj)).c_str());
 }
 
 void DirectionalLight::imguiRender()

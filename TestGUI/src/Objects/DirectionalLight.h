@@ -70,5 +70,7 @@ public:
 private:
 	unsigned int lightGizmoTextureId;
 
+	glm::vec3 hirumaColor, hiokureColor;
+
 	void refreshResources();
 };
