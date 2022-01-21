@@ -252,15 +252,15 @@ void PlayerCharacter::processMovement()
 	// Update playercam pos
 	//
 	{
-		glm::vec3 cameraTargetPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
+		const glm::vec3 cameraTargetPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
 		const float lengthToCamTarget = glm::abs(cameraTargetPosition.y - cameraPosition.y);
-		cameraTargetPosition.y =
+		cameraPosition = cameraTargetPosition;
+		cameraPosition.y =
 			PhysicsUtils::moveTowards(
 				cameraPosition.y,
 				cameraTargetPosition.y,
 				lengthToCamTarget * cameraSpeedMultiplier * MainLoop::getInstance().deltaTime
 			);
-		cameraPosition = cameraTargetPosition;
 	}
 
 	// Setup camera orientation
@@ -273,7 +273,11 @@ void PlayerCharacter::processMovement()
 		float cameraDistance = camOffset.z;
 
 		physx::PxRaycastBuffer hitInfo;
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(cameraPosition), PhysicsUtils::toPxVec3(-playerCamera.orientation), std::abs(cameraDistance) + hitDistancePadding, hitInfo))
+		if (PhysicsUtils::raycast(
+			PhysicsUtils::toPxVec3(((PlayerPhysics*)getPhysicsComponent())->controller->getPosition()) + physx::PxVec3(camOffset.x, camOffset.y, 0.0f),
+			PhysicsUtils::toPxVec3(-playerCamera.orientation),
+			std::abs(cameraDistance) + hitDistancePadding,
+			hitInfo))
 		{
 			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
 		}

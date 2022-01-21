@@ -388,8 +388,8 @@ void main()
             const float lightAttenuationThreshold = 0.025;
             L = normalize(lightPositions[i].xyz - fragPosition);
             H = normalize(V + L);
-            float distance = length(lightPositions[i].xyz - fragPosition);
-            attenuation = 1.0 / (distance * distance);
+            float distanceToLight = length(lightPositions[i].xyz - fragPosition);
+            attenuation = 1.0 / (distanceToLight * distanceToLight);
             radiance = max(lightColors[i].xyz * attenuation - lightAttenuationThreshold, 0.0);
 
             if (lightDirections[i].a == 1)
@@ -439,7 +439,7 @@ void main()
         float NdotL = max(dot(N, L), 0.0);
 
         // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL * (1.0 - shadow);  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL * (1.0 - shadow * NdotL);  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
     
     // ambient lighting (Using the IBL tex as the ambient)
