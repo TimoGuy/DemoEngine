@@ -808,38 +808,42 @@ void RenderManager::render()
 	}
 	assert(mainlight != nullptr);		// NOTE: turn off volumetric lighting if shadows are turned off
 
-	glViewport(0, 0, volumetricTextureWidth, volumetricTextureHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
-	glUseProgram(volumetricProgramId);
-	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-	glBindTextureUnit(1, mainlight->shadowMapTexture);
-	glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainCameraPosition"), 1, glm::value_ptr(MainLoop::getInstance().camera.position));
-	glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
-	glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size());
-	for (size_t j = 0; j < ((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size(); ++j)
-		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)mainlight)->shadowCascadeLevels[j]);
-	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
-	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), mainlight->shadowFarPlane);
-	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
-	glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
-	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
-	glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
-	renderQuad();
+	if (mainlight->colorIntensity > 0.0f)
+	{
 
-	//
-	// Blur volumetric lighting pass
-	//
-	glBindFramebuffer(GL_FRAMEBUFFER, volumetricBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(blurXProgramId);
-	glBindTextureUnit(0, volumetricTexture->getHandle());
-	renderQuad();
+		glViewport(0, 0, volumetricTextureWidth, volumetricTextureHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
+		glUseProgram(volumetricProgramId);
+		glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
+		glBindTextureUnit(1, mainlight->shadowMapTexture);
+		glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainCameraPosition"), 1, glm::value_ptr(MainLoop::getInstance().camera.position));
+		glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
+		glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size());
+		for (size_t j = 0; j < ((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size(); ++j)
+			glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)mainlight)->shadowCascadeLevels[j]);
+		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
+		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), mainlight->shadowFarPlane);
+		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
+		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
+		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
+		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
+		renderQuad();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(blurYProgramId);
-	glBindTextureUnit(0, volumetricBlurTexture->getHandle());
-	renderQuad();
+		//
+		// Blur volumetric lighting pass
+		//
+		glBindFramebuffer(GL_FRAMEBUFFER, volumetricBlurFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(blurXProgramId);
+		glBindTextureUnit(0, volumetricTexture->getHandle());
+		renderQuad();
+
+		glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(blurYProgramId);
+		glBindTextureUnit(0, volumetricBlurTexture->getHandle());
+		renderQuad();
+	}
 
 	//
 	// Do luminance
