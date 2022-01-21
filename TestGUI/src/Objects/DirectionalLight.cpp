@@ -399,9 +399,10 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	return ret;
 }
 
-float shadowDisappearMultiplier = 4.36395f;		// @Tuned value
+float shadowDisappearMultiplier = 2.14524f;		// @Tuned value
 float shadowDisappearOffset = 1.0f;		// @Tuned value
 float overflowYAmountRaw;
+float startDimmingY = -0.45f;		// @Tuned value
 void DirectionalLight::setLookDirection(glm::quat rotation)
 {
 	glm::vec3 sunOrientation(0.0f, 0.0f, 1.0f);
@@ -414,26 +415,28 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 	lightDirection = glm::normalize(lightDirection);
 
 	// Color intensity
-	const float clampY = -0.213f;		// @Tuned value
-	overflowYAmountRaw = (clampY - lightDirection.y);
+	overflowYAmountRaw = (startDimmingY - lightDirection.y);
 	float overflowYAmount = glm::clamp(overflowYAmountRaw * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f, 1.0f);		// Man I wish I could show you the desmos graph I had to make to get this to work the way I wanted. -Timo
 	overflowYAmount = glm::pow(overflowYAmount, 2.0f);
 
-	if (lightDirection.y > clampY)
+	const float clampDirectionY = -0.225f;		// @Tuned value
+	if (lightDirection.y > clampDirectionY)
 	{
 		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);
-		float clampYAsin = glm::asin(clampY);
+		float clampYAsin = glm::asin(clampDirectionY);
 		lightDirXZ = glm::normalize(lightDirXZ) * glm::cos(clampYAsin);
 
 		lightDirection = lightDirXZ;
-		lightDirection.y = clampY;
+		lightDirection.y = clampDirectionY;
 	}
 
 	lightComponent->facingDirection = lightDirection;
 	lightComponent->color = PhysicsUtils::lerp(hiokureColor, hirumaColor, glm::vec3(glm::clamp(-lightComponent->facingDirection.y, 0.0f, 1.0f)));
-	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity * overflowYAmount, 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
+	lightComponent->colorIntensity = glm::clamp(((DirectionalLightLight*)lightComponent)->maxColorIntensity * glm::pow(overflowYAmount, 2.0f), 0.0f, ((DirectionalLightLight*)lightComponent)->maxColorIntensity);
 	
-	MainLoop::getInstance().renderManager->setVolumetricLightingStrength(overflowYAmount);
+	constexpr float b = -12.0f;		// @Tuned value
+	constexpr float c = -b + 1.0f;		// @Tuned value
+	MainLoop::getInstance().renderManager->setVolumetricLightingStrength(b * glm::pow(overflowYAmount, 2.0f) + c);
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunOrientation = sunOrientation;
 	MainLoop::getInstance().renderManager->getSkyboxParams().sunAlpha = sunOrientation.y > 0.0f ? 0.0f : glm::pow(glm::abs(sunOrientation.y), 0.8f);
 }
@@ -501,6 +504,7 @@ void DirectionalLight::imguiPropertyPanel()
 	//
 	ImGui::Separator();
 	ImGui::Text("Day night cycle");		// @NOTE: set time of day to 0.075 for sunrise, -0.0793005 for when the offsetY happens
+	ImGui::DragFloat("Start Dimming Y", &startDimmingY);
 	ImGui::DragFloat("Shadow Disappear mult", &shadowDisappearMultiplier);
 	ImGui::DragFloat("Shadow Disappear offset", &shadowDisappearOffset);
 
