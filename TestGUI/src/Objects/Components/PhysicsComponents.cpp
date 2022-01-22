@@ -425,7 +425,7 @@ void PlayerPhysics::physicsUpdate()
 	// Reset position of player to 0, 0, 0!
 	if (InputManager::getInstance().inventoryPressed)
 	{
-		controller->setFootPosition({ 0, 0, 0 });
+		controller->setFootPosition({ 0, 4, 0 });
 		velocity = { 0, 0, 0 };
 	}
 #endif

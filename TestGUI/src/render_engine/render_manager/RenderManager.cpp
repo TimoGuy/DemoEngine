@@ -1535,6 +1535,37 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::BeginMainMenuBar())
 		{
+			// Mainmenubar keyboard shortcuts
+			GLFWwindow* windowRef = MainLoop::getInstance().window;
+			const bool ctrl =
+				glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) ||
+				glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL);
+			const bool shift =
+				glfwGetKey(windowRef, GLFW_KEY_LEFT_SHIFT) ||
+				glfwGetKey(windowRef, GLFW_KEY_RIGHT_SHIFT);
+
+			static bool didKeyboardShortcutPrev = false;
+			bool didKeyboardShortcut = false;
+			if (ctrl && glfwGetKey(windowRef, GLFW_KEY_O))
+			{
+				if (!didKeyboardShortcutPrev)
+					FileLoading::getInstance().loadFileWithPrompt(true);
+				didKeyboardShortcut = true;
+			}
+			if (ctrl && !shift && glfwGetKey(windowRef, GLFW_KEY_S))
+			{
+				if (!didKeyboardShortcutPrev)
+					FileLoading::getInstance().saveFile(false);
+				didKeyboardShortcut = true;
+			}
+			if (ctrl && shift && glfwGetKey(windowRef, GLFW_KEY_S))
+			{
+				if (!didKeyboardShortcutPrev)
+					FileLoading::getInstance().saveFile(true);
+				didKeyboardShortcut = true;
+			}
+			didKeyboardShortcutPrev = didKeyboardShortcut;
+
 			//ImGui::begin
 			if (ImGui::BeginMenu("File"))
 			{

@@ -30,7 +30,7 @@ FileLoading& FileLoading::getInstance()
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
 	// Load all info of the level
-	char* fname = (char*)"res\\level\\level1.hsfs";
+	std::string fname;
 	{
 		std::ifstream i("res\\solanine_editor_settings.json");
 		if (i.is_open())
@@ -40,7 +40,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 
 			if (j.contains("startup_level"))
 			{
-				fname = (char*)std::string(j["startup_level"]).c_str();		// @NOTE: apparently this is ng
+				fname = j["startup_level"];
 			}
 		}
 	}
@@ -50,7 +50,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
 		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
-		fname = tinyfd_openFileDialog(
+		char* fnameOpened = tinyfd_openFileDialog(
 			"Open Scene File",
 			currentPath.c_str(),
 			1,
@@ -59,7 +59,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 			0
 		);
 
-		if (!fname)
+		if (!fnameOpened)
 		{
 			std::cout << "ERROR: Adam Sandler" << std::endl;
 			return;
@@ -67,11 +67,17 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 
 		// Set this opened file as the new default for next time you open the program
 		nlohmann::json j;
-		j["startup_level"] = fname;		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
+		j["startup_level"] = fnameOpened;		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
 		std::ofstream o("res\\solanine_editor_settings.json");
 		o << std::setw(4) << j << std::endl;
-		std::cout << "::NOTE:: Set new startup file as \"" << fname << "\" ..." << std::endl;
+		std::cout << "::NOTE:: Set new startup file as \"" << fnameOpened << "\" ..." << std::endl;
+
+		fname = std::string(fnameOpened);
 	}
+
+	// Check if file actually exists
+	if (fname.empty() || !std::filesystem::exists(fname))
+		fname = "res\\level\\level1.hsfs";					// Default filename
 
 	//
 	// Clear out the whole scene
@@ -150,6 +156,13 @@ void FileLoading::saveFile(bool withPrompt)
 			std::cout << "ERROR: Adam Sandler Saves the Day" << std::endl;
 			return;
 		}
+
+		// Set this opened file as the new default for next time you open the program
+		nlohmann::json j;
+		j["startup_level"] = fname;		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
+		std::ofstream o("res\\solanine_editor_settings.json");
+		o << std::setw(4) << j << std::endl;
+		std::cout << "::NOTE:: Set new startup file as \"" << fname << "\" ..." << std::endl;
 
 		// Apply the fname
 		currentWorkingPath = fname;

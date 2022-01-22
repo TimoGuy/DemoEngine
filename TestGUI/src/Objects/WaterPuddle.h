@@ -29,7 +29,7 @@ public:
 	void onTrigger(const physx::PxTriggerPair& pair);
 
 	void collectWaterPuddle();
-	bool isWaterPuddleCollected;
+	bool containsWater;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 

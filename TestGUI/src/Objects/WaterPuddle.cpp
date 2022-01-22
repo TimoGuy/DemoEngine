@@ -12,7 +12,7 @@
 #include "../render_engine/render_manager/RenderManager.h"
 
 
-WaterPuddle::WaterPuddle() : isWaterPuddleCollected(false)
+WaterPuddle::WaterPuddle() : containsWater(true)
 {
 	name = "Water Puddle";
 
@@ -34,12 +34,14 @@ void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 
-	//
-	// I'll take the leftover tokens then
-	//
-
+	if (object.contains("contains_water"))
+		containsWater = object["contains_water"];
 
 	refreshResources();
+
+	// Check if I'm already collected
+	if (GameState::getInstance().isPuddleCollected(guid))
+		containsWater = false;
 }
 
 nlohmann::json WaterPuddle::savePropertiesToJson()
@@ -47,6 +49,8 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 	nlohmann::json j;
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
+
+	j["contains_water"] = containsWater;
 
 	return j;
 }
@@ -70,19 +74,19 @@ void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 
 void WaterPuddle::collectWaterPuddle()
 {
-	if (isWaterPuddleCollected && !GameState::getInstance().playerIsHoldingWater)
+	if (!containsWater && !GameState::getInstance().playerIsHoldingWater)
 	{
 		std::cout << "This water puddle is already collected. Unfortunate." << std::endl;
 		return;
 	}
-	if (!isWaterPuddleCollected && GameState::getInstance().playerIsHoldingWater)
+	if (containsWater && GameState::getInstance().playerIsHoldingWater)
 	{
 		std::cout << "You're already carrying water. Drop if off or drink it to carry more" << std::endl;
 		return;
 	}
 
 	// Event!!!
-	if (!isWaterPuddleCollected)
+	if (containsWater)
 	{
 		// Collect and log the puddle
 		Messages::getInstance().postMessage("PlayerCollectWater");
@@ -91,7 +95,7 @@ void WaterPuddle::collectWaterPuddle()
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 		std::cout << "Collected Water in Puddle!!!!" << std::endl;
-		isWaterPuddleCollected = true;
+		containsWater = false;
 	}
 	else
 	{
@@ -102,7 +106,7 @@ void WaterPuddle::collectWaterPuddle()
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 		std::cout << "Dropped water off into Puddle!!!!" << std::endl;
-		isWaterPuddleCollected = false;
+		containsWater = true;
 	}
 }
 
@@ -111,7 +115,7 @@ void WaterPuddle::preRenderUpdate()
 	//
 	// Process Animations
 	//
-	if (!isWaterPuddleCollected)
+	if (containsWater)
 	{
 		animator.playAnimation(0, 1.5f);
 	}
@@ -156,17 +160,12 @@ void WaterPuddle::refreshResources()
 	materials["Water"] = (Material*)Resources::getResource("material;pbrWater");
 
 	model->setMaterials(materials);
-
-	// Check if I'm already collected
-	if (GameState::getInstance().isPuddleCollected(guid))
-		isWaterPuddleCollected = true;
 }
 
 #ifdef _DEVELOP
 void WaterPuddle::imguiPropertyPanel()
 {
-	//ImGui::Text("Model Offset ModelMatrix");
-	//PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(((WaterPuddleRender*)renderComponent)->getOffsetModelMatrix()));
+	ImGui::Checkbox("Contains water", &containsWater);
 }
 
 void WaterPuddle::imguiRender()
