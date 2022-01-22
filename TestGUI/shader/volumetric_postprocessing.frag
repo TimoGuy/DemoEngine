@@ -129,6 +129,7 @@ void main()
         currentPosition += stepVector;
     }
     
-    float remappedAccum = (1.0 - pow(1.0 - clamp(accumulatedFog / ACCUMULATION_CEILING, 0, 1), 4.0)) * ACCUMULATION_CEILING;
+    float remappedAccum = (1.0 - pow(1.0 - clamp(accumulatedFog / ACCUMULATION_CEILING, 0, 1), 5.0)) * ACCUMULATION_CEILING;
+    //float remappedAccum = smoothstep(clamp(accumulatedFog / ACCUMULATION_CEILING, 0.0, 1.0), 0.0, 1.0) * ACCUMULATION_CEILING;
 	fragColor = vec4(vec3(remappedAccum), 1.0);
 }
