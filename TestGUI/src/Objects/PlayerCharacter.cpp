@@ -371,6 +371,7 @@ void PlayerCharacter::processMovement()
 		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 		((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
+		triggerAnimationStateReset = true;
 	}
 
 	if (isMoving)
@@ -662,8 +663,11 @@ void PlayerCharacter::processAnimation()
 	//
 	// Update Animation State
 	//
-	if (prevAnimState != animationState)
+	if (triggerAnimationStateReset ||
+		prevAnimState != animationState)
 	{
+		triggerAnimationStateReset = false;		// Reset flag
+
 		switch (animationState)
 		{
 		case 0:

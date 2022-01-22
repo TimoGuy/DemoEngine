@@ -131,6 +131,7 @@ private:
 	//
 	int animationState = 0;		// 0:Standing	1:Jumping	2:Landing
 	int prevAnimState = -1;
+	bool triggerAnimationStateReset = false;
 
 	float targetCharacterLeanValue = 0.0f;
 	float characterLeanValue = 0.0f;		// [-1, 1], where 0 is no lean
