@@ -269,17 +269,21 @@ void PlayerCharacter::processMovement()
 
 	// Do raycast to see what the camera distance should be
 	{
-		const float hitDistancePadding = 0.75f;
 		float cameraDistance = camOffset.z;
 
-		physx::PxRaycastBuffer hitInfo;
-		if (PhysicsUtils::raycast(
-			PhysicsUtils::toPxVec3(((PlayerPhysics*)getPhysicsComponent())->controller->getPosition()) + physx::PxVec3(camOffset.x, camOffset.y, 0.0f),
-			PhysicsUtils::toPxVec3(-playerCamera.orientation),
-			std::abs(cameraDistance) + hitDistancePadding,
-			hitInfo))
+		const bool collideWithGeometry = false;					// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
+		if (collideWithGeometry)
 		{
-			cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+			const float hitDistancePadding = 0.75f;
+			physx::PxRaycastBuffer hitInfo;
+			if (PhysicsUtils::raycast(
+				PhysicsUtils::toPxVec3(((PlayerPhysics*)getPhysicsComponent())->controller->getPosition()) + physx::PxVec3(camOffset.x, camOffset.y, 0.0f),
+				PhysicsUtils::toPxVec3(-playerCamera.orientation),
+				std::abs(cameraDistance) + hitDistancePadding,
+				hitInfo))
+			{
+				cameraDistance = -hitInfo.block.distance + hitDistancePadding;		// NOTE: must be negative distance since behind model
+			}
 		}
 
 		//
