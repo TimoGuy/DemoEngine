@@ -50,7 +50,7 @@ private:
 	glm::vec3 m_total_distance_cache;
 	bool m_cache_dirty;
 
-	bool m_debug_show_spline;
+	static bool m_debug_show_spline;
 	bool m_debug_edit_spline;
 	bool m_debug_still_selected;
 

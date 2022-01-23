@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    0.0,
-                    7.349999904632568,
-                    0.0
+                    0.3870382606983185,
+                    7.350000858306885,
+                    4.614194869995117
                 ],
                 "rotation": [
                     0.0,
@@ -28,7 +28,7 @@
                 "name": "Voxel Group (start)",
                 "position": [
                     0.0,
-                    0.0,
+                    9.5367431640625e-07,
                     0.0
                 ],
                 "rotation": [
@@ -321,29 +321,29 @@
                 "name": "Voxel Group (mp1)",
                 "position": [
                     23.0,
-                    64.04983520507813,
-                    108.01423645019531
+                    71.49205017089844,
+                    119.5074691772461
                 ],
                 "rotation": [
-                    -180.0,
-                    -60.1397819519043,
-                    -180.0
+                    -0.00010386679059593007,
+                    -0.0,
+                    -0.00013092673907522112
                 ],
                 "scale": [
-                    1.0000003576278687,
                     1.0,
-                    1.0000003576278687
+                    1.0,
+                    1.0
                 ]
             },
             "moving_platform_angular_velocity": [
                 0.0,
-                0.5,
+                0.0,
                 0.0
             ],
             "moving_platform_spline_guid": "c604ca1362f9a69e37c32db83808eb41968b178b14ff4e92ed7b348c0dec71b7",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 87.49893188476563,
+            "moving_platform_spline_position_in_time": 108.49893188476563,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 25.0,
             "moving_platform_velocity": [
@@ -540,7 +540,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.02798330783843994,
+                    0.027983319014310837,
                     0.0
                 ],
                 "scale": [
@@ -595,7 +595,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.02798331156373024,
+                    0.027983322739601135,
                     0.0
                 ],
                 "scale": [
@@ -650,7 +650,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.02798331528902054,
+                    0.027983324602246284,
                     0.0
                 ],
                 "scale": [
@@ -704,9 +704,9 @@
                     80.0
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     89.9720230102539,
-                    180.0
+                    -180.0
                 ],
                 "scale": [
                     1.0000001192092896,
@@ -759,8 +759,8 @@
                     40.0
                 ],
                 "rotation": [
-                    5.973482884551184e-13,
-                    0.027985012158751488,
+                    5.973483968753357e-13,
+                    0.027985023334622383,
                     2.446327806993054e-09
                 ],
                 "scale": [
@@ -814,9 +814,9 @@
                     40.0
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     89.96573638916016,
-                    -180.0
+                    180.0
                 ],
                 "scale": [
                     1.0000001192092896,
@@ -869,14 +869,14 @@
                     0.0
                 ],
                 "rotation": [
-                    180.0,
-                    -0.048460301011800766,
-                    -180.0
+                    -180.0,
+                    -0.04846036061644554,
+                    180.0
                 ],
                 "scale": [
-                    0.9999995231628418,
+                    0.9999991655349731,
                     1.0,
-                    0.9999995231628418
+                    0.9999991655349731
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -896,7 +896,7 @@
                 0.0
             ],
             "type": "voxel_group",
-            "voxel_bit_field": "4:1;26:0;4:1;26:0;4:1;26:0;4:1;26:0;4:1;1:0;4:1;26:0;4:1;1:0;4:1;26:0;4:1;1:0;4:1;26:0;4:1;1:0;4:1;26:0;4:1;1:0;4:1;26:0;5:1;28:0;2:1;150:0;",
+            "voxel_bit_field": "4:1;38:0;4:1;38:0;4:1;38:0;4:1;38:0;4:1;3:0;4:1;38:0;4:1;3:0;4:1;38:0;4:1;3:0;4:1;38:0;4:1;3:0;4:1;38:0;4:1;3:0;4:1;38:0;5:1;37:0;7:1;35:0;7:1;35:0;7:1;126:0;",
             "voxel_group_color": [
                 1.0,
                 1.0,
@@ -910,7 +910,7 @@
             "voxel_group_size": [
                 16,
                 6,
-                5
+                7
             ],
             "voxel_render_size": 4.0
         },
@@ -1029,19 +1029,19 @@
                 "guid": "56be4fa3b6e5c74bd3f9d32c9c042b8b7d2e5838ff123e6e13b6e24a09faa12f",
                 "name": "Voxel Group (maze stairs)",
                 "position": [
-                    200.0,
+                    160.0,
                     220.0,
-                    -120.0
+                    -160.0
                 ],
                 "rotation": [
-                    -180.0,
-                    -0.04776529222726822,
-                    180.0
+                    179.99998474121094,
+                    -0.04776532202959061,
+                    -179.99998474121094
                 ],
                 "scale": [
-                    1.0000007152557373,
+                    1.000001072883606,
                     1.0,
-                    1.0000007152557373
+                    1.000001072883606
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1084,19 +1084,19 @@
                 "guid": "e0f7cb446a6aa34e94820fc0ac9666f0fb567fce67c71824b14bdd8b5af34856",
                 "name": "Voxel Group (maze stairs)",
                 "position": [
-                    160.0,
+                    120.0,
                     240.0,
-                    -120.0
+                    -160.0
                 ],
                 "rotation": [
-                    -179.99998474121094,
-                    -0.047765299677848816,
-                    179.99998474121094
+                    -179.99996948242188,
+                    -0.0477653332054615,
+                    179.99996948242188
                 ],
                 "scale": [
-                    1.0000008344650269,
+                    1.0000011920928955,
                     1.0,
-                    1.0000008344650269
+                    1.0000011920928955
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1139,19 +1139,19 @@
                 "guid": "6f83127b633c1872ac6f261f0616ded6593897ca6c926aedec18d40e97a5e84c",
                 "name": "Voxel Group (maze stairs)",
                 "position": [
-                    120.0,
+                    80.0,
                     260.0,
-                    -120.0
+                    -160.0
                 ],
                 "rotation": [
-                    -179.99996948242188,
-                    -0.04776531085371971,
-                    179.99996948242188
+                    -179.9999542236328,
+                    -0.0477653406560421,
+                    179.9999542236328
                 ],
                 "scale": [
-                    1.0000009536743164,
+                    1.000001311302185,
                     1.0,
-                    1.0000009536743164
+                    1.000001311302185
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1194,9 +1194,9 @@
                 "guid": "4764d44db1ad953a7dac07e31e234d54efb9db0407a3ab4a6a2afa85a29b5a30",
                 "name": "Water Puddle",
                 "position": [
-                    120.0,
+                    79.39376831054688,
                     266.1596984863281,
-                    -120.0
+                    -159.58297729492188
                 ],
                 "rotation": [
                     0.0,
@@ -1249,7 +1249,7 @@
                 0.0
             ],
             "type": "voxel_group",
-            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;16:1;20:0;4:1;",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;16:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;",
             "voxel_group_color": [
                 1.0,
                 1.0,
@@ -1261,7 +1261,7 @@
                 2
             ],
             "voxel_group_size": [
-                10,
+                14,
                 6,
                 4
             ],
@@ -1272,9 +1272,9 @@
                 "guid": "ad6863877a31aeddb34d5bb9968b873e3a3e57d3c11745d5490fd427f07d3ec9",
                 "name": "Voxel Group (launcher)",
                 "position": [
-                    42.6908073425293,
-                    59.33224868774414,
-                    -33.02104187011719
+                    16.0,
+                    0.0,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -1293,9 +1293,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "fc0f2941c09cc04972946c7878da68feb85622582415daa13cff63f2c97ba893",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 119.04309844970703,
+            "moving_platform_spline_position_in_time": 0.0,
             "moving_platform_spline_pp_hold_time": 2.0,
             "moving_platform_spline_speed": 750.0,
             "moving_platform_velocity": [
@@ -1363,9 +1363,9 @@
                         0.0
                     ],
                     "position": [
-                        26.690807342529297,
-                        59.33224868774414,
-                        -33.02104187011719
+                        23.52304458618164,
+                        106.55634307861328,
+                        -59.45314025878906
                     ]
                 }
             ],
@@ -1408,7 +1408,7 @@
                 0.0
             ],
             "type": "voxel_group",
-            "voxel_bit_field": "6:0;6:1;6:0;6:1;6:0;51:1;3:0;9:1;3:0;9:1;3:0;9:1;3:0;9:1;3:0;9:1;3:0;",
+            "voxel_bit_field": "139:1;8:0;13:1;8:0;13:1;8:0;13:1;8:0;13:1;8:0;13:1;50:0;",
             "voxel_group_color": [
                 1.0,
                 1.0,
@@ -1417,12 +1417,3129 @@
             "voxel_group_offset": [
                 2,
                 0,
-                10
+                19
             ],
             "voxel_group_size": [
-                12,
+                14,
                 1,
-                12
+                21
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "191bf94b97a85925711a8250293eeb2ec6098f90ecbbe4a4a9c09386eea8c255",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    220.0,
+                    -200.0
+                ],
+                "rotation": [
+                    6.327968003461137e-05,
+                    -89.9720230102539,
+                    -6.327968003461137e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "4abfc6a0f2b203e7c3c6c4160fc228bb790450562be1f7115ccb424ecd5d7c19",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    180.0,
+                    -320.0
+                ],
+                "rotation": [
+                    3.708172152983025e-05,
+                    -89.96573638916016,
+                    -3.708172152983025e-05
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "7541652ca155854d9c775e3cc5222f8675c45ce35509a361066fac330d83d843",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    260.0,
+                    -320.0
+                ],
+                "rotation": [
+                    6.325138383544981e-05,
+                    -89.9720230102539,
+                    -6.325138383544981e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "2:0;4:1;32:0;4:1;32:0;4:1;32:0;4:1;32:0;4:1;2:0;4:1;32:0;4:1;2:0;4:1;32:0;4:1;2:0;4:1;32:0;4:1;2:0;4:1;32:0;4:1;2:0;4:1;30:0;6:1;30:0;3:1;3:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                4
+            ],
+            "voxel_group_size": [
+                11,
+                6,
+                6
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "addb78f2c1dac2ef35b3a4fdf7964b2fe8aceb077726f2ecdb13f4773747e0f3",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    220.0,
+                    -320.0
+                ],
+                "rotation": [
+                    179.9999237060547,
+                    89.9720230102539,
+                    179.9999237060547
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "a5489e5997df8dcb890e84bf8d163ab8c7d532d4248efb30276b29c349f96cba",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    200.0,
+                    -160.0
+                ],
+                "rotation": [
+                    -2.231180769740604e-05,
+                    0.027981584891676903,
+                    -2.231180405942723e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "5bf7c8ad927ea580f579e3b5b55f33de7845b533451638ed0c8d150e1c0ed85a",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    200.0,
+                    -160.0
+                ],
+                "rotation": [
+                    179.99998474121094,
+                    -0.06224869191646576,
+                    -179.99998474121094
+                ],
+                "scale": [
+                    1.000000238418579,
+                    1.0,
+                    1.000000238418579
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                14,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "de79b6b1db63f9017c096cce8349104d079a4a5a6a519442a711f13ff182bab8",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    200.0,
+                    -200.0
+                ],
+                "rotation": [
+                    -179.9999542236328,
+                    -0.027985012158751488,
+                    179.9999542236328
+                ],
+                "scale": [
+                    0.9999997615814209,
+                    1.0,
+                    0.9999997615814209
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "67b4edb9d2259d0012740ad3e653a28fd4ed92e51db9977e5017e447000edb16",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    280.0,
+                    -240.0
+                ],
+                "rotation": [
+                    -179.9999237060547,
+                    -0.027985012158751488,
+                    179.9999237060547
+                ],
+                "scale": [
+                    0.9999996423721313,
+                    1.0,
+                    0.9999996423721313
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "1:0;4:1;38:0;4:1;38:0;4:1;38:0;4:1;38:0;4:1;2:0;4:1;38:0;4:1;2:0;4:1;38:0;4:1;2:0;4:1;38:0;4:1;2:0;4:1;38:0;4:1;2:0;4:1;37:0;6:1;36:0;1:1;4:0;1:1;36:0;1:1;4:0;1:1;36:0;1:1;4:0;1:1;36:0;1:1;4:0;1:1;36:0;6:1;6:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                3
+            ],
+            "voxel_group_size": [
+                15,
+                7,
+                6
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "cef98f23397da428799245c50728c130755562b2b74f364207f396313f76b695",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    -0.00010427408415125683,
+                    0.05595976114273071,
+                    -0.00010432499402668327
+                ],
+                "scale": [
+                    0.9999997615814209,
+                    1.0,
+                    0.9999997615814209
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e7e1730869d717f9c0ddff92456fd63e71ecf187b262a2dfc3525e73ad05e471",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    260.0,
+                    -320.0
+                ],
+                "rotation": [
+                    -0.00010427411325508729,
+                    0.027979886159300804,
+                    -0.00010427411325508729
+                ],
+                "scale": [
+                    0.9999997615814209,
+                    1.0,
+                    0.9999997615814209
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;3:1;1:0;2:1;22:0;2:1;23:0;1:1;2:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                11,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e0701ac59b28de75b6844a6be090ac71c968139aa16bbace4d1f8dfb5ae543d0",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    240.0,
+                    -360.0
+                ],
+                "rotation": [
+                    -0.00010427411325508729,
+                    0.047758445143699646,
+                    -0.00010431011469336227
+                ],
+                "scale": [
+                    0.9999999403953552,
+                    1.0,
+                    0.9999999403953552
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "a0553c2aa072be7b1453707b81dc2e9245dbcdd3a38287d06489d584d6002e08",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -200.0
+                ],
+                "rotation": [
+                    5.00895885124919e-06,
+                    0.06224871799349785,
+                    5.011951998312725e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "44010eedbbf1355b86ccdac2ffe2ce591701e884503351d1c63eea6f95f4d5f8",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    5.008959760743892e-06,
+                    0.06224874407052994,
+                    5.011953817302128e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "0fc187300776f9ef4407de8f5ffb40afc77defce646ee9f336a6be66d5c5de4a",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -320.0
+                ],
+                "rotation": [
+                    5.008959760743892e-06,
+                    0.06224875897169113,
+                    5.011954272049479e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "8c33305a18c31f6cfd78870f0bb71251c175dbabbc3e90ed1aeffa39010319d0",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    160.0,
+                    -360.0
+                ],
+                "rotation": [
+                    179.99996948242188,
+                    -0.09651891887187958,
+                    -179.99996948242188
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "2a61cb266bd1a75a7a2bdd28e8c05f47adb7736561215c7e3abdb110c95f6e50",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    220.0,
+                    -160.0
+                ],
+                "rotation": [
+                    -179.9661102294922,
+                    89.91606903076172,
+                    -179.96612548828125
+                ],
+                "scale": [
+                    0.9999991655349731,
+                    0.9999999403953552,
+                    0.9999995231628418
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                14,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "a7c77f6d834455d8bb1e97dc3b4e3766e66bfd631f802a47f984674cae62d830",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    220.0,
+                    -200.0
+                ],
+                "rotation": [
+                    -179.9999237060547,
+                    -0.027985012158751488,
+                    179.9999237060547
+                ],
+                "scale": [
+                    0.9999996423721313,
+                    1.0,
+                    0.9999996423721313
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "ffc916014f332d4a11c8166019aa567dce382ca10d9f5c7e407affd8c9355cf6",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    -179.99990844726563,
+                    -0.027985012158751488,
+                    179.99990844726563
+                ],
+                "scale": [
+                    0.9999995231628418,
+                    1.0,
+                    0.9999995231628418
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "2e5200d89aebc18d6dd341f17c4447e64459f3bd57dae72e8026099d37025cc2",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    240.0,
+                    -280.0
+                ],
+                "rotation": [
+                    -9.061372838914394e-05,
+                    0.02798672392964363,
+                    -9.06137574929744e-05
+                ],
+                "scale": [
+                    0.9999996423721313,
+                    1.0,
+                    0.9999996423721313
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;26:0;4:1;26:0;4:1;26:0;4:1;26:0;4:1;31:0;4:1;31:0;4:1;31:0;4:1;31:0;4:1;31:0;4:1;1:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                5
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "84b34e71fd98d556e48d4e7f20111a775899f867f0ed75df6fe0e317e2050c1c",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    200.0,
+                    -320.0
+                ],
+                "rotation": [
+                    -179.99989318847656,
+                    -0.02798502705991268,
+                    179.99989318847656
+                ],
+                "scale": [
+                    0.9999992847442627,
+                    1.0,
+                    0.9999992847442627
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "95579000ec5d979b71bf892defbfe2430100a846c08323722509ec395f86dc95",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    260.0,
+                    -360.0
+                ],
+                "rotation": [
+                    6.324196874629706e-05,
+                    -89.9720230102539,
+                    -6.324196874629706e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;21:0;3:1;22:0;2:1;72:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                14,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "55607b5483169cfaf65622b4f3c77cd4eb0c2f77d06f0d9a248dc829f11e3363",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    180.0,
+                    -360.0
+                ],
+                "rotation": [
+                    6.323252455331385e-05,
+                    -89.9720230102539,
+                    -6.323252455331385e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e242f35d6da6f0599bcd520ddb1b5a3896f23d04d5dfdf03b12174f4dfd49802",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    220.0,
+                    -320.0
+                ],
+                "rotation": [
+                    6.326082075247541e-05,
+                    -89.9720230102539,
+                    -6.326082075247541e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "4aebd34e6ebc157af877755cb94e5905598847e43fa74a9277fc6ea3d6f6b0b3",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    200.0,
+                    -320.0
+                ],
+                "rotation": [
+                    6.323252455331385e-05,
+                    -89.9720230102539,
+                    -6.323252455331385e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "476b377e856e434b0c0a4a2810586dc3209c5d8e2deb30c338a6e18ec71f1241",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    260.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.327968003461137e-05,
+                    -89.9720230102539,
+                    -6.327968003461137e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "d0193abd12853caed4a56fd4f0bbe132894fcfe6bb8ff86fa64c9947d57c391c",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    220.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.326082075247541e-05,
+                    -89.9720230102539,
+                    -6.326082075247541e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "496e71fc0835234cdbab364018dd14eba1b37c463b55a3dcc17ae0a66027499c",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    220.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.328910967567936e-05,
+                    -89.9720230102539,
+                    -6.328910967567936e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "0f8217a1c9323eb468c232083035ae5de9f3cd3354b99fbc5c08c3e833cd4c28",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    6.326082075247541e-05,
+                    -89.9720230102539,
+                    -6.326082075247541e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "a0c0cb014a5efeb4ff6dd15abf94096a15050225f5f6472ab28389ddd5999aab",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -200.0
+                ],
+                "rotation": [
+                    6.326082075247541e-05,
+                    -89.9720230102539,
+                    -6.326082075247541e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "4e22272922f81d1a9fc2255efd3046022c4a2fdf1600c5b2be632393048ac902",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    6.327968003461137e-05,
+                    -89.9720230102539,
+                    -6.327968003461137e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e2b9b5b817a3751de0d866d7eb4a5c5dab4111d0bf0d7b3437033480e486e207",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    220.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.327968003461137e-05,
+                    -89.9720230102539,
+                    -6.327968003461137e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "4247c670f034f642a3ed5d37d9726cf4ec19cc06d5e2e5395bb146058f439943",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    160.0,
+                    200.0,
+                    -320.0
+                ],
+                "rotation": [
+                    6.324196874629706e-05,
+                    -89.9720230102539,
+                    -6.324196874629706e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "b4060b098441c91500bf322d4673681f0dc31c624798544912daf96519c5c9b8",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    280.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    -9.061372838914394e-05,
+                    0.05595976114273071,
+                    -9.06579225556925e-05
+                ],
+                "scale": [
+                    0.9999997615814209,
+                    1.0,
+                    0.9999997615814209
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "46ff00a33255e0930b5ee653869bcc487b040528bb600670a87063dab7b26fd1",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    320.0,
+                    240.0,
+                    -280.0
+                ],
+                "rotation": [
+                    -179.99989318847656,
+                    -0.02798502705991268,
+                    179.99989318847656
+                ],
+                "scale": [
+                    0.9999992847442627,
+                    1.0,
+                    0.9999992847442627
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                14,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "a3a75bb2778a434954c2bcceb15ffd3e335f4ba11206566d7e0856e00b380e7f",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    320.0,
+                    220.0,
+                    -240.0
+                ],
+                "rotation": [
+                    179.9999237060547,
+                    89.9720230102539,
+                    179.9999237060547
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "45d8e5f513ac5729d06162514e7b30ef3a1783167582dc4b5d31829cb486e52d",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    180.0,
+                    -200.0
+                ],
+                "rotation": [
+                    5.00895885124919e-06,
+                    0.06224873661994934,
+                    5.011951998312725e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "2945031c4ae8be568386d468e66388cb90559679662cf0edd91dcddd0526500b",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    5.008959760743892e-06,
+                    0.062248751521110535,
+                    5.011953817302128e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "f44f0a258442e37b78f51ab9bc50f6dd5462ea77d9a3059cb363ac2b5465daed",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    5.008959760743892e-06,
+                    0.06224875897169113,
+                    5.011954272049479e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e33092c08ec42dc83c32e12e90880bc94668177310cc231ac538b5b5fd285cc8",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    180.0,
+                    -320.0
+                ],
+                "rotation": [
+                    5.008959760743892e-06,
+                    0.06224877014756203,
+                    5.011954272049479e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "f65a57cb50c2917f011eaeeae1c02d399c7515d92c822f683490c051f7f974e6",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.324196874629706e-05,
+                    -89.9720230102539,
+                    -6.324196874629706e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "6aadc46d6788a35e3873420d9381039b5337d4c146b3aea28c6748ce6b8dfc9a",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    180.0,
+                    -200.0
+                ],
+                "rotation": [
+                    179.9999237060547,
+                    89.9720230102539,
+                    179.9999237060547
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "d44ccb59450ed2119b415d3828f1e26ab1904808cbf404ddd01e34f6f9379e4c",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    180.0,
+                    -320.0
+                ],
+                "rotation": [
+                    6.324196874629706e-05,
+                    -89.9720230102539,
+                    -6.324196874629706e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "896cb16afb179edf3efce2efaf2c5f4f8caf5dc4faad5df7a15bffa816f3bd36",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    80.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    6.323252455331385e-05,
+                    -89.9720230102539,
+                    -6.323252455331385e-05
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "811dc472bbba76c02c8d2aad6a28db94928c27e101233bf1c902343e667889d9",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    120.0,
+                    200.0,
+                    -240.0
+                ],
+                "rotation": [
+                    179.99998474121094,
+                    -0.08202888071537018,
+                    -179.99998474121094
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                14,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "e66aadc985fe6c1aba8f3187df50dff4b0dd720413038e3c0b4a8ed2ae974dd3",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    80.0,
+                    200.0,
+                    -280.0
+                ],
+                "rotation": [
+                    5.008960670238594e-06,
+                    0.06224877014756203,
+                    5.01195472679683e-06
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "cba7693d2b50cefb0506e929b1111978d4105b808c7c0b71051ffacf58feabed",
+                "name": "Voxel Group (mp_ret)",
+                "position": [
+                    141.87295532226563,
+                    85.135986328125,
+                    -143.50198364257813
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "4858a81477d624f09773e57492316e0ce5174a076359cd36af8115c35a4d9c54",
+            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 300.0067138671875,
+            "moving_platform_spline_pp_hold_time": 2.0,
+            "moving_platform_spline_speed": 100.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                0.25451329350471497,
+                0.9950980544090271,
+                0.1268262416124344
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "4858a81477d624f09773e57492316e0ce5174a076359cd36af8115c35a4d9c54",
+                "name": "Spline (mp_ret)",
+                "position": [
+                    200.0,
+                    300.0,
+                    -240.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        0.097625732421875,
+                        -287.8645324707031,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        -0.3966217041015625,
+                        -9.1552734375e-05,
+                        91.39460754394531
+                    ],
+                    "position": [
+                        -120.1051025390625,
+                        -216.00267028808594,
+                        267.9656677246094
+                    ]
+                }
+            ],
+            "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "26ee9b6e5c424bafb123c0f8f511fcdd071e18e481d56c031a28fc67abad429a",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    180.0,
+                    -320.0
+                ],
+                "rotation": [
+                    179.99996948242188,
+                    89.9720230102539,
+                    179.99996948242188
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "d8c69b97fc77dbd2b2fe3610142e7e4b388a294580f1f9795e4984355f348773",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    220.0,
+                    -240.0
+                ],
+                "rotation": [
+                    -0.21329593658447266,
+                    -89.9720230102539,
+                    0.2131916880607605
+                ],
+                "scale": [
+                    0.9999995231628418,
+                    1.0,
+                    0.9999995827674866
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "bd6c9da7fe01e22d53e1c7c6314f11642f8450fbdff35716b4a304449f299dcb",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    200.0,
+                    120.0,
+                    80.0
+                ],
+                "rotation": [
+                    2.446327806993054e-09,
+                    0.02798500284552574,
+                    5.973806518899671e-13
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "918e00a5fd39f05d8100413e4df55a370848c97111b9edd76f152259170a3629",
+                "name": "Voxel Group (maze stairs)",
+                "position": [
+                    240.0,
+                    140.0,
+                    80.0
+                ],
+                "rotation": [
+                    179.99998474121094,
+                    89.9720230102539,
+                    179.99998474121094
+                ],
+                "scale": [
+                    1.0000001192092896,
+                    1.0,
+                    1.0000001192092896
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "4:1;20:0;4:1;20:0;4:1;20:0;4:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;8:1;20:0;4:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                10,
+                6,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "91925ef231a009843821c63e76637f76228533f613238b1f661664e240d66ead",
+                "name": "Voxel Group (mp2)",
+                "position": [
+                    23.0,
+                    70.5077896118164,
+                    153.71731567382813
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "db745642d3b7e429c8b487420acfe9e72404cb3f24e5eaf6c8f08b210e9d6725",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 7.5,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 25.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                0.27205890417099,
+                1.0,
+                0.08333331346511841
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "db745642d3b7e429c8b487420acfe9e72404cb3f24e5eaf6c8f08b210e9d6725",
+                "name": "Spline (mp2)",
+                "position": [
+                    23.0,
+                    70.0,
+                    146.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        50.025001525878906
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        36.0
+                    ],
+                    "position": [
+                        0.0,
+                        56.0,
+                        60.0
+                    ]
+                }
+            ],
+            "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "b69934a6fe0f96f72489b08fef1554fe7294c939224e2de7f309ebf0999dae9d",
+                "name": "Voxel Group (mp2)",
+                "position": [
+                    23.0,
+                    126.0,
+                    229.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 115.99893188476563,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 25.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "5:0;6:1;5:0;1:1;10:0;1:1;5:0;6:1;10:0;6:1;5:0;1:1;10:0;1:1;5:0;6:1;10:0;6:1;5:0;1:1;10:0;1:1;5:0;6:1;10:0;6:1;5:0;1:1;10:0;1:1;5:0;6:1;5:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                3,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                4,
+                11
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "7fd12dba04853c5736508e126996a56be090e9a7f2bb0632de98d13ac9a7acd5",
+                "name": "Voxel Group (mp3)",
+                "position": [
+                    23.0,
+                    197.39999389648438,
+                    254.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "864aa94dc7fb44c2f83bcfbc87e2fa858d45a4633aa2e96ed723af853beab489",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 74.0,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 100.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                0.27205890417099,
+                1.0,
+                0.08333331346511841
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "864aa94dc7fb44c2f83bcfbc87e2fa858d45a4633aa2e96ed723af853beab489",
+                "name": "Spline (mp3)",
+                "position": [
+                    23.0,
+                    119.0,
+                    254.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        100.0,
+                        0.0
+                    ]
+                }
+            ],
+            "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "572434c9f9921f2d576c9b10646dce3afb19df33b47a677ad8bb289dfbb435b5",
+                "name": "Voxel Group (mp2)",
+                "position": [
+                    23.0,
+                    243.0,
+                    270.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 115.99893188476563,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 25.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "5203:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;11:1;143:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;11:1;143:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;11:1;143:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;1:1;10:0;11:1;6578:0;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                12,
+                45,
+                2
+            ],
+            "voxel_group_size": [
+                27,
+                46,
+                11
             ],
             "voxel_render_size": 4.0
         }

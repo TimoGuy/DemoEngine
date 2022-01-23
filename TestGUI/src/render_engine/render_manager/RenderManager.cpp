@@ -825,8 +825,6 @@ void RenderManager::render()
 		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), mainlight->shadowFarPlane);
 		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
 		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
-		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
-		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
 		renderQuad();
 
 		//

@@ -54,7 +54,7 @@ public:
 	float height = 0;
 
 	float zNear = 0.1f;
-	float zFar = 2000.0f;
+	float zFar = 10000.0f;
 
 	float speed = 1.0f;
 	float sensitivity = 100.0f;

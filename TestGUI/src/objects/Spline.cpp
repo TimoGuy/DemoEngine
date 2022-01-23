@@ -13,6 +13,7 @@
 
 
 std::vector<Spline*> Spline::m_all_splines;
+bool Spline::m_debug_show_spline = true;
 
 Spline* Spline::getSplineFromGUID(const std::string& guid)
 {
@@ -34,7 +35,6 @@ Spline::Spline()
     m_control_modules.push_back({ glm::vec3(0, 0, 0), glm::vec3(10, 0, 0) });
     m_control_modules.push_back({ glm::vec3(0, 0, 10), glm::vec3(10, 0, 0) });
     m_total_distance_cache = calculateTotalDistance();
-    m_debug_show_spline = true;
     m_debug_edit_spline = false;
     m_debug_still_selected = false;
     m_imguizmo_using_index = -1;

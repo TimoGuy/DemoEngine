@@ -8,8 +8,6 @@ layout(binding = 1) uniform sampler2DArray csmShadowMap;
 
 uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseViewMatrix;
-uniform float zNear;
-uniform float zFar;
 
 uniform vec3 mainCameraPosition;
 uniform vec3 mainlightDirection;
