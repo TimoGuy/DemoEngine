@@ -508,13 +508,18 @@ physx::PxFilterFlags contactReportFilterShader(physx::PxFilterObjectAttributes a
 	// pose at the time of contact.
 	//
 
-	pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT
-		| physx::PxPairFlag::eDETECT_CCD_CONTACT
-		| physx::PxPairFlag::eNOTIFY_TOUCH_CCD
-		| physx::PxPairFlag::eNOTIFY_TOUCH_FOUND
-		| physx::PxPairFlag::eNOTIFY_CONTACT_POINTS
-		| physx::PxPairFlag::eCONTACT_EVENT_POSE;
-	return physx::PxFilterFlag::eDEFAULT;
+	//pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT
+	//	| physx::PxPairFlag::eDETECT_CCD_CONTACT
+	//	| physx::PxPairFlag::eNOTIFY_TOUCH_CCD
+	//	| physx::PxPairFlag::eNOTIFY_TOUCH_FOUND
+	//	| physx::PxPairFlag::eNOTIFY_CONTACT_POINTS
+	//	| physx::PxPairFlag::eCONTACT_EVENT_POSE;
+
+	pairFlags = physx::PxPairFlag::eSOLVE_CONTACT
+		| physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
+		//| physx::PxPairFlag::eDETECT_CCD_CONTACT;		// NOTE: doesn't seem to work, so let's not waste compute resources on this.
+
+	return physx::PxFilterFlags();  //physx::PxFilterFlag::eDEFAULT;
 }
 
 
@@ -629,7 +634,7 @@ void setupPhysx()
 	physx::PxSceneDesc sceneDesc(MainLoop::getInstance().physicsPhysics->getTolerancesScale());
 	sceneDesc.cpuDispatcher = gDispatcher;
 	sceneDesc.gravity = physx::PxVec3(0, -98.1f, 0);
-	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader; // contactReportFilterShader;
+	sceneDesc.filterShader = contactReportFilterShader;  // physx::PxDefaultSimulationFilterShader; // contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
 	sceneDesc.ccdMaxPasses = 4;

@@ -117,6 +117,7 @@ namespace PhysicsUtils
 		{
 			physx::PxRigidDynamic* body = physics->createRigidDynamic(transform);
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+			//body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, true);		// NOTE: doesn't seem to work, so let's not waste compute resources on this.
 			return body;
 		}
 
