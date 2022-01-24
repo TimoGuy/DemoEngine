@@ -421,6 +421,11 @@ void PlayerPhysics::physicsUpdate()
 		prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);
 	prevIsGrounded = isGrounded;
 
+	////if (velocity.magnitude() > 100.0f)
+	//glm::vec3 flatVelo = PhysicsUtils::toGLMVec3(velocity);
+	//flatVelo.y = 0.0f;
+	//std::cout << "KOKOMADEDA:\t\t\t" << glm::length(flatVelo) << std::endl;		// ; TODO: start in playercharacter.cpp and see if you can get the grounded mvt and airborne mvt to use the velocity created here as part of their movement!!! Bc it keeps getting reset/capped right at the end of the frame
+
 #ifdef _DEVELOP
 	// Reset position of player to 0, 0, 0!
 	if (InputManager::getInstance().inventoryPressed)

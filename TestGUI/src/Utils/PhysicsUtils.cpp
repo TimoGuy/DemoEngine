@@ -229,6 +229,13 @@ namespace PhysicsUtils
 		return result;
 	}
 
+	glm::vec2 moveTowardsVec2(glm::vec2 current, glm::vec2 target, float maxDistanceDelta)
+	{
+		float delta = glm::length(target - current);
+		glm::vec2 mvtDeltaNormalized = glm::normalize(target - current);
+		return (maxDistanceDelta >= std::abs(delta)) ? target : (current + mvtDeltaNormalized * maxDistanceDelta);
+	}
+
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max)
 	{
 		float magnitude = glm::length(vector);

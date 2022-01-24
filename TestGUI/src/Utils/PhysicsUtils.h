@@ -51,10 +51,11 @@ namespace PhysicsUtils
 		float slopeLimit = 0.69465837f,  // Cosine of 46 degrees right here.    //0.70710678118f,						// cosine of 45 degrees
 		physx::PxVec3 upDirection = physx::PxVec3(0, 1, 0));
 
-	float moveTowards(float current, float target, float maxDistanceDelta);
 	float smoothStep(float edge0, float edge1, float t);
+	float moveTowards(float current, float target, float maxDistanceDelta);
 	glm::i64 moveTowards(glm::i64 current, glm::i64 target, glm::i64 maxDistanceDelta);
 	float moveTowardsAngle(float currentAngle, float targetAngle, float maxTurnDelta);
+	glm::vec2 moveTowardsVec2(glm::vec2 current, glm::vec2 target, float maxDistanceDelta);
 	glm::vec2 clampVector(glm::vec2 vector, float min, float max);
 	bool raycast(physx::PxVec3 origin, physx::PxVec3 unitDirection, physx::PxReal distance, physx::PxRaycastBuffer& hitInfo);
 	bool overlap(const physx::PxGeometry& geom, const physx::PxTransform& pose, physx::PxOverlapHit& overlapInfo);

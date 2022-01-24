@@ -534,27 +534,15 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	}
 
 	//
-	// Setup velocity manipulation
+	// Manipulate the flat velocity
 	//
 	physx::PxVec3 currentVelocity = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+	glm::vec2 currentFlatVelocity = glm::vec2(currentVelocity.x, currentVelocity.z);
+	glm::vec2 targetFlatVelocity = movementVector * groundRunSpeed;
 
-	//
-	// Just add velocity in a flat way
-	//
-	float accelAmount = glm::length(movementVector);		// [0,1] range due to clamping before this function
-	currentVelocity.x += movementVector.x * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
-	currentVelocity.z += movementVector.y * accelAmount * airAcceleration * MainLoop::getInstance().deltaTime;
-
-	//
-	// Clamp the velocity
-	//
-	glm::vec2 flatNewVelocity(currentVelocity.x, currentVelocity.z);
-	if (glm::length2(flatNewVelocity) > 0.001f)
-	{
-		flatNewVelocity = PhysicsUtils::clampVector(flatNewVelocity, 0.0f, groundRunSpeed);		// NOTE: groundRunSpeed is simply a placeholder... I think.
-		currentVelocity.x = flatNewVelocity.x;
-		currentVelocity.z = flatNewVelocity.y;
-	}
+	currentFlatVelocity = PhysicsUtils::moveTowardsVec2(currentFlatVelocity, targetFlatVelocity, airAcceleration * MainLoop::getInstance().deltaTime);
+	currentVelocity.x = currentFlatVelocity.x;
+	currentVelocity.z = currentFlatVelocity.y;
 
 	return currentVelocity;
 }
