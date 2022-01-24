@@ -4,6 +4,7 @@
 #include "../../utils/PhysicsUtils.h"
 #include "../../utils/GameState.h"
 #include "../../render_engine/model/Model.h"
+#include "../PlayerCharacter.h"
 
 #ifdef _DEVELOP
 #include "../../utils/InputManager.h"
@@ -409,16 +410,38 @@ void PlayerPhysics::physicsUpdate()
 	baseObject->INTERNALsubmitPhysicsCalculation(trans);
 
 	//
-	// Gather a jumping off velocity
+	// Set the velocity when leaving or landing the ground
 	//
-	if (prevIsGrounded && !isGrounded)
+	if (prevIsGrounded != isGrounded)
 	{
 		// Set the velocity!
 		velocity = PhysicsUtils::toPxVec3(pos) - prevPositionWhileGrounded;
-		velocity.y = glm::max(velocity.y, 0.0f);
+
+		if (isGrounded)
+		{
+			// Landing on the ground
+			glm::vec2 flatVelocity(velocity.x, velocity.z);
+			float newRunSpeed = glm::length(flatVelocity);
+
+			if (newRunSpeed > 0.01f)
+			{
+				glm::vec2 idealFacingDirection = glm::normalize(flatVelocity);
+				float facingDotIdeal = glm::dot(((PlayerCharacter*)baseObject)->facingDirection, idealFacingDirection);
+				if (facingDotIdeal < 0.0f)
+				{
+					idealFacingDirection *= -1.0f;
+					newRunSpeed *= -1.0f;
+				}
+
+				((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection		// ; TODO: figger out turning speed problems!!!
+				((PlayerCharacter*)baseObject)->currentRunSpeed = newRunSpeed;
+			}
+		}
+		else
+			// Leaving the ground
+			velocity.y = glm::max(velocity.y, 0.0f);
 	}
-	if (isGrounded)
-		prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);
+	prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);		// Use this to create the velocity
 	prevIsGrounded = isGrounded;
 
 	////if (velocity.magnitude() > 100.0f)
@@ -432,6 +455,7 @@ void PlayerPhysics::physicsUpdate()
 	{
 		controller->setFootPosition({ 0, 4, 0 });
 		velocity = { 0, 0, 0 };
+		((PlayerCharacter*)baseObject)->currentRunSpeed = 0.0f;
 	}
 #endif
 }
