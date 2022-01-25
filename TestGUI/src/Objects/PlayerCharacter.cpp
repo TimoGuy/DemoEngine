@@ -445,7 +445,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-
 				float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - groundRunSpeed) * (flatVelocityMagnitude - groundRunSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
 				//std::cout << "FACTSC: \t\t\t\t" << facingTurnSpeedCalculated << std::endl;
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeedCalculated * MainLoop::getInstance().deltaTime));

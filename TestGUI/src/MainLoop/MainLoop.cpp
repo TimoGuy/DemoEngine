@@ -634,7 +634,7 @@ void setupPhysx()
 	physx::PxSceneDesc sceneDesc(MainLoop::getInstance().physicsPhysics->getTolerancesScale());
 	sceneDesc.cpuDispatcher = gDispatcher;
 	sceneDesc.gravity = physx::PxVec3(0, -98.1f, 0);
-	sceneDesc.filterShader = contactReportFilterShader;  // physx::PxDefaultSimulationFilterShader; // contactReportFilterShader;
+	sceneDesc.filterShader = physx::PxDefaultSimulationFilterShader; // contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD;
 	sceneDesc.ccdMaxPasses = 4;
