@@ -433,7 +433,7 @@ void PlayerPhysics::physicsUpdate()
 					newRunSpeed *= -1.0f;
 				}
 
-				((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection		// ; TODO: figger out turning speed problems!!! (MAYBE: just have there be an exponential function on turn speed. If moving a certain speed, make turn speed move towards 0 like asymptote)
+				((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection;		// ; TODO: figger out turning speed problems!!! (MAYBE: just have there be an exponential function on turn speed. If moving a certain speed, make turn speed move towards 0 like asymptote)
 				((PlayerCharacter*)baseObject)->currentRunSpeed = newRunSpeed;
 			}
 		}

@@ -90,6 +90,7 @@ public:
 	float groundDecceleration = 10.0f;
 	float airAcceleration = 2.5f;
 	float groundRunSpeed = 0.75f;						// TODO: may wanna change that variable name eh
+	float groundRunSpeedCantTurn = 2.5f;				// This is the run speed at which you can't turn anymore.
 	float jumpSpeed[2] = { 1.4f, 1.0f };
 	float jumpCoyoteTime = 0.25f;
 	float jumpCoyoteTimer;

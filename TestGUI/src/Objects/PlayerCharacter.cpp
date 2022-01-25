@@ -422,16 +422,17 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		{
 			physx::PxVec3 velocityCopy = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 			velocityCopy.y = 0.0f;
+			float flatVelocityMagnitude = velocityCopy.magnitude();
 
 			// Skid stop behavior:
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-			if (velocityCopy.magnitude() > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
+			if (flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
 			{
 				facingDirection = movementVector;
-				currentRunSpeed = 0;
+				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity   //0;
 			}
 			// Immediate facing direction when moving slowly:
-			else if (velocityCopy.magnitude() <= immediateTurningRequiredSpeed)
+			else if (flatVelocityMagnitude <= immediateTurningRequiredSpeed)
 			{
 				facingDirection = movementVector;
 			}
@@ -444,7 +445,10 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, groundedFacingTurnSpeed * MainLoop::getInstance().deltaTime));
+
+				float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - groundRunSpeed) * (flatVelocityMagnitude - groundRunSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
+				//std::cout << "FACTSC: \t\t\t\t" << facingTurnSpeedCalculated << std::endl;
+				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeedCalculated * MainLoop::getInstance().deltaTime));
 
 				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 
@@ -472,7 +476,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
-		(currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *
+		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
 
