@@ -6,9 +6,9 @@
 #include "../../render_engine/model/Model.h"
 #include "../PlayerCharacter.h"
 
-#ifdef _DEVELOP
+//#ifdef _DEVELOP
 #include "../../utils/InputManager.h"
-#endif
+//#endif
 
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -449,7 +449,8 @@ void PlayerPhysics::physicsUpdate()
 	//flatVelo.y = 0.0f;
 	//std::cout << "KOKOMADEDA:\t\t\t" << glm::length(flatVelo) << std::endl;		// ; TODO: start in playercharacter.cpp and see if you can get the grounded mvt and airborne mvt to use the velocity created here as part of their movement!!! Bc it keeps getting reset/capped right at the end of the frame
 
-#ifdef _DEVELOP
+// @NOTE: Make this not show up in the release game!!!! @DEBUG only... but it's still kinda glitchy so we need it.
+//#ifdef _DEVELOP
 	// Reset position of player to 0, 0, 0!
 	if (InputManager::getInstance().inventoryPressed)
 	{
@@ -457,7 +458,7 @@ void PlayerPhysics::physicsUpdate()
 		velocity = { 0, 0, 0 };
 		((PlayerCharacter*)baseObject)->currentRunSpeed = 0.0f;
 	}
-#endif
+//#endif
 }
 
 void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)
