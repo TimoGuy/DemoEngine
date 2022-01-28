@@ -362,7 +362,8 @@ void PlayerPhysics::physicsUpdate()
 
 		// Try to retrieve grounded info
 		physx::PxRaycastBuffer hitInfo;
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()), physx::PxVec3(0, -1, 0), controller->getStepOffset(), hitInfo))
+		constexpr float padding = 0.05f;
+		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0), physx::PxVec3(0, -1, 0), controller->getStepOffset() + padding + padding, hitInfo))
 			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > controller->getSlopeLimit());
 
 		if (isFlatGround)
