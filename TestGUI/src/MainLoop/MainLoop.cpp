@@ -179,6 +179,7 @@ void MainLoop::initialize()
 }
 
 
+bool renderWithVsync = V_SYNC;
 void MainLoop::run()
 {
 #ifdef _DEVELOP
@@ -214,6 +215,20 @@ void MainLoop::run()
 			}
 			else
 				isKeyComboPressedPrev = false;
+		}
+
+		//
+		// Toggle v-sync with F4
+		//
+		{
+			static bool prevF4Keypressed = GLFW_RELEASE;
+			bool f4Keypressed = glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_F4);
+			if (prevF4Keypressed == GLFW_RELEASE && f4Keypressed == GLFW_PRESS)
+			{
+				renderWithVsync = !renderWithVsync;
+				glfwSwapInterval(renderWithVsync);
+			}
+			prevF4Keypressed = f4Keypressed;
 		}
 
 #ifdef _DEVELOP
@@ -343,6 +358,7 @@ void MainLoop::deleteObject(BaseObject* obj)
 	objectsToDelete.push_back(obj);
 }
 
+
 void MainLoop::setFullscreen(bool flag, bool force)
 {
 	if (!force && isFullscreen == flag)
@@ -373,11 +389,7 @@ void MainLoop::setFullscreen(bool flag, bool force)
 	// Make sure vsync is on
 	//
 	glfwMakeContextCurrent(window);
-#if V_SYNC
-	glfwSwapInterval(1);
-#else
-	glfwSwapInterval(0);
-#endif
+	glfwSwapInterval(renderWithVsync);
 }
 
 
@@ -436,11 +448,7 @@ void createWindow(const char* appName)
 	glfwMakeContextCurrent(MainLoop::getInstance().window);
 
 	// NOTE: glfwswapinterval() needs to be executed after glfwmakecontextcurrent()
-#if V_SYNC
-	glfwSwapInterval(1);
-#else
-	glfwSwapInterval(0);
-#endif
+	glfwSwapInterval(renderWithVsync);
 
 	gladLoadGL();
 }
