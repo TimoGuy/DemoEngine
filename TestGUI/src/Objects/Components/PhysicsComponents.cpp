@@ -319,6 +319,11 @@ void PlayerPhysics::lockVelocity(bool yAlso)
 	}
 }
 
+
+#ifdef _DEVELOP
+bool playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = true;		// NOTE: just in case first frame may get messed up, this flag is set to true at first.
+#endif
+
 void PlayerPhysics::physicsUpdate()
 {
 	//
@@ -413,6 +418,11 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Set the velocity when leaving or landing the ground
 	//
+#ifdef _DEVELOP
+	if (playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference)		// BLOCKING FLAG
+		playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = false;
+	else
+#endif
 	if (prevIsGrounded != isGrounded)
 	{
 		// Set the velocity!
@@ -452,10 +462,18 @@ void PlayerPhysics::physicsUpdate()
 
 // @NOTE: Make this not show up in the release game!!!! @DEBUG only... but it's still kinda glitchy so we need it.
 //#ifdef _DEVELOP
+	// Set a save point for the player if press pause!
+	static physx::PxExtendedVec3 savedPlayerResetPoint{ 0, 4, 0 };
+	if (InputManager::getInstance().pausePressed)
+	{
+		savedPlayerResetPoint = controller->getFootPosition();
+		std::cout << "::PLAYER:: set reset point to { " << savedPlayerResetPoint.x << ", " << savedPlayerResetPoint.y << ", " << savedPlayerResetPoint.z << " }" << std::endl;
+	}
+
 	// Reset position of player to 0, 0, 0!
 	if (InputManager::getInstance().inventoryPressed)
 	{
-		controller->setFootPosition({ 0, 4, 0 });
+		controller->setFootPosition(savedPlayerResetPoint);
 		velocity = { 0, 0, 0 };
 		((PlayerCharacter*)baseObject)->currentRunSpeed = 0.0f;
 	}
@@ -466,6 +484,10 @@ void PlayerPhysics::propagateNewTransform(const glm::mat4& newTransform)
 {
 	glm::vec3 pos = PhysicsUtils::getPosition(newTransform);
 	controller->setPosition(physx::PxExtendedVec3(pos.x, pos.y, pos.z));
+
+#ifdef _DEVELOP
+	playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = true;
+#endif
 }
 
 physx::PxTransform PlayerPhysics::getGlobalPose()

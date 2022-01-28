@@ -271,7 +271,7 @@ void PlayerCharacter::processMovement()
 	{
 		float cameraDistance = camOffset.z;
 
-		const bool collideWithGeometry = false;					// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
+		const bool collideWithGeometry = true;				// Well hey, let's just enable it for now.	// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
 		if (collideWithGeometry)
 		{
 			const float hitDistancePadding = 0.75f;
