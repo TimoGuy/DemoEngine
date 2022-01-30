@@ -461,7 +461,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Slime Girl Model and Materials
 	//
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Running", "Jumping_From_Idle", "Jumping_From_Run", "Land_From_Jumping_From_Idle", "Land_From_Jumping_From_Run", "Land_Hard", "Get_Up_From_Land_Hard", "Draw_Water", "Drink_From_Bottle", "Pick_Up_Bottle"});
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Walking", "Running", "Jumping_From_Idle", "Jumping_From_Run", "Land_From_Jumping_From_Idle", "Land_From_Jumping_From_Run", "Land_Hard", "Get_Up_From_Land_Hard", "Draw_Water", "Drink_From_Bottle", "Pick_Up_Bottle"});
 	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
 
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");

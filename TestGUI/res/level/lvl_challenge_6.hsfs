@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    20.983123779296875,
-                    134.35000610351563,
-                    231.64352416992188
+                    19.518295288085938,
+                    23.350000381469727,
+                    42.387115478515625
                 ],
                 "rotation": [
                     0.0,
@@ -321,8 +321,8 @@
                 "name": "Voxel Group (mp1)",
                 "position": [
                     23.0,
-                    58.8552131652832,
-                    105.13835144042969
+                    65.31796264648438,
+                    108.9847412109375
                 ],
                 "rotation": [
                     -0.00010386679059593007,
@@ -341,9 +341,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "c604ca1362f9a69e37c32db83808eb41968b178b14ff4e92ed7b348c0dec71b7",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 78.49893188476563,
+            "moving_platform_spline_position_in_time": 92.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 25.0,
             "moving_platform_velocity": [
@@ -540,7 +540,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.02798338793218136,
+                    0.027983391657471657,
                     0.0
                 ],
                 "scale": [
@@ -595,7 +595,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.027983391657471657,
+                    0.027983395382761955,
                     0.0
                 ],
                 "scale": [
@@ -650,7 +650,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    0.027983395382761955,
+                    0.027983399108052254,
                     0.0
                 ],
                 "scale": [
@@ -704,9 +704,9 @@
                     80.0
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     89.9720230102539,
-                    180.0
+                    -180.0
                 ],
                 "scale": [
                     1.0000001192092896,
@@ -760,7 +760,7 @@
                 ],
                 "rotation": [
                     5.973489389764219e-13,
-                    0.027985092252492905,
+                    0.027985095977783203,
                     2.446327806993054e-09
                 ],
                 "scale": [
@@ -814,9 +814,9 @@
                     40.0
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     89.96573638916016,
-                    -180.0
+                    180.0
                 ],
                 "scale": [
                     1.0000001192092896,
@@ -869,14 +869,14 @@
                     0.0
                 ],
                 "rotation": [
-                    180.0,
-                    -0.04846077039837837,
-                    -180.0
+                    -180.0,
+                    -0.048460785299539566,
+                    180.0
                 ],
                 "scale": [
-                    0.9999966621398926,
+                    0.999996542930603,
                     1.0,
-                    0.9999966621398926
+                    0.999996542930603
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1035,13 +1035,13 @@
                 ],
                 "rotation": [
                     179.99998474121094,
-                    -0.04776555299758911,
+                    -0.04776556417346001,
                     -179.99998474121094
                 ],
                 "scale": [
-                    1.0000035762786865,
+                    1.000003695487976,
                     1.0,
-                    1.0000035762786865
+                    1.000003695487976
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1090,13 +1090,13 @@
                 ],
                 "rotation": [
                     -179.99996948242188,
-                    -0.0477655790746212,
+                    -0.0477655865252018,
                     179.99996948242188
                 ],
                 "scale": [
-                    1.000003695487976,
+                    1.0000038146972656,
                     1.0,
-                    1.000003695487976
+                    1.0000038146972656
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1145,13 +1145,13 @@
                 ],
                 "rotation": [
                     -179.9999542236328,
-                    -0.0477655753493309,
+                    -0.0477655865252018,
                     179.9999542236328
                 ],
                 "scale": [
-                    1.0000038146972656,
+                    1.0000039339065552,
                     1.0,
-                    1.0000038146972656
+                    1.0000039339065552
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1272,9 +1272,9 @@
                 "guid": "ad6863877a31aeddb34d5bb9968b873e3a3e57d3c11745d5490fd427f07d3ec9",
                 "name": "Voxel Group (launcher)",
                 "position": [
-                    21.98100471496582,
-                    35.039512634277344,
-                    -15.01318359375
+                    34.188438415527344,
+                    106.55634307861328,
+                    -45.65559768676758
                 ],
                 "rotation": [
                     0.0,
@@ -1293,9 +1293,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "fc0f2941c09cc04972946c7878da68feb85622582415daa13cff63f2c97ba893",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 35.39936828613281,
+            "moving_platform_spline_position_in_time": 170.3993682861328,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 750.0,
             "moving_platform_velocity": [
@@ -1656,9 +1656,9 @@
                     -160.0
                 ],
                 "rotation": [
-                    -2.231188045698218e-05,
-                    0.027981653809547424,
-                    -2.2311876819003373e-05
+                    -2.2311882275971584e-05,
+                    0.027981657534837723,
+                    -2.231188045698218e-05
                 ],
                 "scale": [
                     1.0000001192092896,
@@ -1712,13 +1712,13 @@
                 ],
                 "rotation": [
                     179.99998474121094,
-                    -0.06224894896149635,
+                    -0.06224896386265755,
                     -179.99998474121094
                 ],
                 "scale": [
-                    1.0000027418136597,
+                    1.0000028610229492,
                     1.0,
-                    1.0000027418136597
+                    1.0000028610229492
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1767,13 +1767,13 @@
                 ],
                 "rotation": [
                     -179.9999542236328,
-                    -0.02798515371978283,
+                    -0.027985159307718277,
                     179.9999542236328
                 ],
                 "scale": [
-                    0.9999972581863403,
+                    0.9999971389770508,
                     1.0,
-                    0.9999972581863403
+                    0.9999971389770508
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1822,13 +1822,13 @@
                 ],
                 "rotation": [
                     -179.9999237060547,
-                    -0.02798515371978283,
+                    -0.027985159307718277,
                     179.9999237060547
                 ],
                 "scale": [
-                    0.9999971389770508,
+                    0.9999970197677612,
                     1.0,
-                    0.9999971389770508
+                    0.9999970197677612
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -1878,7 +1878,7 @@
                 "rotation": [
                     -0.00010427408415125683,
                     0.05595976114273071,
-                    -0.00010432514682179317
+                    -0.00010432515409775078
                 ],
                 "scale": [
                     0.9999997615814209,
@@ -1931,9 +1931,9 @@
                     -320.0
                 ],
                 "rotation": [
-                    -0.00010427440429339185,
-                    0.027979956939816475,
-                    -0.00010427440429339185
+                    -0.00010427441884530708,
+                    0.027979960665106773,
+                    -0.00010427441884530708
                 ],
                 "scale": [
                     0.9999997615814209,
@@ -1986,9 +1986,9 @@
                     -360.0
                 ],
                 "rotation": [
-                    -0.00010427440429339185,
-                    0.047758799046278,
-                    -0.00010431039845570922
+                    -0.00010427441884530708,
+                    0.047758813947439194,
+                    -0.00010431041300762445
                 ],
                 "scale": [
                     0.9999999403953552,
@@ -2041,9 +2041,9 @@
                     -200.0
                 ],
                 "rotation": [
-                    5.0089770411432255e-06,
-                    0.062249138951301575,
-                    5.011969733459409e-06
+                    5.008977950637927e-06,
+                    0.06224915757775307,
+                    5.011970642954111e-06
                 ],
                 "scale": [
                     1.0,
@@ -2096,9 +2096,9 @@
                     -280.0
                 ],
                 "rotation": [
-                    5.008977950637927e-06,
-                    0.062249165028333664,
-                    5.011971552448813e-06
+                    5.008978860132629e-06,
+                    0.062249183654785156,
+                    5.011972461943515e-06
                 ],
                 "scale": [
                     1.0,
@@ -2151,9 +2151,9 @@
                     -320.0
                 ],
                 "rotation": [
-                    5.008977950637927e-06,
-                    0.06224917620420456,
-                    5.011972461943515e-06
+                    5.008978860132629e-06,
+                    0.06224919855594635,
+                    5.011973371438216e-06
                 ],
                 "scale": [
                     1.0,
@@ -2266,9 +2266,9 @@
                     -179.96612548828125
                 ],
                 "scale": [
-                    0.9999954104423523,
+                    0.999995231628418,
                     0.9999999403953552,
-                    0.999995768070221
+                    0.9999955892562866
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -2317,13 +2317,13 @@
                 ],
                 "rotation": [
                     -179.9999237060547,
-                    -0.02798515371978283,
+                    -0.027985159307718277,
                     179.9999237060547
                 ],
                 "scale": [
-                    0.9999971389770508,
+                    0.9999970197677612,
                     1.0,
-                    0.9999971389770508
+                    0.9999970197677612
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -2372,13 +2372,13 @@
                 ],
                 "rotation": [
                     -179.99990844726563,
-                    -0.02798515371978283,
+                    -0.027985159307718277,
                     179.99990844726563
                 ],
                 "scale": [
-                    0.9999970197677612,
+                    0.9999969005584717,
                     1.0,
-                    0.9999970197677612
+                    0.9999969005584717
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -2426,9 +2426,9 @@
                     -280.0
                 ],
                 "rotation": [
-                    -9.061401942744851e-05,
-                    0.027986794710159302,
-                    -9.061404125532135e-05
+                    -9.061403397936374e-05,
+                    0.02798679657280445,
+                    -9.061405580723658e-05
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -2482,13 +2482,13 @@
                 ],
                 "rotation": [
                     -179.99989318847656,
-                    -0.027985166758298874,
+                    -0.02798517234623432,
                     179.99989318847656
                 ],
                 "scale": [
-                    0.9999967813491821,
+                    0.9999966621398926,
                     1.0,
-                    0.9999967813491821
+                    0.9999966621398926
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -3252,13 +3252,13 @@
                 ],
                 "rotation": [
                     -179.99989318847656,
-                    -0.027985166758298874,
+                    -0.02798517234623432,
                     179.99989318847656
                 ],
                 "scale": [
-                    0.9999967813491821,
+                    0.9999966621398926,
                     1.0,
-                    0.9999967813491821
+                    0.9999966621398926
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -3361,9 +3361,9 @@
                     -200.0
                 ],
                 "rotation": [
-                    5.0089770411432255e-06,
-                    0.06224915757775307,
-                    5.011969733459409e-06
+                    5.008977950637927e-06,
+                    0.06224917620420456,
+                    5.011970642954111e-06
                 ],
                 "scale": [
                     1.0,
@@ -3416,9 +3416,9 @@
                     -240.0
                 ],
                 "rotation": [
-                    5.008977950637927e-06,
-                    0.06224917247891426,
-                    5.011971552448813e-06
+                    5.008978860132629e-06,
+                    0.06224919110536575,
+                    5.011972461943515e-06
                 ],
                 "scale": [
                     1.0,
@@ -3471,9 +3471,9 @@
                     -280.0
                 ],
                 "rotation": [
-                    5.008977950637927e-06,
-                    0.06224917620420456,
-                    5.011972461943515e-06
+                    5.008978860132629e-06,
+                    0.06224919855594635,
+                    5.011973371438216e-06
                 ],
                 "scale": [
                     1.0,
@@ -3526,9 +3526,9 @@
                     -320.0
                 ],
                 "rotation": [
-                    5.008977950637927e-06,
-                    0.06224919110536575,
-                    5.011972461943515e-06
+                    5.008978860132629e-06,
+                    0.062249209731817245,
+                    5.011973371438216e-06
                 ],
                 "scale": [
                     1.0,
@@ -3856,9 +3856,9 @@
                     -280.0
                 ],
                 "rotation": [
-                    5.008978860132629e-06,
-                    0.06224919110536575,
-                    5.011972461943515e-06
+                    5.008979769627331e-06,
+                    0.062249209731817245,
+                    5.011973371438216e-06
                 ],
                 "scale": [
                     1.0,
@@ -3906,9 +3906,9 @@
                 "guid": "cba7693d2b50cefb0506e929b1111978d4105b808c7c0b71051ffacf58feabed",
                 "name": "Voxel Group (mp_ret)",
                 "position": [
-                    98.16079711914063,
-                    83.99734497070313,
-                    -27.969985961914063
+                    79.8948974609375,
+                    83.99732971191406,
+                    27.964752197265625
                 ],
                 "rotation": [
                     0.0,
@@ -3927,9 +3927,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "4858a81477d624f09773e57492316e0ce5174a076359cd36af8115c35a4d9c54",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 544.0,
+            "moving_platform_spline_position_in_time": 617.465576171875,
             "moving_platform_spline_pp_hold_time": 2.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
@@ -4082,14 +4082,14 @@
                     -240.0
                 ],
                 "rotation": [
-                    -0.2114553600549698,
+                    -0.21130096912384033,
                     -89.9720230102539,
-                    0.21135090291500092
+                    0.21119649708271027
                 ],
                 "scale": [
-                    0.9999966621398926,
+                    0.9999963641166687,
                     1.0,
-                    0.9999967217445374
+                    0.9999964237213135
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -4138,7 +4138,7 @@
                 ],
                 "rotation": [
                     2.446327806993054e-09,
-                    0.027985073626041412,
+                    0.02798507548868656,
                     5.973811939910534e-13
                 ],
                 "scale": [
@@ -4243,8 +4243,8 @@
                 "name": "Voxel Group (mp2)",
                 "position": [
                     23.0,
-                    83.1441650390625,
-                    174.9347381591797
+                    76.6815414428711,
+                    169.12823486328125
                 ],
                 "rotation": [
                     0.0,
@@ -4263,9 +4263,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "db745642d3b7e429c8b487420acfe9e72404cb3f24e5eaf6c8f08b210e9d6725",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 37.5,
+            "moving_platform_spline_position_in_time": 23.998931884765625,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 25.0,
             "moving_platform_velocity": [
@@ -4402,7 +4402,7 @@
                 "name": "Voxel Group (mp3)",
                 "position": [
                     23.0,
-                    168.99850463867188,
+                    219.0,
                     254.0
                 ],
                 "rotation": [
@@ -4422,9 +4422,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "864aa94dc7fb44c2f83bcfbc87e2fa858d45a4633aa2e96ed723af853beab489",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 45.999000549316406,
+            "moving_platform_spline_position_in_time": 99.9990005493164,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
@@ -4566,13 +4566,13 @@
                 ],
                 "rotation": [
                     -179.99993896484375,
-                    -0.02798515558242798,
+                    -0.027985163033008575,
                     179.99993896484375
                 ],
                 "scale": [
-                    0.9999971389770508,
+                    0.9999970197677612,
                     1.0,
-                    0.9999971389770508
+                    0.9999970197677612
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -4670,8 +4670,8 @@
                 "guid": "249c3ee8d67ceedeb3fc6706f92ca8fcd12d0cea6dd017e3fb24ac590d99207e",
                 "name": "Voxel Group (laun2)",
                 "position": [
-                    39.0,
-                    243.0,
+                    166.25054931640625,
+                    269.9157409667969,
                     298.0
                 ],
                 "rotation": [
@@ -4693,7 +4693,7 @@
             "moving_platform_spline_guid": "faf56bdb0c57f895100a8395b8c1a12c2405501f3f4b6244c1e957dceff6d233",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 13.0,
+            "moving_platform_spline_position_in_time": 292.5,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 325.0,
             "moving_platform_velocity": [
@@ -4884,9 +4884,9 @@
                 "guid": "b47c6a002d0fec3c5afe3af99192ffff494deff81aacec6c79104d618124906d",
                 "name": "Voxel Group (laun3)",
                 "position": [
-                    1307.9998779296875,
-                    166.28189086914063,
-                    414.46221923828125
+                    1308.0,
+                    199.0,
+                    350.0
                 ],
                 "rotation": [
                     0.0,
@@ -4905,9 +4905,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "d436e57866a33417ebc9c600befa56081d800f021b307429438f1a13e3141ca1",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 45.5,
+            "moving_platform_spline_position_in_time": 0.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 325.0,
             "moving_platform_velocity": [
@@ -5121,9 +5121,9 @@
                 "guid": "41d12c6988c980b4b6fab39c0d8961f51aca2cb0297544e580e85409f6b28f3e",
                 "name": "Voxel Group (ret_mp)",
                 "position": [
-                    720.63427734375,
-                    232.69064331054688,
-                    -404.9356689453125
+                    1291.0,
+                    435.0,
+                    -1004.0
                 ],
                 "rotation": [
                     0.0,
@@ -5142,9 +5142,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "790b211a1c761ae7714e01fcaf9168efcb2a9b19fea461a1c0d39824fac4ee45",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 1460.0,
+            "moving_platform_spline_position_in_time": 0.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 1000.0,
             "moving_platform_velocity": [
@@ -5226,7 +5226,7 @@
                 "name": "Voxel Group (laun4)",
                 "position": [
                     7.0,
-                    272.0303955078125,
+                    443.0,
                     298.0
                 ],
                 "rotation": [
@@ -5248,7 +5248,7 @@
             "moving_platform_spline_guid": "fac7e4734724a239b229086478cc67eb1646819fb58aa041bb1367e8df2ea74f",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 64.0,
+            "moving_platform_spline_position_in_time": 199.99899291992188,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 400.0,
             "moving_platform_velocity": [
@@ -5494,9 +5494,9 @@
                 "guid": "2bc1f6cee6e610b19daa555a1247f23802d2d2dc4d9b073dae109bc0bf3e2a8c",
                 "name": "Voxel Group (mp_h1)",
                 "position": [
-                    96.2341537475586,
+                    132.38385009765625,
                     867.0,
-                    133.9837188720703
+                    127.06773376464844
                 ],
                 "rotation": [
                     0.0,
@@ -5517,7 +5517,7 @@
             "moving_platform_spline_guid": "2b3e8b22d81c06192bf5e0ca7cc7ccbe1cd29f55ebc94965013e9d5d4881ca66",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 81.49887084960938,
+            "moving_platform_spline_position_in_time": 123.99887084960938,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 25.0,
             "moving_platform_velocity": [
@@ -5658,9 +5658,9 @@
                     140.0
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -0.019778519868850708,
-                    -180.0
+                    180.0
                 ],
                 "scale": [
                     1.0,
@@ -5708,9 +5708,9 @@
                 "guid": "9cd7298b9198f66f498fb04d0c7abc9aa39c266b1f8b0f91fbcb121ea69dde4d",
                 "name": "Voxel Group (mp_h_ret)",
                 "position": [
-                    308.3215026855469,
-                    287.88006591796875,
-                    33.41267395019531
+                    312.260009765625,
+                    815.3796997070313,
+                    126.23470306396484
                 ],
                 "rotation": [
                     0.0,
@@ -5729,9 +5729,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "84fee596ca5e5b6e73584675b4636eeb7e34565695d709c6057aafd65ccbed92",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 785.8955078125,
+            "moving_platform_spline_position_in_time": 169.0,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -5836,8 +5836,8 @@
                 "name": "Voxel Group (mp_h2)",
                 "position": [
                     241.5,
-                    870.7047119140625,
-                    178.62826538085938
+                    921.6812744140625,
+                    189.6063995361328
                 ],
                 "rotation": [
                     0.0,
@@ -5856,9 +5856,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "b147434806f2f61e41b0dfd2bc25c8ea346d35c5dd61833bb68473d87db40daf",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 18.02622413635254,
+            "moving_platform_spline_position_in_time": 75.859375,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 37.554622650146484,
             "moving_platform_velocity": [
@@ -5939,9 +5939,9 @@
                 "guid": "939ed528675b7240ee0b26d14e00ec8dd5fe8cdca24b9c3cd8412fca2d6ad60d",
                 "name": "Voxel Group (mp_h3)",
                 "position": [
-                    197.80543518066406,
+                    229.96934509277344,
                     957.0,
-                    117.73277282714844
+                    130.7014617919922
                 ],
                 "rotation": [
                     0.0,
@@ -5960,9 +5960,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "1fa9c4b3bdecb3f10147989600307559ba5ba9e2f00c8412e914a4a7bdff611c",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 77.99893188476563,
+            "moving_platform_spline_position_in_time": 39.49999237060547,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 24.999980926513672,
             "moving_platform_velocity": [
@@ -6043,9 +6043,9 @@
                 "guid": "c11869ed0831938304e30b02ba2ac3fa176d1da27da5421f1be5de7e6f0c2d64",
                 "name": "Voxel Group (mp_h4)",
                 "position": [
-                    134.60369873046875,
-                    959.181640625,
-                    120.99283599853516
+                    112.82147216796875,
+                    989.2015380859375,
+                    175.9349365234375
                 ],
                 "rotation": [
                     0.0,
@@ -6064,9 +6064,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "98a8225ea97328300eba2539cc999e565a0f8dea098b2235f194cb4a0a94b3a2",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 41.03036880493164,
+            "moving_platform_spline_position_in_time": 172.6688232421875,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 85.47994995117188,
             "moving_platform_velocity": [
@@ -6147,9 +6147,9 @@
                 "guid": "67b6a03627b443e039b25570c45abc24a3f63bd473fe2981a8c4487dd102ff26",
                 "name": "Voxel Group (mp_h5)",
                 "position": [
-                    261.64166259765625,
-                    1060.8182373046875,
-                    136.33436584472656
+                    295.99615478515625,
+                    1030.79833984375,
+                    182.2139434814453
                 ],
                 "rotation": [
                     0.0,
@@ -6168,9 +6168,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "23cdcbf127990158264d63db82abf9aa4559bc429e2c42f7f8bad6d0d1046abf",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 247.53598022460938,
+            "moving_platform_spline_position_in_time": 125.35523986816406,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 79.33870697021484,
             "moving_platform_velocity": [
@@ -6549,9 +6549,9 @@
                 "guid": "ab691cb527a965a4e67a6c76d7968fff2b6109bcb348836d638ae4c980c5a5f1",
                 "name": "Voxel Group (mp_f1)",
                 "position": [
-                    261.4315185546875,
+                    213.643798828125,
                     -2279.0,
-                    -268.865234375
+                    -296.7062072753906
                 ],
                 "rotation": [
                     0.0,
@@ -6559,9 +6559,9 @@
                     0.0
                 ],
                 "scale": [
-                    0.9999998807907104,
                     1.0,
-                    0.9999998807907104
+                    1.0,
+                    1.0
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -6572,7 +6572,7 @@
             "moving_platform_spline_guid": "cd238129bd9b3ba5fbfec7317a4d14d59753bcb556b7cc5b9977043f72c439c9",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 0,
-            "moving_platform_spline_position_in_time": 174.3235321044922,
+            "moving_platform_spline_position_in_time": 27.32613754272461,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 30.0,
             "moving_platform_velocity": [
@@ -6677,9 +6677,9 @@
                 "guid": "337a7ad81cce997a87573e4fd01b5b6a7bdfa8a46a0ccd9ac90ee7523d0a4af3",
                 "name": "Voxel Group (mp_f2)",
                 "position": [
-                    253.21466064453125,
+                    228.95697021484375,
                     -2858.0,
-                    -294.0212707519531
+                    -244.20175170898438
                 ],
                 "rotation": [
                     -1.5445526514668018e-05,
@@ -6700,7 +6700,7 @@
             "moving_platform_spline_guid": "05b54f6e10f880a09e0ad9f73b1f23a66477b986f6be9179975a2aea8b20389b",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 0,
-            "moving_platform_spline_position_in_time": 207.739013671875,
+            "moving_platform_spline_position_in_time": 114.73638153076172,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 30.0,
             "moving_platform_velocity": [
@@ -6883,9 +6883,9 @@
                 "guid": "88d07f7c4e00fa32186a9102efd79f644e116eca90c4ae2461dbf59f7db64527",
                 "name": "Voxel Group (mp_ret4)",
                 "position": [
-                    75.18785095214844,
-                    -1312.248779296875,
-                    -50.39837646484375
+                    73.41517639160156,
+                    -1772.013671875,
+                    -150.37078857421875
                 ],
                 "rotation": [
                     0.0,
@@ -6906,7 +6906,7 @@
             "moving_platform_spline_guid": "8a10cbe75c92a8dc7fd29902aa21f29e2828f2be65d47c525709548ac20b891e",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 792.643310546875,
+            "moving_platform_spline_position_in_time": 315.143310546875,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 25.0,
             "moving_platform_velocity": [
@@ -6938,9 +6938,9 @@
                 "guid": "7acb01cdab7ff425b0d168012a47fc132f5698a3acc7db6fd0955f5594fbbb64",
                 "name": "Voxel Group (mp_ret5)",
                 "position": [
-                    121.28245544433594,
-                    -173.18603515625,
-                    29.103912353515625
+                    157.66915893554688,
+                    -1221.2647705078125,
+                    -36.559173583984375
                 ],
                 "rotation": [
                     0.0,
@@ -6961,7 +6961,7 @@
             "moving_platform_spline_guid": "d966a65906738eae913a8de226447cf4b0c6b9fdff9cb2dd67733ded54d84eed",
             "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 2742.896728515625,
+            "moving_platform_spline_position_in_time": 1787.896728515625,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [

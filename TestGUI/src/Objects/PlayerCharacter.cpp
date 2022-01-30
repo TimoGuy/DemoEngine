@@ -672,29 +672,29 @@ void PlayerCharacter::processAnimation()
 
 		case 1:
 			// Jump
-			animator.playAnimation(2 + (int)isMoving, 0.0f, false, true);
+			animator.playAnimation(3 + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 2:
 			// Land
-			animator.playAnimation(4 + (int)isMoving, 0.0f, false, true);
+			animator.playAnimation(5 + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 3:
 			// Draw water
-			animator.playAnimation(8, 1.0f, false, true);
+			animator.playAnimation(9, 1.0f, false, true);
 			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 4:
 			// Drink water
-			animator.playAnimation(9, 1.0f, false, true);
+			animator.playAnimation(10, 1.0f, false, true);
 			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 5:
 			// Pick up bottle
-			animator.playAnimation(10, 7.5f, false, true);
+			animator.playAnimation(11, 7.5f, false, true);
 			break;
 
 		default:
