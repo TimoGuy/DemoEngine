@@ -16,11 +16,10 @@ struct AssimpNodeData
 	// INTERNAL CACHE
 	//
 	bool isCacheCreated = false;
-	Bone* cacheBone, *cacheNextBone;
-	bool cacheNextBoneExists;
+	Bone* cacheBone;
+	bool cacheBoneInfoExists;
 	int cacheBoneInfo_id;
 	glm::mat4 cacheBoneInfo_offset;
-	bool cacheBoneInfoExists;
 	AnimatedRope* cacheAnimatedRope;
 };
 

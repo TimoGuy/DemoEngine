@@ -567,50 +567,57 @@ void PlayerCharacter::processActions()
 float hairWeightMult = 10.0f;				// @Debug
 void PlayerCharacter::processAnimation()
 {
+	constexpr int IDLE_ANIM = 0;
+	constexpr int WALKING_ANIM = 1;
+	constexpr int RUNNING_ANIM = 2;
+	constexpr int JUMP_ANIM = 3;
+	constexpr int LAND_ANIM = 5;
+	constexpr int DRAW_WATER_ANIM = 9;
+	constexpr int DRINK_WATER_ANIM = 10;
+	constexpr int SHEATH_BOTTLE_ANIM = 11;
+
 	//
 	// Process movement into animationstates
 	//
 	if (animationState == 0)
 	{
+		if (isMoving)
+			// Move
+			animationState = 1;
 		if (!((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
 			// Jump
-			animationState = 1;
+			animationState = 2;
 	}
 	else if (animationState == 1)
 	{
-		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
-			// Landing
+		if (!isMoving)
+			// Idle
+			animationState = 0;
+		if (!((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
+			// Jump
 			animationState = 2;
 	}
 	else if (animationState == 2)
 	{
+		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
+			// Landing
+			animationState = 3;
+	}
+	else if (animationState == 3)
+	{
 		if (!((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
 			// Jump
-			animationState = 1;
+			animationState = 2;
 		else
 		{
 			// Wait until land animation is finished
-			if (animator.isAnimationFinished(4, MainLoop::getInstance().deltaTime) ||
-				animator.isAnimationFinished(5, MainLoop::getInstance().deltaTime))
+			if (animator.isAnimationFinished(LAND_ANIM, MainLoop::getInstance().deltaTime) ||
+				animator.isAnimationFinished(LAND_ANIM + 1, MainLoop::getInstance().deltaTime))
 			{
 				// Standing
 				animationState = 0;
 				//std::cout << "Switched to standing" << std::endl;
 			}
-		}
-	}
-	else if (animationState == 3)
-	{
-		// Lock movement
-		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
-		lockFacingDirection = true;
-		lockJumping = true;
-
-		// Wait until draw water animation is finished
-		if (animator.isAnimationFinished(8, MainLoop::getInstance().deltaTime))
-		{
-			// Pick up bottle
-			animationState = 5;
 		}
 	}
 	else if (animationState == 4)
@@ -620,11 +627,11 @@ void PlayerCharacter::processAnimation()
 		lockFacingDirection = true;
 		lockJumping = true;
 
-		// Wait until drink-water animation is finished
-		if (animator.isAnimationFinished(9, MainLoop::getInstance().deltaTime))
+		// Wait until draw water animation is finished
+		if (animator.isAnimationFinished(DRAW_WATER_ANIM, MainLoop::getInstance().deltaTime))
 		{
 			// Pick up bottle
-			animationState = 5;
+			animationState = 6;
 		}
 	}
 	else if (animationState == 5)
@@ -634,8 +641,22 @@ void PlayerCharacter::processAnimation()
 		lockFacingDirection = true;
 		lockJumping = true;
 
+		// Wait until drink-water animation is finished
+		if (animator.isAnimationFinished(DRINK_WATER_ANIM, MainLoop::getInstance().deltaTime))
+		{
+			// Pick up bottle
+			animationState = 6;
+		}
+	}
+	else if (animationState == 6)
+	{
+		// Lock movement
+		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
+		lockFacingDirection = true;
+		lockJumping = true;
+
 		// Wait until pick-up-bottle animation is finished
-		if (animator.isAnimationFinished(10, MainLoop::getInstance().deltaTime))
+		if (animator.isAnimationFinished(SHEATH_BOTTLE_ANIM, MainLoop::getInstance().deltaTime))
 		{
 			// Standing
 			animationState = 0;
@@ -646,13 +667,13 @@ void PlayerCharacter::processAnimation()
 
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
 	{
-		animationState = 3;
+		animationState = 4;
 	}
 
 	if (triggerDrinkWaterAnimation)
 	{
 		triggerDrinkWaterAnimation = false;
-		animationState = 4;
+		animationState = 5;
 	}
 
 	//
@@ -666,35 +687,46 @@ void PlayerCharacter::processAnimation()
 		switch (animationState)
 		{
 		case 0:
-			// Idle/Move
-			animator.playAnimation((unsigned int)isMoving, 6.0f, true, true);
+			// Idle
+			animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
 			break;
 
 		case 1:
-			// Jump
-			animator.playAnimation(3 + (int)isMoving, 0.0f, false, true);
+			// Move
+			animator.playBlendTree(
+				{
+					{ (size_t)WALKING_ANIM, 0.0f, "walkRunBlendVar" },
+					{ (size_t)RUNNING_ANIM, 1.0f }
+				},
+				6.0f, true
+			);
 			break;
 
 		case 2:
-			// Land
-			animator.playAnimation(5 + (int)isMoving, 0.0f, false, true);
+			// Jump
+			animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 3:
-			// Draw water
-			animator.playAnimation(9, 1.0f, false, true);
-			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
+			// Land
+			animator.playAnimation(LAND_ANIM + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 4:
-			// Drink water
-			animator.playAnimation(10, 1.0f, false, true);
+			// Draw water
+			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false, true);
 			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 5:
+			// Drink water
+			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false, true);
+			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
+			break;
+
+		case 6:
 			// Pick up bottle
-			animator.playAnimation(11, 7.5f, false, true);
+			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false, true);
 			break;
 
 		default:
@@ -702,11 +734,14 @@ void PlayerCharacter::processAnimation()
 			break;
 		}
 	}
-	else if (animationState == 0)
-		// Idle/Move
-		animator.playAnimation((unsigned int)isMoving, 6.0f);
 
 	prevAnimState = animationState;
+
+	// Blend tree stuff
+	if (animationState == 1)
+	{
+		animator.setBlendTreeVariable("walkRunBlendVar", 0.5f);
+	}
 
 
 	//
@@ -813,7 +848,7 @@ void PlayerCharacter::processAnimation()
 		//
 		// Calculate the bottle transformation matrix
 		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-		if (animationState == 3 || animationState == 4 || animationState == 5)
+		if (animationState == 4 || animationState == 5 || animationState == 6)
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
