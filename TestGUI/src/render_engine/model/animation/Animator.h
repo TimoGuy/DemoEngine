@@ -63,6 +63,7 @@ private:
 	int nextAnimationIndex = -1;
 
 	// This contains two blend trees with normalized mixValues and a mixValue between the two animations
+	std::map<std::string, float> blendTreeVariables;
 	struct CalculateBoneTransformInput
 	{
 		AssimpNodeData* btCurrent0, * btCurrent1;

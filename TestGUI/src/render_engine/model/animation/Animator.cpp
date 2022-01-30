@@ -153,7 +153,11 @@ void Animator::updateAnimation(float deltaTime)
 		cbti.btCurrent1 = &currentBTNAnims[1]->getRootNode();
 		cbti.btCurrent1Anim = currentBTNAnims[1];
 		cbti.btCurrent1NodeTime = currentBTN[1].INTERNALcurrentNodeTime;
-		cbti.mixValueBTCurrent = 0.5f;
+
+		float min = currentBTN[0].blendValue;
+		float max = currentBTN[1].blendValue;
+		cbti.mixValueBTCurrent =
+			glm::clamp((blendTreeVariables[currentBTN[0].blendVariableReference] - min) / (max - min), min, max);
 	}
 	else
 	{
@@ -173,7 +177,11 @@ void Animator::updateAnimation(float deltaTime)
 			cbti.btNext1 = &nextBTNAnims[1]->getRootNode();
 			cbti.btNext1Anim = nextBTNAnims[1];
 			cbti.btNext1NodeTime = nextBTN[1].INTERNALcurrentNodeTime;
-			cbti.mixValueBTNext = 0.5f;
+
+			float min = nextBTN[0].blendValue;
+			float max = nextBTN[1].blendValue;
+			cbti.mixValueBTNext =
+				glm::clamp((blendTreeVariables[nextBTN[0].blendVariableReference] - min) / (max - min), min, max);
 		}
 		else
 		{
@@ -288,7 +296,7 @@ void Animator::playBlendTree(std::vector<BlendTreeNode> blendTreeNodes, float mi
 
 void Animator::setBlendTreeVariable(std::string variableName, float value)
 {
-
+	blendTreeVariables[variableName] = value;
 }
 
 
@@ -366,9 +374,9 @@ void Animator::calculateBoneTransform(CalculateBoneTransformInput input, const g
 						glm::vec3 nextScale;
 						input.btNext1->cacheBone->update(input.btNext1NodeTime, nextPosition, nextRotation, nextScale);
 
-						position = glm::mix(position2, nextPosition, input.mixValueBTNext);
-						rotation = glm::slerp(rotation2, nextRotation, input.mixValueBTNext);
-						scale = glm::mix(scale2, nextScale, input.mixValueBTNext);
+						position2 = glm::mix(position2, nextPosition, input.mixValueBTNext);
+						rotation2 = glm::slerp(rotation2, nextRotation, input.mixValueBTNext);
+						scale2 = glm::mix(scale2, nextScale, input.mixValueBTNext);
 					}
 				}
 

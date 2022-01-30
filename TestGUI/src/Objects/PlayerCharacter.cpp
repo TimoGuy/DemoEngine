@@ -565,6 +565,8 @@ void PlayerCharacter::processActions()
 }
 
 float hairWeightMult = 10.0f;				// @Debug
+float speedAnimRunningMult = 1.86666f;		// @Debug
+float speedAnimRunningFloor = 0.1f;			// @Debug
 void PlayerCharacter::processAnimation()
 {
 	constexpr int IDLE_ANIM = 0;
@@ -695,8 +697,8 @@ void PlayerCharacter::processAnimation()
 			// Move
 			animator.playBlendTree(
 				{
-					{ (size_t)WALKING_ANIM, 0.0f, "walkRunBlendVar" },
-					{ (size_t)RUNNING_ANIM, 1.0f }
+					{ (size_t)WALKING_ANIM, 0.35f, "walkRunBlendVar" },
+					{ (size_t)RUNNING_ANIM, groundRunSpeed }
 				},
 				6.0f, true
 			);
@@ -737,18 +739,21 @@ void PlayerCharacter::processAnimation()
 
 	prevAnimState = animationState;
 
-	// Blend tree stuff
-	if (animationState == 1)
-	{
-		animator.setBlendTreeVariable("walkRunBlendVar", 0.5f);
-	}
-
-
 	//
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
 	animator.animationSpeed = animationSpeed;
+	if (animationState == 1)
+	{
+		physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+		velo.y = 0.0f;
+		float flatSpeed = velo.magnitude();
+
+		animator.setBlendTreeVariable("walkRunBlendVar", flatSpeed);
+
+		animator.animationSpeed *= flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+	}
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
 
 	//
@@ -908,6 +913,14 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
 	ImGui::DragFloat("Model Animation Speed", &animationSpeed);
+	ImGui::DragFloat("Model Run/Walk mult", &speedAnimRunningMult);
+	ImGui::DragFloat("Model Run/Walk floor", &speedAnimRunningFloor);
+
+	physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+	velo.y = 0.0f;
+	float flatSpeed = velo.magnitude();
+	ImGui::Text(("Speed: " + std::to_string(flatSpeed)).c_str());
+	ImGui::Text(("Evaluated: " + std::to_string(flatSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);

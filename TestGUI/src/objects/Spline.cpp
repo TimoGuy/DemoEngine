@@ -13,7 +13,7 @@
 
 
 std::vector<Spline*> Spline::m_all_splines;
-bool Spline::m_debug_show_spline = true;
+bool Spline::m_debug_show_spline = false;  // true;
 
 Spline* Spline::getSplineFromGUID(const std::string& guid)
 {
