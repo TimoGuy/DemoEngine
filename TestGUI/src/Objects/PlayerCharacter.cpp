@@ -184,15 +184,18 @@ void PlayerCharacter::processMovement()
 	//
 	glm::vec2 movementVector(InputManager::getInstance().leftStickX, InputManager::getInstance().leftStickY);
 
-	// Change input vector to camera view
-	glm::vec3 ThreeDMvtVector =
-		movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
-		movementVector.y * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z));
-	movementVector.x = ThreeDMvtVector.x;
-	movementVector.y = ThreeDMvtVector.z;
-
 	if (glm::length2(movementVector) > 0.001f)
+	{
+		// Change input vector to camera view
+		glm::vec3 ThreeDMvtVector =
+			movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
+			movementVector.y * glm::normalize(glm::vec3(playerCamera.orientation.x, 0.0f, playerCamera.orientation.z));
+		movementVector.x = ThreeDMvtVector.x;
+		movementVector.y = ThreeDMvtVector.z;
 		movementVector = PhysicsUtils::clampVector(movementVector, 0.0f, 1.0f);
+	}
+	else
+		movementVector = glm::vec2(0.0f);
 
 #ifdef _DEVELOP
 	// Remove input if not playmode
@@ -410,10 +413,11 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	// Set Movement Vector
 	//
-	const float movementVectorLength = glm::length(movementVector);
+	float movementVectorLength = glm::length(movementVector);
 	if (movementVectorLength > 0.001f)
 	{
 		isMoving = true;
+		//movementVectorLength = 0.5f * movementVectorLength + 0.5f;		// NOTE: having 0.0006f as a movement vector length is too slow
 
 		//
 		// Update facing direction
@@ -472,12 +476,15 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	// Update Running Speed
 	//
 	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
+
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
 		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
+	std::cout << "JOJOJOJO: " << targetRunningSpeed << std::endl;
+	std::cout << "\t\t\t\tAC: " << currentRunSpeed << std::endl;
 
 	//
 	// Apply the maths onto the actual velocity vector now!

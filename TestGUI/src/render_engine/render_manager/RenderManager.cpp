@@ -451,7 +451,7 @@ void RenderManager::createHDRBuffer()
 	//
 	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol  -Timo 01-20-2022
 
-	constexpr float volumetricTextureScale = 0.5f;
+	constexpr float volumetricTextureScale = 0.125f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
 	volumetricTextureHeight = MainLoop::getInstance().camera.height * volumetricTextureScale;
 

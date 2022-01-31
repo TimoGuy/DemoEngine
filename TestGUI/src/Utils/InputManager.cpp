@@ -130,6 +130,8 @@ void InputManager::updateInputState()
 				const float rightStickGamepadY = (_tempRightStickY + (_tempRightStickY < 0 ? deadzoneRightStickY : -deadzoneRightStickY)) / (1.0f - deadzoneRightStickY);
 				rightStickY += glm::sign(rightStickGamepadY) * glm::pow(abs(rightStickGamepadY), 1.7f) * rightStickSensitivity * MainLoop::getInstance().deltaTime * 60.0f;
 			}
+
+			//std::cout << "X: " << leftStickX << "\t\tY: " << leftStickY << std::endl;
 		}
 	}
 
