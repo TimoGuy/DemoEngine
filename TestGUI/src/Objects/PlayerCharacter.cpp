@@ -142,6 +142,7 @@ void PlayerCharacter::refreshResources()
 	}
 }
 
+constexpr float minMvtVectorMagnitude = 0.35f;
 void PlayerCharacter::processMovement()
 {
 	//
@@ -186,6 +187,9 @@ void PlayerCharacter::processMovement()
 
 	if (glm::length2(movementVector) > 0.001f)
 	{
+		float movementVectorMagnitude = glm::length(movementVector);
+		movementVector = glm::normalize(movementVector) * (movementVectorMagnitude * (1.0f - minMvtVectorMagnitude) + minMvtVectorMagnitude);
+
 		// Change input vector to camera view
 		glm::vec3 ThreeDMvtVector =
 			movementVector.x * glm::normalize(glm::cross(playerCamera.orientation, playerCamera.up)) +
@@ -479,7 +483,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
 
-	std::cout << (currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? "00000\t\t" : "11111\t\t") << currentRunSpeed;
+	//std::cout << (currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? "00000\t\t" : "11111\t\t") << currentRunSpeed;
 
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
@@ -487,9 +491,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
-	std::cout << "\t\t" << currentRunSpeed << std::endl;
-	//std::cout << "JOJOJOJO: " << targetRunningSpeed << std::endl;
-	//std::cout << "\t\t\t\tAC: " << currentRunSpeed << std::endl;
+	//std::cout << "\t\t" << currentRunSpeed << std::endl;
 
 	//
 	// Apply the maths onto the actual velocity vector now!
@@ -577,8 +579,8 @@ void PlayerCharacter::processActions()
 }
 
 float hairWeightMult = 10.0f;				// @Debug
-float speedAnimRunningMult = 1.86666f;		// @Debug
-float speedAnimRunningFloor = 0.1f;			// @Debug
+float speedAnimRunningMult = 1.3f;			// @Debug
+float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
 {
 	constexpr int IDLE_ANIM = 0;
@@ -709,7 +711,7 @@ void PlayerCharacter::processAnimation()
 			// Move
 			animator.playBlendTree(
 				{
-					{ (size_t)WALKING_ANIM, 0.35f, "walkRunBlendVar" },
+					{ (size_t)WALKING_ANIM, minMvtVectorMagnitude, "walkRunBlendVar" },
 					{ (size_t)RUNNING_ANIM, groundRunSpeed }
 				},
 				6.0f, true
@@ -933,6 +935,8 @@ void PlayerCharacter::imguiPropertyPanel()
 	float flatSpeed = velo.magnitude();
 	ImGui::Text(("Speed: " + std::to_string(flatSpeed)).c_str());
 	ImGui::Text(("Evaluated: " + std::to_string(flatSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
+	ImGui::Text(("MIN: " + std::to_string(minMvtVectorMagnitude * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
+	ImGui::Text(("MAX: " + std::to_string(groundRunSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);

@@ -109,7 +109,7 @@ void InputManager::updateInputState()
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
 			const float deadzoneLeftStick = 0.3f;
-			const float deadzoneLeftStickAxisAligned = 0.1f;
+			const float deadzoneLeftStickAxisAligned = 0.0f;  // 0.1f;
 			const float deadzoneRightStickX = 0.2f;
 			const float deadzoneRightStickY = 0.5f;
 			const float rightStickSensitivity = 16.75f;
