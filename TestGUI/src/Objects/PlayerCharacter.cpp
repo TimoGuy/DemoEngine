@@ -413,7 +413,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	// Set Movement Vector
 	//
-	float movementVectorLength = glm::length(movementVector);
+	float movementVectorLength = glm::length2(movementVector);
 	if (movementVectorLength > 0.001f)
 	{
 		isMoving = true;
@@ -471,11 +471,15 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			}
 		}
 	}
+	else
+		movementVectorLength = 0.0f;
 
 	//
 	// Update Running Speed
 	//
 	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
+
+	std::cout << (currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? "00000\t\t" : "11111\t\t") << currentRunSpeed;
 
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
@@ -483,8 +487,9 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
-	std::cout << "JOJOJOJO: " << targetRunningSpeed << std::endl;
-	std::cout << "\t\t\t\tAC: " << currentRunSpeed << std::endl;
+	std::cout << "\t\t" << currentRunSpeed << std::endl;
+	//std::cout << "JOJOJOJO: " << targetRunningSpeed << std::endl;
+	//std::cout << "\t\t\t\tAC: " << currentRunSpeed << std::endl;
 
 	//
 	// Apply the maths onto the actual velocity vector now!

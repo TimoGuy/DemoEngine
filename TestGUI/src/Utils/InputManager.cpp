@@ -109,14 +109,17 @@ void InputManager::updateInputState()
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
 			const float deadzoneLeftStick = 0.3f;
+			const float deadzoneLeftStickAxisAligned = 0.1f;
 			const float deadzoneRightStickX = 0.2f;
 			const float deadzoneRightStickY = 0.5f;
 			const float rightStickSensitivity = 16.75f;
 
 			if (abs(_tempLeftStickX) > deadzoneLeftStick || abs(_tempLeftStickY) > deadzoneLeftStick)
 			{
-				leftStickX += glm::sign(_tempLeftStickX) * glm::pow(abs(_tempLeftStickX), 1.7f);
-				leftStickY += glm::sign(_tempLeftStickY) * glm::pow(abs(_tempLeftStickY), 1.7f) * -1.0f;
+				float deadzoneAAXaxis = glm::abs(_tempLeftStickX) * deadzoneLeftStickAxisAligned;
+				float deadzoneAAYaxis = glm::abs(_tempLeftStickY) * deadzoneLeftStickAxisAligned;
+				leftStickX += glm::sign(_tempLeftStickX) * glm::max((abs(_tempLeftStickX) - deadzoneAAXaxis) / (1.0f - deadzoneAAXaxis), 0.0f);
+				leftStickY -= glm::sign(_tempLeftStickY) * glm::max((abs(_tempLeftStickY) - deadzoneAAYaxis) / (1.0f - deadzoneAAYaxis), 0.0f);
 			}
 
 			if (abs(_tempRightStickX) > deadzoneRightStickX)
