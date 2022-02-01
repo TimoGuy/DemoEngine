@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <glm/gtx/norm.hpp>
 #include "../mainloop/MainLoop.h"
 
 
@@ -109,12 +110,12 @@ void InputManager::updateInputState()
 			float _tempRightStickY = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
 
 			const float deadzoneLeftStick = 0.3f;
-			const float deadzoneLeftStickAxisAligned = 0.0f;  // 0.1f;
+			const float deadzoneLeftStickAxisAligned = 0.1f;
 			const float deadzoneRightStickX = 0.2f;
 			const float deadzoneRightStickY = 0.5f;
 			const float rightStickSensitivity = 16.75f;
 
-			if (abs(_tempLeftStickX) > deadzoneLeftStick || abs(_tempLeftStickY) > deadzoneLeftStick)
+			if (glm::length2(glm::vec2(_tempLeftStickX, _tempLeftStickY)) > deadzoneLeftStick * deadzoneLeftStick)
 			{
 				float deadzoneAAXaxis = glm::abs(_tempLeftStickX) * deadzoneLeftStickAxisAligned;
 				float deadzoneAAYaxis = glm::abs(_tempLeftStickY) * deadzoneLeftStickAxisAligned;
