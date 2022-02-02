@@ -4,6 +4,7 @@
 
 #include <string>
 #include <cmath>
+#include <random>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -424,8 +425,8 @@ void RenderManager::createHDRBuffer()
 	ssaoRotationTexture = (Texture*)Resources::getResource("texture;ssaoRotation");
 	ssaoTexture =
 		new Texture2D(
-			(GLsizei)ssaoFBOSize,
-			(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.width,//(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.height,//(GLsizei)ssaoFBOSize,
 			1,
 			GL_R8,
 			GL_RED,
@@ -438,8 +439,8 @@ void RenderManager::createHDRBuffer()
 		);
 	ssaoBlurTexture =
 		new Texture2D(
-			(GLsizei)ssaoFBOSize,
-			(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.width,//(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.height,//(GLsizei)ssaoFBOSize,
 			1,
 			GL_R8,
 			GL_RED,
@@ -460,6 +461,30 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(ssaoBlurFBO, GL_COLOR_ATTACHMENT0, ssaoBlurTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(ssaoBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (SSAO Blur Framebuffer)" << std::endl;
+
+	//
+	// Create ssao hemisphere kernel
+	// https://learnopengl.com/Advanced-Lighting/SSAO
+	//
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
+	std::default_random_engine generator;
+	ssaoKernel.clear();
+	constexpr unsigned int samples = 64;
+	for (unsigned int i = 0; i < samples; i++)
+	{
+		glm::vec3 sample(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator)
+		);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+
+		float scale = (float)i / (float)samples;
+		scale = PhysicsUtils::lerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+	}
 
 	//
 	// Create Volumetric Lighting framebuffer
@@ -517,6 +542,7 @@ void RenderManager::destroyHDRBuffer()
 	delete volumetricTexture;
 	glDeleteFramebuffers(1, &volumetricFBO);
 
+	ssaoKernel.clear();
 	delete ssaoBlurTexture;
 	glDeleteFramebuffers(1, &ssaoBlurFBO);
 	delete ssaoTexture;
@@ -1057,7 +1083,7 @@ void RenderManager::renderScene()
 	//
 	// Capture screen for SSAO
 	//
-	glViewport(0, 0, ssaoFBOSize, ssaoFBOSize);
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(ssaoProgramId);
@@ -1067,8 +1093,12 @@ void RenderManager::renderScene()
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "bias"), ssaoBias);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
+	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
+	glUniformMatrix4fv(glGetUniformLocation(ssaoProgramId, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
+	for (size_t i = 0; i < ssaoKernel.size(); i++)
+		glProgramUniform3fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, ("samples[" + std::to_string(i) + "]").c_str()), 1, &ssaoKernel[i].x);
 	renderQuad();
 
 	//

@@ -445,7 +445,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
-	if (resourceName == "texture;ssaoRotation")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/ssao_rot_texture.bmp", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, true, false);
+	if (resourceName == "texture;ssaoRotation")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/ssao_rot_texture.bmp", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	
 	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
 

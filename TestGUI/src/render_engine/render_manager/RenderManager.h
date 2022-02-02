@@ -186,11 +186,12 @@ private:
 	// SSAO effect			// @Deprecate: Looks like the S word
 	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;
 	float ssaoFBOSize = 1024;
+	std::vector<glm::vec3> ssaoKernel;
 	Texture* ssaoRotationTexture;
 public:			// JUST CUZ
 	Texture* ssaoTexture;
 	Texture* ssaoBlurTexture;
-	float ssaoScale = 0.0f;			// NOTE: For now I'm just turning it off bc it's too noisy/bandy and it looks like the S word  -Timo
+	float ssaoScale = 1.0f;			// NOTE: For now I'm just turning it off bc it's too noisy/bandy and it looks like the S word  -Timo
 	float ssaoBias = 0.2f;
 private:		// JUST CUZ
 	float ssaoRadius = 0.2f;
