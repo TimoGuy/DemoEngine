@@ -154,7 +154,8 @@ void MainLoop::initialize()
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-	glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+	//glClearColor(0.0f, 0.1f, 0.2f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glDisable(GL_CULL_FACE);		// Turned off for the pre-processing part, then will be turned on for actual realtime rendering
 

@@ -24,6 +24,11 @@ uniform samplerCube prefilterMap2;
 uniform float mapInterpolationAmt;
 
 uniform sampler2D brdfLUT;
+
+uniform sampler2D ssaoTexture;
+uniform float ssaoScale;
+uniform float ssaoBias;
+
 uniform mat3 sunSpinAmount;
 
 // Lights
@@ -363,6 +368,7 @@ void main()
     
     //mipmapLevel       = textureQueryLod(aoMap, adjustedTexCoord).x;
     //float ao          = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
+    float ao            = clamp(texture(ssaoTexture, gl_FragCoord.xy * vec2(1.0/1920.0, 1.0/1080.0)).r + ssaoBias, 0.0, 1.0) * ssaoScale;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);
@@ -463,7 +469,7 @@ void main()
     //
     // Combine the colors with the shading
     //
-    vec3 ambient = (kD * diffuse + specular);// * ao;
+    vec3 ambient = (kD * diffuse + specular) * ao;
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, fadeAlpha);

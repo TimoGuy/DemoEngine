@@ -5,7 +5,8 @@ out vec4 fragColor;
 in vec2 texCoord;
 
 layout(binding = 0) uniform sampler2D depthTexture;
-layout(binding = 1) uniform sampler2D rotationTexture;
+layout(binding = 1) uniform sampler2D ssNormalTexture;
+layout(binding = 2) uniform sampler2D rotationTexture;
 
 uniform float zNear;
 uniform float zFar;
@@ -31,14 +32,23 @@ void main()
 	float size = 1.0 / float(textureSize(depthTexture, 0).x);
     
 	float Z     = (zFar * zNear) / (texture(depthTexture, texCoord).x * (zFar - zNear) - zFar);		// NOTE: this linearizes depth  -Timo
+	vec3 normal = texture(ssNormalTexture, texCoord).rgb;
 	float att   = 0.0;
 	vec3  plane = texture(rotationTexture, texCoord * size / 4.0).xyz - vec3(1.0);
-  
+
+	vec3 tangent	= normalize(plane - normal * dot(plane, normal));
+	vec3 bitangent	= cross(normal, tangent);
+	mat3 TBN		= mat3(tangent, bitangent, normal);
+
 	for (int i = 0; i < 8; i++)
 	{
-		vec3  rSample = reflect(offsets[i], plane);
-		float zSample = texture(depthTexture, texCoord + radius * rSample.xy / Z).x;
+		vec3 rSample = TBN * offsets[i];
 
+
+
+		//vec3  rSample = reflect(offsets[i], plane);
+		float zSample = texture(depthTexture, texCoord + radius * rSample.xy / Z).x;
+		
 		zSample = (zFar * zNear) / (zSample * (zFar - zNear) - zFar);
         
 		float dist = max(zSample - Z, 0.0) / distScale;

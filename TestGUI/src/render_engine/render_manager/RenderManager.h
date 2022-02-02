@@ -187,10 +187,12 @@ private:
 	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;
 	float ssaoFBOSize = 1024;
 	Texture* ssaoRotationTexture;
+public:			// JUST CUZ
 	Texture* ssaoTexture;
 	Texture* ssaoBlurTexture;
 	float ssaoScale = 0.0f;			// NOTE: For now I'm just turning it off bc it's too noisy/bandy and it looks like the S word  -Timo
 	float ssaoBias = 0.2f;
+private:		// JUST CUZ
 	float ssaoRadius = 0.2f;
 	float ssaoAttenScale = 1.0f;
 	float ssaoDistScale = 0.5f;
@@ -234,6 +236,7 @@ private:
 	GLuint INTERNALzPassShader;
 	GLuint zPrePassFBO;
 	Texture* zPrePassDepthTexture;
+	Texture* ssNormalTexture;		// Kinda like a normal map for a g-buffer
 	OpaqueRenderQueue opaqueRQ;
 	TransparentRenderQueue transparentRQ;
 

@@ -79,6 +79,7 @@ void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	setupShader(myShaderId);
 
+	RenderManager* r = MainLoop::getInstance().renderManager;
 	GLuint texUnit = 0;
 
 	glBindTextureUnit(texUnit, albedoMap->getHandle());
@@ -97,25 +98,32 @@ void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 	glUniform1i(glGetUniformLocation(myShaderId, "roughnessMap"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getIrradianceMap());
+	glBindTextureUnit(texUnit, r->getIrradianceMap());
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getIrradianceMap2());
+	glBindTextureUnit(texUnit, r->getIrradianceMap2());
 	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getPrefilterMap());
+	glBindTextureUnit(texUnit, r->getPrefilterMap());
 	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getPrefilterMap2());
+	glBindTextureUnit(texUnit, r->getPrefilterMap2());
 	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
+	glBindTextureUnit(texUnit, r->getBRDFLUTTexture());
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), texUnit);
 	texUnit++;
+
+	glBindTextureUnit(texUnit, r->ssaoTexture->getHandle());
+	glUniform1i(glGetUniformLocation(myShaderId, "ssaoTexture"), texUnit);
+	texUnit++;
+
+	glUniform1f(glGetUniformLocation(myShaderId, "ssaoScale"), r->ssaoScale);
+	glUniform1f(glGetUniformLocation(myShaderId, "ssaoBias"), r->ssaoBias);
 
 	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
