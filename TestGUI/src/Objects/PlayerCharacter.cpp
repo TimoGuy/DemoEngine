@@ -20,6 +20,8 @@
 #include "../imgui/imgui.h"
 #endif
 
+#define REMAP(value, istart, istop, ostart, ostop) ((value) - (istart)) / ((istop) - (istart)) * ((ostop) - (ostart)) + (ostart)
+
 
 PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(-1.318f, 2.408f, 0.765f), glm::vec3(-6.84f, 0.0f, -150.4f))), bottleHandModelMatrix(PhysicsUtils::createGLMTransform(glm::vec3(0.015f, 4.372f, 0.01f), glm::vec3(0, 90.0f, -180.0f))), useIndoorCamera(false)
 {
@@ -764,7 +766,7 @@ void PlayerCharacter::processAnimation()
 		velo.y = 0.0f;
 		float flatSpeed = velo.magnitude();
 
-		animator.setBlendTreeVariable("walkRunBlendVar", flatSpeed);
+		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
 		animator.animationSpeed *= flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
 	}
