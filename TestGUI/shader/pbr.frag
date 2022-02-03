@@ -26,8 +26,6 @@ uniform float mapInterpolationAmt;
 uniform sampler2D brdfLUT;
 
 uniform sampler2D ssaoTexture;
-uniform float ssaoScale;
-uniform float ssaoBias;
 
 uniform mat3 sunSpinAmount;
 
@@ -368,7 +366,7 @@ void main()
     
     //mipmapLevel       = textureQueryLod(aoMap, adjustedTexCoord).x;
     //float ao          = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
-    float ao            = clamp(texture(ssaoTexture, gl_FragCoord.xy * vec2(1.0/1920.0, 1.0/1080.0)).r + ssaoBias, 0.0, 1.0) * ssaoScale;
+    float ao            = texture(ssaoTexture, gl_FragCoord.xy * vec2(1.0/1920.0, 1.0/1080.0)).r;
 
     vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);

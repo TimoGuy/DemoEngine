@@ -118,12 +118,9 @@ void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), texUnit);
 	texUnit++;
 
-	glBindTextureUnit(texUnit, r->ssaoTexture->getHandle());
+	glBindTextureUnit(texUnit, r->getSSAOTexture());
 	glUniform1i(glGetUniformLocation(myShaderId, "ssaoTexture"), texUnit);
 	texUnit++;
-
-	glUniform1f(glGetUniformLocation(myShaderId, "ssaoScale"), r->ssaoScale);
-	glUniform1f(glGetUniformLocation(myShaderId, "ssaoBias"), r->ssaoBias);
 
 	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);

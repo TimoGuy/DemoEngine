@@ -463,30 +463,6 @@ void RenderManager::createHDRBuffer()
 		std::cout << "Framebuffer not complete! (SSAO Blur Framebuffer)" << std::endl;
 
 	//
-	// Create ssao hemisphere kernel
-	// https://learnopengl.com/Advanced-Lighting/SSAO
-	//
-	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
-	std::default_random_engine generator;
-	ssaoKernel.clear();
-	constexpr unsigned int samples = 64;
-	for (unsigned int i = 0; i < samples; i++)
-	{
-		glm::vec3 sample(
-			randomFloats(generator) * 2.0 - 1.0,
-			randomFloats(generator) * 2.0 - 1.0,
-			randomFloats(generator)
-		);
-		sample = glm::normalize(sample);
-		sample *= randomFloats(generator);
-
-		float scale = (float)i / (float)samples;
-		scale = PhysicsUtils::lerp(0.1f, 1.0f, scale * scale);
-		sample *= scale;
-		ssaoKernel.push_back(sample);
-	}
-
-	//
 	// Create Volumetric Lighting framebuffer
 	//
 	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol  -Timo 01-20-2022
@@ -542,7 +518,6 @@ void RenderManager::destroyHDRBuffer()
 	delete volumetricTexture;
 	glDeleteFramebuffers(1, &volumetricFBO);
 
-	ssaoKernel.clear();
 	delete ssaoBlurTexture;
 	glDeleteFramebuffers(1, &ssaoBlurFBO);
 	delete ssaoTexture;
@@ -1060,6 +1035,13 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 }
 
 
+
+GLuint RenderManager::getSSAOTexture()
+{
+	return ssaoTexture->getHandle();
+}
+
+
 void RenderManager::renderScene()
 {
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -1088,17 +1070,21 @@ void RenderManager::renderScene()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(ssaoProgramId);
 	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-	glBindTextureUnit(1, ssNormalTexture->getHandle());
-	glBindTextureUnit(2, ssaoRotationTexture->getHandle());
+	//glBindTextureUnit(1, ssNormalTexture->getHandle());
+	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "powExponent"), ssaoScale);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "bias"), ssaoBias);
-	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "attenScale"), ssaoAttenScale);
-	//glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "distScale"), ssaoDistScale);
-	glUniformMatrix4fv(glGetUniformLocation(ssaoProgramId, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
-	for (size_t i = 0; i < ssaoKernel.size(); i++)
-		glProgramUniform3fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, ("samples[" + std::to_string(i) + "]").c_str()), 1, &ssaoKernel[i].x);
+	glProgramUniformMatrix4fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
+	float projInfoPerspective[] = {
+		2.0f / (cameraProjection[0][0]),							// (x) * (R - L)/N
+		2.0f / (cameraProjection[1][1]),							// (y) * (T - B)/N
+		-(1.0f - cameraProjection[2][0]) / cameraProjection[0][0],  // L/N
+		-(1.0f + cameraProjection[2][1]) / cameraProjection[1][1],  // B/N
+	};
+	glProgramUniform4fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "projInfo"), 1, projInfoPerspective);
 	renderQuad();
 
 	//
@@ -1383,7 +1369,8 @@ void RenderManager::renderScene()
 }
 
 
-const size_t MAX_SHADOWS = 8;			// @Hardcode: maybe this is a good limit? I dunno, and there are ways to speed it up with the distinction of static and dynamic objects fo sure.
+const size_t MAX_SHADOWS = 8;
+// @Hardcode: maybe this is a good limit? I dunno, and there are ways to speed it up with the distinction of static and dynamic objects fo sure.
 void RenderManager::setupSceneShadows(GLuint programId)
 {
 	for (size_t i = 0; i < MAX_SHADOWS; i++)
@@ -1958,8 +1945,6 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
 			ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
 			ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
-			ImGui::DragFloat("SSAO Atten", &ssaoAttenScale, 0.001f);
-			ImGui::DragFloat("SSAO Dist", &ssaoDistScale, 0.001f);
 			ImGui::Separator();
 
 			static bool showBloomProcessingBuffers = false;
