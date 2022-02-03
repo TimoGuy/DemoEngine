@@ -125,6 +125,7 @@ void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
 	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
 	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
+	glUniform2f(glGetUniformLocation(myShaderId, "invFullResolution"), 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
 
 	glm::vec3 color(1.0f);
 	if (injection != nullptr && injection.contains("color"))

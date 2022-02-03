@@ -1,149 +1,4 @@
 /*
-
-// https://github.com/PacktPublishing/3D-Graphics-Rendering-Cookbook/blob/master/data/shaders/chapter08/GL02_SSAO.frag
-#version 430
-
-out vec4 fragColor;
-in vec2 texCoord;
-
-layout(binding = 0) uniform sampler2D depthTexture;
-layout(binding = 1) uniform sampler2D ssNormalTexture;
-layout(binding = 2) uniform sampler2D rotationTexture;
-
-uniform float zNear;
-uniform float zFar;
-uniform float radius;
-uniform float bias;
-//uniform float attenScale;
-//uniform float distScale;
-uniform mat4 projection;
-
-const int KERNEL_SIZE = 64;
-vec3 samples[KERNEL_SIZE];
-
-
-const vec3 offsets[8] = vec3[8]
-(
-	vec3(-0.5, -0.5, -0.5),
-	vec3( 0.5, -0.5, -0.5),
-	vec3(-0.5,  0.5, -0.5),
-	vec3( 0.5,  0.5, -0.5),
-	vec3(-0.5, -0.5,  0.5),
-	vec3( 0.5, -0.5,  0.5),
-	vec3(-0.5,  0.5,  0.5),
-	vec3( 0.5,  0.5,  0.5)
-);
-
-vec3 getPositionFromDepth()
-{
-	float z = texture(depthTexture, texCoord).r;
-	vec4 pos = vec4(gl_FragCoord.xy / vec2(1920.0, 1080.0) * 2.0 - 1.0, z, 1.0);
-	pos = inverse(projection) * pos;
-	return pos.xyz / pos.w;
-}
-
-void main()
-{
-	float size = 1.0 / float(textureSize(depthTexture, 0).x);
-
-	vec3 fragPos = getPositionFromDepth();
-	float Z     = (zFar * zNear) / (texture(depthTexture, texCoord).x * (zFar - zNear) - zFar);
-	//fragColor = vec4(vec3(fragPos.x), 1.0);
-	//return;
-
-	vec3 normal = texture(ssNormalTexture, texCoord).rgb;
-	vec3 randomVec = texture(rotationTexture, texCoord * vec2(1920.0/4.0, 1080.0/4.0)).xyz;
-
-	vec3 tangent   = normalize(randomVec - normal * dot(randomVec, normal));
-	vec3 bitangent = cross(normal, tangent);
-	mat3 TBN       = mat3(tangent, bitangent, normal);
-
-	float occlusion = 0.0;
-	for (int i = 0; i < KERNEL_SIZE; i++)
-	{
-		vec3 samplePos = TBN * samples[i];
-		samplePos = fragPos + samplePos * radius;
-
-		vec4 offset = vec4(samplePos, 1.0);
-		offset      = projection * offset;    // from view to clip-space
-		offset.xyz /= offset.w;               // perspective divide
-		offset.xyz  = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
-
-		float sampleDepth = texture(depthTexture, offset.xy).r;
-		sampleDepth = (zFar * zNear) / (sampleDepth * (zFar - zNear) - zFar);
-		occlusion += (sampleDepth >= Z + bias ? 1.0 : 0.0);
-	}
-    
-	occlusion = 1.0 - (occlusion / KERNEL_SIZE);
-	fragColor = vec4(vec3(occlusion), 1.0);
-
-	//float Z     = (zFar * zNear) / (texture(depthTexture, texCoord).x * (zFar - zNear) - zFar);		// NOTE: this linearizes depth  -Timo
-	//vec3 normal = texture(ssNormalTexture, texCoord).rgb;
-	//float att   = 0.0;
-	//vec3  plane = texture(rotationTexture, texCoord * size / 4.0).xyz - vec3(1.0);
-	//
-	//vec3 tangent	= normalize(plane - normal * dot(plane, normal));
-	//vec3 bitangent	= cross(normal, tangent);
-	//mat3 TBN		= mat3(tangent, bitangent, normal);
-	//
-	//for (int i = 0; i < 8; i++)
-	//{
-	//	vec3 rSample = TBN * offsets[i];
-	//
-	//
-	//
-	//	//vec3  rSample = reflect(offsets[i], plane);
-	//	float zSample = texture(depthTexture, texCoord + radius * rSample.xy / Z).x;
-	//	
-	//	zSample = (zFar * zNear) / (zSample * (zFar - zNear) - zFar);
-    //    
-	//	float dist = max(zSample - Z, 0.0) / distScale;
-	//	float occl = 15.0 * max(dist * (2.0 - dist), 0.0);
-    //    
-	//	att += 1.0 / (1.0 + occl * occl);
-	//}
-    //
-	//att = clamp(att * att / 64.0 + 0.45, 0.0, 1.0) * attenScale;
-	//fragColor = vec4(vec3(att), 1.0);
-}
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
  * Copyright (c) 2014-2021, NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -163,9 +18,6 @@ void main()
  */
 #version 430
 
-//#extension GL_ARB_shading_language_include : enable
-//#include "common.h"
-
 // The pragma below is critical for optimal performance
 // in this fragment shader to let the shader compiler
 // fully optimize the maths and batch the texture fetches
@@ -178,12 +30,14 @@ void main()
 const float  NUM_STEPS = 4;
 const float  NUM_DIRECTIONS = 8; // rotationTexture/g_Jitter initialization depends on this
 
-const vec2 InvFullResolution = vec2(1.0 / 1920.0, 1.0 / 1080.0);
 
 
 layout(binding=0) uniform sampler2D depthTexture;
 layout(binding=1) uniform sampler2D rotationTexture;
 
+uniform vec2 fullResolution;
+uniform vec2 invFullResolution;
+uniform float cameraFOV;
 uniform float zNear;
 uniform float zFar;
 uniform float powExponent;
@@ -218,10 +72,10 @@ vec3 MinDiff(vec3 P, vec3 Pr, vec3 Pl)
 
 vec3 ReconstructNormal(vec2 UV, vec3 P)
 {
-  vec3 Pr = FetchViewPos(UV + vec2(InvFullResolution.x, 0));
-  vec3 Pl = FetchViewPos(UV + vec2(-InvFullResolution.x, 0));
-  vec3 Pt = FetchViewPos(UV + vec2(0, InvFullResolution.y));
-  vec3 Pb = FetchViewPos(UV + vec2(0, -InvFullResolution.y));
+  vec3 Pr = FetchViewPos(UV + vec2(invFullResolution.x, 0));
+  vec3 Pl = FetchViewPos(UV + vec2(-invFullResolution.x, 0));
+  vec3 Pt = FetchViewPos(UV + vec2(0, invFullResolution.y));
+  vec3 Pb = FetchViewPos(UV + vec2(0, -invFullResolution.y));
   return normalize(cross(MinDiff(P, Pr, Pl), MinDiff(P, Pt, Pb)));
 }
 
@@ -284,7 +138,7 @@ float ComputeCoarseAO(vec2 FullResUV, float RadiusPixels, vec4 Rand, vec3 ViewPo
 
 		for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex)
 		{
-			vec2 SnappedUV = round(RayPixels * Direction) * InvFullResolution + FullResUV;
+			vec2 SnappedUV = round(RayPixels * Direction) * invFullResolution + FullResUV;
 			vec3 S = FetchViewPos(SnappedUV);
 
 			RayPixels += StepSizePixels;
@@ -308,9 +162,8 @@ void main()
 	vec3 ViewNormal = -ReconstructNormal(uv, ViewPosition);
 
 	// Compute projection of disk of radius control.R into screen space
-	float fov = 45.0;
-	float height = 1080.0;
-	float projScale = float(height) / (tan(fov * 0.5) * 2.0);
+	float height = fullResolution.y;
+	float projScale = float(height) / (tan(cameraFOV * 0.5) * 2.0);
 	float RadiusToScreen = radius * 0.5 * projScale;
 	float RadiusPixels = RadiusToScreen / ViewPosition.z;
 

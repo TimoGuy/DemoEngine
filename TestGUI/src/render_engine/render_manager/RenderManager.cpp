@@ -1072,6 +1072,10 @@ void RenderManager::renderScene()
 	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
 	//glBindTextureUnit(1, ssNormalTexture->getHandle());
 	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
+	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "fullResolution"), MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "invFullResolution"), 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "cameraFOV"), MainLoop::getInstance().camera.fov);
+	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
 	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "powExponent"), ssaoScale);
