@@ -768,7 +768,7 @@ void PlayerCharacter::processAnimation()
 
 		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
-		animator.animationSpeed *= flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
 	}
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
 

@@ -108,7 +108,7 @@ public:
 	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
 
 	float modelOffsetY = -3.35f;
-	float animationSpeed = 42.0f;
+	float animationSpeed = 50.0f;
 
 private:
 	void refreshResources();
