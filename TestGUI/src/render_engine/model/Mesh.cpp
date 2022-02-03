@@ -91,7 +91,16 @@ void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const s
     if (needMainTexture && material != nullptr)
     {
         if (renderStage == RenderStage::Z_PASS)
+        {
             glUniform1f(glGetUniformLocation(shaderIdOverride, "ditherAlpha"), material->ditherAlpha);
+
+            glm::vec3 x, y, z;
+            z = -glm::normalize(MainLoop::getInstance().camera.orientation);
+            x = glm::normalize(glm::vec3(z.z, 0.0f, -z.x));
+            y = glm::cross(z, x);
+            glm::mat3 normalToViewSpace(x, y, z);
+            glUniformMatrix3fv(glGetUniformLocation(shaderIdOverride, "normalToViewSpace"), 1, GL_FALSE, glm::value_ptr(normalToViewSpace));
+        }
 
         Texture* mainTexture = material->getMainTexture();
         if (mainTexture != nullptr)

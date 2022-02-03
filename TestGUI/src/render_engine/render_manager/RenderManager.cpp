@@ -398,23 +398,23 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
-	ssNormalTexture =
-		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
-			1,
-			GL_RGB16F,
-			GL_RGB,
-			GL_FLOAT,
-			nullptr,
-			GL_NEAREST,
-			GL_NEAREST,
-			GL_CLAMP_TO_EDGE,
-			GL_CLAMP_TO_EDGE
-		);
+	//ssNormalTexture =			@DEPRECATE
+	//	new Texture2D(
+	//		(GLsizei)MainLoop::getInstance().camera.width,
+	//		(GLsizei)MainLoop::getInstance().camera.height,
+	//		1,
+	//		GL_RGB16F,
+	//		GL_RGB,
+	//		GL_FLOAT,
+	//		nullptr,
+	//		GL_NEAREST,
+	//		GL_NEAREST,
+	//		GL_CLAMP_TO_EDGE,
+	//		GL_CLAMP_TO_EDGE
+	//	);
 
 	glCreateFramebuffers(1, &zPrePassFBO);
-	glNamedFramebufferTexture(zPrePassFBO, GL_COLOR_ATTACHMENT0, ssNormalTexture->getHandle(), 0);
+	//glNamedFramebufferTexture(zPrePassFBO, GL_COLOR_ATTACHMENT0, ssNormalTexture->getHandle(), 0);		@DEPRECATE
 	glNamedFramebufferTexture(zPrePassFBO, GL_DEPTH_ATTACHMENT, zPrePassDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
@@ -523,7 +523,7 @@ void RenderManager::destroyHDRBuffer()
 	delete ssaoTexture;
 	glDeleteFramebuffers(1, &ssaoFBO);
 
-	delete ssNormalTexture;
+	//delete ssNormalTexture;		@DEPRECATE
 	delete zPrePassDepthTexture;
 	glDeleteFramebuffers(1, &zPrePassFBO);
 
@@ -1070,7 +1070,6 @@ void RenderManager::renderScene()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(ssaoProgramId);
 	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-	//glBindTextureUnit(1, ssNormalTexture->getHandle());
 	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
 	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "fullResolution"), MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
 	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "invFullResolution"), 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
@@ -1943,7 +1942,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
 			if (showSSAOTexture)
 			{
-				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(1024, 1024));
+				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(512, 288));
 			}
 
 			ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);

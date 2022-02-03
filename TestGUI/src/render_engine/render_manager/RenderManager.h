@@ -234,7 +234,7 @@ private:
 	GLuint INTERNALzPassShader;
 	GLuint zPrePassFBO;
 	Texture* zPrePassDepthTexture;
-	Texture* ssNormalTexture;		// Kinda like a normal map for a g-buffer
+	//Texture* ssNormalTexture;		@DEPRECATE: normal reconstruction was faster for HBAO, so this'll get the can. // Kinda like a normal map for a g-buffer
 	OpaqueRenderQueue opaqueRQ;
 	TransparentRenderQueue transparentRQ;
 

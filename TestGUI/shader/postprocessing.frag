@@ -6,7 +6,6 @@ in vec2 texCoord;
 layout(binding = 0) uniform sampler2D hdrColorBuffer;
 layout(binding = 1) uniform sampler2D bloomColorBuffer;
 layout(binding = 2) uniform sampler2D luminanceProcessed;
-//layout(binding = 3) uniform sampler2D ssaoTexture;		@Deprecate
 layout(binding = 3) uniform sampler2D volumetricLighting;
 
 //uniform float ssaoScale;		@Deprecate
@@ -27,9 +26,6 @@ float vignette(vec2 uv, float radius, float smoothness) {
 void main()
 {
 	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r;
-
-	//float ssao = clamp(texture(ssaoTexture, texCoord).r + ssaoBias, 0.0, 1.0);		@Deprecate
-	//hdrColor = mix(hdrColor, hdrColor * ssao, ssaoScale);
 
 	hdrColor += texture(bloomColorBuffer, texCoord).rgb * bloomIntensity;
 	float avgLuminance = texture(luminanceProcessed, vec2(0.5, 0.5)).r;

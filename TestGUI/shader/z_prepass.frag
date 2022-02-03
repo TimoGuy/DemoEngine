@@ -1,7 +1,5 @@
 #version 450
 
-out vec4 FragColor;
-
 in vec2 texCoord;
 in vec3 normalVector;
 
@@ -36,8 +34,6 @@ void main()
 
 
 	// AND IN A WILD TURN OF EVENTS, THE DO_NOTHING.FRAG SHADER NOW DOES SOMETHING!!!
-	FragColor = vec4(normalize(normalVector), 1.0);
-
 	if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
         discard;
 
