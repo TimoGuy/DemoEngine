@@ -768,7 +768,6 @@ void RenderManager::render()
 		if (!MainLoop::getInstance().playMode)		// NOTE: no reason in particular for making this !playmode only
 		{
 			// Render out picking data
-			glDisable(GL_BLEND);
 			glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 			glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -790,7 +789,6 @@ void RenderManager::render()
 			}
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glEnable(GL_BLEND);
 
 			// Read pixel
 			double mouseX, mouseY;
@@ -1224,6 +1222,8 @@ void RenderManager::renderScene()
 	//
 	// TRANSPARENT RENDER QUEUE
 	//
+	glEnable(GL_BLEND);
+
 	std::sort(
 		transparentRQ.commandingIndices.begin(),
 		transparentRQ.commandingIndices.end(),
@@ -1243,6 +1243,8 @@ void RenderManager::renderScene()
 	transparentRQ.modelMatrices.clear();
 	transparentRQ.boneMatrixMemAddrs.clear();
 	transparentRQ.distancesToCamera.clear();
+
+	glDisable(GL_BLEND);
 
 	// End of main render queues: turn off face culling		@TEMP: for transparent render queue
 	glDisable(GL_CULL_FACE);
