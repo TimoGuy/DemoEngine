@@ -759,7 +759,6 @@ void PlayerCharacter::processAnimation()
 	// Mesh Skinning
 	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
-	animator.animationSpeed = animationSpeed;
 	if (animationState == 1)
 	{
 		physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
@@ -770,6 +769,8 @@ void PlayerCharacter::processAnimation()
 
 		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
 	}
+	else
+		animator.animationSpeed = animationSpeed;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
 
 	//
