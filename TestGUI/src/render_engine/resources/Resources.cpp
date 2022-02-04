@@ -479,7 +479,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	if (resourceName == "material;pbrSlimeHair")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0.5, 0.5, 1));
 
-	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value");
+	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value", 0.99f);
 	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, false);
 
 	if (resourceName == "material;pbrBottleBody")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrBottleBodyAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value", 0.5f);

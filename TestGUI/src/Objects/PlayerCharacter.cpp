@@ -125,6 +125,8 @@ void PlayerCharacter::refreshResources()
 		((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
 		model->setMaterials(materials);
+
+		model->setDepthPriorityOfMeshesWithMaterial("Eyebrow", -0.5f);
 	}
 
 	bottleModel = (Model*)Resources::getResource("model;weaponBottle", bottleModel, &recreateAnimations);
@@ -757,9 +759,8 @@ void PlayerCharacter::processAnimation()
 
 	//
 	// Mesh Skinning
-	// @Optimize: This line (takes "less than 7ms"), if run multiple times, will bog down performance like crazy. Perhaps implement gpu-based animation???? Or maybe optimize this on the cpu side.
 	//
-	if (animationState == 1)
+	if (animationState == WALKING_ANIM)
 	{
 		physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 		velo.y = 0.0f;
