@@ -472,6 +472,8 @@ void main()
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, fadeAlpha);
+    
+    //FragColor = vec4(vec3(1) * ao, fadeAlpha);        @DEBUG: for seeing how the ao affects the scene
 
     //FragColor = vec4(vec3(linearDepth), 1.0);
 
