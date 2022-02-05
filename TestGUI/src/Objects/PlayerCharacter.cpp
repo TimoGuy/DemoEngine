@@ -773,6 +773,7 @@ void PlayerCharacter::processAnimation()
 	else
 		animator.animationSpeed = animationSpeed;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
+	std::cout << animator.animationSpeed << std::endl;
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)

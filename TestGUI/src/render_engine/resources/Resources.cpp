@@ -55,13 +55,17 @@ namespace Resources
 
 	void reloadResource(const std::string& resourceName)
 	{
-		// Undo resource
-		loadResource(resourceName, true);
-		unregisterResource(resourceName);
+		unloadResource(resourceName);
 
 		// Re-fetch that resource!
 		void* resource = loadResource(resourceName, false);
 		registerResource(resourceName, resource);
+	}
+
+	void unloadResource(std::string resourceName)
+	{
+		loadResource(resourceName, true);
+		unregisterResource(resourceName);
 	}
 }
 

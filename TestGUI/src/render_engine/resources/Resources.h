@@ -11,5 +11,5 @@ namespace Resources
 
 	void* getResource(const std::string& resourceName, const void* compareResource = nullptr, bool* resourceDiffersAnswer = nullptr);
 	void reloadResource(const std::string& resourceName);
-	// void releaseResource(std::string resourceName);			// TODO: this will be important to implement l8r
+	void unloadResource(std::string resourceName);
 }

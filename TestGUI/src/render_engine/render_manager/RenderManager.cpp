@@ -59,9 +59,8 @@ RenderManager::RenderManager()
 {
 	createSkeletalAnimationUBO();
 	createLightInformationUBO();
-
 	createShaderPrograms();
-
+	createFonts();
 	createHDRBuffer();
 	createLumenAdaptationTextures();
 
@@ -69,6 +68,10 @@ RenderManager::RenderManager()
 	createPickingBuffer();
 #endif
 
+	//
+	// Create all the day/night cycle irradiance and prefilter maps
+	// @REFACTOR: place this inside the GlobalLight's constructor and something for the destructor
+	//
 	bool firstSkyMap = true;
 	for (size_t i = 0; i < numSkyMaps; i++)
 	{
@@ -83,14 +86,20 @@ RenderManager::RenderManager()
 		);
 		firstSkyMap = false;
 	}
-
-	createFonts();
 }
 
 RenderManager::~RenderManager()
 {
-	// TODO: add a destructor ya dingus
+	destroySkeletalAnimationUBO();
+	destroyLightInformationUBO();
+	destroyShaderPrograms();
+	destroyFonts();
 	destroyHDRBuffer();
+	destroyLumenAdaptationTextures();
+
+#ifdef _DEVELOP
+	destroyPickingBuffer();
+#endif
 }
 
 void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation)
@@ -559,7 +568,7 @@ void RenderManager::createLumenAdaptationTextures()
 		std::cout << "Framebuffer not complete! (HDR Luminance Sampling Framebuffer)" << std::endl;
 
 	// Create Sampling buffer
-	glGenTextures(1, &hdrLumAdaptation1x1);
+	glCreateTextures(GL_TEXTURE_2D, 1, &hdrLumAdaptation1x1);
 	glTextureView(hdrLumAdaptation1x1, GL_TEXTURE_2D, hdrLumDownsampling->getHandle(), GL_R16F, 6, 1, 0, 1);
 
 	// Create prev/processed buffers (will be used for ping pong)
@@ -595,6 +604,15 @@ void RenderManager::createLumenAdaptationTextures()
 	glTextureSubImage2D(hdrLumAdaptationPrevious->getHandle(), 0, 0, 0, 1, 1, GL_RED, GL_FLOAT, glm::value_ptr(startingPixel));
 }
 
+void RenderManager::destroyLumenAdaptationTextures()
+{
+	glDeleteTextures(1, &hdrLumAdaptation1x1);
+	delete hdrLumDownsampling;
+	glDeleteFramebuffers(1, &hdrLumFBO);
+	delete hdrLumAdaptationPrevious;
+	delete hdrLumAdaptationProcessed;
+}
+
 void RenderManager::createShaderPrograms()
 {
 	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
@@ -614,6 +632,27 @@ void RenderManager::createShaderPrograms()
 	volumetricProgramId = *(GLuint*)Resources::getResource("shader;volumetricLighting");
 	blurXProgramId = *(GLuint*)Resources::getResource("shader;blurX");
 	blurYProgramId = *(GLuint*)Resources::getResource("shader;blurY");
+}
+
+void RenderManager::destroyShaderPrograms()
+{
+	Resources::unloadResource("shader;skybox");
+	Resources::unloadResource("shader;debugCSM");
+	Resources::unloadResource("shader;text");
+	Resources::unloadResource("shader;irradianceGeneration");
+	Resources::unloadResource("shader;pbrPrefilterGeneration");
+	Resources::unloadResource("shader;brdfGeneration");
+	Resources::unloadResource("shader;luminance_postprocessing");
+	Resources::unloadResource("shader;computeLuminanceAdaptation");
+	Resources::unloadResource("shader;bloom_postprocessing");
+	Resources::unloadResource("shader;postprocessing");
+	Resources::unloadResource("shader;pbr");
+	Resources::unloadResource("shader;hudUI");
+	Resources::unloadResource("shader;zPassShader");
+	Resources::unloadResource("shader;ssao");
+	Resources::unloadResource("shader;volumetricLighting");
+	Resources::unloadResource("shader;blurX");
+	Resources::unloadResource("shader;blurY");
 }
 
 void RenderManager::createFonts()
@@ -697,6 +736,18 @@ void RenderManager::createFonts()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
+
+void RenderManager::destroyFonts()
+{
+	// Destroy all the font textures
+	for (auto it = characters.begin(); it != characters.end(); it++)
+	{
+		glDeleteTextures(1, &it->second.textureId);
+	}
+
+	glDeleteBuffers(1, &textVBO);
+	glDeleteVertexArrays(1, &textVAO);
 }
 
 void RenderManager::render()
@@ -2329,6 +2380,11 @@ void RenderManager::createSkeletalAnimationUBO()
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, skeletalAnimationUBO);
 }
 
+void RenderManager::destroySkeletalAnimationUBO()
+{
+	glDeleteBuffers(1, &skeletalAnimationUBO);
+}
+
 void RenderManager::INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms)
 {
 	if (!repopulateAnimationUBO && boneTransforms == assignedBoneMatricesMemAddr)
@@ -2387,6 +2443,12 @@ void RenderManager::updateLightInformationUBO()
 	glNamedBufferSubData(lightInformationUBO, lightColOffset, sizeof(glm::vec4) * numLights, &lightInformation.lightColors[0]);
 	glNamedBufferSubData(lightInformationUBO, viewPosOffset, sizeof(glm::vec4), glm::value_ptr(lightInformation.viewPosition));
 	glNamedBufferSubData(lightInformationUBO, numLightsOffset, sizeof(lightInformation.numLightsToRender), &lightInformation.numLightsToRender);
+}
+
+
+void RenderManager::destroyLightInformationUBO()
+{
+	glDeleteBuffers(1, &lightInformationUBO);
 }
 
 

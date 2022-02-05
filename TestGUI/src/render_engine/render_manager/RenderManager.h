@@ -218,15 +218,19 @@ private:
 	glm::mat4 cameraProjection, cameraView;
 
 	void createShaderPrograms();
-    void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
+	void destroyShaderPrograms();
 	void createHDRBuffer();
 	void destroyHDRBuffer();
 	void createLumenAdaptationTextures();
+	void destroyLumenAdaptationTextures();
 
+    void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
 
+	// Fonts
 	std::map<char, TextCharacter> characters;
 	GLuint textVAO, textVBO;
 	void createFonts();
+	void destroyFonts();
 
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
@@ -273,6 +277,7 @@ private:
 	bool repopulateAnimationUBO = true;
 	GLuint skeletalAnimationUBO;
 	void createSkeletalAnimationUBO();
+	void destroySkeletalAnimationUBO();
 	const std::vector<glm::mat4>* assignedBoneMatricesMemAddr = nullptr;
 
 	// Light information UBO
@@ -280,4 +285,5 @@ private:
 	RenderLightInformation lightInformation;
 	void createLightInformationUBO();
 	void updateLightInformationUBO();
+	void destroyLightInformationUBO();
 };
