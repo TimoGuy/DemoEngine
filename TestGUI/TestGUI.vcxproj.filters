@@ -162,6 +162,9 @@
     <ClCompile Include="src\objects\Spline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render_engine\material\Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">
@@ -204,41 +207,65 @@
     <None Include="shaders\color.frag" />
     <None Include="shaders\debug_picking.frag" />
     <None Include="shaders\lvlGrid.frag" />
-    <None Include="shader\bloom_postprocessing.frag" />
-    <None Include="shader\brdf.frag" />
-    <None Include="shader\brdf.vert" />
-    <None Include="shader\color.frag" />
-    <None Include="shader\csm_shadow.geom" />
-    <None Include="shader\csm_shadow.vert" />
-    <None Include="shader\cubemap.vert" />
-    <None Include="shader\debug_csm.frag" />
-    <None Include="shader\debug_csm.vert" />
-    <None Include="shader\debug_picking.frag" />
-    <None Include="shader\hudUI.frag" />
-    <None Include="shader\hudUI.vert" />
-    <None Include="shader\irradiance_convolution.frag" />
-    <None Include="shader\lvlGrid.frag" />
-    <None Include="shader\lvlGrid.vert" />
-    <None Include="shader\pbr.frag" />
-    <None Include="shader\pbr.vert" />
-    <None Include="shader\point_shadow.frag" />
-    <None Include="shader\point_shadow.geom" />
-    <None Include="shader\point_shadow.vert" />
-    <None Include="shader\prefilter.frag" />
-    <None Include="shader\skybox.frag" />
-    <None Include="shader\text.frag" />
-    <None Include="shader\text.vert" />
-    <None Include="shader\zelly.frag" />
-    <None Include="shader\postprocessing.frag" />
-    <None Include="shader\postprocessing.vert" />
-    <None Include="shader\shadow.frag" />
-    <None Include="shader\z_prepass.frag" />
-    <None Include="shader\luminance_adaptation.comp" />
-    <None Include="shader\luminance_postprocessing.frag" />
-    <None Include="shader\ssao_postprocessing.frag" />
-    <None Include="shader\volumetric_postprocessing.frag" />
-    <None Include="shader\blur_y.frag" />
-    <None Include="shader\blur_x.frag" />
+    <None Include="shader\src\bloom_postprocessing.frag" />
+    <None Include="shader\src\brdf.frag" />
+    <None Include="shader\src\brdf.vert" />
+    <None Include="shader\src\color.frag" />
+    <None Include="shader\src\csm_shadow.geom" />
+    <None Include="shader\src\csm_shadow.vert" />
+    <None Include="shader\src\cubemap.vert" />
+    <None Include="shader\src\debug_csm.frag" />
+    <None Include="shader\src\debug_csm.vert" />
+    <None Include="shader\src\debug_picking.frag" />
+    <None Include="shader\src\hudUI.frag" />
+    <None Include="shader\src\hudUI.vert" />
+    <None Include="shader\src\irradiance_convolution.frag" />
+    <None Include="shader\src\lvlGrid.frag" />
+    <None Include="shader\src\lvlGrid.vert" />
+    <None Include="shader\src\pbr.frag" />
+    <None Include="shader\src\pbr.vert" />
+    <None Include="shader\src\point_shadow.frag" />
+    <None Include="shader\src\point_shadow.geom" />
+    <None Include="shader\src\point_shadow.vert" />
+    <None Include="shader\src\prefilter.frag" />
+    <None Include="shader\src\skybox.frag" />
+    <None Include="shader\src\text.frag" />
+    <None Include="shader\src\text.vert" />
+    <None Include="shader\src\zelly.frag" />
+    <None Include="shader\src\postprocessing.frag" />
+    <None Include="shader\src\postprocessing.vert" />
+    <None Include="shader\src\shadow.frag" />
+    <None Include="shader\src\z_prepass.frag" />
+    <None Include="shader\src\luminance_adaptation.comp" />
+    <None Include="shader\src\luminance_postprocessing.frag" />
+    <None Include="shader\src\ssao_postprocessing.frag" />
+    <None Include="shader\src\volumetric_postprocessing.frag" />
+    <None Include="shader\src\blur_y.frag" />
+    <None Include="shader\src\blur_x.frag" />
+    <None Include="shader\pbr.json" />
+    <None Include="shader\bloom_postprocessing.json" />
+    <None Include="shader\blurX.json" />
+    <None Include="shader\blurY.json" />
+    <None Include="shader\brdfGeneration.json" />
+    <None Include="shader\computeLuminanceAdaptation.json" />
+    <None Include="shader\csmShadowPass.json" />
+    <None Include="shader\debugCSM.json" />
+    <None Include="shader\hdriGeneration.json" />
+    <None Include="shader\hudUI.json" />
+    <None Include="shader\irradianceGeneration.json" />
+    <None Include="shader\luminance_postprocessing.json" />
+    <None Include="shader\lvlGrid.json" />
+    <None Include="shader\pbrPrefilterGeneration.json" />
+    <None Include="shader\pickingRenderFormat.json" />
+    <None Include="shader\pointLightShadowPass.json" />
+    <None Include="shader\postprocessing.json" />
+    <None Include="shader\selectionSkinnedWireframe.json" />
+    <None Include="shader\skybox.json" />
+    <None Include="shader\ssao.json" />
+    <None Include="shader\text.json" />
+    <None Include="shader\volumetricLighting.json" />
+    <None Include="shader\zelly.json" />
+    <None Include="shader\zPassShader.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
@@ -383,6 +410,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\objects\Spline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

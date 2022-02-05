@@ -5,30 +5,47 @@ in vec2 texCoord;
 in vec3 fragPosition;
 in vec3 normalVector;
 
-// material parameters
+
+////////// MATERIAL PROPS ///////////
 uniform sampler2D albedoMap;
 uniform vec3 color;
 uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
-//uniform sampler2D aoMap;
 uniform float ditherAlpha;
 uniform float fadeAlpha;
-uniform vec4 tilingAndOffset;       // NOTE: x, y are tiling, and z, w are offset
+uniform vec4 tilingAndOffset;  // NOTE: x, y are tiling and z, w are offset
+/////////////////////////////////////
 
-// PBR stuff        TODO: maybe pack these into a UBO that gets calculated at the beginning of the frame only (light positions and the shadow stuff eh!)
+
+// SSAO
+uniform sampler2D ssaoTexture;
+uniform vec2 invFullResolution;
+
+// PBR daynight cycle
 uniform samplerCube irradianceMap;
 uniform samplerCube irradianceMap2;
 uniform samplerCube prefilterMap;
 uniform samplerCube prefilterMap2;
 uniform float mapInterpolationAmt;
-
 uniform sampler2D brdfLUT;
 
-uniform sampler2D ssaoTexture;
-uniform vec2 invFullResolution;
-
 uniform mat3 sunSpinAmount;
+
+// Shadow map
+const int MAX_SHADOWS = 8;
+uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
+uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
+uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];
+uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
+
+// CSM (Limit 1)
+layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
+uniform float cascadePlaneDistances[16];
+uniform int cascadeCount;   // number of frusta - 1
+uniform mat4 cameraView;
+uniform float nearPlane;
+uniform float farPlane;
 
 // Lights
 const int MAX_LIGHTS = 1024;
@@ -40,21 +57,6 @@ layout (std140, binding = 2) uniform LightInformation
     vec4 viewPosition;
     ivec4 numLightsToRender;
 };
-
-// Shadow map
-const int MAX_SHADOWS = 8;
-uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
-uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
-uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];
-uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
-
-// CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
-layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
-uniform float cascadePlaneDistances[16];
-uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 cameraView;
-uniform float nearPlane;
-uniform float farPlane;
 
 
 const float PI = 3.14159265359;

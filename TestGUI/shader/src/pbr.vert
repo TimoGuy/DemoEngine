@@ -10,6 +10,12 @@ out vec2 texCoord;
 out vec3 fragPosition;
 out vec3 normalVector;
 
+layout (std140, binding = 3) uniform RenderingMatrices
+{
+	mat4 modelMatrix;
+	mat3 normalsModelMatrix;
+	mat4 cameraMatrix;
+};
 uniform mat4 modelMatrix;
 uniform mat3 normalsModelMatrix;
 uniform mat4 cameraMatrix;
