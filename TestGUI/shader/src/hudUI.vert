@@ -8,8 +8,10 @@ out vec2 fragLocalPosition;
 
 uniform float padding;
 uniform vec2 staminaBarExtents;
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+
+
+uniform mat4 viewMatrix;  // @REFACTOR: put these in a ubo
+uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
 
 void main()
 {

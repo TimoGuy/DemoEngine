@@ -1,4 +1,4 @@
-#version 450
+#version 430
 
 layout(triangles, invocations = 5) in;
 layout(triangle_strip, max_vertices = 3) out;

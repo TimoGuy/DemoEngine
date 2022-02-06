@@ -1,20 +1,20 @@
 {
   "type": "VF",
-  "V": "shader/pbr.vert",
-  "F": "shader/pbr.frag",
+  "V": "postprocessing.vert",
+  "F": "ssao_postprocessing.frag",
   "props": [
-    "sampler2D albedoMap",
-    "vec3 color",
-    "sampler2D normalMap",
-    "sampler2D metallicMap",
-    "sampler2D roughnessMap",
-    "float ditherAlpha",
-    "float fadeAlpha",
-    "vec4 tilingAndOffset"
+    "sampler2D rotationTexture",
+    "vec2 fullResolution",
+    "vec2 invFullResolution",
+    "float cameraFOV",
+    "float zNear",
+    "float zFar",
+    "float powExponent",
+    "float radius",
+    "float bias",
+    "vec4 projInfo"
   ],
   "extensions": [
-    "ssao",
-    "pbr_daynight_cycle",
-    "shadow"
+    "zBuffer"
   ]
 }

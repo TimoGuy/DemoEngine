@@ -1,20 +1,14 @@
 {
   "type": "VF",
-  "V": "shader/pbr.vert",
-  "F": "shader/pbr.frag",
+  "V": "postprocessing.vert",
+  "F": "postprocessing.frag",
   "props": [
-    "sampler2D albedoMap",
-    "vec3 color",
-    "sampler2D normalMap",
-    "sampler2D metallicMap",
-    "sampler2D roughnessMap",
-    "float ditherAlpha",
-    "float fadeAlpha",
-    "vec4 tilingAndOffset"
-  ],
-  "extensions": [
-    "ssao",
-    "pbr_daynight_cycle",
-    "shadow"
+    "sampler2D hdrColorBuffer",
+    "sampler2D hdrColorBuffer",
+    "sampler2D hdrColorBuffer",
+    "sampler2D hdrColorBuffer",
+    "vec3 sunLightColor",
+    "float exposure",
+    "float bloomIntensity"
   ]
 }

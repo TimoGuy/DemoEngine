@@ -10,15 +10,15 @@ out vec2 texCoord;
 out vec3 fragPosition;
 out vec3 normalVector;
 
-layout (std140, binding = 3) uniform RenderingMatrices
+layout (std140, binding = 3) uniform RenderingMatrices		// @REFACTOR: this should be in its own extension file yo
 {
 	mat4 modelMatrix;
 	mat3 normalsModelMatrix;
 	mat4 cameraMatrix;
 };
-uniform mat4 modelMatrix;
+uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
 uniform mat3 normalsModelMatrix;
-uniform mat4 cameraMatrix;
+uniform mat4 cameraMatrix;  // @REFACTOR: put these in a ubo
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;

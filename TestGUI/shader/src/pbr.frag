@@ -34,12 +34,12 @@ uniform mat3 sunSpinAmount;
 
 // Shadow map
 const int MAX_SHADOWS = 8;
-uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
 uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];
 uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 
-// CSM (Limit 1)
+// ext: csm_shadow
+uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1

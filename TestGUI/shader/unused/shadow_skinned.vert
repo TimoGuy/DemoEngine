@@ -6,7 +6,7 @@ layout (location=2) in vec2 uvCoordinate;
 layout (location=3) in ivec4 boneIds;
 layout (location=4) in vec4 boneWeights;
 
-uniform mat4 modelMatrix;
+uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
 uniform mat4 lightSpaceMatrix;
 
 const int MAX_BONES = 100;

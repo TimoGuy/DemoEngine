@@ -2,11 +2,11 @@
 
 out vec4 FragColor;
 
-uniform vec4 wireframeColor;
+uniform vec4 color;
 uniform float colorIntensity;
 
 void main()
 {
-    vec3 totalColor = wireframeColor.rgb * colorIntensity;
-    FragColor = vec4(totalColor, wireframeColor.a);
+    vec3 totalColor = color.rgb * colorIntensity;
+    FragColor = vec4(totalColor, color.a);
 }

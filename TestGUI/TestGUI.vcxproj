@@ -248,6 +248,7 @@
     <None Include="shader\src\debug_csm.frag" />
     <None Include="shader\src\debug_csm.vert" />
     <None Include="shader\src\debug_picking.frag" />
+    <None Include="shader\src\hdri_equirectangular.frag" />
     <None Include="shader\src\hudUI.frag" />
     <None Include="shader\src\hudUI.vert" />
     <None Include="shader\src\irradiance_convolution.frag" />
@@ -263,7 +264,7 @@
     <None Include="shader\src\postprocessing.frag" />
     <None Include="shader\src\postprocessing.vert" />
     <None Include="shader\src\prefilter.frag" />
-    <None Include="shader\src\shadow.frag" />
+    <None Include="shader\src\csm_shadow.frag" />
     <None Include="shader\src\skybox.frag" />
     <None Include="shader\src\ssao_postprocessing.frag" />
     <None Include="shader\src\text.frag" />

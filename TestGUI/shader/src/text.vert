@@ -3,8 +3,8 @@
 layout (location=0) in vec4 vertexPosition;
 out vec2 texCoords;
 
-uniform mat4 modelMatrix;
-uniform mat4 cameraMatrix;
+uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
+uniform mat4 cameraMatrix;  // @REFACTOR: put these in a ubo
 
 void main()
 {

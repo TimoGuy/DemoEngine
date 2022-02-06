@@ -1,7 +1,7 @@
 {
   "type": "VF",
-  "V": "shader/pbr.vert",
-  "F": "shader/pbr.frag",
+  "V": "pbr.vert",
+  "F": "pbr.frag",
   "props": [
     "sampler2D albedoMap",
     "vec3 color",
@@ -15,6 +15,7 @@
   "extensions": [
     "ssao",
     "pbr_daynight_cycle",
-    "shadow"
+    "shadow",
+    "csm_shadow"
   ]
 }

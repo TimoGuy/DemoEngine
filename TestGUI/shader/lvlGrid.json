@@ -1,20 +1,10 @@
 {
   "type": "VF",
-  "V": "shader/pbr.vert",
-  "F": "shader/pbr.frag",
+  "V": "lvlGrid.vert",
+  "F": "lvlGrid.frag",
   "props": [
-    "sampler2D albedoMap",
-    "vec3 color",
-    "sampler2D normalMap",
-    "sampler2D metallicMap",
-    "sampler2D roughnessMap",
-    "float ditherAlpha",
-    "float fadeAlpha",
-    "vec4 tilingAndOffset"
-  ],
-  "extensions": [
-    "ssao",
-    "pbr_daynight_cycle",
-    "shadow"
+    "vec3 gridColor",
+    "vec4 tilingAndOffset",
+    "sampler2D gridTexture"
   ]
 }

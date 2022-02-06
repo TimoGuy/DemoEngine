@@ -49,7 +49,7 @@ uniform float perlinTime;
 
 precision highp float;
 
-uniform mat4 projection;
+uniform mat4 projection;  // @REFACTOR: put these in a ubo
 uniform mat4 view;
 //uniform vec3 v_Sun;       NOTE: use sunOrientation and sunRadius
 //uniform float r_Sun;

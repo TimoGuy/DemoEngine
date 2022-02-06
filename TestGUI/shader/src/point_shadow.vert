@@ -8,7 +8,7 @@ layout (location=4) in vec4 boneWeights;
 
 out vec2 texCoordToGeom;
 
-uniform mat4 modelMatrix;
+uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;

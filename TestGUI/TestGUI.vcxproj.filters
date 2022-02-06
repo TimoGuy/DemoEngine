@@ -234,7 +234,7 @@
     <None Include="shader\src\zelly.frag" />
     <None Include="shader\src\postprocessing.frag" />
     <None Include="shader\src\postprocessing.vert" />
-    <None Include="shader\src\shadow.frag" />
+    <None Include="shader\src\csm_shadow.frag" />
     <None Include="shader\src\z_prepass.frag" />
     <None Include="shader\src\luminance_adaptation.comp" />
     <None Include="shader\src\luminance_postprocessing.frag" />
@@ -266,6 +266,7 @@
     <None Include="shader\volumetricLighting.json" />
     <None Include="shader\zelly.json" />
     <None Include="shader\zPassShader.json" />
+    <None Include="shader\src\hdri_equirectangular.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
