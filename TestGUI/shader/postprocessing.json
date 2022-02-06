@@ -4,9 +4,9 @@
   "F": "postprocessing.frag",
   "props": [
     "sampler2D hdrColorBuffer",
-    "sampler2D hdrColorBuffer",
-    "sampler2D hdrColorBuffer",
-    "sampler2D hdrColorBuffer",
+    "sampler2D bloomColorBuffer",
+    "sampler2D luminanceProcessed",
+    "sampler2D volumetricLighting",
     "vec3 sunLightColor",
     "float exposure",
     "float bloomIntensity"

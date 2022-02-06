@@ -97,7 +97,7 @@ void unregisterResource(const std::string& resourceName)
 
 #pragma region Shader Program Utils
 
-const GLchar* readFile(const char* filename)
+const GLchar* readFileDEPRE(const char* filename)
 {
 	FILE* infile;
 
@@ -120,11 +120,11 @@ const GLchar* readFile(const char* filename)
 }
 
 
-GLuint compileShader(GLenum type, const char* fname)
+GLuint compileShaderDEPRE(GLenum type, const char* fname)
 {
 	std::cout << std::left << std::setw(30) << ("[" + std::string(fname) + "]") << "Compiling Shader...\t";
 	GLuint shader_id = glCreateShader(type);
-	const char* filedata = readFile(fname);
+	const char* filedata = readFileDEPRE(fname);
 
 	glShaderSource(shader_id, 1, &filedata, NULL);
 	glCompileShader(shader_id);
@@ -155,8 +155,8 @@ void* loadShaderProgramVF(const std::string& programName, bool isUnloading, cons
 	if (!isUnloading)
 	{
 		GLuint programId = glCreateProgram();
-		GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
-		GLuint fShader = compileShader(GL_FRAGMENT_SHADER, fragFname.c_str());
+		GLuint vShader = compileShaderDEPRE(GL_VERTEX_SHADER, vertFname.c_str());
+		GLuint fShader = compileShaderDEPRE(GL_FRAGMENT_SHADER, fragFname.c_str());
 		glAttachShader(programId, vShader);
 		glAttachShader(programId, fShader);
 		glLinkProgram(programId);
@@ -180,9 +180,9 @@ void* loadShaderProgramVGF(const std::string& programName, bool isUnloading, con
 	if (!isUnloading)
 	{
 		GLuint programId = glCreateProgram();
-		GLuint vShader = compileShader(GL_VERTEX_SHADER, vertFname.c_str());
-		GLuint gShader = compileShader(GL_GEOMETRY_SHADER, geomFname.c_str());
-		GLuint fShader = compileShader(GL_FRAGMENT_SHADER, fragFname.c_str());
+		GLuint vShader = compileShaderDEPRE(GL_VERTEX_SHADER, vertFname.c_str());
+		GLuint gShader = compileShaderDEPRE(GL_GEOMETRY_SHADER, geomFname.c_str());
+		GLuint fShader = compileShaderDEPRE(GL_FRAGMENT_SHADER, fragFname.c_str());
 		glAttachShader(programId, vShader);
 		glAttachShader(programId, gShader);
 		glAttachShader(programId, fShader);
@@ -208,7 +208,7 @@ void* loadShaderProgramC(const std::string& programName, bool isUnloading, const
 	if (!isUnloading)
 	{
 		GLuint programId = glCreateProgram();
-		GLuint cShader = compileShader(GL_COMPUTE_SHADER, compFname.c_str());
+		GLuint cShader = compileShaderDEPRE(GL_COMPUTE_SHADER, compFname.c_str());
 		glAttachShader(programId, cShader);
 		glLinkProgram(programId);
 		glDeleteShader(cShader);
@@ -229,19 +229,7 @@ void* loadShader(const std::string& programName, bool isUnloading, const std::st
 {
 	if (!isUnloading)
 	{
-		std::ifstream i(shaderFname);
-		nlohmann::json shader;
-		i >> shader;
-
-		GLuint programId = glCreateProgram();
-		GLuint cShader = compileShader(GL_COMPUTE_SHADER, compFname.c_str());
-		glAttachShader(programId, cShader);
-		glLinkProgram(programId);
-		glDeleteShader(cShader);
-
-		GLuint* payload = new GLuint();
-		*payload = programId;
-		return payload;
+		return new Shader(shaderFname);
 	}
 	else
 	{
@@ -417,6 +405,8 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// NOTE: this is gonna be a huge function btw
 	//
+	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
+
 	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
 	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
 	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
@@ -444,7 +434,6 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
 #endif
 
-	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
 
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);

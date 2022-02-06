@@ -4,10 +4,10 @@
 #include <string>
 #include <future>
 
-
 typedef unsigned int GLuint;
 typedef unsigned int GLenum;
 typedef int GLsizei;
+
 
 struct ImageFile
 {
