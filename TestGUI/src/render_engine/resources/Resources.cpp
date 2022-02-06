@@ -1,6 +1,7 @@
 #include "Resources.h"
 
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <vector>
 #include <mutex>
@@ -9,6 +10,7 @@
 #include <stb/stb_image.h>
 
 #include "../material/Texture.h"
+#include "../material/Shader.h"
 #include "../model/animation/Animation.h"
 
 
@@ -222,6 +224,32 @@ void* loadShaderProgramC(const std::string& programName, bool isUnloading, const
 	}
 }
 
+
+void* loadShader(const std::string& programName, bool isUnloading, const std::string& shaderFname)
+{
+	if (!isUnloading)
+	{
+		std::ifstream i(shaderFname);
+		nlohmann::json shader;
+		i >> shader;
+
+		GLuint programId = glCreateProgram();
+		GLuint cShader = compileShader(GL_COMPUTE_SHADER, compFname.c_str());
+		glAttachShader(programId, cShader);
+		glLinkProgram(programId);
+		glDeleteShader(cShader);
+
+		GLuint* payload = new GLuint();
+		*payload = programId;
+		return payload;
+	}
+	else
+	{
+		delete (Shader*)findResource(programName);
+		return nullptr;
+	}
+}
+
 #pragma endregion
 
 
@@ -389,32 +417,35 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// NOTE: this is gonna be a huge function btw
 	//
-	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/pbr.frag");
-	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/zelly.frag");
-	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/lvlGrid.vert", "shader/lvlGrid.frag");		// @DEBUG
-	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/skybox.frag");
-	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/csm_shadow.vert", "shader/csm_shadow.geom", "shader/csm_shadow.frag");
-	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/point_shadow.vert", "shader/point_shadow.geom", "shader/point_shadow.frag");
-	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/debug_csm.vert", "shader/debug_csm.frag");
-	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/text.vert", "shader/text.frag");
-	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/hdri_equirectangular.frag");		// NOTE: may not be used in the future
-	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/irradiance_convolution.frag");
-	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/cubemap.vert", "shader/prefilter.frag");
-	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/brdf.vert", "shader/brdf.frag");
-	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/bloom_postprocessing.frag");
-	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/postprocessing.frag");
-	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/hudUI.vert", "shader/hudUI.frag");
-	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/z_prepass.frag");
-	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/luminance_postprocessing.frag");
-	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/luminance_adaptation.comp");
-	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/ssao_postprocessing.frag");
-	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/volumetric_postprocessing.frag");
-	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/blur_x.frag");
-	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/postprocessing.vert", "shader/blur_y.frag");
+	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
+	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
+	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
+	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/skybox.frag");
+	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/csm_shadow.vert", "shader/src/csm_shadow.geom", "shader/src/csm_shadow.frag");
+	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/point_shadow.vert", "shader/src/point_shadow.geom", "shader/src/point_shadow.frag");
+	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/debug_csm.vert", "shader/src/debug_csm.frag");
+	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/text.vert", "shader/src/text.frag");
+	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/hdri_equirectangular.frag");		// NOTE: may not be used in the future
+	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/irradiance_convolution.frag");
+	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/prefilter.frag");
+	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/brdf.vert", "shader/src/brdf.frag");
+	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/bloom_postprocessing.frag");
+	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/postprocessing.frag");
+	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/hudUI.vert", "shader/src/hudUI.frag");
+	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/z_prepass.frag");
+	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/luminance_postprocessing.frag");
+	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/src/luminance_adaptation.comp");
+	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/ssao_postprocessing.frag");
+	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/volumetric_postprocessing.frag");
+	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_x.frag");
+	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_y.frag");
 #ifdef _DEVELOP
 	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
 	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
 #endif
+
+	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
+
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
 	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo

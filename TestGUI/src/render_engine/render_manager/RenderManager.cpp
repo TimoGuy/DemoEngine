@@ -568,7 +568,7 @@ void RenderManager::createLumenAdaptationTextures()
 		std::cout << "Framebuffer not complete! (HDR Luminance Sampling Framebuffer)" << std::endl;
 
 	// Create Sampling buffer
-	glCreateTextures(GL_TEXTURE_2D, 1, &hdrLumAdaptation1x1);
+	glGenTextures(1, &hdrLumAdaptation1x1);		// NOTE: this has to be non-DSA version of creating textures. For some reason it doesn't work with glCreateTextures();
 	glTextureView(hdrLumAdaptation1x1, GL_TEXTURE_2D, hdrLumDownsampling->getHandle(), GL_R16F, 6, 1, 0, 1);
 
 	// Create prev/processed buffers (will be used for ping pong)
@@ -967,7 +967,7 @@ void RenderManager::render()
 					GLuint selectionWireframeProgramId =
 						*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
 					glUseProgram(selectionWireframeProgramId);
-					glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "wireframeColor"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
+					glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "color"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
 					glUniform1f(glGetUniformLocation(selectionWireframeProgramId, "colorIntensity"), evaluatedIntensityValue);
 					glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
 					rc->renderShadow(selectionWireframeProgramId);
