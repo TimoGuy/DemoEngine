@@ -7,12 +7,15 @@
 
 #include "../../utils/json.hpp"
 #include "../../utils/Utils.h"
+#include "shaderext/ShaderExtZBuffer.h"
 
 const GLchar* readFile(const char* filename);
 GLuint compileShader(nlohmann::json& params, GLenum type, std::string fname);
 
+Shader* Shader::currentlyBound = nullptr;
 
-Shader::Shader(const std::string& fname)
+
+Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED)
 {
 	std::string fullFname = "shader/" + fname + ".json";
 	std::ifstream i(fullFname);
@@ -85,20 +88,36 @@ Shader::Shader(const std::string& fname)
 
 	//
 	// Load in all extensions
+	// @SHADERPALETTE
 	//
 	if (params.contains("extensions"))
 	{
 		std::vector<std::string> _ext = params["extensions"];
-		extensions = _ext;
+		for (size_t i = 0; i < _ext.size(); i++)
+		{
+			std::string& e = _ext[i];
+			if (e == "zBuffer")				extensions.push_back(new ShaderExtZBuffer(programId));
+			if (e == "ssao")				extensions.push_back();
+			if (e == "pbr_daynight_cycle")	extensions.push_back();
+			if (e == "shadow")				extensions.push_back();
+			if (e == "csm_shadow")			extensions.push_back();
+		}
 	}
-
-	std::cout << "HEY" << std::endl;
 }
 
 
 Shader::~Shader()
 {
 	glDeleteProgram(programId);
+}
+
+void Shader::use()
+{
+	if (currentlyBound == this)
+		return;
+
+	glUseProgram(programId);
+	currentlyBound = this;
 }
 
 

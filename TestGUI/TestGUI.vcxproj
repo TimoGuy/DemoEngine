@@ -153,6 +153,11 @@
     <ClCompile Include="src\render_engine\camera\Camera.cpp" />
     <ClCompile Include="src\render_engine\light\LightManager.cpp" />
     <ClCompile Include="src\render_engine\material\Material.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtShadow.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtSSAO.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtZBuffer.cpp" />
     <ClCompile Include="src\render_engine\resources\Resources.cpp" />
     <ClCompile Include="src\utils\tinyfiledialogs.c" />
     <ClCompile Include="src\utils\FileLoading.cpp" />
@@ -296,6 +301,12 @@
     <ClInclude Include="src\render_engine\camera\Camera.h" />
     <ClInclude Include="src\render_engine\light\LightManager.h" />
     <ClInclude Include="src\render_engine\material\Material.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExt.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtShadow.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtSSAO.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtZBuffer.h" />
     <ClInclude Include="src\utils\GameState.h" />
     <ClInclude Include="src\utils\InputManager.h" />
     <ClInclude Include="src\utils\json.hpp" />

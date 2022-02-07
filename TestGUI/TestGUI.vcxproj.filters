@@ -165,6 +165,21 @@
     <ClCompile Include="src\render_engine\material\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtZBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtShadow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtSSAO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">
@@ -414,6 +429,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render_engine\material\Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtZBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtShadow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtSSAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

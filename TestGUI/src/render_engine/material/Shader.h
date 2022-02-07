@@ -3,10 +3,12 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "shaderext/ShaderExt.h"
 typedef unsigned int GLuint;
 
 
-enum class ShaderType { VF, VGF, C };
+// @SHADERPALETTE
+enum class ShaderType { UNDEFINED, VF, VGF, C };
 enum class UniformDataType
 {
 	BOOL,
@@ -39,6 +41,22 @@ public:
 	Shader(const std::string& fname);
 	~Shader();
 
+	void use();
+
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setBool(std::string& uniformName, bool value);
+	void setSampler(std::string& uniformName, bool value);
+
 private:
 	static UniformDataType strToDataType(const std::string& str);
 
@@ -47,5 +65,7 @@ public:
 	GLuint programId;
 private:
 	std::vector<ShaderUniform> props;
-	std::vector<std::string> extensions;
+	std::vector<ShaderExt*> extensions;
+
+	static Shader* currentlyBound;
 };

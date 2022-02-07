@@ -23,6 +23,7 @@
 #endif
 
 #include "../material/Texture.h"
+#include "../material/shaderext/ShaderExtShadow.h"
 #include "../resources/Resources.h"
 #include "../../utils/FileLoading.h"
 #include "../../utils/PhysicsUtils.h"
@@ -1090,6 +1091,11 @@ GLuint RenderManager::getSSAOTexture()
 	return ssaoTexture->getHandle();
 }
 
+GLuint RenderManager::getDepthMap()
+{
+	return zPrePassDepthTexture->getHandle();
+}
+
 
 void RenderManager::renderScene()
 {
@@ -1425,11 +1431,9 @@ void RenderManager::renderScene()
 }
 
 
-const size_t MAX_SHADOWS = 8;
-// @Hardcode: maybe this is a good limit? I dunno, and there are ways to speed it up with the distinction of static and dynamic objects fo sure.
-void RenderManager::setupSceneShadows(GLuint programId)
+void RenderManager::setupSceneShadows(GLuint programId)			// @REFACTOR: make this private and only send off this info to ShaderExtShadow and ShaderExtCSM_SHADOW
 {
-	for (size_t i = 0; i < MAX_SHADOWS; i++)
+	for (size_t i = 0; i < ShaderExtShadow::MAX_SHADOWS; i++)		// @REFACTOR: still need to stuff this into ShaderExtShadow!!!
 	{
 		// Reset shadow maps
 		glProgramUniform1i(programId, glGetUniformLocation(programId, "csmShadowMap"), 100);

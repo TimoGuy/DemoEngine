@@ -117,6 +117,7 @@ public:
 	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
 	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
 	GLuint getSSAOTexture();
+	GLuint getDepthMap();
 
 	inline GLuint getIrradianceMap()
 	{
@@ -142,7 +143,6 @@ public:
 	{
 		return mapInterpolationAmt;
 	}
-
 
 	void setupSceneShadows(GLuint programId);
 
