@@ -5,9 +5,6 @@
 class ShaderExtZBuffer : public ShaderExt
 {
 public:
-	ShaderExtZBuffer(unsigned int programId);
-	void setupExtension(unsigned int& tex, nlohmann::json* params = nullptr);
-
-private:
-	int depthBufferUniformLoc;
+	ShaderExtZBuffer(Shader* shader);
+	void setupExtension();
 };

@@ -1,18 +1,29 @@
 #include "ShaderExtCSM_shadow.h"
 
-#include <glad/glad.h>
+#include "../Shader.h"
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
 
-ShaderExtCSM_shadow::ShaderExtCSM_shadow(unsigned int programId)
+unsigned int ShaderExtCSM_shadow::csmShadowMap;
+float ShaderExtCSM_shadow::cascadePlaneDistances[16];
+int ShaderExtCSM_shadow::cascadeCount;
+glm::mat4 ShaderExtCSM_shadow::cameraView;
+float ShaderExtCSM_shadow::nearPlane;
+float ShaderExtCSM_shadow::farPlane;
+
+
+ShaderExtCSM_shadow::ShaderExtCSM_shadow(Shader* shader) : ShaderExt(shader)
 {
-	depthBufferUniformLoc = glGetUniformLocation(programId, "depthTexture");
 }
 
-void ShaderExtCSM_shadow::setupExtension(unsigned int& tex, nlohmann::json* params)
+void ShaderExtCSM_shadow::setupExtension()
 {
-	glBindTextureUnit(tex, MainLoop::getInstance().renderManager->getDepthMap());
-	glUniform1i(depthBufferUniformLoc, (int)tex);
-	tex++;
+	shader->setSampler("csmShadowMap", csmShadowMap);
+	for (size_t i = 0; i < 16; i++)
+		shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", cascadePlaneDistances[i]);
+	shader->setInt("cascadeCount", cascadeCount);
+	shader->setMat4("cameraView", cameraView);	// NOTE: this could be replaced with the camera stuff UBO
+	shader->setFloat("nearPlane", nearPlane);
+	shader->setFloat("farPlane", farPlane);
 }

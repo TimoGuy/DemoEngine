@@ -1,9 +1,13 @@
 #pragma once
 
-namespace nlohmann { class json; }
+class Shader;
 
 class ShaderExt
 {
 public:
-	virtual void setupExtension(unsigned int& tex, nlohmann::json* params = nullptr) = 0;
+	ShaderExt(Shader* shader);
+	virtual void setupExtension() = 0;
+
+protected:
+	Shader* shader;
 };

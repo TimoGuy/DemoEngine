@@ -4,10 +4,15 @@
 #include <fstream>
 #include <iomanip>
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "../../utils/json.hpp"
 #include "../../utils/Utils.h"
 #include "shaderext/ShaderExtZBuffer.h"
+#include "shaderext/ShaderExtPBR_daynight_cycle.h"
+#include "shaderext/ShaderExtShadow.h"
+#include "shaderext/ShaderExtCSM_shadow.h"
+#include "shaderext/ShaderExtSSAO.h"
 
 const GLchar* readFile(const char* filename);
 GLuint compileShader(nlohmann::json& params, GLenum type, std::string fname);
@@ -15,7 +20,7 @@ GLuint compileShader(nlohmann::json& params, GLenum type, std::string fname);
 Shader* Shader::currentlyBound = nullptr;
 
 
-Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED)
+Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED), currentTexIndex(0)
 {
 	std::string fullFname = "shader/" + fname + ".json";
 	std::ifstream i(fullFname);
@@ -96,11 +101,11 @@ Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED)
 		for (size_t i = 0; i < _ext.size(); i++)
 		{
 			std::string& e = _ext[i];
-			if (e == "zBuffer")				extensions.push_back(new ShaderExtZBuffer(programId));
-			if (e == "ssao")				extensions.push_back();
-			if (e == "pbr_daynight_cycle")	extensions.push_back();
-			if (e == "shadow")				extensions.push_back();
-			if (e == "csm_shadow")			extensions.push_back();
+			if (e == "zBuffer")				extensions.push_back(new ShaderExtZBuffer(this));
+			if (e == "ssao")				extensions.push_back(new ShaderExtSSAO(this));
+			if (e == "pbr_daynight_cycle")	extensions.push_back(new ShaderExtPBR_daynight_cycle(this));
+			if (e == "shadow")				extensions.push_back(new ShaderExtShadow(this));
+			if (e == "csm_shadow")			extensions.push_back(new ShaderExtCSM_shadow(this));
 		}
 	}
 }
@@ -111,6 +116,7 @@ Shader::~Shader()
 	glDeleteProgram(programId);
 }
 
+
 void Shader::use()
 {
 	if (currentlyBound == this)
@@ -118,6 +124,103 @@ void Shader::use()
 
 	glUseProgram(programId);
 	currentlyBound = this;
+	currentTexIndex = 0;	// New shader means new textures, so we need to reset the texture binding counter
+
+	for (size_t i = 0; i < extensions.size(); i++)
+		extensions[i]->setupExtension();
+}
+
+
+void Shader::setBool(std::string uniformName, const bool& value) { setInt(uniformName, (int)value); }
+void Shader::setInt(std::string uniformName, const int& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform1i(programId, uniformLocationCache[uniformName], value);
+}
+
+
+void Shader::setUint(std::string uniformName, const unsigned int& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform1ui(programId, uniformLocationCache[uniformName], value);
+}
+
+
+void Shader::setFloat(std::string uniformName, const float& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform1f(programId, uniformLocationCache[uniformName], value);
+}
+
+
+void Shader::setVec2(std::string uniformName, const glm::vec2& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform2fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+}
+
+
+void Shader::setVec3(std::string uniformName, const glm::vec3& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform3fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+}
+
+
+void Shader::setVec4(std::string uniformName, const glm::vec4& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform4fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+}
+
+
+void Shader::setIvec4(std::string uniformName, const glm::ivec4& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniform4iv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+}
+
+
+void Shader::setMat3(std::string uniformName, const glm::mat3& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniformMatrix3fv(programId, uniformLocationCache[uniformName], 1, GL_FALSE, glm::value_ptr(value));
+}
+
+
+void Shader::setMat4(std::string uniformName, const glm::mat4& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glProgramUniformMatrix4fv(programId, uniformLocationCache[uniformName], 1, GL_FALSE, glm::value_ptr(value));
+}
+
+
+void Shader::setSampler(std::string uniformName, const GLuint& value)
+{
+	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+
+	glBindTextureUnit(currentTexIndex, value);
+	glProgramUniform1i(programId, uniformLocationCache[uniformName], currentTexIndex);
+	currentTexIndex++;
 }
 
 

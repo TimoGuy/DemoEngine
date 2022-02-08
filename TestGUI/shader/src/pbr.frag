@@ -27,8 +27,8 @@ uniform samplerCube irradianceMap;
 uniform samplerCube irradianceMap2;
 uniform samplerCube prefilterMap;
 uniform samplerCube prefilterMap2;
-uniform float mapInterpolationAmt;
 uniform sampler2D brdfLUT;
+uniform float mapInterpolationAmt;
 
 uniform mat3 sunSpinAmount;
 

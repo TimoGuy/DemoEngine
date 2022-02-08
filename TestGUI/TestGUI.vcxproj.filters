@@ -180,6 +180,9 @@
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExtSSAO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">

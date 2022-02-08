@@ -1490,7 +1490,7 @@ void RenderManager::setupSceneShadows(GLuint programId)			// @REFACTOR: make thi
 		}
 
 		shadowMapTextureIndex++;
-		if (shadowMapTextureIndex >= MAX_SHADOWS)
+		if (shadowMapTextureIndex >= ShaderExtShadow::MAX_SHADOWS)
 			break;
 	}
 }
@@ -2426,7 +2426,7 @@ void RenderManager::updateLightInformationUBO()
 		lightInformation.lightDirections[i] = glm::vec4(lightDirection, 0);
 		lightInformation.lightColors[i] = glm::vec4(lightColorWithIntensity, 0.0f);
 
-		if (shadowIndex < MAX_SHADOWS && light->castsShadows)
+		if (shadowIndex < ShaderExtShadow::MAX_SHADOWS && light->castsShadows)
 		{
 			lightInformation.lightDirections[i].a = 1;
 			shadowIndex++;

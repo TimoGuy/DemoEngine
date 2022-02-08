@@ -1,18 +1,16 @@
 #include "ShaderExtZBuffer.h"
 
 #include <glad/glad.h>
+#include "../Shader.h"
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
 
-ShaderExtZBuffer::ShaderExtZBuffer(unsigned int programId)
+ShaderExtZBuffer::ShaderExtZBuffer(Shader* shader) : ShaderExt(shader)
 {
-	depthBufferUniformLoc = glGetUniformLocation(programId, "depthTexture");
 }
 
-void ShaderExtZBuffer::setupExtension(unsigned int& tex, nlohmann::json* params)
+void ShaderExtZBuffer::setupExtension()		// @REFACTOR: have rendermanager drop in that depth map texture!!!
 {
-	glBindTextureUnit(tex, MainLoop::getInstance().renderManager->getDepthMap());
-	glUniform1i(depthBufferUniformLoc, (int)tex);
-	tex++;
+	shader->setSampler("depthTexture", MainLoop::getInstance().renderManager->getDepthMap());
 }

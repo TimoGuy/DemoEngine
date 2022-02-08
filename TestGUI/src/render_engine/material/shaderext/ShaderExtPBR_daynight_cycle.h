@@ -1,13 +1,19 @@
 #pragma once
 
 #include "ShaderExt.h"
+#include <glm/glm.hpp>
 
 class ShaderExtPBR_daynight_cycle : public ShaderExt
 {
 public:
-	ShaderExtPBR_daynight_cycle(unsigned int programId);
-	void setupExtension(unsigned int& tex, nlohmann::json* params = nullptr);
+	ShaderExtPBR_daynight_cycle(Shader* shader);
+	void setupExtension();
 
-private:
-	int depthBufferUniformLoc;
+	static unsigned int irradianceMap,
+		irradianceMap2,
+		prefilterMap,
+		prefilterMap2,
+		brdfLUT;
+	static float mapInterpolationAmt;
+	static glm::mat3 sunSpinAmount;
 };

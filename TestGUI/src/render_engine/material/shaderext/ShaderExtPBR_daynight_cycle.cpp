@@ -1,18 +1,31 @@
 #include "ShaderExtPBR_daynight_cycle.h"
 
-#include <glad/glad.h>
+#include "../Shader.h"
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
+unsigned int ShaderExtPBR_daynight_cycle::irradianceMap,
+	ShaderExtPBR_daynight_cycle::irradianceMap2,
+	ShaderExtPBR_daynight_cycle::prefilterMap,
+	ShaderExtPBR_daynight_cycle::prefilterMap2,
+	ShaderExtPBR_daynight_cycle::brdfLUT;
+float ShaderExtPBR_daynight_cycle::mapInterpolationAmt;
+glm::mat3 ShaderExtPBR_daynight_cycle::sunSpinAmount;
 
-ShaderExtPBR_daynight_cycle::ShaderExtPBR_daynight_cycle(unsigned int programId)
+
+ShaderExtPBR_daynight_cycle::ShaderExtPBR_daynight_cycle(Shader* shader) : ShaderExt(shader)
 {
-	depthBufferUniformLoc = glGetUniformLocation(programId, "depthTexture");
 }
 
-void ShaderExtPBR_daynight_cycle::setupExtension(unsigned int& tex, nlohmann::json* params)
+
+void ShaderExtPBR_daynight_cycle::setupExtension()		// @REFACTOR: have rendermanager populate everything in here before all the shaders get set up!!!
 {
-	glBindTextureUnit(tex, MainLoop::getInstance().renderManager->getDepthMap());
-	glUniform1i(depthBufferUniformLoc, (int)tex);
-	tex++;
+	shader->setSampler("irradianceMap", irradianceMap);
+	shader->setSampler("irradianceMap2", irradianceMap2);
+	shader->setSampler("prefilterMap", prefilterMap);
+	shader->setSampler("prefilterMap2", prefilterMap2);
+	shader->setSampler("brdfLUT", brdfLUT);
+
+	shader->setFloat("mapInterpolationAmt", mapInterpolationAmt);
+	shader->setMat3("sunSpinAmount", sunSpinAmount);
 }

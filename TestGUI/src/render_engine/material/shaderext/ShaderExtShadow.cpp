@@ -1,6 +1,6 @@
 #include "ShaderExtShadow.h"
 
-#include <glad/glad.h>
+#include "../Shader.h"
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
@@ -9,37 +9,24 @@ unsigned int ShaderExtShadow::pointLightShadows[MAX_SHADOWS];
 float ShaderExtShadow::pointLightShadowFarPlanes[MAX_SHADOWS];
 
 
-ShaderExtShadow::ShaderExtShadow(unsigned int programId)
+ShaderExtShadow::ShaderExtShadow(Shader* shader) : ShaderExt(shader)
 {
-	for (int i = 0; i < MAX_SHADOWS; i++)
-	{
-		spotLightShadowMapsUL[i] = glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str());
-		pointLightShadowMapsUL[i] = glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str());
-		pointLightShadowFarPlanesUL[i] = glGetUniformLocation(programId, ("pointLightShadowFarPlanes[" + std::to_string(i) + "]").c_str());
-	}
 }
 
-void ShaderExtShadow::setupExtension(unsigned int& tex, nlohmann::json* params)		// @REFACTOR: get rendermanager to insert the texture bindings yo!
+void ShaderExtShadow::setupExtension()		// @REFACTOR: get rendermanager to insert the texture bindings yo!
 {
 	for (int i = 0; i < MAX_SHADOWS; i++)
 	{
 		if (spotLightShadows[i] != 0)
 		{
-			glBindTextureUnit(tex, spotLightShadows[i]);
-			glUniform1i(spotLightShadowMapsUL[i], (int)tex);
-			tex++;
-
+			shader->setSampler("spotLightShadowMaps[" + std::to_string(i) + "]", spotLightShadows[i]);
 			continue;
 		}
 
 		if (pointLightShadows[i] != 0)
 		{
-			glBindTextureUnit(tex, pointLightShadows[i]);
-			glUniform1i(pointLightShadowMapsUL[i], (int)tex);
-			tex++;
-
-			glUniform1f(pointLightShadowFarPlanesUL[i], pointLightShadowFarPlanes[i]);
-
+			shader->setSampler("pointLightShadowMaps[" + std::to_string(i) + "]", pointLightShadows[i]);
+			shader->setFloat("pointLightShadowFarPlanes[" + std::to_string(i) + "]", pointLightShadowFarPlanes[i]);
 			continue;
 		}
 	}

@@ -5,9 +5,6 @@
 class ShaderExtSSAO : public ShaderExt
 {
 public:
-	ShaderExtSSAO(unsigned int programId);
-	void setupExtension(unsigned int& tex, nlohmann::json* params = nullptr);
-
-private:
-	int ssaoTextureUL, invFullResUL;
+	ShaderExtSSAO(Shader* shader);
+	void setupExtension();
 };

@@ -1,21 +1,16 @@
 #include "ShaderExtSSAO.h"
 
-#include <glad/glad.h>
+#include "../Shader.h"
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
 
-ShaderExtSSAO::ShaderExtSSAO(unsigned int programId)
+ShaderExtSSAO::ShaderExtSSAO(Shader* shader) : ShaderExt(shader)
 {
-	ssaoTextureUL = glGetUniformLocation(programId, "ssaoTexture");
-	invFullResUL = glGetUniformLocation(programId, "invFullResolution");
 }
 
-void ShaderExtSSAO::setupExtension(unsigned int& tex, nlohmann::json* params)
+void ShaderExtSSAO::setupExtension()		// @REFACTOR: have rendermanager update the invFullResolution vec2 value! And the ssao texture
 {
-	glBindTextureUnit(tex, MainLoop::getInstance().renderManager->getSSAOTexture());
-	glUniform1i(ssaoTextureUL, (int)tex);
-	tex++;
-
-	glUniform2f(invFullResUL, 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
+	shader->setSampler("ssaoTexture", MainLoop::getInstance().renderManager->getSSAOTexture());
+	shader->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
 }
