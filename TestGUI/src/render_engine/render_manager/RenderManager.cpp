@@ -1085,18 +1085,6 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 }
 
 
-
-GLuint RenderManager::getSSAOTexture()
-{
-	return ssaoTexture->getHandle();
-}
-
-GLuint RenderManager::getDepthMap()
-{
-	return zPrePassDepthTexture->getHandle();
-}
-
-
 void RenderManager::renderScene()
 {
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

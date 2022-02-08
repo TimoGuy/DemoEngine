@@ -7,4 +7,6 @@ class ShaderExtZBuffer : public ShaderExt
 public:
 	ShaderExtZBuffer(Shader* shader);
 	void setupExtension();
+
+	static unsigned int depthTexture;
 };

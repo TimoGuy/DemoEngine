@@ -7,4 +7,6 @@ class ShaderExtSSAO : public ShaderExt
 public:
 	ShaderExtSSAO(Shader* shader);
 	void setupExtension();
+
+	static unsigned int ssaoTexture;
 };

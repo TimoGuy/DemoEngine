@@ -5,6 +5,8 @@
 #include "../../../mainloop/MainLoop.h"
 #include "../../render_manager/RenderManager.h"
 
+unsigned int ShaderExtZBuffer::depthTexture;
+
 
 ShaderExtZBuffer::ShaderExtZBuffer(Shader* shader) : ShaderExt(shader)
 {
@@ -12,5 +14,5 @@ ShaderExtZBuffer::ShaderExtZBuffer(Shader* shader) : ShaderExt(shader)
 
 void ShaderExtZBuffer::setupExtension()		// @REFACTOR: have rendermanager drop in that depth map texture!!!
 {
-	shader->setSampler("depthTexture", MainLoop::getInstance().renderManager->getDepthMap());
+	shader->setSampler("depthTexture", depthTexture);
 }
