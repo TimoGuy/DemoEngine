@@ -38,6 +38,7 @@ PBRMaterial::PBRMaterial(
 void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	myShader->use();
+	myShader->setMat4("cameraMatrix", MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix());
 	myShader->setSampler("albedoMap", albedoMap->getHandle());
 	myShader->setSampler("normalMap", normalMap->getHandle());
 	myShader->setSampler("metallicMap", metallicMap->getHandle());
@@ -72,6 +73,7 @@ ZellyMaterial::ZellyMaterial(glm::vec3 color) :
 void ZellyMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	myShader->use();
+	myShader->setMat4("cameraMatrix", MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix());
 	myShader->setVec3("zellyColor", color);
 	myShader->setFloat("ditherAlpha", ditherAlpha);
 }
@@ -95,6 +97,7 @@ LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
 void LvlGridMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	myShader->use();
+	myShader->setMat4("cameraMatrix", MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix());
 	myShader->setVec3("gridColor", color);
 	myShader->setVec4("tilingAndOffset", tilingAndOffset);
 	myShader->setSampler("gridTexture", ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle());

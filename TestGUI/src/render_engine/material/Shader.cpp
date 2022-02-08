@@ -119,107 +119,108 @@ Shader::~Shader()
 
 void Shader::use()
 {
+	currentTexIndex = 1;	// New shader means new textures, so we need to reset the texture binding counter
+	for (size_t i = 0; i < extensions.size(); i++)
+		extensions[i]->setupExtension();
+
 	if (currentlyBound == this)
 		return;
 
 	glUseProgram(programId);
 	currentlyBound = this;
-	currentTexIndex = 0;	// New shader means new textures, so we need to reset the texture binding counter
 
-	for (size_t i = 0; i < extensions.size(); i++)
-		extensions[i]->setupExtension();
 }
 
 
 void Shader::setBool(std::string uniformName, const bool& value) { setInt(uniformName, (int)value); }
 void Shader::setInt(std::string uniformName, const int& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform1i(programId, uniformLocationCache[uniformName], value);
+	glProgramUniform1i(programId, hickery/*uniformLocationCache[uniformName]*/, value);
 }
 
 
 void Shader::setUint(std::string uniformName, const unsigned int& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform1ui(programId, uniformLocationCache[uniformName], value);
+	glProgramUniform1ui(programId, hickery/*uniformLocationCache[uniformName]*/, value);
 }
 
 
 void Shader::setFloat(std::string uniformName, const float& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform1f(programId, uniformLocationCache[uniformName], value);
+	glProgramUniform1f(programId, hickery/*uniformLocationCache[uniformName]*/, value);
 }
 
 
 void Shader::setVec2(std::string uniformName, const glm::vec2& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform2fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+	glProgramUniform2fv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, glm::value_ptr(value));
 }
 
 
 void Shader::setVec3(std::string uniformName, const glm::vec3& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform3fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+	glProgramUniform3fv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, glm::value_ptr(value));
 }
 
 
 void Shader::setVec4(std::string uniformName, const glm::vec4& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform4fv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+	glProgramUniform4fv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, glm::value_ptr(value));
 }
 
 
 void Shader::setIvec4(std::string uniformName, const glm::ivec4& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniform4iv(programId, uniformLocationCache[uniformName], 1, glm::value_ptr(value));
+	glProgramUniform4iv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, glm::value_ptr(value));
 }
 
 
 void Shader::setMat3(std::string uniformName, const glm::mat3& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniformMatrix3fv(programId, uniformLocationCache[uniformName], 1, GL_FALSE, glm::value_ptr(value));
+	glProgramUniformMatrix3fv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 
 void Shader::setMat4(std::string uniformName, const glm::mat4& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
-	glProgramUniformMatrix4fv(programId, uniformLocationCache[uniformName], 1, GL_FALSE, glm::value_ptr(value));
+	glProgramUniformMatrix4fv(programId, hickery/*uniformLocationCache[uniformName]*/, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 
 void Shader::setSampler(std::string uniformName, const GLuint& value)
 {
-	if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-		uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
+	//if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
+		int hickery/*uniformLocationCache[uniformName]*/ = glGetUniformLocation(programId, uniformName.c_str());
 
 	glBindTextureUnit(currentTexIndex, value);
-	glProgramUniform1i(programId, uniformLocationCache[uniformName], currentTexIndex);
+	glProgramUniform1i(programId, hickery/*uniformLocationCache[uniformName]*/, currentTexIndex);
 	currentTexIndex++;
 }
 
