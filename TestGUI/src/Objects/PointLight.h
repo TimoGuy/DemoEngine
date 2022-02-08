@@ -3,6 +3,8 @@
 #include "BaseObject.h"
 #include "../render_engine/camera/Camera.h"
 
+class Shader;
+
 
 class PointLightLight : public LightComponent
 {
@@ -14,7 +16,8 @@ public:
 
 	float nearPlane = 1.0f, farPlane = 25.0f;
 
-	GLuint pointLightShaderProgram, lightFBO;
+	GLuint lightFBO;
+	Shader* pointLightShadowShader;
 private:
 	bool shadowMapsCreated = false;
 

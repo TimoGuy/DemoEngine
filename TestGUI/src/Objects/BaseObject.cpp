@@ -13,6 +13,7 @@
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/model/animation/Animator.h"
 #include "../render_engine/resources/Resources.h"
+#include "../render_engine/material/Shader.h"
 
 
 //
@@ -259,7 +260,7 @@ void RenderComponent::clearAllModels()
 	modelsWithMetadata.clear();
 }
 
-void RenderComponent::render(const ViewFrustum* viewFrustum, GLuint zPassProgramId)								// @Copypasta
+void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader)								// @Copypasta
 {
 #ifdef _DEVELOP
 	refreshResources();
@@ -279,11 +280,11 @@ void RenderComponent::render(const ViewFrustum* viewFrustum, GLuint zPassProgram
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), zPassProgramId, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
+		mwmd.model->render(baseObject->getTransform(), zPassShader, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
 	}
 }
 
-void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
+void RenderComponent::renderShadow(Shader* shader)		// @Copypasta
 {
 #ifdef _DEVELOP
 	refreshResources();
@@ -296,7 +297,7 @@ void RenderComponent::renderShadow(GLuint programId)		// @Copypasta
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), programId, nullptr, boneTransforms, RenderStage::OVERRIDE);
+		mwmd.model->render(baseObject->getTransform(), shader, nullptr, boneTransforms, RenderStage::OVERRIDE);
 	}
 }
 

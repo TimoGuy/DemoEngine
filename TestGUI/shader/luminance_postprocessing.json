@@ -4,6 +4,7 @@
   "F": "luminance_postprocessing.frag",
   "props": [
     "sampler2D hdrColorBuffer",
-    "sampler2D volumetricLighting"
+    "sampler2D volumetricLighting",
+    "vec3 sunLightColor"
   ]
 }

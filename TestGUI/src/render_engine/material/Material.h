@@ -6,16 +6,17 @@
 
 typedef unsigned int GLuint;
 class Texture;
+class Shader;
 
 
 class Material
 {
 public:
-	Material(GLuint myShaderId, float ditherAlpha, float fadeAlpha, bool isTransparent);
+	Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent);
 
 	virtual void applyTextureUniforms(nlohmann::json injection = nullptr) = 0;
 	virtual Texture* getMainTexture() = 0;
-	GLuint getShaderId() { return myShaderId; }
+	Shader* getShader() { return myShader; }
 
 	static bool resetFlag;
 
@@ -24,7 +25,7 @@ public:
 	bool isTransparent;
 
 protected:
-	GLuint myShaderId;
+	Shader* myShader;
 };
 
 

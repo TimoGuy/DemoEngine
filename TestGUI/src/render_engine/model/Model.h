@@ -11,6 +11,7 @@
 
 class Animation;
 struct ViewFrustum;
+class Shader;
 typedef unsigned int GLuint;
 
 struct BoneInfo
@@ -27,7 +28,7 @@ public:
 	Model(const char* path, std::vector<std::string> animationNames);
 	Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights = true);			// NOTE: this is for VoxelGroup class
 	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
-	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
+	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
 #ifdef _DEVELOP
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);

@@ -23,6 +23,7 @@
 #endif
 
 #include "../material/Texture.h"
+#include "../material/Shader.h"
 #include "../material/shaderext/ShaderExtCSM_shadow.h"
 #include "../material/shaderext/ShaderExtPBR_daynight_cycle.h"
 #include "../material/shaderext/ShaderExtShadow.h"
@@ -169,29 +170,28 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	Texture::setLoadSync(false);
 
 	// Convert HDR dynamic skybox to cubemap equivalent
-	glUseProgram(skybox_program_id);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &sunOrientation[0]);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), skyboxParams.sunRadius);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunAlpha"), 0.0f);				// NOTE: don't include sun in the hdr skies.
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &skyboxParams.sunColor[0]);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyboxParams.skyColor1[0]);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &skyboxParams.groundColor[0]);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), skyboxParams.sunIntensity);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), skyboxParams.globalExposure);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
-	glUniformMatrix3fv(glGetUniformLocation(skybox_program_id, "nightSkyTransform"), 1, GL_FALSE, glm::value_ptr(skyboxParams.nightSkyTransform));
-	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
+	skybox_program_id->use();
+	skybox_program_id->setVec3("sunOrientation", sunOrientation);
+	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
+	skybox_program_id->setFloat("sunAlpha", 0.0f);
+	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
+	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
+	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
+	skybox_program_id->setFloat("sunIntensity", skyboxParams.sunIntensity);
+	skybox_program_id->setFloat("globalExposure", skyboxParams.globalExposure);
+	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
+	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
+	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
+	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	skybox_program_id->setMat4("projection", captureProjection);
 	
-	glBindTextureUnit(0, nightSkybox->getHandle());
-	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);
+	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	for (unsigned int i = 0; i < 6; i++)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+		skybox_program_id->setMat4("view", captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -220,18 +220,16 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradianceMapSize, irradianceMapSize);
 
-	glUseProgram(irradiance_program_id);
-	glUniform1i(glGetUniformLocation(irradiance_program_id, "environmentMap"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(irradiance_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	irradiance_program_id->use();
+	irradiance_program_id->setMat4("projection", captureProjection);
+	irradiance_program_id->setSampler("environmentMap", envCubemap);
 
 	// Render out the irradiance map!
 	glViewport(0, 0, irradianceMapSize, irradianceMapSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	for (unsigned int i = 0; i < 6; i++)
 	{
-		glUniformMatrix4fv(glGetUniformLocation(irradiance_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+		irradiance_program_id->setMat4("view", captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap[index], 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -262,11 +260,9 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	//
 	// Run Monte-carlo simulation on the environment lighting
 	//
-	glUseProgram(prefilter_program_id);
-	glUniform1i(glGetUniformLocation(prefilter_program_id, "environmentMap"), 0);
-	glUniformMatrix4fv(glGetUniformLocation(prefilter_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(captureProjection));
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	prefilter_program_id->use();
+	prefilter_program_id->setSampler("environmentMap", envCubemap);
+	prefilter_program_id->setMat4("projection", captureProjection);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
 	unsigned int maxMipLevels = 5;
@@ -280,10 +276,10 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 		glViewport(0, 0, mipWidth, mipHeight);
 
 		float roughness = (float)mip / (float)(maxMipLevels - 1);
-		glUniform1f(glGetUniformLocation(prefilter_program_id, "roughness"), roughness);
+		prefilter_program_id->setFloat("roughness", roughness);
 		for (unsigned int i = 0; i < 6; i++)
 		{
-			glUniformMatrix4fv(glGetUniformLocation(prefilter_program_id, "view"), 1, GL_FALSE, glm::value_ptr(captureViews[i]));
+			prefilter_program_id->setMat4("view", captureViews[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap[index], mip);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -318,7 +314,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
 
 	glViewport(0, 0, brdfLUTSize, brdfLUTSize);
-	glUseProgram(brdf_program_id);
+	brdf_program_id->use();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	renderQuad();
 
@@ -626,23 +622,23 @@ void RenderManager::destroyLumenAdaptationTextures()
 
 void RenderManager::createShaderPrograms()
 {
-	skybox_program_id = *(GLuint*)Resources::getResource("shader;skybox");
-	debug_csm_program_id = *(GLuint*)Resources::getResource("shader;debugCSM");
-	text_program_id = *(GLuint*)Resources::getResource("shader;text");
-	irradiance_program_id = *(GLuint*)Resources::getResource("shader;irradianceGeneration");
-	prefilter_program_id = *(GLuint*)Resources::getResource("shader;pbrPrefilterGeneration");
-	brdf_program_id = *(GLuint*)Resources::getResource("shader;brdfGeneration");
-	hdrLuminanceProgramId = *(GLuint*)Resources::getResource("shader;luminance_postprocessing");
-	hdrLumAdaptationComputeProgramId = *(GLuint*)Resources::getResource("shader;computeLuminanceAdaptation");
-	bloom_postprocessing_program_id = *(GLuint*)Resources::getResource("shader;bloom_postprocessing");
-	postprocessing_program_id = *(GLuint*)Resources::getResource("shader;postprocessing");
-	pbrShaderProgramId = *(GLuint*)Resources::getResource("shader;pbr");
-	hudUIProgramId = *(GLuint*)Resources::getResource("shader;hudUI");
-	INTERNALzPassShader = *(GLuint*)Resources::getResource("shader;zPassShader");
-	ssaoProgramId = *(GLuint*)Resources::getResource("shader;ssao");
-	volumetricProgramId = *(GLuint*)Resources::getResource("shader;volumetricLighting");
-	blurXProgramId = *(GLuint*)Resources::getResource("shader;blurX");
-	blurYProgramId = *(GLuint*)Resources::getResource("shader;blurY");
+	skybox_program_id = (Shader*)Resources::getResource("shader;skybox");
+	debug_csm_program_id = (Shader*)Resources::getResource("shader;debugCSM");
+	text_program_id = (Shader*)Resources::getResource("shader;text");
+	irradiance_program_id = (Shader*)Resources::getResource("shader;irradianceGeneration");
+	prefilter_program_id = (Shader*)Resources::getResource("shader;pbrPrefilterGeneration");
+	brdf_program_id = (Shader*)Resources::getResource("shader;brdfGeneration");
+	hdrLuminanceProgramId = (Shader*)Resources::getResource("shader;luminance_postprocessing");
+	hdrLumAdaptationComputeProgramId = (Shader*)Resources::getResource("shader;computeLuminanceAdaptation");
+	bloom_postprocessing_program_id = (Shader*)Resources::getResource("shader;bloom_postprocessing");
+	postprocessing_program_id = (Shader*)Resources::getResource("shader;postprocessing");
+	pbrShaderProgramId = (Shader*)Resources::getResource("shader;pbr");
+	hudUIProgramId = (Shader*)Resources::getResource("shader;hudUI");
+	INTERNALzPassShader = (Shader*)Resources::getResource("shader;zPassShader");
+	ssaoProgramId = (Shader*)Resources::getResource("shader;ssao");
+	volumetricProgramId = (Shader*)Resources::getResource("shader;volumetricLighting");
+	blurXProgramId = (Shader*)Resources::getResource("shader;blurX");
+	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -836,9 +832,9 @@ void RenderManager::render()
 			glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			pickingRenderFormatProgramId = *(GLuint*)Resources::getResource("shader;pickingRenderFormat");
-			glUseProgram(pickingRenderFormatProgramId);
-			glUniformMatrix4fv(glGetUniformLocation(pickingRenderFormatProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+			pickingRenderFormatShader = (Shader*)Resources::getResource("shader;pickingRenderFormat");
+			pickingRenderFormatShader->use();
+			pickingRenderFormatShader->setMat4("cameraMatrix", cameraProjection * cameraView);
 			for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
 			{
 				if (i == (uint32_t)currentSelectedObjectIndex)
@@ -848,8 +844,8 @@ void RenderManager::render()
 				if (rc == nullptr)
 					continue;
 
-				glUniform1ui(glGetUniformLocation(pickingRenderFormatProgramId, "objectID"), i + 1);
-				rc->renderShadow(pickingRenderFormatProgramId);
+				pickingRenderFormatShader->setUint("objectID", i + 1);
+				rc->renderShadow(pickingRenderFormatShader);
 			}
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -890,18 +886,11 @@ void RenderManager::render()
 
 		glViewport(0, 0, volumetricTextureWidth, volumetricTextureHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
-		glUseProgram(volumetricProgramId);
-		glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-		glBindTextureUnit(1, mainlight->shadowMapTexture);
-		glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainCameraPosition"), 1, glm::value_ptr(MainLoop::getInstance().camera.position));
-		glProgramUniform3fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "mainlightDirection"), 1, glm::value_ptr(mainlight->facingDirection));
-		glProgramUniform1i(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cascadeCount"), (GLint)((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size());
-		for (size_t j = 0; j < ((DirectionalLightLight*)mainlight)->shadowCascadeLevels.size(); ++j)
-			glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)mainlight)->shadowCascadeLevels[j]);
-		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "cameraView"), 1, GL_FALSE, glm::value_ptr(cameraView));
-		glProgramUniform1f(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "farPlane"), mainlight->shadowFarPlane);
-		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseProjectionMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraProjection)));
-		glProgramUniformMatrix4fv(volumetricProgramId, glGetUniformLocation(volumetricProgramId, "inverseViewMatrix"), 1, GL_FALSE, glm::value_ptr(glm::inverse(cameraView)));
+		volumetricProgramId->use();
+		volumetricProgramId->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+		volumetricProgramId->setVec3("mainlightDirection", mainlight->facingDirection);
+		volumetricProgramId->setMat4("inverseProjectionMatrix", glm::inverse(cameraProjection));
+		volumetricProgramId->setMat4("inverseViewMatrix", glm::inverse(cameraView));
 		renderQuad();
 
 		//
@@ -909,14 +898,14 @@ void RenderManager::render()
 		//
 		glBindFramebuffer(GL_FRAMEBUFFER, volumetricBlurFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(blurXProgramId);
-		glBindTextureUnit(0, volumetricTexture->getHandle());
+		blurXProgramId->use();
+		blurXProgramId->setSampler("textureMap", volumetricTexture->getHandle());
 		renderQuad();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, volumetricFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(blurYProgramId);
-		glBindTextureUnit(0, volumetricBlurTexture->getHandle());
+		blurYProgramId->use();
+		blurYProgramId->setSampler("textureMap", volumetricBlurTexture->getHandle());
 		renderQuad();
 	}
 
@@ -926,10 +915,10 @@ void RenderManager::render()
 	glViewport(0, 0, luminanceTextureSize, luminanceTextureSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrLumFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(hdrLuminanceProgramId);
-	glBindTextureUnit(0, hdrColorBuffer);
-	glBindTextureUnit(1, volumetricTexture->getHandle());
-	glProgramUniform3fv(hdrLuminanceProgramId, glGetUniformLocation(hdrLuminanceProgramId, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal));
+	hdrLuminanceProgramId->use();
+	hdrLuminanceProgramId->setSampler("hdrColorBuffer", hdrColorBuffer);
+	hdrLuminanceProgramId->setSampler("volumetricLighting", volumetricTexture->getHandle());
+	hdrLuminanceProgramId->setVec3("sunLightColor", mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal);
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
 
@@ -937,13 +926,13 @@ void RenderManager::render()
 	// Kick off light adaptation compute shader
 	//
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	glUseProgram(hdrLumAdaptationComputeProgramId);
+	hdrLumAdaptationComputeProgramId->use();
 	glBindImageTexture(0, hdrLumAdaptationPrevious->getHandle(), 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(1, hdrLumAdaptation1x1, 0, GL_TRUE, 0, GL_READ_ONLY, GL_R16F);
 	glBindImageTexture(2, hdrLumAdaptationProcessed->getHandle(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_R16F);
 	//constexpr glm::vec2 adaptationSpeeds(0.5f, 2.5f);
 	constexpr glm::vec2 adaptationSpeeds(1.5f, 2.5f);
-	glProgramUniform2fv(hdrLumAdaptationComputeProgramId, glGetUniformLocation(hdrLumAdaptationComputeProgramId, "adaptationSpeed"), 1, glm::value_ptr(adaptationSpeeds * MainLoop::getInstance().deltaTime));
+	hdrLumAdaptationComputeProgramId->setVec2("adaptationSpeed", adaptationSpeeds* MainLoop::getInstance().deltaTime);
 	glDispatchCompute(1, 1, 1);
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 
@@ -977,13 +966,13 @@ void RenderManager::render()
 				{
 					float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
 					//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
-					GLuint selectionWireframeProgramId =
-						*(GLuint*)Resources::getResource("shader;selectionSkinnedWireframe");
-					glUseProgram(selectionWireframeProgramId);
-					glUniform4f(glGetUniformLocation(selectionWireframeProgramId, "color"), 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f));
-					glUniform1f(glGetUniformLocation(selectionWireframeProgramId, "colorIntensity"), evaluatedIntensityValue);
-					glUniformMatrix4fv(glGetUniformLocation(selectionWireframeProgramId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
-					rc->renderShadow(selectionWireframeProgramId);
+					Shader* selectionWireframeShader =
+						(Shader*)Resources::getResource("shader;selectionSkinnedWireframe");
+					selectionWireframeShader->use();
+					selectionWireframeShader->setVec4("color", { 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f) });
+					selectionWireframeShader->setFloat("colorIntensity", evaluatedIntensityValue);
+					selectionWireframeShader->setMat4("cameraMatrix", cameraProjection* cameraView);
+					rc->renderShadow(selectionWireframeShader);
 				}
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				glDepthMask(GL_TRUE);
@@ -1015,13 +1004,11 @@ void RenderManager::render()
 
 			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
 			glClear(GL_COLOR_BUFFER_BIT);
-			glUseProgram(bloom_postprocessing_program_id);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
-			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "hdrColorBuffer"), 0);
-			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "stage"), stageNumber);
-			glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "firstcopy"), firstcopy);
-			glUniform1f(glGetUniformLocation(bloom_postprocessing_program_id, "downscaledFactor"), downscaledFactor);
+			bloom_postprocessing_program_id->use();
+			bloom_postprocessing_program_id->setSampler("hdrColorBuffer", firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
+			bloom_postprocessing_program_id->setInt("stage", stageNumber);
+			bloom_postprocessing_program_id->setInt("firstcopy", firstcopy);
+			bloom_postprocessing_program_id->setFloat("downscaledFactor", downscaledFactor);
 			renderQuad();
 
 			firstcopy = false;
@@ -1046,15 +1033,12 @@ void RenderManager::render()
 
 		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glUseProgram(bloom_postprocessing_program_id);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[colorBufferIndex]);
-		glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "hdrColorBuffer"), 0);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, bloomColorBuffers[smallerColorBufferIndex]);
-		glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "smallerReconstructHDRColorBuffer"), 1);
-		glUniform1i(glGetUniformLocation(bloom_postprocessing_program_id, "stage"), 4);
-		glUniform1f(glGetUniformLocation(bloom_postprocessing_program_id, "downscaledFactor"), downscaledFactor);
+		bloom_postprocessing_program_id->use();
+		bloom_postprocessing_program_id->setSampler("hdrColorBuffer", bloomColorBuffers[colorBufferIndex]);
+		bloom_postprocessing_program_id->setSampler("smallerReconstructHDRColorBuffer", bloomColorBuffers[smallerColorBufferIndex]);
+		bloom_postprocessing_program_id->setInt("stage", 4);
+		bloom_postprocessing_program_id->setInt("firstcopy", firstcopy);
+		bloom_postprocessing_program_id->setFloat("downscaledFactor", downscaledFactor);
 		renderQuad();
 
 		firstReconstruction = false;
@@ -1069,15 +1053,14 @@ void RenderManager::render()
 	//
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glUseProgram(postprocessing_program_id);
-
-	glBindTextureUnit(0, hdrColorBuffer);
-	glBindTextureUnit(1, bloomColorBuffers[1]);			// 1 is the final color buffer of the reconstructed bloom
-	glBindTextureUnit(2, hdrLumAdaptationProcessed->getHandle());
-	glBindTextureUnit(3, volumetricTexture->getHandle());
-	glProgramUniform3fv(postprocessing_program_id, glGetUniformLocation(postprocessing_program_id, "sunLightColor"), 1, glm::value_ptr(mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal));
-	glUniform1f(glGetUniformLocation(postprocessing_program_id, "exposure"), exposure);
-	glUniform1f(glGetUniformLocation(postprocessing_program_id, "bloomIntensity"), bloomIntensity);
+	postprocessing_program_id->use();
+	postprocessing_program_id->setSampler("hdrColorBuffer", hdrColorBuffer);
+	postprocessing_program_id->setSampler("bloomColorBuffer", bloomColorBuffers[1]);	// 1 is the final color buffer of the reconstructed bloom
+	postprocessing_program_id->setSampler("luminanceProcessed", hdrLumAdaptationProcessed->getHandle());
+	postprocessing_program_id->setSampler("volumetricLighting", volumetricTexture->getHandle());
+	postprocessing_program_id->setVec3("sunLightColor", mainlight->color* mainlight->colorIntensity* volumetricLightingStrength* volumetricLightingStrengthExternal);
+	postprocessing_program_id->setFloat("exposure", exposure);
+	postprocessing_program_id->setFloat("bloomIntensity", bloomIntensity);
 	renderQuad();
 
 	// Swap the hdrLumAdaptation ping-pong textures
@@ -1154,8 +1137,8 @@ void RenderManager::renderScene()
 	glBindFramebuffer(GL_FRAMEBUFFER, zPrePassFBO);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(INTERNALzPassShader);
-	glUniformMatrix4fv(glGetUniformLocation(INTERNALzPassShader, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraProjection * cameraView));
+	INTERNALzPassShader->use();
+	INTERNALzPassShader->setMat4("cameraMatrix", cameraProjection * cameraView);
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
@@ -1169,26 +1152,25 @@ void RenderManager::renderScene()
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(ssaoProgramId);
-	glBindTextureUnit(0, zPrePassDepthTexture->getHandle());
-	glBindTextureUnit(1, ssaoRotationTexture->getHandle());
-	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "fullResolution"), MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
-	glProgramUniform2f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "invFullResolution"), 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "cameraFOV"), MainLoop::getInstance().camera.fov);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zNear"), MainLoop::getInstance().camera.zNear);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "zFar"), MainLoop::getInstance().camera.zFar);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "powExponent"), ssaoScale);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "radius"), ssaoRadius);
-	glProgramUniform1f(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "bias"), ssaoBias);
-	glProgramUniformMatrix4fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
-	float projInfoPerspective[] = {
+	ssaoProgramId->use();
+	ssaoProgramId->setSampler("rotationTexture", ssaoRotationTexture->getHandle());
+	ssaoProgramId->setVec2("fullResolution", { MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height });
+	ssaoProgramId->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
+	ssaoProgramId->setFloat("cameraFOV", MainLoop::getInstance().camera.fov);
+	ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
+	ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
+	ssaoProgramId->setFloat("zFar", MainLoop::getInstance().camera.zFar);
+	ssaoProgramId->setFloat("powExponent", ssaoScale);
+	ssaoProgramId->setFloat("radius", ssaoRadius);
+	ssaoProgramId->setFloat("bias", ssaoBias);
+	ssaoProgramId->setMat4("projection", cameraProjection);
+	glm::vec4 projInfoPerspective = {
 		2.0f / (cameraProjection[0][0]),							// (x) * (R - L)/N
 		2.0f / (cameraProjection[1][1]),							// (y) * (T - B)/N
 		-(1.0f - cameraProjection[2][0]) / cameraProjection[0][0],  // L/N
 		-(1.0f + cameraProjection[2][1]) / cameraProjection[1][1],  // B/N
 	};
-	glProgramUniform4fv(ssaoProgramId, glGetUniformLocation(ssaoProgramId, "projInfo"), 1, projInfoPerspective);
+	ssaoProgramId->setVec4("projInfo", projInfoPerspective);
 	renderQuad();
 
 	//
@@ -1196,14 +1178,14 @@ void RenderManager::renderScene()
 	//
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(blurXProgramId);
-	glBindTextureUnit(0, ssaoTexture->getHandle());
+	blurXProgramId->use();
+	blurXProgramId->setSampler("textureMap", ssaoTexture->getHandle());
 	renderQuad();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glUseProgram(blurYProgramId);
-	glBindTextureUnit(0, ssaoBlurTexture->getHandle());
+	blurYProgramId->use();
+	blurYProgramId->setSampler("textureMap", ssaoBlurTexture->getHandle());
 	renderQuad();
 
 	glBlitNamedFramebuffer(
@@ -1227,24 +1209,23 @@ void RenderManager::renderScene()
 	//
 	glDepthMask(GL_FALSE);
 
-	glUseProgram(skybox_program_id);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunOrientation"), 1, &skyboxParams.sunOrientation[0]);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunRadius"), skyboxParams.sunRadius);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunAlpha"), skyboxParams.sunAlpha);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "sunColor"), 1, &skyboxParams.sunColor[0]);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "skyColor1"), 1, &skyboxParams.skyColor1[0]);
-	glUniform3fv(glGetUniformLocation(this->skybox_program_id, "groundColor"), 1, &skyboxParams.groundColor[0]);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "sunIntensity"), skyboxParams.sunIntensity);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "globalExposure"), skyboxParams.globalExposure);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "cloudHeight"), skyboxParams.cloudHeight);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinDim"), skyboxParams.perlinDim);
-	glUniform1f(glGetUniformLocation(skybox_program_id, "perlinTime"), skyboxParams.perlinTime);
-	glUniformMatrix3fv(glGetUniformLocation(skybox_program_id, "nightSkyTransform"), 1, GL_FALSE, glm::value_ptr(skyboxParams.nightSkyTransform));
-	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "projection"), 1, GL_FALSE, glm::value_ptr(cameraProjection));
-	glUniformMatrix4fv(glGetUniformLocation(this->skybox_program_id, "view"), 1, GL_FALSE, glm::value_ptr(cameraView));
+	skybox_program_id->use();
+	skybox_program_id->setVec3("sunOrientation", skyboxParams.sunOrientation);
+	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
+	skybox_program_id->setFloat("sunAlpha", skyboxParams.sunAlpha);
+	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
+	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
+	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
+	skybox_program_id->setFloat("sunIntensity", skyboxParams.sunIntensity);
+	skybox_program_id->setFloat("globalExposure", skyboxParams.globalExposure);
+	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
+	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
+	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
+	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	skybox_program_id->setMat4("projection", cameraProjection);
+	skybox_program_id->setMat4("view", cameraView);
 
-	glBindTextureUnit(0, nightSkybox->getHandle());
-	glUniform1i(glGetUniformLocation(skybox_program_id, "nightSkybox"), 0);
+	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 	//perlinTime += MainLoop::getInstance().deltaTime;
 
 	renderCube();
@@ -1441,7 +1422,7 @@ void RenderManager::renderScene()
 			gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.y / divisor });
 			gridMaterial->setColor(glm::vec3(0.1, 0.1, 1) * 5);
 			gridMaterial->applyTextureUniforms();
-			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * scale));
+			gridMaterial->getShader()->setMat4("modelMatrix", position * rotation * scale);
 			renderQuad();
 		}
 
@@ -1451,7 +1432,7 @@ void RenderManager::renderScene()
 			gridMaterial->setColor(glm::vec3(0.1, 1, 0.1) * 5);
 			gridMaterial->applyTextureUniforms();
 			glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
-			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * xRotate * scale));
+			gridMaterial->getShader()->setMat4("modelMatrix", position * rotation * xRotate * scale);
 			renderQuad();
 		}
 
@@ -1461,7 +1442,7 @@ void RenderManager::renderScene()
 			gridMaterial->setColor(glm::vec3(1, 0.1, 0.1) * 5);
 			gridMaterial->applyTextureUniforms();
 			glm::mat4 zRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 90, 0))));
-			glUniformMatrix4fv(glGetUniformLocation(gridMaterial->getShaderId(), "modelMatrix"), 1, GL_FALSE, glm::value_ptr(position * rotation * zRotate * scale));
+			gridMaterial->getShader()->setMat4("modelMatrix", position * rotation * zRotate * scale);
 			renderQuad();
 		}
 	}
@@ -1474,11 +1455,9 @@ void RenderManager::renderScene()
 	//
 	if (showShadowMapView)
 	{
-		glUseProgram(debug_csm_program_id);
-		glUniform1i(glGetUniformLocation(debug_csm_program_id, "layer"), debugCSMLayerNum);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D_ARRAY, MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
-		glUniform1i(glGetUniformLocation(debug_csm_program_id, "depthMap"), 0);
+		debug_csm_program_id->use();
+		debug_csm_program_id->setInt("layer", debugCSMLayerNum);
+		debug_csm_program_id->setSampler("depthMap", MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
 		renderQuad();
 	}
 }
@@ -1502,14 +1481,14 @@ void RenderManager::INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const gl
 	transparentRQ.distancesToCamera.push_back(distanceToCamera);
 }
 
-void RenderManager::renderSceneShadowPass(GLuint shaderProgramId)
+void RenderManager::renderSceneShadowPass(Shader* shader)
 {
 	//
 	// Render everything
 	//
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
-		MainLoop::getInstance().renderObjects[i]->renderShadow(shaderProgramId);
+		MainLoop::getInstance().renderObjects[i]->renderShadow(shader);
 	}
 }
 
@@ -1553,18 +1532,18 @@ void RenderManager::renderUI()
 	glViewport(0, 0, camWidth, camHeight);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(hudUIProgramId);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "padding"), padding);
-	glUniform2fv(glGetUniformLocation(hudUIProgramId, "staminaBarExtents"), 1, &staminaBarExtents[0]);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaAmountFilled"), staminaAmountFilled);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaDepleteChaser"), staminaDepleteChaser);
-	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor1"), 1, &staminaBarColor1[0]);
-	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor2"), 1, &staminaBarColor2[0]);
-	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor3"), 1, &staminaBarColor3[0]);
-	glUniform3fv(glGetUniformLocation(hudUIProgramId, "staminaBarColor4"), 1, &staminaBarColor4[0]);
-	glUniform1f(glGetUniformLocation(hudUIProgramId, "staminaBarDepleteColorIntensity"), staminaBarDepleteColorIntensity);
-	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
-	glUniformMatrix4fv(glGetUniformLocation(hudUIProgramId, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+	hudUIProgramId->use();
+	hudUIProgramId->setFloat("padding", padding);
+	hudUIProgramId->setVec2("staminaBarExtents", staminaBarExtents);
+	hudUIProgramId->setFloat("staminaAmountFilled", staminaAmountFilled);
+	hudUIProgramId->setFloat("staminaDepleteChaser", staminaDepleteChaser);
+	hudUIProgramId->setVec3("staminaBarColor1", staminaBarColor1);
+	hudUIProgramId->setVec3("staminaBarColor2", staminaBarColor2);
+	hudUIProgramId->setVec3("staminaBarColor3", staminaBarColor3);
+	hudUIProgramId->setVec3("staminaBarColor4", staminaBarColor4);
+	hudUIProgramId->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
+	hudUIProgramId->setMat4("viewMatrix", viewMatrix);
+	hudUIProgramId->setMat4("modelMatrix", modelMatrix);
 	renderQuad();
 
 	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);

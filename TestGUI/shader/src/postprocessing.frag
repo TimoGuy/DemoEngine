@@ -3,10 +3,10 @@
 out vec4 fragColor;
 in vec2 texCoord;
 
-layout(binding = 0) uniform sampler2D hdrColorBuffer;
-layout(binding = 1) uniform sampler2D bloomColorBuffer;
-layout(binding = 2) uniform sampler2D luminanceProcessed;
-layout(binding = 3) uniform sampler2D volumetricLighting;
+uniform sampler2D hdrColorBuffer;
+uniform sampler2D bloomColorBuffer;
+uniform sampler2D luminanceProcessed;
+uniform sampler2D volumetricLighting;
 
 //uniform float ssaoScale;		@Deprecate
 //uniform float ssaoBias;

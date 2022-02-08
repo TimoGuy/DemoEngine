@@ -8,6 +8,7 @@
 #include "../render_engine/material/Texture.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
+#include "../render_engine/material/Shader.h"
 #include "../utils/GameState.h"
 
 #define LERP(a, b, t) (a) + (t) * ((b) - (a))
@@ -203,7 +204,7 @@ void DirectionalLightLight::renderPassShadowMap()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(cascadedShaderProgram);
+	csmShader->use();
 
 	// Setup UBOs
 	const auto lightMatrices = getLightSpaceMatrices();
@@ -220,7 +221,7 @@ void DirectionalLightLight::renderPassShadowMap()
 	// the clip space to actually just get clamped. This forces things to stay inside
 	// the shadowmap when creating it, especially with the CSM
 	glEnable(GL_DEPTH_CLAMP);
-	MainLoop::getInstance().renderManager->renderSceneShadowPass(cascadedShaderProgram);
+	MainLoop::getInstance().renderManager->renderSceneShadowPass(csmShader);
 	glDisable(GL_DEPTH_CLAMP);
 
 	//glCullFace(GL_BACK);
@@ -229,7 +230,7 @@ void DirectionalLightLight::renderPassShadowMap()
 
 void DirectionalLightLight::refreshResources()
 {
-	cascadedShaderProgram = *(GLuint*)Resources::getResource("shader;csmShadowPass");
+	csmShader = (Shader*)Resources::getResource("shader;csmShadowPass");
 }
 
 std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const glm::mat4& proj, const glm::mat4& view)

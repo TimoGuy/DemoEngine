@@ -15,6 +15,7 @@
 
 
 class Texture;
+class Shader;
 typedef unsigned int GLuint;
 
 namespace PhysicsUtils
@@ -103,7 +104,7 @@ public:
 
 	void render();
 	void renderScene();
-	void renderSceneShadowPass(GLuint shaderProgramId);
+	void renderSceneShadowPass(Shader* shader);
 	void renderUI();
 
 
@@ -140,23 +141,26 @@ public:
 	inline void setVolumetricLightingStrength(float amount) { volumetricLightingStrengthExternal = amount; }
 
 private:
-	GLuint debug_csm_program_id, text_program_id, irradiance_program_id, prefilter_program_id, brdf_program_id, bloom_postprocessing_program_id, postprocessing_program_id, pbrShaderProgramId, hudUIProgramId;
+	Shader* debug_csm_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *hudUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
 	// HDR screen luminance adjustment
-	GLuint hdrLuminanceProgramId, hdrLumAdaptationComputeProgramId, hdrLumFBO, hdrLumAdaptation1x1;
+	Shader* hdrLuminanceProgramId, *hdrLumAdaptationComputeProgramId;
+	GLuint hdrLumFBO, hdrLumAdaptation1x1;
 	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
 
 	// Volumetric lighting
-	GLuint volumetricFBO, volumetricBlurFBO, volumetricProgramId, blurXProgramId, blurYProgramId;
+	Shader* volumetricProgramId, *blurXProgramId, *blurYProgramId;
+	GLuint volumetricFBO, volumetricBlurFBO;
 	Texture* volumetricTexture;
 	Texture* volumetricBlurTexture;
 	int volumetricTextureWidth, volumetricTextureHeight;
 	float volumetricLightingStrength, volumetricLightingStrengthExternal;
 
 	// SSAO effect			// @Deprecate: Looks like the S word
-	GLuint ssaoFBO, ssaoBlurFBO, ssaoProgramId;// , blurXProgramId, blurYProgramId;
+	Shader* ssaoProgramId;
+	GLuint ssaoFBO, ssaoBlurFBO;// , blurXProgramId, blurYProgramId;
 	float ssaoFBOSize = 1024;
 	Texture* ssaoRotationTexture;
 	Texture* ssaoTexture;
@@ -174,7 +178,7 @@ private:
 	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
 
 	// Skybox Rendering
-	GLuint skybox_program_id;
+	Shader* skybox_program_id;
 	SkyboxParams skyboxParams;
 	static const size_t numSkyMaps = 6;
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
@@ -205,7 +209,7 @@ private:
 	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
 	// Render Queues
-	GLuint INTERNALzPassShader;
+	Shader* INTERNALzPassShader;
 	GLuint zPrePassFBO;
 	Texture* zPrePassDepthTexture;
 	//Texture* ssNormalTexture;		@DEPRECATE: normal reconstruction was faster for HBAO, so this'll get the can. // Kinda like a normal map for a g-buffer
@@ -236,7 +240,7 @@ public:
 private:
 	bool DEBUGdoPicking = false;
 
-	GLuint pickingRenderFormatProgramId;
+	Shader* pickingRenderFormatShader;
 
 	GLuint pickingFBO;
 	GLuint pickingRBO;

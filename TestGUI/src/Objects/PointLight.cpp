@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "../mainloop/MainLoop.h"
 #include "../render_engine/material/Texture.h"
+#include "../render_engine/material/Shader.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 
@@ -166,9 +167,9 @@ void PointLightLight::configureShaderAndMatrices()
 	shadowTransforms.push_back(shadowProjection * glm::lookAt(position, position + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
 
 	for (size_t i = 0; i < 6; i++)
-		glUniformMatrix4fv(glGetUniformLocation(pointLightShaderProgram, ("shadowMatrices[" + std::to_string(i) + "]").c_str()), 1, GL_FALSE, glm::value_ptr(shadowTransforms[i]));
-	glUniform1f(glGetUniformLocation(pointLightShaderProgram, "farPlane"), farPlane);
-	glUniform3fv(glGetUniformLocation(pointLightShaderProgram, "lightPosition"), 1, glm::value_ptr(position));
+		pointLightShadowShader->setMat4("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+	pointLightShadowShader->setFloat("farPlane", farPlane);
+	pointLightShadowShader->setVec3("lightPosition", position);
 }
 
 void PointLightLight::renderPassShadowMap()
@@ -177,7 +178,7 @@ void PointLightLight::renderPassShadowMap()
 	refreshResources();
 #endif
 
-	glUseProgram(pointLightShaderProgram);
+	pointLightShadowShader->use();
 
 	// Render depth of scene
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
@@ -187,7 +188,7 @@ void PointLightLight::renderPassShadowMap()
 	//glCullFace(GL_FRONT);  // peter panning
 
 	configureShaderAndMatrices();
-	MainLoop::getInstance().renderManager->renderSceneShadowPass(pointLightShaderProgram);
+	MainLoop::getInstance().renderManager->renderSceneShadowPass(pointLightShadowShader);
 
 	//glCullFace(GL_BACK);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -195,7 +196,7 @@ void PointLightLight::renderPassShadowMap()
 
 void PointLightLight::refreshResources()
 {
-	pointLightShaderProgram = *(GLuint*)Resources::getResource("shader;pointLightShadowPass");
+	pointLightShadowShader = (Shader*)Resources::getResource("shader;pointLightShadowPass");
 }
 
 #ifdef _DEVELOP

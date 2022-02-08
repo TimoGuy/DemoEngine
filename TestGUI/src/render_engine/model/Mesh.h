@@ -8,8 +8,9 @@
 
 #define MAX_BONE_INFLUENCE 4
 
-
+class Shader;
 typedef unsigned int GLuint;
+
 
 //
 // This is an AABB struct used for strictly frustum culling.
@@ -47,7 +48,7 @@ public:
 	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName);
 	~Mesh();
 
-	void render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
+	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
 	void pickFromMaterialList(std::map<std::string, Material*> materialMap);
 

@@ -9,6 +9,7 @@
 #include "../camera/Camera.h"
 #include "../../mainloop/MainLoop.h"
 #include "../render_manager/RenderManager.h"
+#include "../material/Shader.h"
 
 
 Model::Model() { scene = nullptr; }
@@ -148,12 +149,12 @@ bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* 
 }
 
 
-void Model::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
+void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
 {
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
 		if (whichMeshesInView == nullptr || (*whichMeshesInView)[i])
-			meshes[i].render(modelMatrix * localTransform, shaderIdOverride, boneTransforms, renderStage);
+			meshes[i].render(modelMatrix * localTransform, shaderOverride, boneTransforms, renderStage);
 	}
 }
 

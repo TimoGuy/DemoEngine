@@ -140,6 +140,7 @@ struct ModelWithMetadata
 	Animator* modelAnimator;
 };
 
+class Shader;
 struct ViewFrustum;
 class RenderComponent final
 {
@@ -154,8 +155,8 @@ public:
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
 	void clearAllModels();
 
-	void render(const ViewFrustum* viewFrustum, GLuint zPassProgramId);
-	void renderShadow(GLuint programId);
+	void render(const ViewFrustum* viewFrustum, Shader* zPassShader);
+	void renderShadow(Shader* shader);
 
 #ifdef _DEVELOP
 	void TEMPrenderImguiModelBounds();

@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "../resources/Resources.h"
 #include "../render_manager/RenderManager.h"
+#include "../material/Shader.h"
 #include "../../mainloop/MainLoop.h"
 
 #include <iostream>
@@ -12,48 +13,7 @@
 
 bool Material::resetFlag = false;
 
-Material::Material(GLuint myShaderId, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShaderId(myShaderId), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
-
-
-//
-// Helper funks
-//
-GLuint currentShaderId = 0;
-glm::mat3 currentSunSpinAmount;
-float mapInterpolationAmt = -1;
-void setupShader(GLuint shaderId)
-{
-	//
-	// Only update whatever is necessary (when shader changes, the uniforms need to be rewritten fyi)
-	//
-	bool changeAll = Material::resetFlag;			// NOTE: at the start of every frame (RenderManager: renderScene()), Material::resetFlag is set to true
-	if (changeAll || currentShaderId != shaderId)
-	{
-		changeAll = true;
-
-		glUseProgram(shaderId);
-		glUniformMatrix4fv(glGetUniformLocation(shaderId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(MainLoop::getInstance().camera.calculateProjectionMatrix() * MainLoop::getInstance().camera.calculateViewMatrix()));
-		MainLoop::getInstance().renderManager->setupSceneShadows(shaderId);			// @TODO: is this the best method to do shadows???
-		
-		currentShaderId = shaderId;
-	}
-
-	const glm::mat3 sunSpinAmount = MainLoop::getInstance().renderManager->getSunSpinAmount();
-	if (changeAll || currentSunSpinAmount != sunSpinAmount)
-	{
-		glUniformMatrix3fv(glGetUniformLocation(shaderId, "sunSpinAmount"), 1, GL_FALSE, glm::value_ptr(sunSpinAmount));
-		currentSunSpinAmount = sunSpinAmount;
-	}
-
-	const float mapInterp= MainLoop::getInstance().renderManager->getMapInterpolationAmt();
-	if (changeAll || mapInterpolationAmt != mapInterp)
-	{
-		glUniform1f(glGetUniformLocation(shaderId, "mapInterpolationAmt"), mapInterp);
-		mapInterpolationAmt = mapInterp;
-	}
-
-	Material::resetFlag = false;
-}
+Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
 
 
 //
@@ -66,7 +26,7 @@ PBRMaterial::PBRMaterial(
 	Texture* roughnessMap,
 	float fadeAlpha,
 	glm::vec4 offsetTiling) :
-		Material(*(GLuint*)Resources::getResource("shader;pbr"), 1.0f, fadeAlpha, (fadeAlpha != 1.0f))
+		Material((Shader*)Resources::getResource("shader;pbr"), 1.0f, fadeAlpha, (fadeAlpha != 1.0f))
 {
 	PBRMaterial::albedoMap = albedoMap;
 	PBRMaterial::normalMap = normalMap;
@@ -77,61 +37,21 @@ PBRMaterial::PBRMaterial(
 
 void PBRMaterial::applyTextureUniforms(nlohmann::json injection)
 {
-	setupShader(myShaderId);
+	myShader->use();
+	myShader->setSampler("albedoMap", albedoMap->getHandle());
+	myShader->setSampler("normalMap", normalMap->getHandle());
+	myShader->setSampler("metallicMap", metallicMap->getHandle());
+	myShader->setSampler("roughnessMap", roughnessMap->getHandle());
 
-	RenderManager* r = MainLoop::getInstance().renderManager;
-	GLuint texUnit = 0;
-
-	glBindTextureUnit(texUnit, albedoMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "albedoMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, normalMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "normalMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, metallicMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "metallicMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, roughnessMap->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "roughnessMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getIrradianceMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getIrradianceMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getPrefilterMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getPrefilterMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getBRDFLUTTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), texUnit);
-	texUnit++;
-
-	glBindTextureUnit(texUnit, r->getSSAOTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "ssaoTexture"), texUnit);
-	texUnit++;
-
-	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
-	glUniform1f(glGetUniformLocation(myShaderId, "fadeAlpha"), fadeAlpha);
-	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
-	glUniform2f(glGetUniformLocation(myShaderId, "invFullResolution"), 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height);
+	myShader->setFloat("ditherAlpha", ditherAlpha);
+	myShader->setFloat("fadeAlpha", fadeAlpha);
+	myShader->setVec4("tilingAndOffset", tilingAndOffset);
 
 	glm::vec3 color(1.0f);
 	if (injection != nullptr && injection.contains("color"))
 		color = { injection["color"][0], injection["color"][1], injection["color"][2] };
 
-	glUniform3fv(glGetUniformLocation(myShaderId, "color"), 1, &color.x);
+	myShader->setVec3("color", color);
 }
 
 Texture* PBRMaterial::getMainTexture()
@@ -144,33 +64,16 @@ Texture* PBRMaterial::getMainTexture()
 // ZellyMaterial
 //
 ZellyMaterial::ZellyMaterial(glm::vec3 color) :
-	Material(*(GLuint*)Resources::getResource("shader;zelly"), 1.0f, 0.0f, true)
+	Material((Shader*)Resources::getResource("shader;zelly"), 1.0f, 0.0f, true)
 {
 	ZellyMaterial::color = color;
 }
 
 void ZellyMaterial::applyTextureUniforms(nlohmann::json injection)
 {
-	setupShader(myShaderId);
-
-	glUniform3fv(glGetUniformLocation(myShaderId, "zellyColor"), 1, &color.x);
-
-	glBindTextureUnit(0, MainLoop::getInstance().renderManager->getIrradianceMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap"), 0);
-
-	glBindTextureUnit(1, MainLoop::getInstance().renderManager->getIrradianceMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "irradianceMap2"), 1);
-
-	glBindTextureUnit(2, MainLoop::getInstance().renderManager->getPrefilterMap());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap"), 2);
-
-	glBindTextureUnit(3, MainLoop::getInstance().renderManager->getPrefilterMap2());
-	glUniform1i(glGetUniformLocation(myShaderId, "prefilterMap2"), 3);
-
-	glBindTextureUnit(4, MainLoop::getInstance().renderManager->getBRDFLUTTexture());
-	glUniform1i(glGetUniformLocation(myShaderId, "brdfLUT"), 4);
-
-	glUniform1f(glGetUniformLocation(myShaderId, "ditherAlpha"), ditherAlpha);
+	myShader->use();
+	myShader->setVec3("zellyColor", color);
+	myShader->setFloat("ditherAlpha", ditherAlpha);
 }
 
 Texture* ZellyMaterial::getMainTexture()
@@ -183,7 +86,7 @@ Texture* ZellyMaterial::getMainTexture()
 // LvlGridMaterial
 //
 LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
-	Material(*(GLuint*)Resources::getResource("shader;lvlGrid"), 1.0f, 0.0f, true)
+	Material((Shader*)Resources::getResource("shader;lvlGrid"), 1.0f, 0.0f, true)
 {
 	LvlGridMaterial::color = color;
 	LvlGridMaterial::tilingAndOffset = glm::vec4(50, 50, 0, 0);
@@ -191,13 +94,10 @@ LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
 
 void LvlGridMaterial::applyTextureUniforms(nlohmann::json injection)
 {
-	setupShader(myShaderId);
-
-	glUniform3fv(glGetUniformLocation(myShaderId, "gridColor"), 1, &color.x);
-	glUniform4fv(glGetUniformLocation(myShaderId, "tilingAndOffset"), 1, glm::value_ptr(tilingAndOffset));
-
-	glBindTextureUnit(0, ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle());
-	glUniform1i(glGetUniformLocation(myShaderId, "gridTexture"), 0);
+	myShader->use();
+	myShader->setVec3("gridColor", color);
+	myShader->setVec4("tilingAndOffset", tilingAndOffset);
+	myShader->setSampler("gridTexture", ((Texture*)Resources::getResource("texture;lvlGridTexture"))->getHandle());
 }
 
 Texture* LvlGridMaterial::getMainTexture()

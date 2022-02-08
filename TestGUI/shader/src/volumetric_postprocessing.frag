@@ -5,7 +5,7 @@ in vec2 texCoord;
 
 uniform vec3 mainlightDirection;
 
-layout(binding = 0) uniform sampler2D depthTexture;  // @REFACTOR: this should be in the zBuffer extension
+uniform sampler2D depthTexture;  // @REFACTOR: this should be in the zBuffer extension
 
 uniform mat4 inverseProjectionMatrix;       // @REFACTOR: put inside a ubo yo
 uniform mat4 inverseViewMatrix;       // @REFACTOR: put inside a ubo yo
@@ -13,7 +13,7 @@ uniform mat4 inverseViewMatrix;       // @REFACTOR: put inside a ubo yo
 uniform vec3 mainCameraPosition;       // @REFACTOR: put inside a ubo yo
 
 // ext: csm_shadow
-layout(binding = 1) uniform sampler2DArray csmShadowMap;
+uniform sampler2DArray csmShadowMap;
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1

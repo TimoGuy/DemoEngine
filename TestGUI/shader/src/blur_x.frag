@@ -4,7 +4,7 @@
 out vec4 fragColor;
 in vec2 texCoord;
 
-layout(binding = 0) uniform sampler2D textureMap;
+uniform sampler2D textureMap;
 
 const vec2 gaussFilter[11] = vec2[](
 	vec2(-5.0,  3.0/133.0),

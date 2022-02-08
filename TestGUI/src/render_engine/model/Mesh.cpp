@@ -5,6 +5,7 @@
 #include "../../mainloop/MainLoop.h"
 #include "../render_manager/RenderManager.h"
 #include "../material/Texture.h"
+#include "../material/Shader.h"
 
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName)
@@ -55,7 +56,7 @@ void Mesh::setupMesh()
     glBindVertexArray(0);
 }
 
-void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
+void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
 {
     bool needMainTexture = false;
 
@@ -83,7 +84,7 @@ void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const s
         if (material != nullptr)
         {
             material->applyTextureUniforms(materialInjections);
-            shaderIdOverride = material->getShaderId();
+            shaderOverride = material->getShader();
         }
     }
 
@@ -92,28 +93,27 @@ void Mesh::render(const glm::mat4& modelMatrix, GLuint shaderIdOverride, const s
     {
         if (renderStage == RenderStage::Z_PASS)
         {
-            glUniform1f(glGetUniformLocation(shaderIdOverride, "ditherAlpha"), material->ditherAlpha);
+            shaderOverride->setFloat("ditherAlpha", material->ditherAlpha);
 
             glm::vec3 x, y, z;
             z = -glm::normalize(MainLoop::getInstance().camera.orientation);
             x = glm::normalize(glm::vec3(z.z, 0.0f, -z.x));
             y = glm::cross(z, x);
             glm::mat3 normalToViewSpace(x, y, z);
-            glUniformMatrix3fv(glGetUniformLocation(shaderIdOverride, "normalToViewSpace"), 1, GL_FALSE, glm::value_ptr(normalToViewSpace));
+            shaderOverride->setMat3("normalToViewSpace", normalToViewSpace);
         }
 
         Texture* mainTexture = material->getMainTexture();
         if (mainTexture != nullptr)
         {
-            glBindTextureUnit(0, mainTexture->getHandle());
-            glUniform1i(glGetUniformLocation(shaderIdOverride, "ubauTexture"), 0);      // @Hardcode: when abstracted shaders come, pls make sure this is gone!
+            shaderOverride->setSampler("ubauTexture", mainTexture->getHandle());
         }
     }
 
     // Apply the model matrix
-    glUniformMatrix4fv(glGetUniformLocation(shaderIdOverride, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    shaderOverride->setMat4("modelMatrix", modelMatrix);
     if (renderStage != RenderStage::OVERRIDE)           // @TODO: when abstracting the shaders, do this kinda logic in the shader instead!
-        glUniformMatrix3fv(glGetUniformLocation(shaderIdOverride, "normalsModelMatrix"), 1, GL_FALSE, glm::value_ptr(glm::mat3(glm::transpose(glm::inverse(modelMatrix)))));
+        shaderOverride->setMat3("normalsModelMatrix", glm::mat3(glm::transpose(glm::inverse(modelMatrix))));
 
     // Apply bone transformations
     if (boneTransforms != nullptr)

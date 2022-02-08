@@ -3,8 +3,8 @@
 out vec4 fragColor;
 in vec2 texCoord;
 
-layout(binding = 0) uniform sampler2D hdrColorBuffer;
-layout(binding = 1) uniform sampler2D volumetricLighting;
+uniform sampler2D hdrColorBuffer;
+uniform sampler2D volumetricLighting;
 
 uniform vec3 sunLightColor;
 

@@ -4,7 +4,7 @@
 #include "../render_engine/camera/Camera.h"
 
 #include <vector>
-
+class Shader;
 
 class DirectionalLightLight : public LightComponent
 {
@@ -36,7 +36,8 @@ private:
 	glm::mat4 getLightSpaceMatrix(const float nearPlane, const float farPlane);
 	std::vector<glm::mat4> getLightSpaceMatrices();
 
-	GLuint lightFBO, matricesUBO, cascadedShaderProgram;
+	GLuint lightFBO, matricesUBO;
+	Shader* csmShader;
 
 	void refreshResources();
 };
