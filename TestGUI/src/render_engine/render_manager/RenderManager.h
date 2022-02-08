@@ -99,6 +99,8 @@ public:
 	RenderManager();
 	~RenderManager();
 
+	void setupSceneShadows();
+
 	void render();
 	void renderScene();
 	void renderSceneShadowPass(GLuint shaderProgramId);
@@ -113,36 +115,6 @@ public:
 	int currentSelectedObjectIndex = -1;
 	bool tempDisableImGuizmoManipulateForOneFrame = false;
 #endif
-
-	inline GLuint getBRDFLUTTexture() { return brdfLUTTexture; }
-	inline glm::mat3 getSunSpinAmount() { return sunSpinAmount; }
-
-	inline GLuint getIrradianceMap()
-	{
-		return irradianceMap[whichMap];
-	}
-	
-	inline GLuint getIrradianceMap2()
-	{
-		return irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
-	}
-	
-	inline GLuint getPrefilterMap()
-	{
-		return prefilterMap[whichMap];
-	}
-	
-	inline GLuint getPrefilterMap2()
-	{
-		return prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
-	}
-	
-	inline float getMapInterpolationAmt()
-	{
-		return mapInterpolationAmt;
-	}
-
-	void setupSceneShadows(GLuint programId);
 
 	void INTERNALupdateSkeletalBonesUBO(const std::vector<glm::mat4>* boneTransforms);
 

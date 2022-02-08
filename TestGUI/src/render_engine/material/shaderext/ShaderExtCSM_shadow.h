@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ShaderExt.h"
+#include <vector>
 #include <glm/glm.hpp>
 
 
@@ -11,7 +12,7 @@ public:
 	void setupExtension();
 
 	static unsigned int csmShadowMap;
-	static float cascadePlaneDistances[16];
+	static std::vector<float> cascadePlaneDistances;
 	static int cascadeCount;
 	static glm::mat4 cameraView;
 	static float nearPlane;

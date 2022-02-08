@@ -6,7 +6,7 @@
 
 
 unsigned int ShaderExtCSM_shadow::csmShadowMap;
-float ShaderExtCSM_shadow::cascadePlaneDistances[16];
+std::vector<float> ShaderExtCSM_shadow::cascadePlaneDistances;
 int ShaderExtCSM_shadow::cascadeCount;
 glm::mat4 ShaderExtCSM_shadow::cameraView;
 float ShaderExtCSM_shadow::nearPlane;
@@ -20,7 +20,7 @@ ShaderExtCSM_shadow::ShaderExtCSM_shadow(Shader* shader) : ShaderExt(shader)
 void ShaderExtCSM_shadow::setupExtension()
 {
 	shader->setSampler("csmShadowMap", csmShadowMap);
-	for (size_t i = 0; i < 16; i++)
+	for (size_t i = 0; i < glm::min((size_t)16, cascadePlaneDistances.size()); i++)
 		shader->setFloat("cascadePlaneDistances[" + std::to_string(i) + "]", cascadePlaneDistances[i]);
 	shader->setInt("cascadeCount", cascadeCount);
 	shader->setMat4("cameraView", cameraView);	// NOTE: this could be replaced with the camera stuff UBO

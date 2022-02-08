@@ -23,7 +23,11 @@
 #endif
 
 #include "../material/Texture.h"
+#include "../material/shaderext/ShaderExtCSM_shadow.h"
+#include "../material/shaderext/ShaderExtPBR_daynight_cycle.h"
 #include "../material/shaderext/ShaderExtShadow.h"
+#include "../material/shaderext/ShaderExtSSAO.h"
+#include "../material/shaderext/ShaderExtZBuffer.h"
 #include "../resources/Resources.h"
 #include "../../utils/FileLoading.h"
 #include "../../utils/PhysicsUtils.h"
@@ -319,6 +323,8 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	renderQuad();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	ShaderExtPBR_daynight_cycle::brdfLUT = brdfLUTTexture;
 }
 
 void RenderManager::recreateRenderBuffers()
@@ -429,6 +435,8 @@ void RenderManager::createHDRBuffer()
 	if (glCheckNamedFramebufferStatus(zPrePassFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Z-Prepass Framebuffer)" << std::endl;
 
+	ShaderExtZBuffer::depthTexture = zPrePassDepthTexture->getHandle();
+
 	//
 	// Create SSAO framebuffer
 	//
@@ -461,6 +469,8 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
+
+	ShaderExtSSAO::ssaoTexture = ssaoTexture->getHandle();
 	
 	glCreateFramebuffers(1, &ssaoFBO);
 	glNamedFramebufferTexture(ssaoFBO, GL_COLOR_ATTACHMENT0, ssaoTexture->getHandle(), 0);
@@ -811,6 +821,8 @@ void RenderManager::render()
 		MainLoop::getInstance().lightObjects[i]->renderPassShadowMap();
 	}
 
+	setupSceneShadows();
+
 #ifdef _DEVELOP
 	//
 	// Render Picking texture
@@ -1085,6 +1097,52 @@ void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraV
 }
 
 
+void RenderManager::setupSceneShadows()
+{
+	const size_t numLights = std::min((size_t)RenderLightInformation::MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
+	size_t numShadows = 0;		// NOTE: exclude the csm since it's its own EXT
+	bool setupCSM = false;		// NOTE: unfortunately, I can't figure out a way to have multiple directional light csm's, so here's to just one!
+
+	for (size_t i = 0; i < numLights; i++)
+	{
+		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
+			continue;
+
+		if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
+		{
+			if (!setupCSM)
+			{
+				ShaderExtCSM_shadow::csmShadowMap = MainLoop::getInstance().lightObjects[i]->shadowMapTexture;
+				ShaderExtCSM_shadow::cascadePlaneDistances = ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels;
+				ShaderExtCSM_shadow::cascadeCount = (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size();
+				ShaderExtCSM_shadow::cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
+				ShaderExtCSM_shadow::nearPlane = MainLoop::getInstance().camera.zNear;
+				ShaderExtCSM_shadow::farPlane = MainLoop::getInstance().lightObjects[i]->shadowFarPlane;
+			}
+
+			setupCSM = true;
+		}
+		else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::SPOT)
+		{
+			ShaderExtShadow::spotLightShadows[numShadows] = MainLoop::getInstance().lightObjects[i]->shadowMapTexture;
+
+			numShadows++;
+		}
+		else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::POINT)
+		{
+			ShaderExtShadow::pointLightShadows[numShadows] = MainLoop::getInstance().lightObjects[i]->shadowMapTexture;
+			ShaderExtShadow::pointLightShadowFarPlanes[numShadows] = ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane;
+
+			numShadows++;
+		}
+
+		// Break out early
+		if (numShadows >= ShaderExtShadow::MAX_SHADOWS && setupCSM)
+			break;
+	}
+}
+
+
 void RenderManager::renderScene()
 {
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -1216,6 +1274,12 @@ void RenderManager::renderScene()
 		}
 	}
 
+	ShaderExtPBR_daynight_cycle::irradianceMap = irradianceMap[whichMap];
+	ShaderExtPBR_daynight_cycle::irradianceMap2 = irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
+	ShaderExtPBR_daynight_cycle::prefilterMap = prefilterMap[whichMap];
+	ShaderExtPBR_daynight_cycle::prefilterMap2 = prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
+	ShaderExtPBR_daynight_cycle::mapInterpolationAmt = mapInterpolationAmt;
+
 	//
 	// Compute how much the prefilter and irradiance maps need to spin their input vectors
 	//
@@ -1224,6 +1288,7 @@ void RenderManager::renderScene()
 	flatSunOrientation = glm::normalize(flatSunOrientation);
 	sunSpinAmount = glm::toMat3(glm::quat(flatSunOrientation, glm::vec3(1, 0, 0)));
 
+	ShaderExtPBR_daynight_cycle::sunSpinAmount = sunSpinAmount;
 
 	////
 	//// @Remember: this is how to: Draw Text
@@ -1418,70 +1483,6 @@ void RenderManager::renderScene()
 	}
 }
 
-
-void RenderManager::setupSceneShadows(GLuint programId)			// @REFACTOR: make this private and only send off this info to ShaderExtShadow and ShaderExtCSM_SHADOW
-{
-	for (size_t i = 0; i < ShaderExtShadow::MAX_SHADOWS; i++)		// @REFACTOR: still need to stuff this into ShaderExtShadow!!!
-	{
-		// Reset shadow maps
-		glProgramUniform1i(programId, glGetUniformLocation(programId, "csmShadowMap"), 100);
-		glProgramUniform1i(programId, glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
-		glProgramUniform1i(programId, glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(i) + "]").c_str()), 100);
-	}
-
-	//
-	// Setup shadows
-	//
-	const size_t numLights = std::min((size_t)RenderLightInformation::MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
-
-	const GLuint baseOffset = 10;											// @Hardcode: Bc GL_TEXTURE8 is the highest being used rn		@TODO: FIX THIS HARDCODE!!!!!!!
-	GLuint shadowMapTextureIndex = 0;
-	bool setupCSM = false;					// NOTE: unfortunately, I can't figure out a way to have multiple directional light csm's, so here's to just one!
-	for (size_t i = 0; i < numLights; i++)
-	{
-		if (!MainLoop::getInstance().lightObjects[i]->castsShadows)
-			continue;
-
-		if (!setupCSM && MainLoop::getInstance().lightObjects[i]->lightType == LightType::DIRECTIONAL)
-		{
-			glBindTextureUnit(baseOffset + shadowMapTextureIndex, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-			glProgramUniform1i(programId, glGetUniformLocation(programId, "csmShadowMap"), baseOffset + shadowMapTextureIndex);
-
-			// DirectionalLight: Setup for csm rendering
-			glProgramUniform1i(programId, glGetUniformLocation(programId, "cascadeCount"), (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size());
-			for (size_t j = 0; j < ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size(); ++j)
-			{
-				glProgramUniform1f(programId, glGetUniformLocation(programId, ("cascadePlaneDistances[" + std::to_string(j) + "]").c_str()), ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels[j]);
-			}
-			glProgramUniformMatrix4fv(
-				programId,
-				glGetUniformLocation(programId, "cameraView"),
-				1,
-				GL_FALSE,
-				glm::value_ptr(MainLoop::getInstance().camera.calculateViewMatrix())
-			);
-			glProgramUniform1f(programId, glGetUniformLocation(programId, "nearPlane"), MainLoop::getInstance().camera.zNear);
-			glProgramUniform1f(programId, glGetUniformLocation(programId, "farPlane"), MainLoop::getInstance().lightObjects[i]->shadowFarPlane);
-
-			setupCSM = true;	// Set flag
-		}
-		else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::SPOT)
-		{
-			glBindTextureUnit(baseOffset + shadowMapTextureIndex, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-			glProgramUniform1i(programId, glGetUniformLocation(programId, ("spotLightShadowMaps[" + std::to_string(shadowMapTextureIndex) + "]").c_str()), baseOffset + shadowMapTextureIndex);
-		}
-		else if (MainLoop::getInstance().lightObjects[i]->lightType == LightType::POINT)
-		{
-			glBindTextureUnit(baseOffset + shadowMapTextureIndex, MainLoop::getInstance().lightObjects[i]->shadowMapTexture);
-			glProgramUniform1i(programId, glGetUniformLocation(programId, ("pointLightShadowMaps[" + std::to_string(shadowMapTextureIndex) + "]").c_str()), baseOffset + shadowMapTextureIndex);
-			glProgramUniform1f(programId, glGetUniformLocation(programId, ("pointLightShadowFarPlanes[" + std::to_string(shadowMapTextureIndex) + "]").c_str()), ((PointLightLight*)MainLoop::getInstance().lightObjects[i])->farPlane);
-		}
-
-		shadowMapTextureIndex++;
-		if (shadowMapTextureIndex >= ShaderExtShadow::MAX_SHADOWS)
-			break;
-	}
-}
 
 void RenderManager::INTERNALaddMeshToOpaqueRenderQueue(Mesh* mesh, const glm::mat4& modelMatrix, const std::vector<glm::mat4>* boneTransforms)
 {

@@ -401,6 +401,8 @@ void main()
 
             if (lightDirections[i].a == 1)
                 shadow = shadowCalculationPoint(i, shadowIndex, fragPosition);
+
+            shadowIndex++;  // Bump up if shadow was used
         }
         else if (lightPositions[i].w == 0.0f)
         {
@@ -412,15 +414,14 @@ void main()
 
 	        if (lightDirections[i].a == 1)
                 shadow = shadowCalculationCSM(-L, fragPosition);
+
+            // NOTE: no shadowIndex++ here bc the CSM is its own entity
         }
         else
         {
             // Spot light (TODO)
+            shadowIndex++;  // Bump up if shadow was used
         }
-
-        // Bump up if shadow was used
-        if (lightDirections[i].a == 1)
-            shadowIndex++;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
