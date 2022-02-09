@@ -26,11 +26,11 @@ layout (std140, binding = 3) uniform CameraInformation
 	mat4 cameraProjectionView;
 };
 
-// SSAO
+// ext: SSAO
 uniform sampler2D ssaoTexture;
 uniform vec2 invFullResolution;
 
-// PBR daynight cycle
+// ext: PBR daynight cycle
 uniform samplerCube irradianceMap;
 uniform samplerCube irradianceMap2;
 uniform samplerCube prefilterMap;
@@ -40,7 +40,7 @@ uniform float mapInterpolationAmt;
 
 uniform mat3 sunSpinAmount;
 
-// Shadow map
+// ext: Shadow
 const int MAX_SHADOWS = 8;
 uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
 uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];

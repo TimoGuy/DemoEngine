@@ -17,7 +17,7 @@ layout (std140, binding = 3) uniform CameraInformation
 	mat4 cameraProjectionView;
 };
 
-// PBR stuff
+// ext: PBR daynight cycle
 uniform samplerCube irradianceMap;
 uniform samplerCube irradianceMap2;
 uniform samplerCube prefilterMap;
@@ -38,14 +38,14 @@ layout (std140, binding = 2) uniform LightInformation
     ivec4 numLightsToRender;
 };
 
-// Shadow map
+// ext: shadow
 const int MAX_SHADOWS = 8;
-uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 uniform sampler2D spotLightShadowMaps[MAX_SHADOWS];
 uniform samplerCube pointLightShadowMaps[MAX_SHADOWS];
 uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 
-// CSM (Limit 1 Cascaded Shadow Map... sad day... couldn't figure out a way to have two or more csm's)
+// ext: csm_shadow
+uniform sampler2DArray csmShadowMap;
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
