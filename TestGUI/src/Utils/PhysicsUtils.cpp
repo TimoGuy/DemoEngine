@@ -22,6 +22,11 @@ namespace PhysicsUtils
 		return physx::PxVec3((float)in.x, (float)in.y, (float)in.z);
 	}
 
+	physx::PxExtendedVec3 toPxExtendedVec3(const physx::PxVec3& in)
+	{
+		return physx::PxExtendedVec3(in.x, in.y, in.z);
+	}
+
 	physx::PxVec3 toPxVec3(const glm::vec3& in)
 	{
 		return physx::PxVec3(in.x, in.y, in.z);

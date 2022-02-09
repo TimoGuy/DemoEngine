@@ -278,6 +278,7 @@ physx::PxTransform SphereCollider::getGlobalPose() { return body->getGlobalPose(
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // PlayerPhysics Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
+float playerCapsuleControllerRadius = 1.0f;
 PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 {
 	controller =
@@ -285,7 +286,7 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			MainLoop::getInstance().physicsControllerManager,
 			MainLoop::getInstance().defaultPhysicsMaterial,
 			physx::PxExtendedVec3(0.0f, 100.0f, 0.0f),
-			1.0f,
+			playerCapsuleControllerRadius,
 			4.5f,
 			this,		// PxUserControllerHitReport
 			this//,		// PxBehaviorCallbackWhatevs
@@ -404,9 +405,9 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Do the deed
 	//
-	////////////////////////std::cout << "------------------------------------" << std::endl;
+	std::cout << "------------------------------------" << std::endl;
 	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
-	//std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
+	std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
 	isSliding = false;
@@ -441,6 +442,7 @@ void PlayerPhysics::physicsUpdate()
 		else if (velocity.y < 0.0f)
 		{
 			isSliding = true;		// Slide down!
+			std::cout << offsetMovedReconstructed.x << ", " << offsetMovedReconstructed.y << ", " << offsetMovedReconstructed.z << std::endl;
 			
 			// Slide down normal going downhill
 			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
@@ -455,7 +457,7 @@ void PlayerPhysics::physicsUpdate()
 			controller->move(
 				physx::PxVec3(
 					/*pushOffVelocity.x + */slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
-					uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
+					velocity.y - offsetMovedReconstructed.y,  //uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
 					/*pushOffVelocity.y + */slidingVectorXZ.y
 				),
 				0.01f,
@@ -571,6 +573,9 @@ void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
 	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
 	////////////////////////std::cout << currentHitNormal.x << ", " << currentHitNormal.y << ", " << currentHitNormal.z << std::endl;
+
+	if (currentHitNormal.y > 0.0f)
+		offsetMovedReconstructed = PhysicsUtils::toPxExtendedVec3((hit.worldPos + PhysicsUtils::toPxExtendedVec3(hit.worldNormal * playerCapsuleControllerRadius) + physx::PxExtendedVec3(0, -playerCapsuleControllerRadius, 0)) - controller->getFootPosition());		// NOTE: this is probably getting truncated, the data types. for some reason pxextendedvec3-pxextendedvec3=pxvec3???
 
 	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
 	//std::cout << hit.dir.x * hit.length << ", " << hit.dir.y * hit.length << ", " << hit.dir.z * hit.length << std::endl;

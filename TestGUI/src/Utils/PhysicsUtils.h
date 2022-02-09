@@ -24,6 +24,7 @@ namespace PhysicsUtils
 #pragma region Factory functions
 
 	physx::PxVec3 toPxVec3(const physx::PxExtendedVec3& in);
+	physx::PxExtendedVec3 toPxExtendedVec3(const physx::PxVec3& in);
 	physx::PxVec3 toPxVec3(const glm::vec3& in);
 	glm::vec3 toGLMVec3(const physx::PxVec3& in);
 

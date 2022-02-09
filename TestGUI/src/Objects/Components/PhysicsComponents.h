@@ -102,6 +102,7 @@ private:
 	bool hasValidStandingOnAngularVelocityY = false;
 	float standingOnAngularVelocityYRadians;
 	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
+	physx::PxExtendedVec3 offsetMovedReconstructed;		// NOTE: this is only valid/updated when the hitnormal.y > 0, so essentially if it's a bottom-hit
 
 	// For retaining velocity when leaving the ground
 	bool prevIsGrounded = false;
