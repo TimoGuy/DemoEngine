@@ -98,6 +98,7 @@ public:
 private:
 	bool isGrounded = false;
 	bool isSliding = false;
+	bool isSlidingCeiling = false;
 	bool hasValidStandingOnAngularVelocityY = false;
 	float standingOnAngularVelocityYRadians;
 	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);

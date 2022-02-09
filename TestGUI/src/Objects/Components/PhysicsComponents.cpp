@@ -287,7 +287,8 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			1.0f,
 			4.5f,
 			this,		// PxUserControllerHitReport
-			this		// PxBehaviorCallbackWhatevs
+			this//,		// PxBehaviorCallbackWhatevs
+			//0.0f		// Undo the slope climbing stuff		@TODO: fix this!!!!!!
 		);
 
 	GameState::getInstance().playerActorPointer = controller->getActor();
@@ -333,48 +334,100 @@ void PlayerPhysics::physicsUpdate()
 
 	physx::PxVec3 cookedVelocity = velocity;
 
-	//// (Last minute) convert -y to y along the face you're sliding down
-	if (isSliding)
+	// Sliding on ramps/ceilings
+	if (velocity.y > 0.0f && isSlidingCeiling)
 	{
-		const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
-		const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-		const glm::vec3 slidingVector = uxnXnormal * -velocity.y;
-	
-		const float flatSlidingUmph = 0.9f;			// NOTE: this is so that it's guaranteed that the character will also hit the ground the next frame, thus keeping the sliding state
-		cookedVelocity.y = 0.0f;
-		cookedVelocity += physx::PxVec3(
-			slidingVector.x * flatSlidingUmph,
-			slidingVector.y,
-			slidingVector.z * flatSlidingUmph
-		);
+		cookedVelocity.x = cookedVelocity.z = 0.0f;
 	}
 
+	//if (velocity.y > 0.0f)
+	//{
+	//	std::cout << "Hey????? ";
+	//	if (isSlidingCeiling)
+	//	{
+	//		// Cut off movement towards uphill if supposed to be sliding
+	//		const glm::vec3 flatNormal = glm::normalize(glm::vec3(currentHitNormal.x, 0, currentHitNormal.z));
+	//		glm::vec3 flatVelocity = glm::vec3(cookedVelocity.x, 0.0f, cookedVelocity.z);
+	//		if (glm::dot(flatNormal, glm::normalize(flatVelocity)) < 0.0f)	// If going against the direction it's supposed to slide
+	//		{
+	//			glm::vec3 TwoDNormal = glm::normalize(glm::vec3(currentHitNormal.z, 0.0f, -currentHitNormal.x));		// Flip positions to get the 90 degree right vector
+	//			flatVelocity = glm::dot(TwoDNormal, flatVelocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
+	//			cookedVelocity.x = flatVelocity.x;
+	//			cookedVelocity.z = flatVelocity.z;
+	//		}
+	//
+	//		// Slide uphill with ceiling
+	//		const glm::vec3 downXnormal = glm::cross(glm::vec3(0, -1, 0), currentHitNormal);
+	//		const glm::vec3 dxnXnormal = glm::normalize(glm::cross(downXnormal, currentHitNormal));
+	//		const glm::vec2 slidingVectorXZ = glm::vec2(dxnXnormal.x, dxnXnormal.z) * cookedVelocity.y / dxnXnormal.y;
+	//
+	//		cookedVelocity = physx::PxVec3(
+	//			slidingVectorXZ.x * 0.8f,
+	//			cookedVelocity.y,
+	//			slidingVectorXZ.y * 0.8f
+	//		);
+	//		std::cout << "Yes babe";
+	//	}
+	//	std::cout << std::endl;
+	//}
+	//else if (isSliding)
+	//{
+	//	// Cut off movement towards uphill if supposed to be sliding
+	//	const glm::vec3 flatNormal = glm::normalize(glm::vec3(currentHitNormal.x, 0, currentHitNormal.z));
+	//	glm::vec3 flatVelocity = glm::vec3(cookedVelocity.x, 0.0f, cookedVelocity.z);
+	//	if (glm::dot(flatNormal, glm::normalize(flatVelocity)) < 0.0f)	// If going against the direction it's supposed to slide
+	//	{
+	//		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(currentHitNormal.z, 0.0f, -currentHitNormal.x));		// Flip positions to get the 90 degree right vector
+	//		flatVelocity = glm::dot(TwoDNormal, flatVelocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
+	//		cookedVelocity.x = flatVelocity.x;
+	//		cookedVelocity.z = flatVelocity.z;
+	//	}
+	//
+	//	// Slide down normal going downhill
+	//	const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+	//	const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+	//	const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * cookedVelocity.y / uxnXnormal.y;
+	//
+	//	cookedVelocity = physx::PxVec3(
+	//		slidingVectorXZ.x * 0.9f,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
+	//		cookedVelocity.y,
+	//		slidingVectorXZ.y * 0.9f
+	//	);
+	//	std::cout << cookedVelocity.y << std::endl;
+	//}
+
+	// Add force to go down stairs
 	if (isGrounded && !isSliding)
 		cookedVelocity.y = -controller->getStepOffset();
 
 	//
 	// Do the deed
 	//
+	////////////////////////std::cout << "------------------------------------" << std::endl;
+	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
+	//std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
 	isSliding = false;
+	isSlidingCeiling = false;
 	hasValidStandingOnAngularVelocityY = false;
 
+	// Collision on bottom
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
 	{
 		isGrounded = true;
-		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > controller->getSlopeLimit());
+		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.69465837f);
 
 		// Try to retrieve grounded info
 		physx::PxRaycastBuffer hitInfo;
 		constexpr float padding = 0.05f;
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0), physx::PxVec3(0, -1, 0), controller->getStepOffset() + padding + padding, hitInfo))
-			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > controller->getSlopeLimit());
+			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.69465837f);
 
 		if (isFlatGround)
 		{
 			velocity.y = 0.0f;		// Remove gravity
-			
+
 			if (hitInfo.hasBlock && (hitInfo.block.actor->getType() & physx::PxActorType::eRIGID_DYNAMIC))
 			{
 				physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)hitInfo.block.actor;
@@ -382,30 +435,45 @@ void PlayerPhysics::physicsUpdate()
 				hasValidStandingOnAngularVelocityY = true;
 			}
 		}
-		else
+		else if (velocity.y < 0.0f)
+		{
 			isSliding = true;		// Slide down!
+			
+			// Slide down normal going downhill
+			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
+			const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
+			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * cookedVelocity.y / uxnXnormal.y;
+
+			controller->move(
+				physx::PxVec3(
+					slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
+					0, //cookedVelocity.y - 0.0f,
+					slidingVectorXZ.y
+				),
+				0.01f,
+				MainLoop::getInstance().physicsDeltaTime,
+				NULL,
+				NULL
+			);
+		}
 	}
 
+	// Collision on sides
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_SIDES)
 	{
 		//std::cout << "\tSide Collision";
 	}
 
-	//
-	// Check if head/ceiling sliding
-	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
+	// Collision on head
+	if (velocity.y > 0.0f && collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
 	{
-		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > controller->getSlopeLimit())
+		if (glm::dot(currentHitNormal, glm::vec3(0, -1, 0)) > 0.69465837f)
 		{
 			velocity.y = 0.0f;		// Hit your head on the ceiling
 		}
-		//else
-		//{
-		//	// Slide on ceiling!
-		//	isCeilingSliding = true;
-		//}
+		else
+			isSlidingCeiling = true;
 	}
-	//std::cout << std::endl;
 
 	//
 	// Apply transform
@@ -455,11 +523,6 @@ void PlayerPhysics::physicsUpdate()
 	prevPositionWhileGrounded = PhysicsUtils::toPxVec3(pos);		// Use this to create the velocity
 	prevIsGrounded = isGrounded;
 
-	////if (velocity.magnitude() > 100.0f)
-	//glm::vec3 flatVelo = PhysicsUtils::toGLMVec3(velocity);
-	//flatVelo.y = 0.0f;
-	//std::cout << "KOKOMADEDA:\t\t\t" << glm::length(flatVelo) << std::endl;		// ; TODO: start in playercharacter.cpp and see if you can get the grounded mvt and airborne mvt to use the velocity created here as part of their movement!!! Bc it keeps getting reset/capped right at the end of the frame
-
 // @NOTE: Make this not show up in the release game!!!! @DEBUG only... but it's still kinda glitchy so we need it.
 //#ifdef _DEVELOP
 	// Set a save point for the player if press pause!
@@ -498,9 +561,14 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 
 void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
-	//hit. @TODO: fimish
 	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
+	////////////////////////std::cout << currentHitNormal.x << ", " << currentHitNormal.y << ", " << currentHitNormal.z << std::endl;
+
+	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
+	//std::cout << hit.dir.x * hit.length << ", " << hit.dir.y * hit.length << ", " << hit.dir.z * hit.length << std::endl;
+	//std::cout << "\t\t" << hit.worldPos.x << ", " << hit.worldPos.y << ", " << hit.worldPos.z << std::endl;
 }
+
 void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }
 void PlayerPhysics::onObstacleHit(const physx::PxControllerObstacleHit& hit) { PX_UNUSED(hit); }
 

@@ -502,18 +502,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	glm::vec3 velocity = glm::vec3(facingDirection.x, 0, facingDirection.y) * currentRunSpeed;
 
-	if (((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
-	{
-		// Cut off movement towards uphill if supposed to be sliding
-		const glm::vec3 normal = ((PlayerPhysics*)getPhysicsComponent())->getGroundedNormal();
-		const glm::vec3 flatNormal = glm::normalize(glm::vec3(normal.x, 0, normal.z));
-		if (glm::dot(flatNormal, glm::vec3(facingDirection.x, 0, facingDirection.y)) < 0.0f)	// If going against the direction it's supposed to slide
-		{
-			glm::vec3 TwoDNormal = glm::normalize(glm::vec3(normal.z, 0.0f, -normal.x));		// Flip positions to get the 90 degree right vector
-			velocity = glm::dot(TwoDNormal, velocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
-		}
-	}
-	else
+	if (!((PlayerPhysics*)getPhysicsComponent())->getIsSliding())
 	{
 		// Add on a grounded rotation based on the ground you're standing on (!isSliding)
 		glm::quat slopeRotation = glm::rotation(
