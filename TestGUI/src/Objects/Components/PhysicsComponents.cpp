@@ -1,5 +1,6 @@
 #include "PhysicsComponents.h"
 
+#include <glm/gtx/norm.hpp>
 #include "../../mainloop/MainLoop.h"
 #include "../../utils/PhysicsUtils.h"
 #include "../../utils/GameState.h"
@@ -424,6 +425,8 @@ void PlayerPhysics::physicsUpdate()
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0), physx::PxVec3(0, -1, 0), controller->getStepOffset() + padding + padding, hitInfo))
 			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.69465837f);
 
+		std::cout << isFlatGround << std::endl;
+
 		if (isFlatGround)
 		{
 			velocity.y = 0.0f;		// Remove gravity
@@ -442,13 +445,18 @@ void PlayerPhysics::physicsUpdate()
 			// Slide down normal going downhill
 			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
 			const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * cookedVelocity.y / uxnXnormal.y;
+			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * velocity.y / uxnXnormal.y;
+
+			glm::vec2 pushOffVelocity(0.0f);
+			glm::vec2 flatVelocity(velocity.x, velocity.z);
+			if (glm::length2(flatVelocity) > 0.001f)
+				pushOffVelocity = glm::min(glm::dot(glm::normalize(glm::vec2(currentHitNormal.x, currentHitNormal.z)), glm::normalize(flatVelocity)), 0.0f) * flatVelocity;
 
 			controller->move(
 				physx::PxVec3(
-					slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
-					0, //cookedVelocity.y - 0.0f,
-					slidingVectorXZ.y
+					/*pushOffVelocity.x + */slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
+					uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
+					/*pushOffVelocity.y + */slidingVectorXZ.y
 				),
 				0.01f,
 				MainLoop::getInstance().physicsDeltaTime,
