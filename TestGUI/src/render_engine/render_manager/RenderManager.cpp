@@ -65,6 +65,7 @@ RenderManager::RenderManager()
 {
 	createSkeletalAnimationUBO();
 	createLightInformationUBO();
+	createCameraInfoUBO();
 	createShaderPrograms();
 	createFonts();
 	createHDRBuffer();
@@ -98,6 +99,7 @@ RenderManager::~RenderManager()
 {
 	destroySkeletalAnimationUBO();
 	destroyLightInformationUBO();
+	destroyCameraInfoUBO();
 	destroyShaderPrograms();
 	destroyFonts();
 	destroyHDRBuffer();
@@ -803,7 +805,7 @@ void RenderManager::render()
 	{
 		glm::mat4 cameraProjection = MainLoop::getInstance().camera.calculateProjectionMatrix();
 		glm::mat4 cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
-		updateMatrices(cameraProjection, cameraView);
+		updateCameraInfoUBO(cameraProjection, cameraView);
 	}
 
 	//
@@ -834,7 +836,6 @@ void RenderManager::render()
 
 			pickingRenderFormatShader = (Shader*)Resources::getResource("shader;pickingRenderFormat");
 			pickingRenderFormatShader->use();
-			pickingRenderFormatShader->setMat4("cameraMatrix", cameraProjection * cameraView);
 			for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
 			{
 				if (i == (uint32_t)currentSelectedObjectIndex)
@@ -889,8 +890,8 @@ void RenderManager::render()
 		volumetricProgramId->use();
 		volumetricProgramId->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 		volumetricProgramId->setVec3("mainlightDirection", mainlight->facingDirection);
-		volumetricProgramId->setMat4("inverseProjectionMatrix", glm::inverse(cameraProjection));
-		volumetricProgramId->setMat4("inverseViewMatrix", glm::inverse(cameraView));
+		volumetricProgramId->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
+		volumetricProgramId->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
 		renderQuad();
 
 		//
@@ -971,7 +972,6 @@ void RenderManager::render()
 					selectionWireframeShader->use();
 					selectionWireframeShader->setVec4("color", { 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f) });
 					selectionWireframeShader->setFloat("colorIntensity", evaluatedIntensityValue);
-					selectionWireframeShader->setMat4("cameraMatrix", cameraProjection* cameraView);
 					rc->renderShadow(selectionWireframeShader);
 				}
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -1073,10 +1073,26 @@ void RenderManager::render()
 }
 
 
-void RenderManager::updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView)
+void RenderManager::createCameraInfoUBO()
 {
-	RenderManager::cameraProjection = cameraProjection;
-	RenderManager::cameraView = cameraView;
+	glCreateBuffers(1, &cameraInfoUBO);
+	glNamedBufferData(cameraInfoUBO, sizeof(CameraInformation), nullptr, GL_STATIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 3, cameraInfoUBO);
+}
+
+
+void RenderManager::updateCameraInfoUBO(glm::mat4 cameraProjection, glm::mat4 cameraView)
+{
+	cameraInfo.projection = cameraProjection;
+	cameraInfo.view = cameraView;
+	cameraInfo.projectionView = cameraProjection * cameraView;
+	glNamedBufferSubData(cameraInfoUBO, 0, sizeof(CameraInformation), &cameraInfo);
+}
+
+
+void RenderManager::destroyCameraInfoUBO()
+{
+	glDeleteBuffers(1, &cameraInfoUBO);
 }
 
 
@@ -1098,7 +1114,6 @@ void RenderManager::setupSceneShadows()
 				ShaderExtCSM_shadow::csmShadowMap = MainLoop::getInstance().lightObjects[i]->shadowMapTexture;
 				ShaderExtCSM_shadow::cascadePlaneDistances = ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels;
 				ShaderExtCSM_shadow::cascadeCount = (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size();
-				ShaderExtCSM_shadow::cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
 				ShaderExtCSM_shadow::nearPlane = MainLoop::getInstance().camera.zNear;
 				ShaderExtCSM_shadow::farPlane = MainLoop::getInstance().lightObjects[i]->shadowFarPlane;
 			}
@@ -1138,7 +1153,6 @@ void RenderManager::renderScene()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	INTERNALzPassShader->use();
-	INTERNALzPassShader->setMat4("cameraMatrix", cameraProjection * cameraView);
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
@@ -1163,12 +1177,11 @@ void RenderManager::renderScene()
 	ssaoProgramId->setFloat("powExponent", ssaoScale);
 	ssaoProgramId->setFloat("radius", ssaoRadius);
 	ssaoProgramId->setFloat("bias", ssaoBias);
-	ssaoProgramId->setMat4("projection", cameraProjection);
 	glm::vec4 projInfoPerspective = {
-		2.0f / (cameraProjection[0][0]),							// (x) * (R - L)/N
-		2.0f / (cameraProjection[1][1]),							// (y) * (T - B)/N
-		-(1.0f - cameraProjection[2][0]) / cameraProjection[0][0],  // L/N
-		-(1.0f + cameraProjection[2][1]) / cameraProjection[1][1],  // B/N
+		2.0f / (cameraInfo.projection[0][0]),							// (x) * (R - L)/N
+		2.0f / (cameraInfo.projection[1][1]),							// (y) * (T - B)/N
+		-(1.0f - cameraInfo.projection[2][0]) / cameraInfo.projection[0][0],  // L/N
+		-(1.0f + cameraInfo.projection[2][1]) / cameraInfo.projection[1][1],  // B/N
 	};
 	ssaoProgramId->setVec4("projInfo", projInfoPerspective);
 	renderQuad();
@@ -1222,8 +1235,8 @@ void RenderManager::renderScene()
 	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
 	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
-	skybox_program_id->setMat4("projection", cameraProjection);
-	skybox_program_id->setMat4("view", cameraView);
+	skybox_program_id->setMat4("projection", cameraInfo.projection);
+	skybox_program_id->setMat4("view", cameraInfo.view);
 
 	//skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 	//perlinTime += MainLoop::getInstance().deltaTime;
@@ -1477,7 +1490,7 @@ void RenderManager::INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const gl
 	transparentRQ.modelMatrices.push_back(modelMatrix);
 	transparentRQ.boneMatrixMemAddrs.push_back(boneTransforms);
 
-	float distanceToCamera = (cameraProjection * cameraView * modelMatrix * glm::vec4(0, 0, 0, 1)).z;
+	float distanceToCamera = (cameraInfo.projectionView * modelMatrix * glm::vec4(0, 0, 0, 1)).z;
 	transparentRQ.distancesToCamera.push_back(distanceToCamera);
 }
 
@@ -2225,8 +2238,8 @@ void RenderManager::renderImGuiContents()
 			glm::mat4 transformCopy = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
 			bool changed =
 				ImGuizmo::Manipulate(
-					glm::value_ptr(cameraView),
-					glm::value_ptr(cameraProjection),
+					glm::value_ptr(cameraInfo.view),
+					glm::value_ptr(cameraInfo.projection),
 					transOperation,
 					transMode,
 					glm::value_ptr(transformCopy),
@@ -2243,7 +2256,7 @@ void RenderManager::renderImGuiContents()
 		tempDisableImGuizmoManipulateForOneFrame = false;
 	}
 
-	ImGuizmo::ViewManipulate(glm::value_ptr(cameraView), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
+	ImGuizmo::ViewManipulate(glm::value_ptr(cameraInfo.view), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }
 #endif
 

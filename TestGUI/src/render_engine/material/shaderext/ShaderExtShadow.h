@@ -2,7 +2,7 @@
 
 #include "ShaderExt.h"
 
-class ShaderExtShadow : public ShaderExt		// @REFACTOR: for all extensions that use textures, the gluint texture ids should get propagated automatically from within the rendermanager
+class ShaderExtShadow : public ShaderExt
 {
 public:
 	ShaderExtShadow(Shader* shader);

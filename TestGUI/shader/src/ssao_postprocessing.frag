@@ -32,7 +32,7 @@ const float  NUM_DIRECTIONS = 8; // rotationTexture/g_Jitter initialization depe
 
 
 
-uniform sampler2D depthTexture;  // @REFACTOR: this should be in the zBuffer extension
+uniform sampler2D depthTexture;  // ext: zBuffer
 uniform sampler2D rotationTexture;
 
 uniform vec2 fullResolution;

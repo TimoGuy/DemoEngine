@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec3 vertexPosition;
 
-uniform mat4 projection;  // @REFACTOR: put these in a ubo
+uniform mat4 projection;
 uniform mat4 view;
 
 out vec3 localPos;

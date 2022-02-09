@@ -10,8 +10,8 @@ uniform float padding;
 uniform vec2 staminaBarExtents;
 
 
-uniform mat4 viewMatrix;  // @REFACTOR: put these in a ubo
-uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
+uniform mat4 viewMatrix;
+uniform mat4 modelMatrix;
 
 void main()
 {

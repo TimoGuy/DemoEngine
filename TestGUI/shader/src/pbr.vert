@@ -10,15 +10,16 @@ out vec2 texCoord;
 out vec3 fragPosition;
 out vec3 normalVector;
 
-//layout (std140, binding = 3) uniform RenderingMatrices		// @REFACTOR: this should be in its own extension file yo
-//{
-//	mat4 modelMatrix;
-//	mat3 normalsModelMatrix;
-//	mat4 cameraMatrix;
-//};
-uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
+uniform mat4 modelMatrix;
 uniform mat3 normalsModelMatrix;
-uniform mat4 cameraMatrix;  // @REFACTOR: put these in a ubo
+
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
 
 const int MAX_BONES = 100;
 const int MAX_BONE_INFLUENCE = 4;
@@ -64,5 +65,5 @@ void main()
 	fragPosition = vec3(modelMatrix * boneTransform * vec4(vertexPosition, 1.0));
 	texCoord = uvCoordinate;
 
-	gl_Position = cameraMatrix * modelMatrix * boneTransform * vec4(vertexPosition, 1.0);			// @ShowCaitlin
+	gl_Position = cameraProjectionView * modelMatrix * boneTransform * vec4(vertexPosition, 1.0);			// @ShowCaitlin
 }

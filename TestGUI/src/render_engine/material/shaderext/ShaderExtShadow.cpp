@@ -13,7 +13,7 @@ ShaderExtShadow::ShaderExtShadow(Shader* shader) : ShaderExt(shader)
 {
 }
 
-void ShaderExtShadow::setupExtension()		// @REFACTOR: get rendermanager to insert the texture bindings yo!
+void ShaderExtShadow::setupExtension()
 {
 	for (int i = 0; i < MAX_SHADOWS; i++)
 	{

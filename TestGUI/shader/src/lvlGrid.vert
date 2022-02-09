@@ -5,11 +5,18 @@ layout (location=1) in vec2 uvCoordinate;
 
 out vec2 texCoord;
 
-uniform mat4 modelMatrix;  // @REFACTOR: put these in a ubo
-uniform mat4 cameraMatrix;  // @REFACTOR: put these in a ubo
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
+
+uniform mat4 modelMatrix;
 
 void main()
 {
 	texCoord = uvCoordinate;
-	gl_Position = cameraMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+	gl_Position = cameraProjectionView * modelMatrix * vec4(vertexPosition, 1.0);
 }

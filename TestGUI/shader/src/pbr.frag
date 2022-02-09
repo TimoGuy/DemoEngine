@@ -18,6 +18,14 @@ uniform vec4 tilingAndOffset;  // NOTE: x, y are tiling and z, w are offset
 /////////////////////////////////////
 
 
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
+
 // SSAO
 uniform sampler2D ssaoTexture;
 uniform vec2 invFullResolution;
@@ -43,7 +51,6 @@ uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the sha
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 cameraView;
 uniform float nearPlane;
 uniform float farPlane;
 

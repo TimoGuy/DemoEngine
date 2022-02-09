@@ -18,7 +18,7 @@ ShaderExtPBR_daynight_cycle::ShaderExtPBR_daynight_cycle(Shader* shader) : Shade
 }
 
 
-void ShaderExtPBR_daynight_cycle::setupExtension()		// @REFACTOR: have rendermanager populate everything in here before all the shaders get set up!!!
+void ShaderExtPBR_daynight_cycle::setupExtension()
 {
 	shader->setSampler("irradianceMap", irradianceMap);
 	shader->setSampler("irradianceMap2", irradianceMap2);

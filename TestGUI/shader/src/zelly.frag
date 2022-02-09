@@ -9,6 +9,14 @@ in vec3 normalVector;
 uniform vec3 zellyColor;
 uniform float ditherAlpha;
 
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
+
 // PBR stuff
 uniform samplerCube irradianceMap;
 uniform samplerCube irradianceMap2;
@@ -41,7 +49,6 @@ uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 cameraView;
 uniform float nearPlane;
 uniform float farPlane;
 

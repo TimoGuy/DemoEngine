@@ -5,19 +5,27 @@ in vec2 texCoord;
 
 uniform vec3 mainlightDirection;
 
-uniform sampler2D depthTexture;  // @REFACTOR: this should be in the zBuffer extension
 
-uniform mat4 inverseProjectionMatrix;       // @REFACTOR: put inside a ubo yo
-uniform mat4 inverseViewMatrix;       // @REFACTOR: put inside a ubo yo
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
 
-uniform vec3 mainCameraPosition;       // @REFACTOR: put inside a ubo yo
+uniform mat4 inverseProjectionMatrix;
+uniform mat4 inverseViewMatrix;
+uniform vec3 mainCameraPosition;
+
+// ext: zBuffer
+uniform sampler2D depthTexture;
 
 // ext: csm_shadow
 uniform sampler2DArray csmShadowMap;
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
 uniform int cascadeCount;   // number of frusta - 1
-uniform mat4 cameraView;
 uniform float farPlane;
 
 

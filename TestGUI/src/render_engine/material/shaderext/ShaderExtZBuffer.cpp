@@ -12,7 +12,7 @@ ShaderExtZBuffer::ShaderExtZBuffer(Shader* shader) : ShaderExt(shader)
 {
 }
 
-void ShaderExtZBuffer::setupExtension()		// @REFACTOR: have rendermanager drop in that depth map texture!!!
+void ShaderExtZBuffer::setupExtension()
 {
 	shader->setSampler("depthTexture", depthTexture);
 }

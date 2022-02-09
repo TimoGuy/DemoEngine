@@ -94,6 +94,14 @@ struct RenderLightInformation
 };
 
 
+struct CameraInformation
+{
+	glm::mat4 projection;
+	glm::mat4 view;
+	glm::mat4 projectionView;
+};
+
+
 class RenderManager
 {
 public:
@@ -188,8 +196,12 @@ private:
 	float mapInterpolationAmt;
 	Texture* nightSkybox;
 
-
-	glm::mat4 cameraProjection, cameraView;
+	// Camera Information
+	GLuint cameraInfoUBO;
+	CameraInformation cameraInfo;
+	void createCameraInfoUBO();
+	void updateCameraInfoUBO(glm::mat4 cameraProjection, glm::mat4 cameraView);
+	void destroyCameraInfoUBO();
 
 	void createShaderPrograms();
 	void destroyShaderPrograms();
@@ -206,7 +218,6 @@ private:
 	void createFonts();
 	void destroyFonts();
 
-	void updateMatrices(glm::mat4 cameraProjection, glm::mat4 cameraView);
 
 	// Render Queues
 	Shader* INTERNALzPassShader;
