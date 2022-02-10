@@ -409,6 +409,7 @@ void PlayerPhysics::physicsUpdate()
 	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
 	////////////////////std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
+	bool prevIsSliding = isSliding;
 	isGrounded = false;
 	isSliding = false;
 	isSlidingCeiling = false;
@@ -420,10 +421,15 @@ void PlayerPhysics::physicsUpdate()
 		isGrounded = true;
 		bool isFlatGround = (glm::dot(currentHitNormal, glm::vec3(0, 1, 0)) > 0.69465837f);
 
-		// Try to retrieve grounded info
+		// Try to retrieve grounded info (don't assign to isFlatGround if currently sliding)
 		physx::PxRaycastBuffer hitInfo;
 		constexpr float padding = 0.05f;
-		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0), physx::PxVec3(0, -1, 0), controller->getStepOffset() + padding + padding, hitInfo))
+		if (PhysicsUtils::raycast(
+				PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0),
+				physx::PxVec3(0, -1, 0),
+				controller->getStepOffset() + padding + padding,
+				hitInfo)
+			&& !prevIsSliding)
 			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.69465837f);
 
 		////////////////////std::cout << isFlatGround << std::endl;
