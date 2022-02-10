@@ -27,7 +27,7 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\render_manager\RenderManager.cpp">
+    <ClCompile Include="src\render_engine2\render_manager\RenderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\glad.c">
@@ -36,151 +36,151 @@
     <ClCompile Include="src\stb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\model\Mesh.cpp">
+    <ClCompile Include="src\render_engine2\model\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\model\Model.cpp">
+    <ClCompile Include="src\render_engine2\model\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui.cpp">
+    <ClCompile Include="src\imgui2\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_impl_glfw.cpp">
+    <ClCompile Include="src\imgui2\imgui_impl_glfw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_impl_opengl3.cpp">
+    <ClCompile Include="src\imgui2\imgui_impl_opengl3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_demo.cpp">
+    <ClCompile Include="src\imgui2\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_draw.cpp">
+    <ClCompile Include="src\imgui2\imgui_draw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_widgets.cpp">
+    <ClCompile Include="src\imgui2\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_tables.cpp">
+    <ClCompile Include="src\imgui2\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\model\animation\Bone.cpp">
+    <ClCompile Include="src\render_engine2\model\animation\Bone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\model\animation\Animation.cpp">
+    <ClCompile Include="src\render_engine2\model\animation\Animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\model\animation\Animator.cpp">
+    <ClCompile Include="src\render_engine2\model\animation\Animator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\mainloop\MainLoop.cpp">
+    <ClCompile Include="src\mainloop2\MainLoop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\PlayerCharacter.cpp">
+    <ClCompile Include="src\objects2\PlayerCharacter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\DirectionalLight.cpp">
+    <ClCompile Include="src\objects2\DirectionalLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\ImGuizmo.cpp">
+    <ClCompile Include="src\imgui2\ImGuizmo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\ImSequencer.cpp">
+    <ClCompile Include="src\imgui2\ImSequencer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\ImCurveEdit.cpp">
+    <ClCompile Include="src\imgui2\ImCurveEdit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\ImGradient.cpp">
+    <ClCompile Include="src\imgui2\ImGradient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\GraphEditor.cpp">
+    <ClCompile Include="src\imgui2\GraphEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\PhysicsUtils.cpp">
+    <ClCompile Include="src\utils2\PhysicsUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\BaseObject.cpp">
+    <ClCompile Include="src\objects2\BaseObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\imgui\imgui_stdlib.cpp">
+    <ClCompile Include="src\imgui2\imgui_stdlib.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\PointLight.cpp">
+    <ClCompile Include="src\objects2\PointLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\resources\Resources.cpp">
+    <ClCompile Include="src\render_engine2\resources\Resources.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\YosemiteTerrain.cpp">
+    <ClCompile Include="src\objects2\YosemiteTerrain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\FileLoading.cpp">
+    <ClCompile Include="src\utils2\FileLoading.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\tinyfiledialogs.c">
+    <ClCompile Include="src\utils2\tinyfiledialogs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\Utils.cpp">
+    <ClCompile Include="src\utils2\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\ObjectTypes.cpp">
+    <ClCompile Include="src\objects2\ObjectTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\GameState.cpp">
+    <ClCompile Include="src\utils2\GameState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\WaterPuddle.cpp">
+    <ClCompile Include="src\objects2\WaterPuddle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\components\PhysicsComponents.cpp">
+    <ClCompile Include="src\objects2\components\PhysicsComponents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\RiverDropoff.cpp">
+    <ClCompile Include="src\objects2\RiverDropoff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\Material.cpp">
+    <ClCompile Include="src\render_engine2\material\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\Messages.cpp">
+    <ClCompile Include="src\utils2\Messages.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\InputManager.cpp">
+    <ClCompile Include="src\utils2\InputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\light\LightManager.cpp">
+    <ClCompile Include="src\render_engine2\light\LightManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\camera\Camera.cpp">
+    <ClCompile Include="src\render_engine2\camera\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\VoxelGroup.cpp">
+    <ClCompile Include="src\objects2\VoxelGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\Texture.cpp">
+    <ClCompile Include="src\render_engine2\material\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\Spline.cpp">
+    <ClCompile Include="src\objects2\Spline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\Shader.cpp">
+    <ClCompile Include="src\render_engine2\material\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtZBuffer.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExtZBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExtCSM_shadow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExtPBR_daynight_cycle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtShadow.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExtShadow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtSSAO.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExtSSAO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_engine\material\shaderext\ShaderExt.cpp">
+    <ClCompile Include="src\render_engine2\material\shaderext\ShaderExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -287,169 +287,169 @@
     <None Include="shader\src\hdri_equirectangular.frag" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
+    <ClInclude Include="src\render_engine2\render_manager\RenderManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\model\Mesh.h">
+    <ClInclude Include="src\render_engine2\model\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\model\Model.h">
+    <ClInclude Include="src\render_engine2\model\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imconfig.h">
+    <ClInclude Include="src\imgui2\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui.h">
+    <ClInclude Include="src\imgui2\imgui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui_impl_glfw.h">
+    <ClInclude Include="src\imgui2\imgui_impl_glfw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui_impl_opengl3.h">
+    <ClInclude Include="src\imgui2\imgui_impl_opengl3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui_internal.h">
+    <ClInclude Include="src\imgui2\imgui_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imstb_textedit.h">
+    <ClInclude Include="src\imgui2\imstb_textedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imstb_rectpack.h">
+    <ClInclude Include="src\imgui2\imstb_rectpack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imstb_truetype.h">
+    <ClInclude Include="src\imgui2\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\model\animation\Bone.h">
+    <ClInclude Include="src\render_engine2\model\animation\Bone.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\model\animation\Animation.h">
+    <ClInclude Include="src\render_engine2\model\animation\Animation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\model\animation\Animator.h">
+    <ClInclude Include="src\render_engine2\model\animation\Animator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\SkinningTech.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\mainloop\MainLoop.h">
+    <ClInclude Include="src\mainloop2\MainLoop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\BaseObject.h">
+    <ClInclude Include="src\objects2\BaseObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\PlayerCharacter.h">
+    <ClInclude Include="src\objects2\PlayerCharacter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\DirectionalLight.h">
+    <ClInclude Include="src\objects2\DirectionalLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\PhysicsUtils.h">
+    <ClInclude Include="src\utils2\PhysicsUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\ImSequencer.h">
+    <ClInclude Include="src\imgui2\ImSequencer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\ImGuizmo.h">
+    <ClInclude Include="src\imgui2\ImGuizmo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\ImZoomSlider.h">
+    <ClInclude Include="src\imgui2\ImZoomSlider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\ImGradient.h">
+    <ClInclude Include="src\imgui2\ImGradient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\ImCurveEdit.h">
+    <ClInclude Include="src\imgui2\ImCurveEdit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\GraphEditor.h">
+    <ClInclude Include="src\imgui2\GraphEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui_stdlib.h">
+    <ClInclude Include="src\imgui2\imgui_stdlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\PointLight.h">
+    <ClInclude Include="src\objects2\PointLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\resources\Resources.h">
+    <ClInclude Include="src\render_engine2\resources\Resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\YosemiteTerrain.h">
+    <ClInclude Include="src\objects2\YosemiteTerrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\FileLoading.h">
+    <ClInclude Include="src\utils2\FileLoading.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\tinyfiledialogs.h">
+    <ClInclude Include="src\utils2\tinyfiledialogs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\Utils.h">
+    <ClInclude Include="src\utils2\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\json.hpp">
+    <ClInclude Include="src\utils2\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\GameState.h">
+    <ClInclude Include="src\utils2\GameState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\WaterPuddle.h">
+    <ClInclude Include="src\objects2\WaterPuddle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\components\PhysicsComponents.h">
+    <ClInclude Include="src\objects2\components\PhysicsComponents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\PhysicsTypes.h">
+    <ClInclude Include="src\utils2\PhysicsTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\RiverDropoff.h">
+    <ClInclude Include="src\objects2\RiverDropoff.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\Material.h">
+    <ClInclude Include="src\render_engine2\material\Material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\Messages.h">
+    <ClInclude Include="src\utils2\Messages.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\InputManager.h">
+    <ClInclude Include="src\utils2\InputManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\light\LightManager.h">
+    <ClInclude Include="src\render_engine2\light\LightManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\camera\Camera.h">
+    <ClInclude Include="src\render_engine2\camera\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\imgui\imgui_impl_opengl3_loader.h">
+    <ClInclude Include="src\imgui2\imgui_impl_opengl3_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\VoxelGroup.h">
+    <ClInclude Include="src\objects2\VoxelGroup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\Texture.h">
+    <ClInclude Include="src\render_engine2\material\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\Spline.h">
+    <ClInclude Include="src\objects2\Spline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\Shader.h">
+    <ClInclude Include="src\render_engine2\material\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExt.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtZBuffer.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExtZBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExtCSM_shadow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExtPBR_daynight_cycle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtShadow.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExtShadow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtSSAO.h">
+    <ClInclude Include="src\render_engine2\material\shaderext\ShaderExtSSAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
