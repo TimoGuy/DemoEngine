@@ -405,9 +405,9 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Do the deed
 	//
-	std::cout << "------------------------------------" << std::endl;
+	////////////////////std::cout << "------------------------------------" << std::endl;
 	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
-	std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
+	////////////////////std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	isGrounded = false;
 	isSliding = false;
@@ -426,7 +426,7 @@ void PlayerPhysics::physicsUpdate()
 		if (PhysicsUtils::raycast(PhysicsUtils::toPxVec3(controller->getFootPosition()) + physx::PxVec3(0, padding, 0), physx::PxVec3(0, -1, 0), controller->getStepOffset() + padding + padding, hitInfo))
 			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.69465837f);
 
-		std::cout << isFlatGround << std::endl;
+		////////////////////std::cout << isFlatGround << std::endl;
 
 		if (isFlatGround)
 		{
@@ -468,7 +468,7 @@ void PlayerPhysics::physicsUpdate()
 				NULL,
 				NULL
 			);
-			std::cout << offsetVector.x << ", " << offsetVector.y << ", " << offsetVector.z << std::endl;
+			////////////////////std::cout << offsetVector.x << ", " << offsetVector.y << ", " << offsetVector.z << std::endl;
 		}
 	}
 

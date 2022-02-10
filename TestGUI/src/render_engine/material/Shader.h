@@ -64,6 +64,7 @@ public:
 	GLuint programId;
 private:
 	std::map<std::string, int> uniformLocationCache;
+	bool uniformLocationCacheCreated;
 	int currentTexIndex;
 	std::vector<ShaderUniform> props;
 	std::vector<ShaderExt*> extensions;
