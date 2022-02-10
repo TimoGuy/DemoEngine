@@ -342,62 +342,6 @@ void PlayerPhysics::physicsUpdate()
 		cookedVelocity.x = cookedVelocity.z = 0.0f;
 	}
 
-	//if (velocity.y > 0.0f)
-	//{
-	//	std::cout << "Hey????? ";
-	//	if (isSlidingCeiling)
-	//	{
-	//		// Cut off movement towards uphill if supposed to be sliding
-	//		const glm::vec3 flatNormal = glm::normalize(glm::vec3(currentHitNormal.x, 0, currentHitNormal.z));
-	//		glm::vec3 flatVelocity = glm::vec3(cookedVelocity.x, 0.0f, cookedVelocity.z);
-	//		if (glm::dot(flatNormal, glm::normalize(flatVelocity)) < 0.0f)	// If going against the direction it's supposed to slide
-	//		{
-	//			glm::vec3 TwoDNormal = glm::normalize(glm::vec3(currentHitNormal.z, 0.0f, -currentHitNormal.x));		// Flip positions to get the 90 degree right vector
-	//			flatVelocity = glm::dot(TwoDNormal, flatVelocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
-	//			cookedVelocity.x = flatVelocity.x;
-	//			cookedVelocity.z = flatVelocity.z;
-	//		}
-	//
-	//		// Slide uphill with ceiling
-	//		const glm::vec3 downXnormal = glm::cross(glm::vec3(0, -1, 0), currentHitNormal);
-	//		const glm::vec3 dxnXnormal = glm::normalize(glm::cross(downXnormal, currentHitNormal));
-	//		const glm::vec2 slidingVectorXZ = glm::vec2(dxnXnormal.x, dxnXnormal.z) * cookedVelocity.y / dxnXnormal.y;
-	//
-	//		cookedVelocity = physx::PxVec3(
-	//			slidingVectorXZ.x * 0.8f,
-	//			cookedVelocity.y,
-	//			slidingVectorXZ.y * 0.8f
-	//		);
-	//		std::cout << "Yes babe";
-	//	}
-	//	std::cout << std::endl;
-	//}
-	//else if (isSliding)
-	//{
-	//	// Cut off movement towards uphill if supposed to be sliding
-	//	const glm::vec3 flatNormal = glm::normalize(glm::vec3(currentHitNormal.x, 0, currentHitNormal.z));
-	//	glm::vec3 flatVelocity = glm::vec3(cookedVelocity.x, 0.0f, cookedVelocity.z);
-	//	if (glm::dot(flatNormal, glm::normalize(flatVelocity)) < 0.0f)	// If going against the direction it's supposed to slide
-	//	{
-	//		glm::vec3 TwoDNormal = glm::normalize(glm::vec3(currentHitNormal.z, 0.0f, -currentHitNormal.x));		// Flip positions to get the 90 degree right vector
-	//		flatVelocity = glm::dot(TwoDNormal, flatVelocity) * TwoDNormal;								// Project the velocity vector onto the 90 degree flat vector;
-	//		cookedVelocity.x = flatVelocity.x;
-	//		cookedVelocity.z = flatVelocity.z;
-	//	}
-	//
-	//	// Slide down normal going downhill
-	//	const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
-	//	const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-	//	const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * cookedVelocity.y / uxnXnormal.y;
-	//
-	//	cookedVelocity = physx::PxVec3(
-	//		slidingVectorXZ.x * 0.9f,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
-	//		cookedVelocity.y,
-	//		slidingVectorXZ.y * 0.9f
-	//	);
-	//	std::cout << cookedVelocity.y << std::endl;
-	//}
-
 	// Add force to go down stairs
 	if (isGrounded && !isSliding)
 		cookedVelocity.y = -controller->getStepOffset();
@@ -405,9 +349,6 @@ void PlayerPhysics::physicsUpdate()
 	//
 	// Do the deed
 	//
-	////////////////////std::cout << "------------------------------------" << std::endl;
-	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
-	////////////////////std::cout << cookedVelocity.x << ", " << cookedVelocity.y << ", " << cookedVelocity.z << std::endl;
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	bool prevIsSliding = isSliding;
 	isGrounded = false;
@@ -432,8 +373,6 @@ void PlayerPhysics::physicsUpdate()
 			&& !prevIsSliding)
 			isFlatGround |= (glm::dot(PhysicsUtils::toGLMVec3(hitInfo.block.normal), glm::vec3(0, 1, 0)) > 0.69465837f);
 
-		////////////////////std::cout << isFlatGround << std::endl;
-
 		if (isFlatGround)
 		{
 			velocity.y = 0.0f;		// Remove gravity
@@ -448,7 +387,6 @@ void PlayerPhysics::physicsUpdate()
 		else if (velocity.y < 0.0f)
 		{
 			isSliding = true;		// Slide down!
-			//std::cout << offsetMovedReconstructed.x << ", " << offsetMovedReconstructed.y << ", " << offsetMovedReconstructed.z << std::endl;
 			
 			// Slide down normal going downhill
 			float fallVelocity = velocity.y - offsetMovedReconstructed.y;
@@ -463,9 +401,9 @@ void PlayerPhysics::physicsUpdate()
 
 			physx::PxVec3 offsetVector =
 				physx::PxVec3(
-					/*pushOffVelocity.x + */slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
-					fallVelocity,  //uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
-					/*pushOffVelocity.y + */slidingVectorXZ.y
+					slidingVectorXZ.x,
+					fallVelocity,
+					slidingVectorXZ.y
 				);
 			controller->move(
 				offsetVector,
@@ -474,7 +412,6 @@ void PlayerPhysics::physicsUpdate()
 				NULL,
 				NULL
 			);
-			////////////////////std::cout << offsetVector.x << ", " << offsetVector.y << ", " << offsetVector.z << std::endl;
 		}
 	}
 
@@ -582,14 +519,14 @@ physx::PxTransform PlayerPhysics::getGlobalPose()
 void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 {
 	currentHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
-	////////////////////////std::cout << currentHitNormal.x << ", " << currentHitNormal.y << ", " << currentHitNormal.z << std::endl;
-
 	if (currentHitNormal.y > 0.0f)
-		offsetMovedReconstructed = PhysicsUtils::toPxExtendedVec3((hit.worldPos + PhysicsUtils::toPxExtendedVec3(hit.worldNormal * playerCapsuleControllerRadius) + physx::PxExtendedVec3(0, -playerCapsuleControllerRadius, 0)) - controller->getFootPosition());		// NOTE: this is probably getting truncated, the data types. for some reason pxextendedvec3-pxextendedvec3=pxvec3???
-
-	//std::cout << controller->getPosition().x << ", " << controller->getPosition().y << ", " << controller->getPosition().z << std::endl;
-	//std::cout << hit.dir.x * hit.length << ", " << hit.dir.y * hit.length << ", " << hit.dir.z * hit.length << std::endl;
-	//std::cout << "\t\t" << hit.worldPos.x << ", " << hit.worldPos.y << ", " << hit.worldPos.z << std::endl;
+		offsetMovedReconstructed =
+			PhysicsUtils::toPxExtendedVec3(
+				(hit.worldPos
+					+ PhysicsUtils::toPxExtendedVec3(hit.worldNormal * playerCapsuleControllerRadius)
+					+ physx::PxExtendedVec3(0, -playerCapsuleControllerRadius, 0))
+					- controller->getFootPosition()
+			);		// NOTE: this is probably getting truncated, the data types. for some reason pxextendedvec3-pxextendedvec3=pxvec3???
 }
 
 void PlayerPhysics::onControllerHit(const physx::PxControllersHit& hit) { PX_UNUSED(hit); }
