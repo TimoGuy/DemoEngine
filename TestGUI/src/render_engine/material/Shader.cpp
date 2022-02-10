@@ -135,18 +135,7 @@ void Shader::use()
 void Shader::setBool(std::string uniformName, const bool& value) { setInt(uniformName, (int)value); }
 void Shader::setInt(std::string uniformName, const int& value)
 {
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform1i(programId, loc, value);
 }
 
@@ -154,18 +143,7 @@ void Shader::setInt(std::string uniformName, const int& value)
 void Shader::setUint(std::string uniformName, const unsigned int& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform1ui(programId, loc, value);
 }
 
@@ -173,18 +151,7 @@ void Shader::setUint(std::string uniformName, const unsigned int& value)
 void Shader::setFloat(std::string uniformName, const float& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform1f(programId, loc, value);
 }
 
@@ -192,18 +159,7 @@ void Shader::setFloat(std::string uniformName, const float& value)
 void Shader::setVec2(std::string uniformName, const glm::vec2& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform2fv(programId, loc, 1, glm::value_ptr(value));
 }
 
@@ -211,18 +167,7 @@ void Shader::setVec2(std::string uniformName, const glm::vec2& value)
 void Shader::setVec3(std::string uniformName, const glm::vec3& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform3fv(programId, loc, 1, glm::value_ptr(value));
 }
 
@@ -230,18 +175,7 @@ void Shader::setVec3(std::string uniformName, const glm::vec3& value)
 void Shader::setVec4(std::string uniformName, const glm::vec4& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform4fv(programId, loc, 1, glm::value_ptr(value));
 }
 
@@ -249,18 +183,7 @@ void Shader::setVec4(std::string uniformName, const glm::vec4& value)
 void Shader::setIvec4(std::string uniformName, const glm::ivec4& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniform4iv(programId, loc, 1, glm::value_ptr(value));
 }
 
@@ -268,18 +191,7 @@ void Shader::setIvec4(std::string uniformName, const glm::ivec4& value)
 void Shader::setMat3(std::string uniformName, const glm::mat3& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniformMatrix3fv(programId, loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
@@ -287,18 +199,7 @@ void Shader::setMat3(std::string uniformName, const glm::mat3& value)
 void Shader::setMat4(std::string uniformName, const glm::mat4& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glProgramUniformMatrix4fv(programId, loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
@@ -306,18 +207,7 @@ void Shader::setMat4(std::string uniformName, const glm::mat4& value)
 void Shader::setSampler(std::string uniformName, const GLuint& value)
 {
 
-	int loc = 0;
-	if (uniformLocationCacheCreated)
-		loc = uniformLocationCache[uniformName];
-	else
-		if (uniformLocationCache.find(uniformName) == uniformLocationCache.end())
-			loc = uniformLocationCache[uniformName] = glGetUniformLocation(programId, uniformName.c_str());
-		else
-		{
-			loc = uniformLocationCache[uniformName];
-			uniformLocationCacheCreated = true;
-		}
-
+	int loc = glGetUniformLocation(programId, uniformName.c_str());
 	glBindTextureUnit(currentTexIndex, value);
 	glProgramUniform1i(programId, loc, currentTexIndex);
 	currentTexIndex++;
