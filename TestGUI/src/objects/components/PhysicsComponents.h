@@ -82,7 +82,7 @@ public:
 	bool getStandingOnAngularVelocityY(float& dipstick) { dipstick = standingOnAngularVelocityYRadians; return hasValidStandingOnAngularVelocityY; }
 
 	// NOTE: this should not be accessed while !isGrounded, bc it isn't updated unless if on ground <45degrees
-	glm::vec3 getGroundedNormal() { return currentHitNormal; }
+	glm::vec3 getGroundedNormal() { return groundHitNormal; }
 
 	//
 	// PxUserControllerHitReport methods
@@ -99,9 +99,11 @@ private:
 	bool isGrounded = false;
 	bool isSliding = false;
 	bool isSlidingCeiling = false;
+	bool isSandwiching = false;		// NOTE: this is where you push yourself into a crevice (defined by collision on bottom and top)
 	bool hasValidStandingOnAngularVelocityY = false;
 	float standingOnAngularVelocityYRadians;
-	glm::vec3 currentHitNormal = glm::vec3(0, 1, 0);
+	glm::vec3 groundHitNormal = glm::vec3(0, 1, 0);
+	glm::vec3 ceilingHitNormal = glm::vec3(0, -1, 0);
 	physx::PxExtendedVec3 offsetMovedReconstructed;		// NOTE: this is only valid/updated when the hitnormal.y > 0, so essentially if it's a bottom-hit
 
 	// For retaining velocity when leaving the ground
