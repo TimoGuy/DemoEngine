@@ -327,6 +327,7 @@ void PlayerPhysics::lockVelocity(bool yAlso)
 bool playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = true;		// NOTE: just in case first frame may get messed up, this flag is set to true at first.
 #endif
 
+
 void PlayerPhysics::physicsUpdate()
 {
 	//
@@ -335,18 +336,6 @@ void PlayerPhysics::physicsUpdate()
 	velocity.y -= 4.9f * MainLoop::getInstance().physicsDeltaTime;
 
 	physx::PxVec3 cookedVelocity = velocity;
-
-	// Slide along ceilings
-	//if (velocity.y > 0.0f && (isSlidingCeiling || isSandwiching))		// This prevents from sticking when pushing into a wall while jumping/sandwiching
-	//{
-	//	const glm::vec3 downXnormal = glm::normalize(glm::cross(glm::vec3(0, -1, 0), ceilingHitNormal));
-	//	const glm::vec3 flatNormal = glm::normalize(glm::vec3(downXnormal.x, 0.0f, downXnormal.z));
-	//	glm::vec3 movementVector(cookedVelocity.x, 0.0f, cookedVelocity.z);
-	//	movementVector = glm::dot(flatNormal, glm::normalize(movementVector)) * movementVector;
-	//
-	//	cookedVelocity.x = movementVector.x;
-	//	cookedVelocity.z = movementVector.z;
-	//}
 
 	// Add force to go down stairs
 	if (isGrounded && !isSliding)
@@ -366,7 +355,20 @@ void PlayerPhysics::physicsUpdate()
 	// Check if collision on top and bottom
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN &&
 		collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
-		isSandwiching = true;			// @TODO: make a push-back like thingo here
+	{
+		// Move away at the average of the two normals
+		glm::vec3 avgHitNormal = (groundHitNormal + ceilingHitNormal) / 2.0f;
+		avgHitNormal.y = 0.0f;
+		avgHitNormal = glm::normalize(avgHitNormal);
+
+		controller->move(
+			PhysicsUtils::toPxVec3(avgHitNormal * 0.1f),
+			0.01f,
+			MainLoop::getInstance().physicsDeltaTime,
+			NULL,
+			NULL
+		);
+	}
 
 	// Collision on bottom
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
@@ -400,7 +402,7 @@ void PlayerPhysics::physicsUpdate()
 		{
 			isSliding = true;		// Slide down!
 			
-			// Slide down normal going downhill
+			// Slide down normal going downhill (NOTE: This algorithm is different from the slide up normal uphill counterpart. This is bc the way the capsule controller treats these types of collisions is different. This version pushes the controller horizontally away from the wall, the uphill version redirects the upwards velocity along the normal of the wall  -Timo)
 			float fallVelocity = velocity.y - offsetFootMovedReconstructed.y;
 			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), groundHitNormal);
 			const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, groundHitNormal));
@@ -440,27 +442,16 @@ void PlayerPhysics::physicsUpdate()
 		{
 			velocity.y = 0.0f;		// Hit your head on the ceiling
 		}
-		else if (velocity.y > 0.0f)		// @COPYPASTA
+		else if (velocity.y > 0.0f)
 		{
 			isSlidingCeiling = true;
 
-			// Slide up normal going uphill
+			// Slide up normal going uphill (https://www.youtube.com/watch?v=GI5LAbP5slE)
 			float riseVelocity = velocity.y - offsetHeadMovedReconstructed.y;
-			const glm::vec3 downXnormal = glm::cross(glm::vec3(0, -1, 0), ceilingHitNormal);
-			const glm::vec3 dxnXnormal = glm::normalize(glm::cross(downXnormal, ceilingHitNormal));
-			const glm::vec2 slidingVectorXZ = glm::vec2(dxnXnormal.x, dxnXnormal.z) * riseVelocity / dxnXnormal.y;
+			const glm::vec3 slopeDirection = glm::vec3(0, -1, 0) - ceilingHitNormal * glm::dot(glm::vec3(0, -1, 0), ceilingHitNormal);
+			const glm::vec3 moveDirection = -riseVelocity * slopeDirection;
 
-			glm::vec2 pushOffVelocity(0.0f);
-			glm::vec2 flatVelocity(velocity.x, velocity.z);
-			if (glm::length2(flatVelocity) > 0.001f)
-				pushOffVelocity = glm::min(glm::dot(glm::normalize(glm::vec2(ceilingHitNormal.x, ceilingHitNormal.z)), glm::normalize(flatVelocity)), 0.0f) * flatVelocity;
-
-			physx::PxVec3 offsetVector =
-				physx::PxVec3(
-					slidingVectorXZ.x - offsetHeadMovedReconstructed.x,
-					riseVelocity,
-					slidingVectorXZ.y - offsetHeadMovedReconstructed.z
-				);
+			physx::PxVec3 offsetVector = PhysicsUtils::toPxVec3(moveDirection);
 			controller->move(
 				offsetVector,
 				0.01f,
@@ -468,6 +459,7 @@ void PlayerPhysics::physicsUpdate()
 				NULL,
 				NULL
 			);
+			playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = true;		// NOTE: Prevent single-tick bounce off when ceiling is right above you. Since isGrounded's state changes at the same time you do this, then you fly away real quick  -Timo
 		}
 	}
 
@@ -491,13 +483,13 @@ void PlayerPhysics::physicsUpdate()
 	{
 		// Set the velocity!
 		velocity = PhysicsUtils::toPxVec3(pos) - prevPositionWhileGrounded;
-
+	
 		if (isGrounded)
 		{
 			// Landing on the ground
 			glm::vec2 flatVelocity(velocity.x, velocity.z);
 			float newRunSpeed = glm::length(flatVelocity);
-
+	
 			if (newRunSpeed > 0.01f)
 			{
 				glm::vec2 idealFacingDirection = glm::normalize(flatVelocity);
@@ -507,7 +499,7 @@ void PlayerPhysics::physicsUpdate()
 					idealFacingDirection *= -1.0f;
 					newRunSpeed *= -1.0f;
 				}
-
+	
 				((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection;		// ; TODO: figger out turning speed problems!!! (MAYBE: just have there be an exponential function on turn speed. If moving a certain speed, make turn speed move towards 0 like asymptote)
 				((PlayerCharacter*)baseObject)->currentRunSpeed = newRunSpeed;
 			}
