@@ -442,29 +442,33 @@ void PlayerPhysics::physicsUpdate()
 		else if (velocity.y < 0.0f)
 		{
 			isSliding = true;		// Slide down!
-			std::cout << offsetMovedReconstructed.x << ", " << offsetMovedReconstructed.y << ", " << offsetMovedReconstructed.z << std::endl;
+			//std::cout << offsetMovedReconstructed.x << ", " << offsetMovedReconstructed.y << ", " << offsetMovedReconstructed.z << std::endl;
 			
 			// Slide down normal going downhill
+			float fallVelocity = velocity.y - offsetMovedReconstructed.y;
 			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), currentHitNormal);
 			const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, currentHitNormal));
-			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * velocity.y / uxnXnormal.y;
+			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * fallVelocity / uxnXnormal.y;
 
 			glm::vec2 pushOffVelocity(0.0f);
 			glm::vec2 flatVelocity(velocity.x, velocity.z);
 			if (glm::length2(flatVelocity) > 0.001f)
 				pushOffVelocity = glm::min(glm::dot(glm::normalize(glm::vec2(currentHitNormal.x, currentHitNormal.z)), glm::normalize(flatVelocity)), 0.0f) * flatVelocity;
 
-			controller->move(
+			physx::PxVec3 offsetVector =
 				physx::PxVec3(
 					/*pushOffVelocity.x + */slidingVectorXZ.x,		// @TODO: figure out exactly how to handle the ramps/sliding down edges
-					velocity.y - offsetMovedReconstructed.y,  //uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
+					fallVelocity,  //uxnXnormal.y,  //velocity.y + velocity.y * uxnXnormal.y, //.5f, //cookedVelocity.y - 0.0f,
 					/*pushOffVelocity.y + */slidingVectorXZ.y
-				),
+				);
+			controller->move(
+				offsetVector,
 				0.01f,
 				MainLoop::getInstance().physicsDeltaTime,
 				NULL,
 				NULL
 			);
+			std::cout << offsetVector.x << ", " << offsetVector.y << ", " << offsetVector.z << std::endl;
 		}
 	}
 
