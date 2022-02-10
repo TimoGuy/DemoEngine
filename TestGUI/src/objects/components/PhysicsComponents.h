@@ -104,7 +104,8 @@ private:
 	float standingOnAngularVelocityYRadians;
 	glm::vec3 groundHitNormal = glm::vec3(0, 1, 0);
 	glm::vec3 ceilingHitNormal = glm::vec3(0, -1, 0);
-	physx::PxExtendedVec3 offsetMovedReconstructed;		// NOTE: this is only valid/updated when the hitnormal.y > 0, so essentially if it's a bottom-hit
+	physx::PxExtendedVec3 offsetFootMovedReconstructed;		// NOTE: this is only valid/updated when the hitnormal.y >= 0, so essentially if it's a bottom-hit
+	physx::PxExtendedVec3 offsetHeadMovedReconstructed;		// NOTE: this is only valid/updated when the hitnormal.y < 0, so essentially if it's a top-hit
 
 	// For retaining velocity when leaving the ground
 	bool prevIsGrounded = false;

@@ -337,16 +337,16 @@ void PlayerPhysics::physicsUpdate()
 	physx::PxVec3 cookedVelocity = velocity;
 
 	// Slide along ceilings
-	if (velocity.y > 0.0f && (isSlidingCeiling || isSandwiching))		// This prevents from sticking when pushing into a wall while jumping/sandwiching
-	{
-		const glm::vec3 downXnormal = glm::normalize(glm::cross(glm::vec3(0, -1, 0), ceilingHitNormal));
-		const glm::vec3 flatNormal = glm::normalize(glm::vec3(downXnormal.x, 0.0f, downXnormal.z));
-		glm::vec3 movementVector(cookedVelocity.x, 0.0f, cookedVelocity.z);
-		movementVector = glm::dot(flatNormal, glm::normalize(movementVector)) * movementVector;
-	
-		cookedVelocity.x = movementVector.x;
-		cookedVelocity.z = movementVector.z;
-	}
+	//if (velocity.y > 0.0f && (isSlidingCeiling || isSandwiching))		// This prevents from sticking when pushing into a wall while jumping/sandwiching
+	//{
+	//	const glm::vec3 downXnormal = glm::normalize(glm::cross(glm::vec3(0, -1, 0), ceilingHitNormal));
+	//	const glm::vec3 flatNormal = glm::normalize(glm::vec3(downXnormal.x, 0.0f, downXnormal.z));
+	//	glm::vec3 movementVector(cookedVelocity.x, 0.0f, cookedVelocity.z);
+	//	movementVector = glm::dot(flatNormal, glm::normalize(movementVector)) * movementVector;
+	//
+	//	cookedVelocity.x = movementVector.x;
+	//	cookedVelocity.z = movementVector.z;
+	//}
 
 	// Add force to go down stairs
 	if (isGrounded && !isSliding)
@@ -366,7 +366,7 @@ void PlayerPhysics::physicsUpdate()
 	// Check if collision on top and bottom
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN &&
 		collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
-		isSandwiching = true;
+		isSandwiching = true;			// @TODO: make a push-back like thingo here
 
 	// Collision on bottom
 	if (collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN)
@@ -389,7 +389,7 @@ void PlayerPhysics::physicsUpdate()
 		{
 			velocity.y = 0.0f;		// Remove gravity
 
-			if (hitInfo.hasBlock && (hitInfo.block.actor->getType() & physx::PxActorType::eRIGID_DYNAMIC))
+			if (hitInfo.hasBlock && (hitInfo.block.actor->getType() & physx::PxActorType::eRIGID_DYNAMIC))		// @TODO: @REFACTOR: attach the actor via the onshapecollide() callback instead of a downwards raycast (only use as fallback)
 			{
 				physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)hitInfo.block.actor;
 				standingOnAngularVelocityYRadians = body->getAngularVelocity().y;
@@ -401,7 +401,7 @@ void PlayerPhysics::physicsUpdate()
 			isSliding = true;		// Slide down!
 			
 			// Slide down normal going downhill
-			float fallVelocity = velocity.y - offsetMovedReconstructed.y;
+			float fallVelocity = velocity.y - offsetFootMovedReconstructed.y;
 			const glm::vec3 upXnormal = glm::cross(glm::vec3(0, 1, 0), groundHitNormal);
 			const glm::vec3 uxnXnormal = glm::normalize(glm::cross(upXnormal, groundHitNormal));
 			const glm::vec2 slidingVectorXZ = glm::vec2(uxnXnormal.x, uxnXnormal.z) * fallVelocity / uxnXnormal.y;
@@ -436,12 +436,39 @@ void PlayerPhysics::physicsUpdate()
 	// Collision on head
 	if (velocity.y > 0.0f && collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_UP)
 	{
-		if (glm::dot(groundHitNormal, glm::vec3(0, -1, 0)) > 0.69465837f)
+		if (glm::dot(ceilingHitNormal, glm::vec3(0, -1, 0)) > 0.69465837f)
 		{
 			velocity.y = 0.0f;		// Hit your head on the ceiling
 		}
-		else
+		else if (velocity.y > 0.0f)		// @COPYPASTA
+		{
 			isSlidingCeiling = true;
+
+			// Slide up normal going uphill
+			float riseVelocity = velocity.y - offsetHeadMovedReconstructed.y;
+			const glm::vec3 downXnormal = glm::cross(glm::vec3(0, -1, 0), ceilingHitNormal);
+			const glm::vec3 dxnXnormal = glm::normalize(glm::cross(downXnormal, ceilingHitNormal));
+			const glm::vec2 slidingVectorXZ = glm::vec2(dxnXnormal.x, dxnXnormal.z) * riseVelocity / dxnXnormal.y;
+
+			glm::vec2 pushOffVelocity(0.0f);
+			glm::vec2 flatVelocity(velocity.x, velocity.z);
+			if (glm::length2(flatVelocity) > 0.001f)
+				pushOffVelocity = glm::min(glm::dot(glm::normalize(glm::vec2(ceilingHitNormal.x, ceilingHitNormal.z)), glm::normalize(flatVelocity)), 0.0f) * flatVelocity;
+
+			physx::PxVec3 offsetVector =
+				physx::PxVec3(
+					slidingVectorXZ.x - offsetHeadMovedReconstructed.x,
+					riseVelocity,
+					slidingVectorXZ.y - offsetHeadMovedReconstructed.z
+				);
+			controller->move(
+				offsetVector,
+				0.01f,
+				MainLoop::getInstance().physicsDeltaTime,
+				NULL,
+				NULL
+			);
+		}
 	}
 
 	//
@@ -533,7 +560,7 @@ void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 	if (hit.worldNormal.y >= 0.0f)
 	{
 		groundHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
-		offsetMovedReconstructed =
+		offsetFootMovedReconstructed =
 			PhysicsUtils::toPxExtendedVec3(
 				(hit.worldPos
 					+ PhysicsUtils::toPxExtendedVec3(hit.worldNormal * playerCapsuleControllerRadius)
@@ -544,6 +571,13 @@ void PlayerPhysics::onShapeHit(const physx::PxControllerShapeHit& hit)
 	else
 	{
 		ceilingHitNormal = glm::vec3(hit.worldNormal.x, hit.worldNormal.y, hit.worldNormal.z);
+		offsetHeadMovedReconstructed =
+			PhysicsUtils::toPxExtendedVec3(
+				(hit.worldPos
+					+ PhysicsUtils::toPxExtendedVec3(hit.worldNormal * playerCapsuleControllerRadius)
+					+ physx::PxExtendedVec3(0, -controller->getHeight() - playerCapsuleControllerRadius, 0))
+				- controller->getFootPosition()
+			);		// NOTE: this is probably getting truncated, the data types. for some reason pxextendedvec3-pxextendedvec3=pxvec3???
 	}
 }
 
