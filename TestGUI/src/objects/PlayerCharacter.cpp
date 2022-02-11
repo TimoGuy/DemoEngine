@@ -584,6 +584,7 @@ void PlayerCharacter::processAnimation()
 	constexpr int DRAW_WATER_ANIM = 9;
 	constexpr int DRINK_WATER_ANIM = 10;
 	constexpr int SHEATH_BOTTLE_ANIM = 11;
+	constexpr int WRITE_IN_JOURNAL_ANIM = 12;
 
 	//
 	// Process movement into animationstates
@@ -673,7 +674,22 @@ void PlayerCharacter::processAnimation()
 			lockJumping = false;
 		}
 	}
+	else if (animationState == 7)
+	{
+		// Lock movement
+		((PlayerPhysics*)getPhysicsComponent())->lockVelocity(false);
+		lockFacingDirection = true;
+		lockJumping = true;
 
+		// Wait until write_in_journal animation is finished
+		if (animator.isAnimationFinished(WRITE_IN_JOURNAL_ANIM, MainLoop::getInstance().deltaTime))
+		{
+			// Pick up bottle
+			animationState = 6;
+		}
+	}
+
+	// Overriding animation states
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
 	{
 		animationState = 4;
@@ -684,6 +700,9 @@ void PlayerCharacter::processAnimation()
 		triggerDrinkWaterAnimation = false;
 		animationState = 5;
 	}
+
+	if (InputManager::getInstance().pausePressed)
+		animationState = 7;
 
 	//
 	// Update Animation State
@@ -736,6 +755,11 @@ void PlayerCharacter::processAnimation()
 		case 6:
 			// Pick up bottle
 			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false, true);
+			break;
+
+		case 7:
+			// Write in journal
+			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false, true);
 			break;
 
 		default:
@@ -861,7 +885,7 @@ void PlayerCharacter::processAnimation()
 		//
 		// Calculate the bottle transformation matrix
 		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-		if (animationState == 4 || animationState == 5 || animationState == 6)
+		if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7)
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;

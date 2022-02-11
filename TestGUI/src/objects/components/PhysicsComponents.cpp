@@ -418,7 +418,8 @@ void PlayerPhysics::physicsUpdate()
 					slidingVectorXZ.x,
 					fallVelocity,
 					slidingVectorXZ.y
-				);
+				)
+				+ PhysicsUtils::toPxVec3(ceilingHitNormal * 0.1f);
 			controller->move(
 				offsetVector,
 				0.01f,
