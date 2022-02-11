@@ -32,14 +32,14 @@
                     -300.592529296875
                 ],
                 "rotation": [
-                    76.84970092773438,
-                    43.83079147338867,
-                    -42.00655746459961
+                    76.84969329833984,
+                    43.8307991027832,
+                    -42.00656509399414
                 ],
                 "scale": [
-                    0.999998927116394,
-                    1.0000009536743164,
-                    0.9999998807907104
+                    0.9999988675117493,
+                    1.0000008344650269,
+                    0.9999998211860657
                 ]
             },
             "color_multiplier": 5.0,
@@ -426,9 +426,9 @@
                     -23.978450775146484
                 ],
                 "scale": [
-                    0.9999980926513672,
+                    0.9999979138374329,
                     0.9999967813491821,
-                    0.999998927116394
+                    0.9999988079071045
                 ]
             },
             "moving_platform_angular_velocity": [
@@ -837,9 +837,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.607800991289878e-08,
+                    -3.607801346561246e-08,
                     -0.019804134964942932,
-                    0.00020854806643910706
+                    0.0002085480809910223
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -1387,9 +1387,9 @@
                     75.98754119873047
                 ],
                 "rotation": [
-                    -3.607800991289878e-08,
+                    -3.607801346561246e-08,
                     -0.019804134964942932,
-                    0.00020854806643910706
+                    0.0002085480809910223
                 ],
                 "scale": [
                     0.9999996423721313,
@@ -1960,9 +1960,9 @@
                 "guid": "ab30311bd0aeb14ad9edabcac4a45267a728fd483c83afbfd3a5db63a06d7f8e",
                 "name": "Voxel Group (wholeisland MP)",
                 "position": [
-                    61.92045974731445,
-                    288.73193359375,
-                    -99.60051727294922
+                    63.181095123291016,
+                    393.6780700683594,
+                    -209.251708984375
                 ],
                 "rotation": [
                     0.0,
@@ -1983,7 +1983,7 @@
             "moving_platform_spline_guid": "aa4b269fa5c2babbb1ce4f1d272f3424714fe122291e612a874a9e7a2925b03f",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 366.0,
+            "moving_platform_spline_position_in_time": 538.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
@@ -2114,7 +2114,7 @@
                 "name": "Voxel Group (Updown)",
                 "position": [
                     73.01878356933594,
-                    167.5154571533203,
+                    231.5154571533203,
                     97.85981750488281
                 ],
                 "rotation": [
@@ -2134,9 +2134,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "c1d62a54beb1d2a0b7c6792b9c48d5ff17dae5a789b154a439be2130ad5228e0",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_position_in_time": 63.999000549316406,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 100.0,
             "moving_platform_velocity": [
@@ -2160,6 +2160,61 @@
                 5,
                 1,
                 5
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "2e4e120e42f9b26bb8c9eb2016daee0f464a33e91f3a3e0a1293940b87b990ed",
+                "name": "Voxel Group (unnamed)",
+                "position": [
+                    79.0,
+                    52.0,
+                    -228.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    168.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.25
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "147:1;84:0;42:1;84:0;42:1;84:0;42:1;84:0;147:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                3,
+                3,
+                20
+            ],
+            "voxel_group_size": [
+                6,
+                6,
+                21
             ],
             "voxel_render_size": 4.0
         }
