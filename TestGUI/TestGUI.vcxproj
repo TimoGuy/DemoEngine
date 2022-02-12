@@ -132,6 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\objects\StaminaBar.cpp" />
     <ClCompile Include="src\render_engine\material\Shader.cpp" />
     <ClCompile Include="src\objects\Spline.cpp" />
     <ClCompile Include="src\imgui\GraphEditor.cpp" />
@@ -285,6 +286,7 @@
     <None Include="shader\zPassShader.json" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\objects\StaminaBar.h" />
     <ClInclude Include="src\render_engine\material\Shader.h" />
     <ClInclude Include="src\objects\Spline.h" />
     <ClInclude Include="src\imgui\GraphEditor.h" />

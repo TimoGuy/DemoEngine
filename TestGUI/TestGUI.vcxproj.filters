@@ -183,6 +183,9 @@
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\objects\StaminaBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">
@@ -450,6 +453,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExtSSAO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\objects\StaminaBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
