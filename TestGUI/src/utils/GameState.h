@@ -17,7 +17,7 @@ public:
 	bool						playerIsHoldingWater			= false;
 	int							maxPlayerStaminaAmount			= 500;
 	float						currentPlayerStaminaAmount		= 500;
-	float						playerStaminaDepleteChaser		= 100;		// NOTE: this shows how much the stamina is depleting, so it will essentially follow the currentPlayerStaminaAmount
+	float						playerStaminaDepleteChaser		= 0;		// NOTE: this shows how much the stamina is depleting, so it will essentially follow the currentPlayerStaminaAmount
 	std::vector<std::string>	playerAllCollectedPuddleGUIDs;
 	int							roomEnteringId;
 

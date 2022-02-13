@@ -196,6 +196,18 @@ private:
 	float mapInterpolationAmt;
 	Texture* nightSkybox;
 
+	// UI StaminaBar
+	void loadResources();
+	void unloadResources();
+	glm::vec3 staminaBarPosition{ 128, -50, 0 };
+	float staminaBarSize = 15.0f;
+	glm::vec3 staminaBarColor1{ 0.0588, 0.0588, 0.0588 };
+	glm::vec3 staminaBarColor2{ 0.3216, 0.7765, 0.3647 };
+	glm::vec3 staminaBarColor3{ 0.1686, 0.4275, 0.1922 };
+	glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
+	float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
+	Model* staminaBar;
+
 	// Camera Information
 	GLuint cameraInfoUBO;
 	CameraInformation cameraInfo;
@@ -212,12 +224,6 @@ private:
 
     void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
 
-	// Fonts
-	std::map<char, TextCharacter> characters;
-	GLuint textVAO, textVBO;
-	void createFonts();
-	void destroyFonts();
-
 
 	// Render Queues
 	Shader* INTERNALzPassShader;
@@ -233,6 +239,11 @@ private:
 	void renderImGuiContents();
 #endif
 
+	// Fonts
+	std::map<char, TextCharacter> characters;
+	GLuint textVAO, textVBO;
+	void createFonts();
+	void destroyFonts();
 	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
 
 #ifdef _DEVELOP

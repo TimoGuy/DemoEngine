@@ -4,9 +4,8 @@
   "F": "hudUI.frag",
   "props": [
     "float padding",
-    "vec2 staminaBarExtents",
-    "float staminaAmountFilled",
-    "float staminaDepleteChaser",
+    "float staminaAmountFilled[16]",
+    "float staminaDepleteChaser[16]",
     "vec3 staminaBarColor1",
     "vec3 staminaBarColor2",
     "vec3 staminaBarColor3",
