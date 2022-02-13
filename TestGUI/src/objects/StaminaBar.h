@@ -20,18 +20,11 @@ public:
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
 
-	PhysicsComponent* physicsComponent;
 	RenderComponent* renderComponent;
 
 	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
+	PhysicsComponent* getPhysicsComponent() { return nullptr; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
-
-	void onTrigger(const physx::PxTriggerPair& pair);
-
-	void dropoffWater();
-
-	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 
 #ifdef _DEVELOP
 	void imguiPropertyPanel();
@@ -39,11 +32,6 @@ public:
 #endif
 
 private:
-	bool beingTriggeredByPlayer = false;
-
-	//
-	// OLD RIVERDROPOFFRENDER
-	//
 	Model* model;
 	std::map<std::string, Material*> materials;
 };

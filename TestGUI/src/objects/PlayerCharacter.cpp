@@ -8,6 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "components/PhysicsComponents.h"
+#include "StaminaBar.h"
 #include "../mainloop/MainLoop.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/resources/Resources.h"
@@ -36,6 +37,8 @@ PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTr
 
 	playerCamera.priority = 10;
 	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
+
+	staminaBar = new StaminaBar();
 }
 
 PlayerCharacter::~PlayerCharacter()
@@ -44,6 +47,8 @@ PlayerCharacter::~PlayerCharacter()
 	delete physicsComponent;
 
 	MainLoop::getInstance().camera.removeVirtualCamera(&playerCamera);
+
+	delete staminaBar;
 }
 
 void PlayerCharacter::loadPropertiesFromJson(nlohmann::json& object)		// @Override

@@ -7,6 +7,7 @@
 
 
 typedef unsigned int GLuint;
+class StaminaBar;
 
 //
 // TODO: place this class inside of somewhere!!!
@@ -126,6 +127,8 @@ private:
 	float indoorOverlapCheckRadius = 0.75f;
 	float indoorOverlapCheckHeight = 17.5f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
 	float indoorOverlapCheckOffY = 20.0f;
+
+	StaminaBar* staminaBar;
 
 	//
 	// Animation Variables
