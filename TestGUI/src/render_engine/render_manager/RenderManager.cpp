@@ -188,8 +188,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
 	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 	skybox_program_id->setMat4("projection", captureProjection);
-	
-	//skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
+	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
@@ -1249,8 +1248,8 @@ void RenderManager::renderScene()
 	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 	skybox_program_id->setMat4("projection", cameraInfo.projection);
 	skybox_program_id->setMat4("view", cameraInfo.view);
+	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 
-	//skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 	//perlinTime += MainLoop::getInstance().deltaTime;
 
 	renderCube();

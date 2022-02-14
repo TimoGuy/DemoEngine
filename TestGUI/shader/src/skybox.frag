@@ -43,10 +43,6 @@ uniform float perlinTime;
 
 
 
-#define PI 3.1415926535897932384626433832795
-#define iSteps 16
-#define jSteps 8
-
 precision highp float;
 
 uniform mat4 projection;
@@ -60,8 +56,11 @@ uniform mat4 view;
 //uniform float reflectionVerticalShift;
 const vec3 sunBaseColor = vec3(1.0f,0.79f,0.43f);
 
-vec2 rsi(vec3 r0, vec3 rd, float sr)
-{
+#define PI 3.1415926535897932384626433832795
+#define iSteps 16
+#define jSteps 8
+
+vec2 rsi(vec3 r0, vec3 rd, float sr) {
     // ray-sphere intersection that assumes
     // the sphere is centered at the origin.
     // No intersection when result.x > result.y
@@ -174,7 +173,7 @@ void main()
 	vec3 out_LightScattering = vec3(0);             // @TODO: see if this is important. Perhaps this is for volumetric lighting?????? We'll see I guess
 	
     // TIMO
-    vec3 v_Sun = sunOrientation * -2600.0;
+    vec3 v_Sun = -sunOrientation;// * -2600.0;
 
     vec3 out_Color = atmosphere(
         ray_world,        	            // normalized ray direction
@@ -190,10 +189,11 @@ void main()
         0.758                           // Mie preferred scattering direction
     );
 
-    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.005;       // TIMO
 	
 	// Apply exposure.
     out_Color = 1.0 - exp(-1.0 * out_Color);
+
+    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.005;       // TIMO
 	
 	float _sunRadius = length(normalize(ray_world)- normalize(v_Sun));
 	
@@ -209,4 +209,7 @@ void main()
 	}
 
     fragColor = vec4(out_Color, 1);
+
+    //if (abs(ray_world.y) < 0.001)
+    //    fragColor = vec4(1, 0, 0, 1);
 }
