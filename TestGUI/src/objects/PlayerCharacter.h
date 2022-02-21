@@ -196,9 +196,13 @@ private:
 
 	bool triggerDrinkWaterAnimation = false;
 
-public:		// TODO: make this private (delete this!!!!!!)
 	//
 	// Rope Simulations
 	//
 	RopeSimulation leftSideburn, rightSideburn, backAttachment;
+
+	//
+	// HUMAN transformation
+	//
+	int human_numJumpsCurrent = 0;
 };

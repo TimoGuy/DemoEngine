@@ -117,8 +117,7 @@ PlayerPhysics::PlayerPhysics(BaseObject* bo) : PhysicsComponent(bo)
 			playerCapsuleControllerRadius,
 			4.5f,
 			this,		// PxUserControllerHitReport
-			this//,		// PxBehaviorCallbackWhatevs
-			//0.0f		// Undo the slope climbing stuff		@TODO: fix this!!!!!!
+			this		// PxBehaviorCallbackWhatevs
 		);
 
 	GameState::getInstance().playerActorPointer = controller->getActor();
@@ -170,7 +169,7 @@ void PlayerPhysics::physicsUpdate()
 		cookedVelocity.y = -controller->getStepOffset();
 
 	//
-	// Do the deed
+	// Do the deed... move();
 	//
 	physx::PxControllerCollisionFlags collisionFlags = controller->move(cookedVelocity, 0.01f, MainLoop::getInstance().physicsDeltaTime, NULL, NULL);
 	bool prevIsSliding = isSliding;
@@ -776,10 +775,14 @@ void PlayerCharacter::processMovement()
 		jumpInputDebounceTimer = jumpInputDebounceTime;
 	prevJumpPressed = InputManager::getInstance().jumpPressed;
 
+	// Update number of jumps performed
+	human_numJumpsCurrent = (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() || jumpCoyoteTimer > 0.0f) ? 0 : glm::max(1, human_numJumpsCurrent);
+
 	// Jump (but not if sliding)
-	if (!lockJumping &&
-		jumpInputDebounceTimer > 0.0f &&
-		jumpCoyoteTimer > 0.0f)
+	const bool jumpInput =				(!lockJumping && jumpInputDebounceTimer > 0.0f);
+	const bool canJumpGrounded =		(jumpInput && jumpCoyoteTimer > 0.0f);
+	const bool human_canJumpAirbourne = (jumpInput && GameState::getInstance().currentTransformation == Transformation::HUMAN && human_numJumpsCurrent < GameState::getInstance().human_numJumps);
+	if (canJumpGrounded || human_canJumpAirbourne)
 	{
 		jumpInputDebounceTimer = -1.0f;
 		jumpCoyoteTimer = -1.0f;
@@ -788,6 +791,8 @@ void PlayerCharacter::processMovement()
 		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 		((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
 		triggerAnimationStateReset = true;
+
+		human_numJumpsCurrent++;
 	}
 
 	if (isMoving)

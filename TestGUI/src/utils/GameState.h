@@ -10,6 +10,13 @@ enum class StaminaEvent
 	JUMP, MOVE
 };
 
+enum class Transformation
+{
+	HUMAN,
+	CAT,
+	SLIME
+};
+
 class GameState
 {
 public:
@@ -25,6 +32,9 @@ public:
 	float						dayNightTimeSpeed				= 0.0008333333f;	// 20 minutes: 1 / (20 * 60)
 	float						dayNightTime					= 0.0f;				// [0-1], and 1 is dusk
 
+	Transformation				currentTransformation			= Transformation::HUMAN;
+	int							human_numJumps					= 2;	// NOTE: 1 is single jump, 2 is double jump (if fall off, then double jump only)
+	
 
 	static GameState& getInstance();
 
