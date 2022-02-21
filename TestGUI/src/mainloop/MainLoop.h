@@ -41,6 +41,7 @@ public:
 
 #ifdef _DEVELOP
 	bool playMode = false;
+	float timeScale = 1.0f;
 #endif
 
 	//

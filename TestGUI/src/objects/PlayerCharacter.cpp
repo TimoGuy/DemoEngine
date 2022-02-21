@@ -792,7 +792,17 @@ void PlayerCharacter::processMovement()
 		((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
 		triggerAnimationStateReset = true;
 
+		// Human Jump
 		human_numJumpsCurrent++;
+		if (human_canJumpAirbourne && glm::length2(movementVector) > 0.1f)
+		{
+			// glm::vec2 flatVelocity(velocity.x, velocity.z);
+			glm::vec2 flatVelocity = glm::normalize(movementVector) * runSpeed;  // glm::length(flatVelocity);
+			velocity.x = flatVelocity.x;
+			velocity.z = flatVelocity.y;
+
+			facingDirection = movementVector;
+		}
 	}
 
 	if (isMoving)
@@ -863,7 +873,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-				float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - groundRunSpeed) * (flatVelocityMagnitude - groundRunSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
+				float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - runSpeed) * (flatVelocityMagnitude - runSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
 				//std::cout << "FACTSC: \t\t\t\t" << facingTurnSpeedCalculated << std::endl;
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeedCalculated * MainLoop::getInstance().deltaTime));
 
@@ -891,7 +901,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	// Update Running Speed
 	//
-	float targetRunningSpeed = movementVectorLength * groundRunSpeed;
+	float targetRunningSpeed = movementVectorLength * runSpeed;
 
 	//std::cout << (currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? "00000\t\t" : "11111\t\t") << currentRunSpeed;
 
@@ -954,7 +964,7 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	//
 	physx::PxVec3 currentVelocity = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 	glm::vec2 currentFlatVelocity = glm::vec2(currentVelocity.x, currentVelocity.z);
-	glm::vec2 targetFlatVelocity = movementVector * groundRunSpeed;
+	glm::vec2 targetFlatVelocity = movementVector * runSpeed;
 
 	currentFlatVelocity = PhysicsUtils::moveTowardsVec2(currentFlatVelocity, targetFlatVelocity, airAcceleration * MainLoop::getInstance().deltaTime);
 	currentVelocity.x = currentFlatVelocity.x;
@@ -1130,7 +1140,7 @@ void PlayerCharacter::processAnimation()
 			animator.playBlendTree(
 				{
 					{ (size_t)WALKING_ANIM, minMvtVectorMagnitude, "walkRunBlendVar" },
-					{ (size_t)RUNNING_ANIM, groundRunSpeed }
+					{ (size_t)RUNNING_ANIM, runSpeed }
 				},
 				6.0f, true
 			);
@@ -1185,7 +1195,7 @@ void PlayerCharacter::processAnimation()
 		velo.y = 0.0f;
 		float flatSpeed = velo.magnitude();
 
-		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
+		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, runSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
 		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
 	}
@@ -1340,7 +1350,7 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::DragFloat("Running Acceleration", &groundAcceleration, 0.1f);
 	ImGui::DragFloat("Running Decceleration", &groundDecceleration, 0.1f);
 	ImGui::DragFloat("Running Acceleration (Air)", &airAcceleration, 0.1f);
-	ImGui::DragFloat("Running Speed", &groundRunSpeed, 0.1f);
+	ImGui::DragFloat("Running Speed", &runSpeed, 0.1f);
 	ImGui::DragFloat2("Jump Speed", &jumpSpeed[0], 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(facingDirection.x) + ", " + std::to_string(facingDirection.y) + ")").c_str());
 	ImGui::DragFloat("Leaning Lerp Time", &leanLerpTime);
@@ -1360,7 +1370,7 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Text(("Speed: " + std::to_string(flatSpeed)).c_str());
 	ImGui::Text(("Evaluated: " + std::to_string(flatSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 	ImGui::Text(("MIN: " + std::to_string(minMvtVectorMagnitude * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
-	ImGui::Text(("MAX: " + std::to_string(groundRunSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
+	ImGui::Text(("MAX: " + std::to_string(runSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);

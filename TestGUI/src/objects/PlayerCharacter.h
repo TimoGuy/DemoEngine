@@ -141,9 +141,9 @@ public:
 	float groundAcceleration = 1.4f;
 	float groundDecceleration = 10.0f;
 	float airAcceleration = 2.5f;
-	float groundRunSpeed = 0.75f;						// TODO: may wanna change that variable name eh
+	float runSpeed = 0.75f;						// TODO: may wanna change that variable name eh
 	float groundRunSpeedCantTurn = 2.5f;				// This is the run speed at which you can't turn anymore.
-	float jumpSpeed[2] = { 1.4f, 1.0f };
+	float jumpSpeed[2] = { 1.325f, 1.0f };		// 1.0: 1b; 1.325: 2b; 1.585: 3b; 1.8: 4b; 2.04: 5b; 2.23: 6b; 2.39: 7b; 2.55: 8b; 2.69: 9b; 2.85: 10b;
 	float jumpCoyoteTime = 0.25f;
 	float jumpCoyoteTimer;
 	float jumpInputDebounceTime = 0.25f;

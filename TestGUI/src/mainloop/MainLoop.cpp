@@ -273,6 +273,10 @@ void MainLoop::run()
 		//
 		float currentFrame = (float)glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
+#ifdef _DEVELOP
+		deltaTime *= timeScale;
+#endif
+
 		if (deltaTime > 0.1f)
 			deltaTime = 0.1f;		// Clamp it if it's too big! (10 fps btw) (1/10 = 0.1)
 		lastFrame = currentFrame;

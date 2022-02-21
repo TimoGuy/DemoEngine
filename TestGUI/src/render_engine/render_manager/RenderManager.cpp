@@ -1974,6 +1974,7 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Scene Properties", &showScenePropterties))
 		{
+			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
 			static bool showLuminanceTextures = false;
