@@ -552,13 +552,18 @@ void PlayerCharacter::processMovement()
 	//
 	// Get looking input
 	//
+	useFollowCamera = true;
 	if (lookingInputReturnToDefaultTime >= 1.0f)
 	{
 		lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
 		lookingInput.x = fmodf(lookingInput.x, 360.0f);
+		lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+
 		if (lookingInput.x < 0.0f)
 			lookingInput.x += 360.0f;
-		lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+
+		if (glm::abs(InputManager::getInstance().rightStickX) > 0.001f)
+			useFollowCamera = false;
 
 		// Reset to default if reset camera button pressed
 		if (InputManager::getInstance().resetCamPressed)
@@ -574,6 +579,7 @@ void PlayerCharacter::processMovement()
 		float lerpSmoothStepped = PhysicsUtils::smoothStep(0, 1, lookingInputReturnToDefaultTime);
 		lookingInput.x = PhysicsUtils::lerpAngleDegrees(lookingInputReturnToDefaultCachedFromInput.x, lookingInputReturnToDefaultCachedToInput.x, lerpSmoothStepped);
 		lookingInput.y = PhysicsUtils::lerp(lookingInputReturnToDefaultCachedFromInput.y, lookingInputReturnToDefaultCachedToInput.y, lerpSmoothStepped);
+		useFollowCamera = false;
 
 		lookingInputReturnToDefaultTime += 8.0f * MainLoop::getInstance().deltaTime;
 
@@ -628,7 +634,7 @@ void PlayerCharacter::processMovement()
 			PhysicsUtils::toPxVec3(playerPos + glm::vec3(0, indoorOverlapCheckOffY, 0)),
 			physx::PxQuat(glm::radians(90.0f), physx::PxVec3(0, 0, 1))
 		);
-
+	
 		physx::PxOverlapHit overlapInfo;
 		if (PhysicsUtils::overlap(capsuleGeom, capsulePose, overlapInfo))
 		{
@@ -660,7 +666,7 @@ void PlayerCharacter::processMovement()
 	}
 
 	//
-	// Update playercam pos
+	// Update camera pos
 	//
 	{
 		const glm::vec3 cameraTargetPosition = playerPos + glm::vec3(camOffset.x, camOffset.y, 0);
@@ -672,6 +678,13 @@ void PlayerCharacter::processMovement()
 				cameraTargetPosition.y,
 				lengthToCamTarget * cameraSpeedMultiplier * MainLoop::getInstance().deltaTime
 			);
+
+		if (useFollowCamera)
+		{
+			glm::vec3 flatLookingDirection = cameraTargetPosition - followCameraAnchorPosition;
+			if (glm::length2(glm::vec2(flatLookingDirection.x, flatLookingDirection.z)) > 0.01f)
+				lookingInput.x = -glm::degrees(std::atan2f(flatLookingDirection.x, flatLookingDirection.z));
+		}
 	}
 
 	// Setup camera orientation
@@ -749,6 +762,7 @@ void PlayerCharacter::processMovement()
 	// Setup camera position based off distance
 	const glm::vec3 depthOffset(0, 0, currentMaxCamDistance);
 	playerCamera.position = cameraPosition + lookingRotation * depthOffset;
+	followCameraAnchorPosition = cameraPosition + glm::quat(glm::radians(glm::vec3(0, -lookingInput.x, 0))) * glm::vec3(0, 0, followCameraAnchorDistance);
 
 	//
 	// Update movement

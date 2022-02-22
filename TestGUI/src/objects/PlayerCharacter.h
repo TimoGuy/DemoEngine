@@ -124,6 +124,9 @@ public:
 	glm::vec3 cameraPosition;
 	float cameraSpeedMultiplier = 1000.0f;		// Originally was 10.0f
 
+	bool useFollowCamera = true;	// NOTE: if player is doing lookingInput.x inputs, then the follow camera is disabled for the frame this occurred.
+	glm::vec3 followCameraAnchorPosition;		// NOTE: essentially it's supposed to be a flat position variable.
+	float followCameraAnchorDistance = -30;		// Equivalent to outdoor cam offset. (at least at 2022-02-21)
 	float currentMaxCamDistance = 0;
 	float maxCamDistanceHoldTime = 1.0f, maxCamDistanceHoldTimer = 0;
 	float maxCamDistanceShiftSpeed = 1.0f;
