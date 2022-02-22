@@ -286,7 +286,9 @@ void PlayerPhysics::physicsUpdate()
 				NULL,
 				NULL
 			);
+#ifdef _DEVELOP
 			playerPhysicsOverrideVelocityInheritanceBcOfImguiInterference = true;		// NOTE: Prevent single-tick bounce off when ceiling is right above you. Since isGrounded's state changes at the same time you do this, then you fly away real quick  -Timo
+#endif
 		}
 	}
 
