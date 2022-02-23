@@ -33,7 +33,7 @@ public:
 	float						dayNightTime					= 0.0f;				// [0-1], and 1 is dusk
 
 	Transformation				currentTransformation			= Transformation::HUMAN;
-	int							human_numJumps					= 5;	// NOTE: 1 is single jump, 2 is double jump (if fall off, then double jump only)
+	int							human_numJumps					= 2;	// NOTE: 1 is single jump, 2 is double jump (if fall off, then double jump only)
 	
 
 	static GameState& getInstance();
