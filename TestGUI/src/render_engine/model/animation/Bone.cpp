@@ -90,6 +90,19 @@ int Bone::getScaleIndex(float animationTime)
 // I feel like since these two keyframes represent the "start" and "end" of the
 // animations, that's what it should look like. PLEASE CORRECT ME IF WRONG.
 //     -Timo
+// 
+// Well, I can't seem to really get it working. When the animation loops and the cycle
+// repeats, there seems to be some popping that happens with the root motion. Looking
+// at the original blender files, it seems like the root motion is doing the stuff correctly,
+// so it's pretty unusual at the very least. I'll have to investigate into why this
+// isn't working, bc IT'S PROBABLY AT THE CODING LEVEL EH!
+//     -Timo
+// 
+// Okay, so here's what's up. Root motion requires that the keyframes interpolate
+// linearly, so when I figured out that all the root bones for the running and walking animations
+// for the player model were bezier interpolation, I switched it to linear and it fixed everything.
+// MAKE SURE YOU APPLY THIS TO ALL MODELS THAT WILL USE ROOT MOTION!
+//     -Timo
 //
 void Bone::INTERNALmutateBoneAsRootBoneXZ()
 {
