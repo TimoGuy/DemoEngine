@@ -82,6 +82,34 @@ int Bone::getScaleIndex(float animationTime)
 	return -1;
 }
 
+//
+// @NOTE: Well hey, I don't know if this is the best/correct way to do this algorithm.
+// So the way I'm about to do root motion is taking the first position keyframe
+// and the last one and their animationTime and lerping the inbetween times based
+// off these times. Instead of going from 0 to the whole animation's duration.
+// I feel like since these two keyframes represent the "start" and "end" of the
+// animations, that's what it should look like. PLEASE CORRECT ME IF WRONG.
+//     -Timo
+//
+void Bone::INTERNALmutateBoneAsRootBoneXZ()
+{
+	if (numPositions <= 1)
+		return;		// @NOTE: bc there are no positions/just a single position, there is no root motion here, thus doing nothing.  -Timo
+
+	size_t endIndex = (size_t)glm::max((int)0, (int)numPositions - 1);
+	glm::vec3 deltaPosition = positions[endIndex].position - positions[0].position;
+	deltaPosition.y = 0.0f;		// Just do XZ axes
+	float startTime = positions[0].timeStamp;
+	float endTime = positions[endIndex].timeStamp;
+
+	// Affect this bone
+	for (size_t i = 0; i < positions.size(); i++)
+	{
+		float timeStampNormalized = (positions[i].timeStamp - startTime) / (endTime - startTime);
+		positions[i].position -= deltaPosition * timeStampNormalized;
+	}
+}
+
 
 //
 // -------------------- Private functions --------------------

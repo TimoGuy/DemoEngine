@@ -20,13 +20,19 @@ struct BoneInfo
 	glm::mat4 offset;
 };
 
+struct AnimationMetadata
+{
+	std::string animationName;
+	bool trackXZRootMotion;
+};
+
 class Model
 {
 public:
 	Model();						// NOTE: Creation of the default constructor is just to appease the compiler
 	Model(const char* path);
-	Model(const char* path, std::vector<std::string> animationNames);
-	Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights = true);			// NOTE: this is for VoxelGroup class
+	Model(const char* path, std::vector<AnimationMetadata> animationMetadatas);
+	Model(const std::vector<Vertex>& quadMesh);			// NOTE: this is for VoxelGroup class
 	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
 	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
@@ -56,7 +62,7 @@ private:
 
 	const aiScene* scene;
 
-	void loadModel(std::string path, std::vector<std::string> animationNames);
+	void loadModel(std::string path, std::vector<AnimationMetadata> animationMetadatas);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
 

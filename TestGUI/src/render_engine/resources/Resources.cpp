@@ -335,7 +335,7 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	}
 }
 
-void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<std::string> animationNames)
+void* loadModel(const std::string& modelName, bool isUnloading, const char* path, std::vector<AnimationMetadata> animationNames)
 {
 	if (!isUnloading)
 	{
@@ -407,34 +407,43 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
 
-	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
-	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
-	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
-	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/skybox.frag");
-	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/csm_shadow.vert", "shader/src/csm_shadow.geom", "shader/src/csm_shadow.frag");
-	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/point_shadow.vert", "shader/src/point_shadow.geom", "shader/src/point_shadow.frag");
-	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/debug_csm.vert", "shader/src/debug_csm.frag");
-	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/text.vert", "shader/src/text.frag");
-	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/hdri_equirectangular.frag");		// NOTE: may not be used in the future
-	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/irradiance_convolution.frag");
-	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/prefilter.frag");
-	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/brdf.vert", "shader/src/brdf.frag");
-	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/bloom_postprocessing.frag");
-	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/postprocessing.frag");
-	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/hudUI.vert", "shader/src/hudUI.frag");
-	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/z_prepass.frag");
-	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/luminance_postprocessing.frag");
-	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/src/luminance_adaptation.comp");
-	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/ssao_postprocessing.frag");
-	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/volumetric_postprocessing.frag");
-	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_x.frag");
-	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_y.frag");
-#ifdef _DEVELOP
-	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
-	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
-#endif
+//	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
+//	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
+//	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
+//	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/skybox.frag");
+//	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/csm_shadow.vert", "shader/src/csm_shadow.geom", "shader/src/csm_shadow.frag");
+//	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/point_shadow.vert", "shader/src/point_shadow.geom", "shader/src/point_shadow.frag");
+//	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/debug_csm.vert", "shader/src/debug_csm.frag");
+//	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/text.vert", "shader/src/text.frag");
+//	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/hdri_equirectangular.frag");		// NOTE: may not be used in the future
+//	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/irradiance_convolution.frag");
+//	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/prefilter.frag");
+//	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/brdf.vert", "shader/src/brdf.frag");
+//	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/bloom_postprocessing.frag");
+//	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/postprocessing.frag");
+//	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/hudUI.vert", "shader/src/hudUI.frag");
+//	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/z_prepass.frag");
+//	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/luminance_postprocessing.frag");
+//	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/src/luminance_adaptation.comp");
+//	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/ssao_postprocessing.frag");
+//	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/volumetric_postprocessing.frag");
+//	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_x.frag");
+//	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_y.frag");
+//#ifdef _DEVELOP
+//	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
+//	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
+//#endif
 
+	//
+	// Common textures & materials
+	//
+	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/_debug/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
+	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
+	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
+	if (resourceName == "texture;ssaoRotation")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/ssao_rot_texture.bmp", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 
+	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
 	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo
@@ -463,20 +472,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrVGRoughness")						return loadTexture2D(resourceName, isUnloading, "res/_debug/voxel_group/voxel_grp_roughness.png", GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
 	//
-	// Commons
-	//
-	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/_debug/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
-	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
-	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
-	if (resourceName == "texture;ssaoRotation")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/ssao_rot_texture.bmp", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
-	
-	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
-
-	//
 	// Set pieces
 	//
-	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/model/water_pool.glb", { "Idle", "No_Water" });
+	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/model/water_pool.glb", { { "Idle", false }, { "No_Water", false } });
 	if (resourceName == "model;cube")									return loadModel(resourceName, isUnloading, "res/model/cube.glb");
 	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/model/house_w_interior.glb");
 	// Custom models vvv
@@ -485,7 +483,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Slime Girl Model and Materials
 	//
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { "Idle", "Walking", "Running", "Jumping_From_Idle", "Jumping_From_Run", "Land_From_Jumping_From_Idle", "Land_From_Jumping_From_Run", "Land_Hard", "Get_Up_From_Land_Hard", "Draw_Water", "Drink_From_Bottle", "Pick_Up_Bottle", "Write_In_Journal" });
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false } });
 	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
 
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");

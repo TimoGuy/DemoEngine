@@ -5,14 +5,14 @@
 #include <algorithm>
 
 
-Animation::Animation(const aiScene* scene, Model* model, std::string animationName)
+Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata) : rootMotionDeltaPosition(glm::vec3(0.0f))
 {
 	assert(scene && scene->mRootNode);
 
 	aiAnimation* animation = nullptr;
 	for (size_t i = 0; i < scene->mNumAnimations; i++)
 	{
-		if (scene->mAnimations[i]->mName.C_Str() == animationName)
+		if (scene->mAnimations[i]->mName.C_Str() == animationMetadata.animationName)
 		{
 			animation = scene->mAnimations[i];
 			break;
@@ -39,7 +39,7 @@ Animation::Animation(const aiScene* scene, Model* model, std::string animationNa
 	}
 
 	readHierarchyData(rootNode, scene->mRootNode);
-	readMissingBones(animation, *model);
+	readMissingBones(animation, *model, animationMetadata);
 }
 
 Bone* Animation::findBone(const std::string& name)
@@ -56,7 +56,7 @@ Bone* Animation::findBone(const std::string& name)
 //
 // ---------- Private methods ------------
 //
-void Animation::readMissingBones(const aiAnimation* animation, Model& model)
+void Animation::readMissingBones(const aiAnimation* animation, Model& model, AnimationMetadata animationMetadata)
 {
 	uint32_t size = animation->mNumChannels;
 
@@ -78,12 +78,15 @@ void Animation::readMissingBones(const aiAnimation* animation, Model& model)
 			boneCount++;
 		}
 
-		//bones.push_back(Bone(channel->mNodeName.data, boneInfoMap[channel->mNodeName.data].id, channel));
+		Bone newBone(boneInfoMap[boneName].id, channel);
+		if (animationMetadata.trackXZRootMotion && boneName == "Root")
+			newBone.INTERNALmutateBoneAsRootBoneXZ();
+
 		bones.insert(
 			bones.begin(),
 			std::pair<std::string, Bone>(
 				channel->mNodeName.data,
-				Bone(boneInfoMap[channel->mNodeName.data].id, channel)
+				newBone
 			)
 		);
 	}

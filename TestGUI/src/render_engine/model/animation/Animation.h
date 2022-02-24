@@ -27,7 +27,7 @@ class Animation
 {
 public:
 	Animation() = default;
-	Animation(const aiScene* scene, Model* model, std::string animationName);
+	Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata);
 
 	Bone* findBone(const std::string& name);
 
@@ -38,7 +38,7 @@ public:
 	inline const glm::mat4 getGlobalRootInverseMatrix() { return globalRootInverseMatrix; }
 
 private:
-	void readMissingBones(const aiAnimation* animation, Model& model);
+	void readMissingBones(const aiAnimation* animation, Model& model, AnimationMetadata animationMetadata);
 	void readHierarchyData(AssimpNodeData& dest, const aiNode* src);
 
 	float duration;

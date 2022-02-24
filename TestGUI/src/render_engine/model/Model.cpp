@@ -20,9 +20,9 @@ Model::Model(const char* path)
 }
 
 
-Model::Model(const char* path, std::vector<std::string> animationNames)
+Model::Model(const char* path, std::vector<AnimationMetadata> animationMetadatas)
 {
-	loadModel(path, animationNames);
+	loadModel(path, animationMetadatas);
 }
 
 //
@@ -34,7 +34,7 @@ Model::Model(const char* path, std::vector<std::string> animationNames)
 //		|	   |
 //		1 ---- 2
 //
-Model::Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights)
+Model::Model(const std::vector<Vertex>& quadMesh)
 {
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
@@ -54,10 +54,10 @@ Model::Model(const std::vector<Vertex>& quadMesh, bool stripBoneWeights)
 		//
 		for (size_t j = 0; j < 4; j++)
 		{
-			if (stripBoneWeights)
-			{
+			//if (stripBoneWeights)
+			//{
 				setVertexBoneDataToDefault(currentQuad[j]);
-			}
+			//}
 
 			// @Copypasta: (there's another block just like this fyi)
 			// Calculate AABB
@@ -198,7 +198,7 @@ void Model::setDepthPriorityOfMeshesWithMaterial(const std::string& materialName
 }
 
 
-void Model::loadModel(std::string path, std::vector<std::string> animationNames)
+void Model::loadModel(std::string path, std::vector<AnimationMetadata> animationMetadatas)
 {
 	std::cout << "MODEL::" << path << "::Import Started" << std::endl;
 
@@ -219,9 +219,9 @@ void Model::loadModel(std::string path, std::vector<std::string> animationNames)
 	//
 	// Load in animations
 	//
-	for (size_t i = 0; i < animationNames.size(); i++)
+	for (size_t i = 0; i < animationMetadatas.size(); i++)
 	{
-		Animation newAnimation(scene, this, animationNames[i]);
+		Animation newAnimation(scene, this, animationMetadatas[i]);
 		animations.push_back(newAnimation);
 	}
 
