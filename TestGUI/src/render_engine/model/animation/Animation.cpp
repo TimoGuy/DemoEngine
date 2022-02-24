@@ -5,7 +5,7 @@
 #include <algorithm>
 
 
-Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata) : rootMotionDeltaPosition(glm::vec3(0.0f))
+Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata)
 {
 	assert(scene && scene->mRootNode);
 
