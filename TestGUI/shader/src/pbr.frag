@@ -68,7 +68,7 @@ layout (std140, binding = 2) uniform LightInformation
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
-vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which csm layer is being used
+vec4 layerCalc()           // @Debug: this is for seeing which csm layer is being used
 {
     // select cascade layer
     vec4 fragPosViewSpace = cameraView * vec4(fragPosition, 1.0);
@@ -100,7 +100,7 @@ vec4 layerCalc(vec3 fragPosition)           // @Debug: this is for seeing which 
     projCoords = projCoords * 0.5 + 0.5;
 
     vec4 retColor = vec4(0);
-    if (projCoords.x >= 0.0f && projCoords.x <= 1.0f && projCoords.y >= 0.0f && projCoords.y <= 1.0f)
+    //if (projCoords.x >= 0.0f && projCoords.x <= 1.0f && projCoords.y >= 0.0f && projCoords.y <= 1.0f)
     {
         if (layer == 0)
             retColor = vec4(.5, 0, 0, 1);
@@ -487,6 +487,5 @@ void main()
 
     //FragColor = vec4(vec3(linearDepth), 1.0);
 
-    //if (shadow < 0.5)
-    //    FragColor = layerCalc(fragPosition);                         // NOTE: for debugging purposes, this shows the individual cascades
+    //FragColor = mix(layerCalc(), FragColor, 0.7);                         // NOTE: for debugging purposes, this shows the individual cascades
 }

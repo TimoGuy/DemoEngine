@@ -15,6 +15,7 @@
 #define REMAP(value, istart, istop, ostart, ostop) ((value) - (istart)) / ((istop) - (istart)) * ((ostop) - (ostart)) + (ostart)
 
 #ifdef _DEVELOP
+#include "../utils/InputManager.h"
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_stdlib.h"
 #include "../imgui/ImGuizmo.h"
@@ -25,7 +26,7 @@
 // NOTE: if 0, then use close fit shadows; if 1, then use stable fit
 // NOTE: So bc there's a day night cycle, I think it'd be better if we used close fit. -Timo (2022-01-09)
 // RESPONSE: Hmmm, so after looking at close fit shadows swimming again, I think stable fit is still better... umm, but @TODO look at this again. -Timo (2022-01-09, 2:54p)
-#define STABLE_FIT_CSM_SHADOWS 1
+#define STABLE_FIT_CSM_SHADOWS 0
 
 #if STABLE_FIT_CSM_SHADOWS
 static float multiplier = 1.0f;				// @Maybe: I think that with the new stable fit csm, we can have multiplier be at 1.0 instead of 2.0. @TODO: Figure out if this is correct or not.
@@ -207,8 +208,13 @@ void DirectionalLightLight::renderPassShadowMap()
 	csmShader->use();
 
 	// Setup UBOs
-	const auto lightMatrices = getLightSpaceMatrices();
-	glNamedBufferSubData(matricesUBO, 0, sizeof(glm::mat4x4) * lightMatrices.size(), &lightMatrices[0]);
+	static bool first = true;
+	if (first || InputManager::getInstance().pausePressed)
+	{
+		first = false;
+		const std::vector<glm::mat4> lightMatrices = getLightSpaceMatrices();
+		glNamedBufferSubData(matricesUBO, 0, sizeof(glm::mat4x4) * lightMatrices.size(), &lightMatrices[0]);
+	}
 
 	// Render depth of scene
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
@@ -238,17 +244,17 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	const auto inverseMatrix = glm::inverse(proj * view);
 
 	std::vector<glm::vec4> frustumCorners;
-	for (unsigned int x = 0; x < 2; x++)
+	for (int x = 0; x < 2; x++)
 	{
-		for (unsigned int y = 0; y < 2; y++)
+		for (int y = 0; y < 2; y++)
 		{
-			for (unsigned int z = 0; z < 2; z++)
+			for (int z = 0; z < 2; z++)
 			{
 				const glm::vec4 corner =
 					inverseMatrix * glm::vec4(
-						2.0f * x - 1.0f,
-						2.0f * y - 1.0f,
-						2.0f * z - 1.0f,
+						2.0f * (float)x - 1.0f,
+						2.0f * (float)y - 1.0f,
+						2.0f * (float)z - 1.0f,
 						1.0f
 					);
 				frustumCorners.push_back(corner / corner.w);
@@ -258,6 +264,9 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 
 	return frustumCorners;
 }
+
+std::vector<glm::vec3> frustumCornersLightSpace;
+std::vector<glm::vec3> frustumCornersViewSpace;
 
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
@@ -275,7 +284,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	);
 	const auto corners = getFrustumCornersWorldSpace(proj, MainLoop::getInstance().camera.calculateViewMatrix());
 
-	glm::vec3 center = glm::vec3(0, 0, 0);
+	glm::vec3 center(0.0f);
 	for (const auto& v : corners)
 	{
 		center += glm::vec3(v);
@@ -323,8 +332,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//
 	const glm::mat4 lightView =
 		glm::lookAt(
-			center,
 			center + facingDirection,
+			center,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -346,7 +355,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	}
 
 	// Tune this parameter according to the scene
-	float zMult = multiplier;
+	float zMult = 1.0f;  // multiplier;
 	if (minZ < 0)
 	{
 		minZ *= zMult;
@@ -366,14 +375,103 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	//std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
 
-	glm::vec2 padding(glm::abs(minX - maxX) * 0.1f, glm::abs(minY - maxY) * 0.1f);
-
-	minX -= padding.x;
-	maxX += padding.x;
-	minY -= padding.y;
-	maxY += padding.y;
+	//glm::vec2 padding(glm::abs(minX - maxX) * 0.1f, glm::abs(minY - maxY) * 0.1f);
+	//
+	//minX -= padding.x;
+	//maxX += padding.x;
+	//minY -= padding.y;
+	//maxY += padding.y;
 
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+
+	if (InputManager::getInstance().pausePressed)
+	{
+		const auto cornersLightFrustum = getFrustumCornersWorldSpace(lightProjection, lightView);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+
+		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+
+
+		//for (size_t i = 0; i < cornersLightFrustum.size(); i++)
+		//{
+		//	frustumCornersLightSpace.push_back(cornersLightFrustum[i]);
+		//	frustumCornersLightSpace.push_back(cornersLightFrustum[glm::mod((float)i + 1.0f, (float)cornersLightFrustum.size())]);
+		//}
+
+		//for (size_t i = 0; i < corners.size(); i++)
+		//{
+		//	frustumCornersViewSpace.push_back(corners[i]);
+		//	frustumCornersViewSpace.push_back(corners[glm::mod((float)i + 1.0f, (float)corners.size())]);
+		//}
+		frustumCornersViewSpace.push_back(corners[0]);
+		frustumCornersViewSpace.push_back(corners[4]);
+
+		frustumCornersViewSpace.push_back(corners[1]);
+		frustumCornersViewSpace.push_back(corners[5]);
+
+		frustumCornersViewSpace.push_back(corners[0]);
+		frustumCornersViewSpace.push_back(corners[1]);
+
+		frustumCornersViewSpace.push_back(corners[4]);
+		frustumCornersViewSpace.push_back(corners[5]);
+
+		frustumCornersViewSpace.push_back(corners[0]);
+		frustumCornersViewSpace.push_back(corners[2]);
+
+		frustumCornersViewSpace.push_back(corners[1]);
+		frustumCornersViewSpace.push_back(corners[3]);
+
+		frustumCornersViewSpace.push_back(corners[4]);
+		frustumCornersViewSpace.push_back(corners[6]);
+
+		frustumCornersViewSpace.push_back(corners[5]);
+		frustumCornersViewSpace.push_back(corners[7]);
+
+		frustumCornersViewSpace.push_back(corners[2]);
+		frustumCornersViewSpace.push_back(corners[3]);
+
+		frustumCornersViewSpace.push_back(corners[6]);
+		frustumCornersViewSpace.push_back(corners[7]);
+
+		frustumCornersViewSpace.push_back(corners[2]);
+		frustumCornersViewSpace.push_back(corners[6]);
+
+		frustumCornersViewSpace.push_back(corners[3]);
+		frustumCornersViewSpace.push_back(corners[7]);
+	}
+
 #endif
 
 	return lightProjection * lightView;
@@ -381,6 +479,12 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
+	if (InputManager::getInstance().pausePressed)
+	{
+		frustumCornersLightSpace.clear();
+		frustumCornersViewSpace.clear();
+	}
+
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 	{
@@ -559,6 +663,83 @@ void DirectionalLight::imguiRender()
 		lightPointingDirection.y = ImGui::GetWindowPos().y - lightPointingDirection.y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
 
 		ImGui::GetBackgroundDrawList()->AddLine(ImVec2(lightPosOnScreen.x, lightPosOnScreen.y), ImVec2(lightPointingDirection.x, lightPointingDirection.y), ImColor::HSV(0.1083f, 0.66f, 0.91f), 3.0f);
+	}
+
+	//
+	// @COPYPASTA: render the bounding boxes of the shadows
+	//
+	for (size_t i = 1; i < frustumCornersLightSpace.size(); i+=2)
+	{
+		if (i > 24)		// Only render the first frustum
+			break;
+
+		//
+		// Convert to screen space
+		//
+		physx::PxU32 lineColor = 0xFFAA3300;
+
+		bool willBeOnScreen = true;
+		glm::vec3 pointsOnScreen[] = {
+			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersLightSpace[i]),
+			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersLightSpace[i - 1])
+		};
+		for (size_t ii = 0; ii < 2; ii++)
+		{
+			if (pointsOnScreen[ii].z < 0.0f)
+			{
+				// Short circuit bc it won't be on screen anymore
+				willBeOnScreen = false;
+				break;
+			}
+
+			pointsOnScreen[ii] /= pointsOnScreen[ii].z;
+			pointsOnScreen[ii].x = ImGui::GetWindowPos().x + pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointsOnScreen[ii].y = ImGui::GetWindowPos().y - pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		}
+
+		if (!willBeOnScreen)
+			continue;
+
+		ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
+		ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
+		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
+	}
+
+	for (size_t i = 1; i < frustumCornersViewSpace.size(); i+=2)
+	{
+		if (i > 24)		// Only render the first frustum
+			break;
+
+		//
+		// Convert to screen space
+		//
+		physx::PxU32 lineColor = 0xFFAACC00;
+
+		bool willBeOnScreen = true;
+		glm::vec3 pointsOnScreen[] = {
+			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersViewSpace[i]),
+			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersViewSpace[i - 1])
+		};
+		for (size_t ii = 0; ii < 2; ii++)
+		{
+			if (pointsOnScreen[ii].z < 0.0f)
+			{
+				// Short circuit bc it won't be on screen anymore
+				willBeOnScreen = false;
+				break;
+			}
+
+			pointsOnScreen[ii] /= pointsOnScreen[ii].z;
+			pointsOnScreen[ii].x = ImGui::GetWindowPos().x + pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointsOnScreen[ii].y = ImGui::GetWindowPos().y - pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		}
+
+		if (!willBeOnScreen)
+			continue;
+
+		ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
+		ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
+		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 	}
 }
 #endif
