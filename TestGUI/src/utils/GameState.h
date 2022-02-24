@@ -29,7 +29,7 @@ public:
 	int							roomEnteringId;
 
 	bool						isDayNightTimeMoving			= true;
-	float						dayNightTimeSpeed				= 0.0008333333f;	// 20 minutes: 1 / (20 * 60)
+	float						dayNightTimeSpeed				= (1.0f / (20.0f * 60.0f));	 // 20 minutes
 	float						dayNightTime					= 0.0f;				// [0-1], and 1 is dusk
 
 	Transformation				currentTransformation			= Transformation::HUMAN;
