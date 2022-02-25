@@ -265,9 +265,15 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
-std::vector<glm::vec3> lightSpaceCenters;
-std::vector<glm::vec3> frustumCornersLightSpace;
-std::vector<glm::vec3> frustumCornersViewSpace;
+struct JOJO_TESTO
+{
+	std::vector<glm::vec3> lightSpaceCenters;
+	std::vector<glm::vec3> frustumCornersLightSpace;
+	std::vector<glm::vec3> frustumCornersViewSpace;
+	std::vector<glm::vec3> frustumCornersJojoSpace;
+};
+
+std::vector<JOJO_TESTO> heyho;
 
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
@@ -333,8 +339,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//
 	const glm::mat4 lightView =
 		glm::lookAt(
+			center - glm::normalize(facingDirection),
 			center,
-			center + facingDirection,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -351,8 +357,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		maxX = std::max(maxX, trf.x);
 		minY = std::min(minY, trf.y);
 		maxY = std::max(maxY, trf.y);
-		minZ = std::min(minZ, trf.z);
-		maxZ = std::max(maxZ, trf.z);
+		minZ = std::min(minZ, -trf.z);
+		maxZ = std::max(maxZ, -trf.z);
 	}
 
 	// Tune this parameter according to the scene
@@ -387,44 +393,45 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	if (InputManager::getInstance().pausePressed)
 	{
-		lightSpaceCenters.push_back(center);
+		JOJO_TESTO& newJ = heyho[heyho.size() - 1];
+		newJ.lightSpaceCenters.push_back(center);
 
 		const auto cornersLightFrustum = getFrustumCornersWorldSpace(lightProjection, lightView);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[1]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[5]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[2]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[6]);
 
-		frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
-		frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[3]);
+		newJ.frustumCornersLightSpace.push_back(cornersLightFrustum[7]);
 
 
 		//for (size_t i = 0; i < cornersLightFrustum.size(); i++)
@@ -438,41 +445,78 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		//	frustumCornersViewSpace.push_back(corners[i]);
 		//	frustumCornersViewSpace.push_back(corners[glm::mod((float)i + 1.0f, (float)corners.size())]);
 		//}
-		frustumCornersViewSpace.push_back(corners[0]);
-		frustumCornersViewSpace.push_back(corners[4]);
+		newJ.frustumCornersViewSpace.push_back(corners[0]);
+		newJ.frustumCornersViewSpace.push_back(corners[4]);
 
-		frustumCornersViewSpace.push_back(corners[1]);
-		frustumCornersViewSpace.push_back(corners[5]);
+		newJ.frustumCornersViewSpace.push_back(corners[1]);
+		newJ.frustumCornersViewSpace.push_back(corners[5]);
 
-		frustumCornersViewSpace.push_back(corners[0]);
-		frustumCornersViewSpace.push_back(corners[1]);
+		newJ.frustumCornersViewSpace.push_back(corners[0]);
+		newJ.frustumCornersViewSpace.push_back(corners[1]);
 
-		frustumCornersViewSpace.push_back(corners[4]);
-		frustumCornersViewSpace.push_back(corners[5]);
+		newJ.frustumCornersViewSpace.push_back(corners[4]);
+		newJ.frustumCornersViewSpace.push_back(corners[5]);
 
-		frustumCornersViewSpace.push_back(corners[0]);
-		frustumCornersViewSpace.push_back(corners[2]);
+		newJ.frustumCornersViewSpace.push_back(corners[0]);
+		newJ.frustumCornersViewSpace.push_back(corners[2]);
 
-		frustumCornersViewSpace.push_back(corners[1]);
-		frustumCornersViewSpace.push_back(corners[3]);
+		newJ.frustumCornersViewSpace.push_back(corners[1]);
+		newJ.frustumCornersViewSpace.push_back(corners[3]);
 
-		frustumCornersViewSpace.push_back(corners[4]);
-		frustumCornersViewSpace.push_back(corners[6]);
+		newJ.frustumCornersViewSpace.push_back(corners[4]);
+		newJ.frustumCornersViewSpace.push_back(corners[6]);
 
-		frustumCornersViewSpace.push_back(corners[5]);
-		frustumCornersViewSpace.push_back(corners[7]);
+		newJ.frustumCornersViewSpace.push_back(corners[5]);
+		newJ.frustumCornersViewSpace.push_back(corners[7]);
 
-		frustumCornersViewSpace.push_back(corners[2]);
-		frustumCornersViewSpace.push_back(corners[3]);
+		newJ.frustumCornersViewSpace.push_back(corners[2]);
+		newJ.frustumCornersViewSpace.push_back(corners[3]);
 
-		frustumCornersViewSpace.push_back(corners[6]);
-		frustumCornersViewSpace.push_back(corners[7]);
+		newJ.frustumCornersViewSpace.push_back(corners[6]);
+		newJ.frustumCornersViewSpace.push_back(corners[7]);
 
-		frustumCornersViewSpace.push_back(corners[2]);
-		frustumCornersViewSpace.push_back(corners[6]);
+		newJ.frustumCornersViewSpace.push_back(corners[2]);
+		newJ.frustumCornersViewSpace.push_back(corners[6]);
 
-		frustumCornersViewSpace.push_back(corners[3]);
-		frustumCornersViewSpace.push_back(corners[7]);
+		newJ.frustumCornersViewSpace.push_back(corners[3]);
+		newJ.frustumCornersViewSpace.push_back(corners[7]);
+
+		// HEY THERES JOJO SPACE!!! 
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[0]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[4]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[1]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[5]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[0]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[1]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[4]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[5]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[0]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[2]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[1]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[3]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[4]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[6]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[5]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[7]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[2]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[3]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[6]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[7]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[2]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[6]);
+
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[3]);
+		newJ.frustumCornersJojoSpace.push_back(lightView * corners[7]);
 	}
 
 #endif
@@ -482,12 +526,14 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
-	if (InputManager::getInstance().pausePressed)
-	{
-		lightSpaceCenters.clear();
-		frustumCornersLightSpace.clear();
-		frustumCornersViewSpace.clear();
-	}
+	//if (InputManager::getInstance().pausePressed)
+	//{
+	//	heyho.lightSpaceCenters.clear();
+	//	frustumCornersLightSpace.clear();
+	//	frustumCornersViewSpace.clear();
+	//}
+
+	heyho.push_back(JOJO_TESTO());
 
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
@@ -558,6 +604,7 @@ void DirectionalLight::preRenderUpdate()
 }
 
 #ifdef _DEVELOP
+int heyhoIndex = 0;
 void DirectionalLight::imguiPropertyPanel()
 {
 	ImGui::ColorEdit3("Light base color (Hiruma)", &hirumaColor[0], ImGuiColorEditFlags_DisplayRGB);
@@ -620,6 +667,9 @@ void DirectionalLight::imguiPropertyPanel()
 	ImGui::Text(("lightDirection and Clamp Diff: " + std::to_string(overflowYAmountRaw)).c_str());
 	float jjjj = glm::clamp(overflowYAmountRaw * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f, 1.0f);
 	ImGui::Text(("Evaluated: " + std::to_string(jjjj)).c_str());
+
+	ImGui::Separator();
+	ImGui::DragInt("HEYHO jerryo", &heyhoIndex, 1.0f, 0, heyho.size());
 }
 
 void DirectionalLight::imguiRender()
@@ -672,7 +722,11 @@ void DirectionalLight::imguiRender()
 	//
 	// @COPYPASTA: render the bounding boxes of the shadows
 	//
-	for (size_t i = 1; i < frustumCornersLightSpace.size(); i+=2)
+	if (heyho.size() == 0)
+		return;
+
+	int currentIndex = glm::clamp(0, (int)heyho.size() - 1, heyhoIndex);
+	for (size_t i = 1; i < heyho[currentIndex].frustumCornersLightSpace.size(); i+=2)
 	{
 		if (i > 24)		// Only render the first frustum
 			break;
@@ -684,8 +738,8 @@ void DirectionalLight::imguiRender()
 
 		bool willBeOnScreen = true;
 		glm::vec3 pointsOnScreen[] = {
-			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersLightSpace[i]),
-			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersLightSpace[i - 1])
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersLightSpace[i]),
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersLightSpace[i - 1])
 		};
 		for (size_t ii = 0; ii < 2; ii++)
 		{
@@ -709,7 +763,7 @@ void DirectionalLight::imguiRender()
 		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 	}
 
-	for (size_t i = 1; i < frustumCornersViewSpace.size(); i+=2)
+	for (size_t i = 1; i < heyho[currentIndex].frustumCornersViewSpace.size(); i += 2)
 	{
 		if (i > 24)		// Only render the first frustum
 			break;
@@ -721,8 +775,8 @@ void DirectionalLight::imguiRender()
 
 		bool willBeOnScreen = true;
 		glm::vec3 pointsOnScreen[] = {
-			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersViewSpace[i]),
-			MainLoop::getInstance().camera.PositionToClipSpace(frustumCornersViewSpace[i - 1])
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersViewSpace[i]),
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersViewSpace[i - 1])
 		};
 		for (size_t ii = 0; ii < 2; ii++)
 		{
@@ -746,7 +800,44 @@ void DirectionalLight::imguiRender()
 		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 	}
 
-	for (size_t i = 0; i < lightSpaceCenters.size(); i++)
-		PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), lightSpaceCenters[i]), 0.1f);
+	for (size_t i = 1; i < heyho[currentIndex].frustumCornersJojoSpace.size(); i += 2)
+	{
+		if (i > 24)		// Only render the first frustum
+			break;
+
+		//
+		// Convert to screen space
+		//
+		physx::PxU32 lineColor = 0xFF22FF00;
+
+		bool willBeOnScreen = true;
+		glm::vec3 pointsOnScreen[] = {
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersJojoSpace[i]),
+			MainLoop::getInstance().camera.PositionToClipSpace(heyho[currentIndex].frustumCornersJojoSpace[i - 1])
+		};
+		for (size_t ii = 0; ii < 2; ii++)
+		{
+			if (pointsOnScreen[ii].z < 0.0f)
+			{
+				// Short circuit bc it won't be on screen anymore
+				willBeOnScreen = false;
+				break;
+			}
+
+			pointsOnScreen[ii] /= pointsOnScreen[ii].z;
+			pointsOnScreen[ii].x = ImGui::GetWindowPos().x + pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointsOnScreen[ii].y = ImGui::GetWindowPos().y - pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		}
+
+		if (!willBeOnScreen)
+			continue;
+
+		ImVec2 point1(pointsOnScreen[0].x, pointsOnScreen[0].y);
+		ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
+		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
+	}
+
+	for (size_t i = 0; i < heyho[currentIndex].lightSpaceCenters.size(); i++)
+		PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), heyho[currentIndex].lightSpaceCenters[i]), 0.1f);
 }
 #endif
