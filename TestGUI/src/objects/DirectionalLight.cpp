@@ -208,13 +208,8 @@ void DirectionalLightLight::renderPassShadowMap()
 	csmShader->use();
 
 	// Setup UBOs
-	static bool first = true;
-	if (first || InputManager::getInstance().pausePressed)
-	{
-		first = false;
-		const std::vector<glm::mat4> lightMatrices = getLightSpaceMatrices();
-		glNamedBufferSubData(matricesUBO, 0, sizeof(glm::mat4x4) * lightMatrices.size(), &lightMatrices[0]);
-	}
+	const std::vector<glm::mat4> lightMatrices = getLightSpaceMatrices();
+	glNamedBufferSubData(matricesUBO, 0, sizeof(glm::mat4x4) * lightMatrices.size(), &lightMatrices[0]);
 
 	// Render depth of scene
 	glBindFramebuffer(GL_FRAMEBUFFER, lightFBO);
@@ -528,14 +523,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
-	//if (InputManager::getInstance().pausePressed)
-	//{
-	//	heyho.lightSpaceCenters.clear();
-	//	frustumCornersLightSpace.clear();
-	//	frustumCornersViewSpace.clear();
-	//}
-
-	heyho.push_back(DEBUG_frustumLightSpaceCalculations());
+	if (InputManager::getInstance().pausePressed)
+		heyho.push_back(DEBUG_frustumLightSpaceCalculations());
 
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
