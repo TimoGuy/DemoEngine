@@ -359,32 +359,23 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	}
 
 	// Tune this parameter according to the scene
-	float zMult = 1.0f;  // multiplier;
-	if (minZ < 0)
-	{
-		minZ *= zMult;
-	}
-	else
-	{
-		minZ /= zMult;
-	}
-	if (maxZ < 0)
-	{
-		maxZ /= zMult;
-	}
-	else
-	{
-		maxZ *= zMult;
-	}
-
-	//std::cout << minX << "," << maxX << "," << minY << "," << maxY << "," << minZ << "," << maxZ << std::endl;
-
-	//glm::vec2 padding(glm::abs(minX - maxX) * 0.1f, glm::abs(minY - maxY) * 0.1f);
-	//
-	//minX -= padding.x;
-	//maxX += padding.x;
-	//minY -= padding.y;
-	//maxY += padding.y;
+	//float zMult = 1.0f;  // multiplier;
+	//if (minZ < 0)
+	//{
+	//	minZ *= zMult;
+	//}
+	//else
+	//{
+	//	minZ /= zMult;
+	//}
+	//if (maxZ < 0)
+	//{
+	//	maxZ /= zMult;
+	//}
+	//else
+	//{
+	//	maxZ *= zMult;
+	//}
 
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
