@@ -26,6 +26,8 @@
 // NOTE: if 0, then use close fit shadows; if 1, then use stable fit
 // NOTE: So bc there's a day night cycle, I think it'd be better if we used close fit. -Timo (2022-01-09)
 // RESPONSE: Hmmm, so after looking at close fit shadows swimming again, I think stable fit is still better... umm, but @TODO look at this again. -Timo (2022-01-09, 2:54p)
+// NOTE: Keep in mind that the stable-fit shadows don't have texel size understanding (I think). So aligning the texels of the depthmap onto the correct area requires a different formula for rounding the texels.  -Timo (2022-02-25, 4:09am)
+// ALSO: We're switching to close-fit shadows. Turns out there was a very weird issue with the close fit shadows that made them look ugly. After figuring out the z axis in light space was backwards (z * -1), the shadows look way better. With a day-night cycle and constant shadow changing, the shadow will swim even if it were stable. Thus, doing close-fit shadows are the wisest. Let's switch to close-fit. More shadow size efficiency.  -Timo (2022-02-25, 4:12am)
 #define STABLE_FIT_CSM_SHADOWS 0
 
 #if STABLE_FIT_CSM_SHADOWS
