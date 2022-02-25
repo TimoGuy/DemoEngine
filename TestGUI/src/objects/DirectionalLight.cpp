@@ -265,7 +265,7 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
-struct JOJO_TESTO
+struct DEBUG_frustumLightSpaceCalculations
 {
 	std::vector<glm::vec3> lightSpaceCenters;
 	std::vector<glm::vec3> frustumCornersLightSpace;
@@ -273,7 +273,7 @@ struct JOJO_TESTO
 	std::vector<glm::vec3> frustumCornersJojoSpace;
 };
 
-std::vector<JOJO_TESTO> heyho;
+std::vector<DEBUG_frustumLightSpaceCalculations> heyho;
 
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
@@ -393,7 +393,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	if (InputManager::getInstance().pausePressed)
 	{
-		JOJO_TESTO& newJ = heyho[heyho.size() - 1];
+		DEBUG_frustumLightSpaceCalculations& newJ = heyho[heyho.size() - 1];
 		newJ.lightSpaceCenters.push_back(center);
 
 		const auto cornersLightFrustum = getFrustumCornersWorldSpace(lightProjection, lightView);
@@ -533,7 +533,7 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	//	frustumCornersViewSpace.clear();
 	//}
 
-	heyho.push_back(JOJO_TESTO());
+	heyho.push_back(DEBUG_frustumLightSpaceCalculations());
 
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
