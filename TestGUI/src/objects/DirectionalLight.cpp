@@ -265,6 +265,7 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
+std::vector<glm::vec3> lightSpaceCenters;
 std::vector<glm::vec3> frustumCornersLightSpace;
 std::vector<glm::vec3> frustumCornersViewSpace;
 
@@ -289,7 +290,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	{
 		center += glm::vec3(v);
 	}
-	center /= corners.size();
+	center /= (float)corners.size();
 
 #if STABLE_FIT_CSM_SHADOWS
 	//
@@ -332,8 +333,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//
 	const glm::mat4 lightView =
 		glm::lookAt(
-			center + facingDirection,
 			center,
+			center + facingDirection,
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 
@@ -386,6 +387,8 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	if (InputManager::getInstance().pausePressed)
 	{
+		lightSpaceCenters.push_back(center);
+
 		const auto cornersLightFrustum = getFrustumCornersWorldSpace(lightProjection, lightView);
 		frustumCornersLightSpace.push_back(cornersLightFrustum[0]);
 		frustumCornersLightSpace.push_back(cornersLightFrustum[4]);
@@ -481,6 +484,7 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
 	if (InputManager::getInstance().pausePressed)
 	{
+		lightSpaceCenters.clear();
 		frustumCornersLightSpace.clear();
 		frustumCornersViewSpace.clear();
 	}
@@ -741,5 +745,8 @@ void DirectionalLight::imguiRender()
 		ImVec2 point2(pointsOnScreen[1].x, pointsOnScreen[1].y);
 		ImGui::GetBackgroundDrawList()->AddLine(point1, point2, lineColor, 1.0f);
 	}
+
+	for (size_t i = 0; i < lightSpaceCenters.size(); i++)
+		PhysicsUtils::imguiRenderSphereCollider(glm::translate(glm::mat4(1.0f), lightSpaceCenters[i]), 0.1f);
 }
 #endif
