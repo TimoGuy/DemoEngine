@@ -265,6 +265,7 @@ std::vector<glm::vec4> DirectionalLightLight::getFrustumCornersWorldSpace(const 
 	return frustumCorners;
 }
 
+#ifdef _DEVELOP
 struct DEBUG_frustumLightSpaceCalculations
 {
 	std::vector<glm::vec3> lightSpaceCenters;
@@ -274,6 +275,7 @@ struct DEBUG_frustumLightSpaceCalculations
 };
 
 std::vector<DEBUG_frustumLightSpaceCalculations> heyho;
+#endif
 
 glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, const float farPlane)
 {
