@@ -117,6 +117,40 @@ float sampleCSMShadowMapLinear(vec2 coords, int layer, float compare)           
     return mix(mixA, mixB, fracPart.x);
 }
 
+
+//vec2 csmShadowSampleDisk[9] = vec2[]
+//(
+//    vec2(0.1923997956, 0.4764344779),
+//    vec2(0.2502582539, 1.0238806952),
+//    vec2(0.3937015078, 1.2107474044),
+//    vec2(-0.4285640209, -0.2736053046),
+//    vec2(-1.1369034200, -0.3759227090),
+//    vec2(-1.2407810627, -0.2221463303),
+//    vec2(-0.0175392352, -0.4259492545),
+//    vec2(0.9936077213, -0.5275526274),
+//    vec2(0.7843275612, -1.0108115071)
+//);
+vec2 csmShadowSampleDisk[16] = vec2[]
+(
+    vec2(0.4265453610, 0.7481831628),
+    vec2(0.0467184951, 1.3280790317),
+    vec2(1.4113184437, 0.9448135864),
+    vec2(1.3303266195, 1.2984251508),
+    vec2(-0.8464051487, 0.1437436595),
+    vec2(-0.9011598530, 0.9028509104),
+    vec2(-1.3416281122, 0.6545142635),
+    vec2(-0.3203991033, 1.7985600369),
+    vec2(-0.6468895562, -0.2123326801),
+    vec2(-0.4099022847, -1.2778823834),
+    vec2(-0.0663519316, -1.5612404978),
+    vec2(-1.8473174240, -0.3466751117),
+    vec2(0.3508125602, -0.1677256451),
+    vec2(0.7756071706, -0.6825761723),
+    vec2(0.7439828747, -1.4745483205),
+    vec2(0.4731849169, -1.8438657449)
+);
+
+
 // Implementation based off my desmos: https://www.desmos.com/calculator/no7uxdbn9e
 float shadowSampleCSMLayer(vec3 lightDir, int layer)
 {
@@ -139,17 +173,14 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer)
 
     // PCF
     float shadow = 0.0;
-    for(int x = -1; x <= 1; ++x)
+    int sampleSize = 16;
+    for (int i = 0; i < sampleSize; i++)
     {
-        for(int y = -1; y <= 1; ++y)
-        {
-            float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * cascadeShadowMapTexelSize, layer)).r;        // @Debug: not filtered shadows
-            float extraBias = (x != 0 || y != 0 ? (cascadeShadowMapTexelSize * 1.0) : 0.0);
-            shadow += (currentDepth - bias - extraBias) > pcfDepth ? 0.0 : 1.0;
-            //shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * cascadeShadowMapTexelSize, layer, currentDepth - bias - extraBias);
-        }
+        //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + csmShadowSampleDisk[i] * cascadeShadowMapTexelSize, layer)).r;
+        //shadow += (currentDepth - bias) > pcfDepth ? 0.0 : 1.0;
+        shadow += sampleCSMShadowMapLinear(projCoords.xy + csmShadowSampleDisk[i] * cascadeShadowMapTexelSize, layer, currentDepth - bias);
     }
-    shadow /= 9.0;
+    shadow /= float(sampleSize);
     shadow = 1.0 - shadow;
 
     //if (shadow > 0.01)        // For debugging purposes

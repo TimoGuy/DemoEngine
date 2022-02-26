@@ -107,6 +107,7 @@ void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const st
         if (mainTexture != nullptr)
         {
             shaderOverride->setSampler("ubauTexture", mainTexture->getHandle());
+            shaderOverride->setFloat("fadeAlpha", material->fadeAlpha);
         }
     }
 

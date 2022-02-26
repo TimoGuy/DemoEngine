@@ -135,7 +135,7 @@ void DirectionalLightLight::refreshRenderBuffers()
 //		High:      1024
 //		Medium:    512
 //		Low:       256
-constexpr GLsizei depthMapResolution = 1024;
+constexpr GLsizei depthMapResolution = 2048;
 
 void DirectionalLightLight::createCSMBuffers()
 {

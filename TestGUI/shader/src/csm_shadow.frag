@@ -3,6 +3,7 @@
 in vec2 texCoord;
 
 uniform sampler2D ubauTexture;
+uniform float fadeAlpha;
 
 
 void main()
@@ -19,7 +20,7 @@ void main()
 
 
 	// AND IN A WILD TURN OF EVENTS, THE DO_NOTHING.FRAG SHADER NOW DOES SOMETHING!!!
-	float textureAlpha = texture(ubauTexture, texCoord).a;
+	float textureAlpha = texture(ubauTexture, texCoord).a * fadeAlpha;
 	if (textureAlpha < 0.5)
 		discard;
 }

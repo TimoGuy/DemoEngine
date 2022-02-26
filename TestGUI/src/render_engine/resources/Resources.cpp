@@ -443,7 +443,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbr0_5Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0.5_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	if (resourceName == "texture;ssaoRotation")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/ssao_rot_texture.bmp", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 
-	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.5f);
+	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.4f);
 
 	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
 	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo

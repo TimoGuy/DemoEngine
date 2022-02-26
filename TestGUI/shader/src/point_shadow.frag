@@ -4,13 +4,14 @@ in vec2 texCoord;
 in vec4 fragPosition;
 
 uniform sampler2D ubauTexture;
+uniform float fadeAlpha;
 uniform vec3 lightPosition;
 uniform float farPlane;
 
 void main()
 {
     // See if should discard fragment
-    float textureAlpha = texture(ubauTexture, texCoord).a;
+    float textureAlpha = texture(ubauTexture, texCoord).a * fadeAlpha;
 	if (textureAlpha < 0.5)
     {
         discard;
