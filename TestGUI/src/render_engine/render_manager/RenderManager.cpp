@@ -1124,6 +1124,7 @@ void RenderManager::setupSceneShadows()
 			{
 				ShaderExtCSM_shadow::csmShadowMap = MainLoop::getInstance().lightObjects[i]->shadowMapTexture;
 				ShaderExtCSM_shadow::cascadePlaneDistances = ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels;
+				ShaderExtCSM_shadow::cascadeShadowMapTexelSizes = ((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeTexelSizes;
 				ShaderExtCSM_shadow::cascadeCount = (GLint)((DirectionalLightLight*)MainLoop::getInstance().lightObjects[i])->shadowCascadeLevels.size();
 				ShaderExtCSM_shadow::nearPlane = MainLoop::getInstance().camera.zNear;
 				ShaderExtCSM_shadow::farPlane = MainLoop::getInstance().lightObjects[i]->shadowFarPlane;

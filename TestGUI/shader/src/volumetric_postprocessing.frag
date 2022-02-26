@@ -21,7 +21,7 @@ uniform vec3 mainCameraPosition;
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
-// ext: csm_shadow
+// ext: csm_shadow (Simplified)
 uniform sampler2DArray csmShadowMap;
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];

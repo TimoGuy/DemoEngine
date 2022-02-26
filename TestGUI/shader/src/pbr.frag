@@ -50,6 +50,7 @@ uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 uniform sampler2DArray csmShadowMap;            // NOTE: for some reason the shadow map has to be the very last???? It gets combined with the albedo if it's the first one for some reason
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
+uniform float cascadeShadowMapTexelSizes[16];
 uniform int cascadeCount;   // number of frusta - 1
 uniform float nearPlane;
 uniform float farPlane;
@@ -134,6 +135,7 @@ float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float com
     return mix(mixA, mixB, fracPart.x);
 }
 
+// Implementation based off my desmos: https://www.desmos.com/calculator/no7uxdbn9e
 float shadowSampleCSMLayer(vec3 lightDir, int layer)
 {
     vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosition, 1.0);
@@ -150,18 +152,19 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer)
     }
     // calculate bias (based on depth map resolution and slope)     // NOTE: This is tuned for 1024x1024 stable shadow maps
     vec3 normal = normalize(normalVector);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    //float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max((1.0 - dot(normal, lightDir)) * 0.5 * cascadeShadowMapTexelSizes[layer] + 0.5 * cascadeShadowMapTexelSizes[layer], 0.005);
     float distanceMultiplier = pow(0.45, layer);      // NOTE: this worked for stable fit shadows
     //float distanceMultiplier = 0.5;                   // NOTE: this is for close fit shadows... but I cannot get them to look decent
 
-    if (layer == cascadeCount)
-    {
-        bias *= 1 / (farPlane * distanceMultiplier);
-    }
-    else
-    {
-        bias *= 1 / (cascadePlaneDistances[layer] * distanceMultiplier);
-    }
+    //if (layer == cascadeCount)
+    //{
+    //    bias *= 1 / (farPlane * distanceMultiplier);
+    //}
+    //else
+    //{
+    //    bias *= 1 / (cascadePlaneDistances[layer] * distanceMultiplier);
+    //}
 
     // PCF
     float shadow = 0.0;

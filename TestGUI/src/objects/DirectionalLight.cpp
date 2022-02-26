@@ -105,7 +105,7 @@ DirectionalLightLight::DirectionalLightLight(BaseObject* bo, bool castsShadows) 
 	colorIntensityMaxAtY = 0.707106781f;		// NOTE: sin(45)
 
 	// @Hardcode
-	shadowFarPlane = 150.0f;
+	shadowFarPlane = 250.0f;  //150.0f;
 	//shadowCascadeLevels = { shadowFarPlane * 0.067f, shadowFarPlane * 0.2f, shadowFarPlane * 0.467f };			// This is unity's 4 cascade distribution
 	//shadowCascadeLevels = { shadowFarPlane * 0.1f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5f };
 	shadowCascadeLevels = { shadowFarPlane * 0.0625f, shadowFarPlane * 0.25f, shadowFarPlane * 0.5625f };			// This one is x^2
@@ -379,6 +379,12 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//	maxZ *= zMult;
 	//}
 
+	float texelSize = maxX - minX;
+	if (maxY - minY > texelSize)
+		texelSize = maxY - minY;
+	texelSize = 1.0f / (float)(depthMapResolution + texelSize);
+	shadowCascadeTexelSizes.push_back(texelSize);
+
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
 	if (InputManager::getInstance().pausePressed)
@@ -518,6 +524,8 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
 	if (InputManager::getInstance().pausePressed)
 		heyho.push_back(DEBUG_frustumLightSpaceCalculations());
+
+	shadowCascadeTexelSizes.clear();
 
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)

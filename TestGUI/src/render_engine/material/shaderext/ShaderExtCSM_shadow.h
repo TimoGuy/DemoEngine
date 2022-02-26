@@ -13,6 +13,7 @@ public:
 
 	static unsigned int csmShadowMap;
 	static std::vector<float> cascadePlaneDistances;
+	static std::vector<float> cascadeShadowMapTexelSizes;
 	static int cascadeCount;
 	static float nearPlane;
 	static float farPlane;
