@@ -126,12 +126,24 @@ void DirectionalLightLight::refreshRenderBuffers()
 		destroyCSMBuffers();
 }
 
-constexpr GLsizei depthMapResolution = 1024;		// @Settings: You can change this to 2048 or 4096!
+// https://docs.unity3d.com/Manual/shadow-mapping.html
+// So with my pc @ 90degree camera fov:
+//		Max size:  4096 (if vram >512mb, else) 2048
+// 
+// Calculated values:
+//		Very High: 2048
+//		High:      1024
+//		Medium:    512
+//		Low:       256
+constexpr GLsizei depthMapResolution = 1024;
+
 void DirectionalLightLight::createCSMBuffers()
 {
 	if (shadowMapsCreated) return;
 
 	refreshResources();
+
+	shadowCascadeTexelSize = 1.0f / (float)depthMapResolution;
 
 	//
 	// Create light FBO
@@ -379,12 +391,6 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 	//	maxZ *= zMult;
 	//}
 
-	float texelSize = maxX - minX;
-	if (maxY - minY > texelSize)
-		texelSize = maxY - minY;
-	texelSize = 1.0f / (float)(depthMapResolution + texelSize);
-	shadowCascadeTexelSizes.push_back(texelSize);
-
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
 	if (InputManager::getInstance().pausePressed)
@@ -525,8 +531,6 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 	if (InputManager::getInstance().pausePressed)
 		heyho.push_back(DEBUG_frustumLightSpaceCalculations());
 
-	shadowCascadeTexelSizes.clear();
-
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)
 	{
@@ -549,7 +553,7 @@ std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 float shadowDisappearMultiplier = 2.14524f;		// @Tuned value
 float shadowDisappearOffset = 1.0f;		// @Tuned value
 float overflowYAmountRaw;
-float startDimmingY = -0.45f;		// @Tuned value
+float startDimmingY = -0.25f;		// @Tuned value
 void DirectionalLight::setLookDirection(glm::quat rotation)
 {
 	glm::vec3 sunOrientation(0.0f, 0.0f, 1.0f);
@@ -558,15 +562,14 @@ void DirectionalLight::setLookDirection(glm::quat rotation)
 
 	// Modify the light direction
 	glm::vec3 lightDirection = sunOrientation;
-	lightDirection.y -= 0.2f;			// @NOTE: This seems to be the best one. There's a bit of shadow acne, however.
-	lightDirection = glm::normalize(lightDirection);
+	//lightDirection = glm::normalize(lightDirection);
 
 	// Color intensity
 	overflowYAmountRaw = (startDimmingY - lightDirection.y);
 	float overflowYAmount = glm::clamp(overflowYAmountRaw * shadowDisappearMultiplier + shadowDisappearOffset, 0.0f, 1.0f);		// Man I wish I could show you the desmos graph I had to make to get this to work the way I wanted. -Timo
 	overflowYAmount = glm::pow(overflowYAmount, 2.0f);
 
-	const float clampDirectionY = -0.225f;		// @Tuned value
+	const float clampDirectionY = -0.025f;		// @Tuned value
 	if (lightDirection.y > clampDirectionY)
 	{
 		glm::vec3 lightDirXZ(lightDirection.x, 0, lightDirection.z);

@@ -48,7 +48,7 @@ uniform float pointLightShadowFarPlanes[MAX_SHADOWS];
 uniform sampler2DArray csmShadowMap;
 layout (std140, binding = 0) uniform LightSpaceMatrices { mat4 lightSpaceMatrices[16]; };
 uniform float cascadePlaneDistances[16];
-uniform float cascadeShadowMapTexelSizes[16];
+uniform float cascadeShadowMapTexelSize;
 uniform int cascadeCount;   // number of frusta - 1
 uniform float nearPlane;
 uniform float farPlane;
@@ -100,16 +100,16 @@ const float PI = 3.14159265359;
     return retColor;
 }*/
 
-float sampleCSMShadowMapLinear(vec2 coords, vec2 texelSize, int layer, float compare)           // https://www.youtube.com/watch?v=yn5UJzMqxj0 (29:27)
+float sampleCSMShadowMapLinear(vec2 coords, int layer, float compare)           // https://www.youtube.com/watch?v=yn5UJzMqxj0 (29:27)
 {
-    vec2 pixelPos = coords / texelSize + vec2(0.5);
+    vec2 pixelPos = coords / vec2(cascadeShadowMapTexelSize) + vec2(0.5);
     vec2 fracPart = fract(pixelPos);
-    vec2 startTexel = (pixelPos - fracPart - vec2(0.5)) * texelSize;                // NOTE: -vec2(0.5) fixes problem of one cascade being off from another.
+    vec2 startTexel = (pixelPos - fracPart - vec2(0.5)) * cascadeShadowMapTexelSize;                // NOTE: -vec2(0.5) fixes problem of one cascade being off from another.
 
     float blTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, 0.0), layer)).r);
-    float brTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, 0.0), layer)).r);
-    float tlTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, texelSize.y), layer)).r);
-    float trTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(texelSize.x, texelSize.y), layer)).r);
+    float brTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(cascadeShadowMapTexelSize, 0.0), layer)).r);
+    float tlTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(0.0, cascadeShadowMapTexelSize), layer)).r);
+    float trTexel = step(compare, texture(csmShadowMap, vec3(startTexel + vec2(cascadeShadowMapTexelSize, cascadeShadowMapTexelSize), layer)).r);
     
     float mixA = mix(blTexel, tlTexel, fracPart.y);
     float mixB = mix(brTexel, trTexel, fracPart.y);
@@ -132,32 +132,21 @@ float shadowSampleCSMLayer(vec3 lightDir, int layer)
     {
         return 0.0;
     }
-    // calculate bias (based on depth map resolution and slope)     // NOTE: This is tuned for 1024x1024 stable shadow maps
-    vec3 normal = normalize(normalVector);
-    //float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float bias = max((1.0 - dot(normal, lightDir)) * 0.5 * cascadeShadowMapTexelSizes[layer] + 0.5 * cascadeShadowMapTexelSizes[layer], 0.005);
-    float distanceMultiplier = pow(0.45, layer);      // NOTE: this worked for stable fit shadows
-    //float distanceMultiplier = 0.5;                   // NOTE: this is for close fit shadows... but I cannot get them to look decent
 
-    //if (layer == cascadeCount)
-    //{
-    //    bias *= 1 / (farPlane * distanceMultiplier);
-    //}
-    //else
-    //{
-    //    bias *= 1 / (cascadePlaneDistances[layer] * distanceMultiplier);
-    //}
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = normalize(normalVector);
+    float bias = max((1.0 - dot(normal, lightDir)) * cascadeShadowMapTexelSize +  1.4 * cascadeShadowMapTexelSize, 0.0);
 
     // PCF
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / vec2(textureSize(csmShadowMap, 0));
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            //float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;        // @Debug: not filtered shadows
-            //shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
-            shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * texelSize, texelSize, layer, currentDepth - bias);
+            float pcfDepth = texture(csmShadowMap, vec3(projCoords.xy + vec2(x, y) * cascadeShadowMapTexelSize, layer)).r;        // @Debug: not filtered shadows
+            float extraBias = (x != 0 || y != 0 ? (cascadeShadowMapTexelSize * 1.0) : 0.0);
+            shadow += (currentDepth - bias - extraBias) > pcfDepth ? 0.0 : 1.0;
+            //shadow += sampleCSMShadowMapLinear(projCoords.xy + vec2(x, y) * cascadeShadowMapTexelSize, layer, currentDepth - bias - extraBias);
         }
     }
     shadow /= 9.0;

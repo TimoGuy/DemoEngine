@@ -15,7 +15,7 @@ public:
 	void refreshRenderBuffers();
 
 	std::vector<float_t> shadowCascadeLevels;
-	std::vector<float_t> shadowCascadeTexelSizes;
+	float_t shadowCascadeTexelSize;
 
 	// Light intensity based off angle
 	// @DEBUG: putting into public, but really should be in private bc imgui yo
