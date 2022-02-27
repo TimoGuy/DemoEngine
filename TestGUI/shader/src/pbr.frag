@@ -136,18 +136,7 @@ float sampleCSMShadowMapLinear(vec2 coords, int layer, float compare)           
 }
 
 
-//vec2 csmShadowSampleDisk[9] = vec2[]
-//(
-//    vec2(0.1923997956, 0.4764344779),
-//    vec2(0.2502582539, 1.0238806952),
-//    vec2(0.3937015078, 1.2107474044),
-//    vec2(-0.4285640209, -0.2736053046),
-//    vec2(-1.1369034200, -0.3759227090),
-//    vec2(-1.2407810627, -0.2221463303),
-//    vec2(-0.0175392352, -0.4259492545),
-//    vec2(0.9936077213, -0.5275526274),
-//    vec2(0.7843275612, -1.0108115071)
-//);
+// Generated from soft_shadow_jitter_algorithm.py in solanine_asset_dev repo
 vec2 csmShadowSampleDisk[16] = vec2[]
 (
     vec2(0.4265453610, 0.7481831628),
