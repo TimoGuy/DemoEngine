@@ -82,6 +82,12 @@ struct TransparentRenderQueue
 };
 
 
+struct TextRenderQueue
+{
+	std::vector<TextRenderer*> textRenderers;
+};
+
+
 struct RenderLightInformation
 {
 	static constexpr int MAX_LIGHTS = 1024;
@@ -147,6 +153,10 @@ public:
 
 	// Volumetric setting
 	inline void setVolumetricLightingStrength(float amount) { volumetricLightingStrengthExternal = amount; }
+
+	// Render Text
+	void addTextRenderer(TextRenderer* textRenderer);
+	void removeTextRenderer(TextRenderer* textRenderer);
 
 private:
 	Shader* debug_csm_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *hudUIProgramId;
@@ -232,6 +242,7 @@ private:
 	//Texture* ssNormalTexture;		@DEPRECATE: normal reconstruction was faster for HBAO, so this'll get the can. // Kinda like a normal map for a g-buffer
 	OpaqueRenderQueue opaqueRQ;
 	TransparentRenderQueue transparentRQ;
+	TextRenderQueue textRQ;
 
 #ifdef _DEVELOP
 	// ImGui Debug stuff
@@ -244,7 +255,7 @@ private:
 	GLuint textVAO, textVBO;
 	void createFonts();
 	void destroyFonts();
-	void renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color);
+	void renderText(std::string text, glm::mat4 modelMatrix, glm::vec3 color);
 
 #ifdef _DEVELOP
 	// @PHYSX_VISUALIZATION

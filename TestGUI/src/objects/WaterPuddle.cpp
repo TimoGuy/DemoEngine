@@ -12,7 +12,7 @@
 #include "../render_engine/render_manager/RenderManager.h"
 
 
-WaterPuddle::WaterPuddle() : containsWater(true)
+WaterPuddle::WaterPuddle() : numWaterServings(1)
 {
 	name = "Water Puddle";
 
@@ -22,6 +22,8 @@ WaterPuddle::WaterPuddle() : containsWater(true)
 	renderComponent = new RenderComponent(this);
 	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
 	renderComponent->addModelToRender({ model, true, &animator });
+	waterServingsText = { "Hello", getTransform(), glm::vec3(1, 1, 0) };
+	renderComponent->addTextToRender(&waterServingsText);
 }
 
 WaterPuddle::~WaterPuddle()
@@ -34,14 +36,14 @@ void WaterPuddle::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 
-	if (object.contains("contains_water"))
-		containsWater = object["contains_water"];
+	if (object.contains("num_water_servings"))
+		numWaterServings = object["num_water_servings"];
 
 	refreshResources();
 
 	// Check if I'm already collected
-	if (GameState::getInstance().isPuddleCollected(guid))
-		containsWater = false;
+	//if (GameState::getInstance().isPuddleCollected(guid))
+	//	containsWater = false;
 }
 
 nlohmann::json WaterPuddle::savePropertiesToJson()
@@ -50,7 +52,7 @@ nlohmann::json WaterPuddle::savePropertiesToJson()
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 
-	j["contains_water"] = containsWater;
+	j["num_water_servings"] = numWaterServings;
 
 	return j;
 }
@@ -74,31 +76,16 @@ void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 
 void WaterPuddle::collectWaterPuddle()
 {
-	if (!containsWater && !GameState::getInstance().playerIsHoldingWater)
-	{
-		std::cout << "This water puddle is already collected. Unfortunate." << std::endl;
-		return;
-	}
-	if (containsWater && GameState::getInstance().playerIsHoldingWater)
-	{
-		std::cout << "You're already carrying water. Drop if off or drink it to carry more" << std::endl;
-		return;
-	}
-
 	// Event!!!
-	if (containsWater)
+	if (GameState::getInstance().playerIsHoldingWater)
 	{
-		// Collect and log the puddle
-		Messages::getInstance().postMessage("PlayerCollectWater");
-		GameState::getInstance().playerIsHoldingWater = true;
-		GameState::getInstance().addPuddleGUID(guid);
-		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+		// @NOTE: This below should be a case of "if numWaterServings >= maxWaterholding" then prevent from filling in more water
+		//if (numWaterServings > 0 && GameState::getInstance().playerIsHoldingWater)
+		//{
+		//	std::cout << "You're already carrying water. Drop if off or drink it to carry more" << std::endl;
+		//	return;
+		//}
 
-		std::cout << "Collected Water in Puddle!!!!" << std::endl;
-		containsWater = false;
-	}
-	else
-	{
 		// Drop off the water into the hole
 		Messages::getInstance().postMessage("PlayerCollectWater");
 		GameState::getInstance().playerIsHoldingWater = false;
@@ -106,7 +93,24 @@ void WaterPuddle::collectWaterPuddle()
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 
 		std::cout << "Dropped water off into Puddle!!!!" << std::endl;
-		containsWater = true;
+		numWaterServings++;
+	}
+	else
+	{
+		if (numWaterServings <= 0)
+		{
+			std::cout << "This water puddle is empty. Unfortunate." << std::endl;
+			return;
+		}
+
+		// Collect and log the puddle
+		Messages::getInstance().postMessage("PlayerCollectWater");
+		GameState::getInstance().playerIsHoldingWater = true;
+		GameState::getInstance().addPuddleGUID(guid);
+		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+
+		std::cout << "Collected Water in Puddle!!!!" << std::endl;
+		numWaterServings--;
 	}
 }
 
@@ -115,13 +119,13 @@ void WaterPuddle::preRenderUpdate()
 	//
 	// Process Animations
 	//
-	if (containsWater)
+	if (numWaterServings == 0)
 	{
-		animator.playAnimation(0, 1.5f);
+		animator.playAnimation(1, 1.5f);
 	}
 	else
 	{
-		animator.playAnimation(1, 1.5f);
+		animator.playAnimation(0, 1.5f);
 	}
 	animator.animationSpeed = 1.0f;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);
@@ -165,7 +169,7 @@ void WaterPuddle::refreshResources()
 #ifdef _DEVELOP
 void WaterPuddle::imguiPropertyPanel()
 {
-	ImGui::Checkbox("Contains water", &containsWater);
+	ImGui::InputInt("Num Water servings", &numWaterServings);
 }
 
 void WaterPuddle::imguiRender()

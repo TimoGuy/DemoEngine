@@ -344,6 +344,23 @@ void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* li
 }
 #endif
 
+void RenderManager::addTextRenderer(TextRenderer* textRenderer)
+{
+	textRQ.textRenderers.push_back(textRenderer);
+}
+
+void RenderManager::removeTextRenderer(TextRenderer* textRenderer)
+{
+	textRQ.textRenderers.erase(
+		std::remove(
+			textRQ.textRenderers.begin(),
+			textRQ.textRenderers.end(),
+			textRenderer
+		),
+		textRQ.textRenderers.end()
+	);
+}
+
 void RenderManager::createHDRBuffer()
 {
 	//
@@ -1308,7 +1325,6 @@ void RenderManager::renderScene()
 	//}
 
 	// Reset materials at the start of every frame
-	Material::resetFlag = true;
 	this->repopulateAnimationUBO = true;
 
 	//// Start of main render queues: turn on face culling
@@ -1329,16 +1345,23 @@ void RenderManager::renderScene()
 	opaqueRQ.boneMatrixMemAddrs.clear();
 	glDepthFunc(GL_LEQUAL);
 
-
-	// @TEMP: this is bc the transparent render queue really needs backface culling!!!!!!!
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
+	//
+	// TEXT RENDER QUEUE
+	// @NOTE: there is no frustum culling for text right now... Probs need its own AABB's like models
+	//
+	glEnable(GL_BLEND);
+	for (size_t i = 0; i < textRQ.textRenderers.size(); i++)
+	{
+		TextRenderer& tr = *textRQ.textRenderers[i];
+		renderText(tr.text, tr.modelMatrix, tr.color);
+	}
 
 	//
 	// TRANSPARENT RENDER QUEUE
 	//
-	glEnable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
 
 	std::sort(
 		transparentRQ.commandingIndices.begin(),
@@ -1350,6 +1373,7 @@ void RenderManager::renderScene()
 			return transparentRQ.distancesToCamera[index1] > transparentRQ.distancesToCamera[index2];
 		}
 	);
+
 	for (size_t& index : transparentRQ.commandingIndices)
 	{
 		transparentRQ.meshesToRender[index]->render(transparentRQ.modelMatrices[index], 0, transparentRQ.boneMatrixMemAddrs[index], RenderStage::TRANSPARENT_RENDER_QUEUE);
@@ -2273,22 +2297,15 @@ void RenderManager::renderImGuiContents()
 }
 #endif
 
-void RenderManager::renderText(unsigned int programId, std::string text, glm::mat4 modelMatrix, glm::mat4 cameraMatrix, glm::vec3 color)		// @Cleanup: this needs to go in some kind of text utils... it's super useful however, soooooo.
+void RenderManager::renderText(std::string text, glm::mat4 modelMatrix, glm::vec3 color)		// @Cleanup: this needs to go in some kind of text utils... it's super useful however, soooooo.
 {
 	// Activate corresponding render state
-	glUseProgram(programId);
-	glUniform3f(glGetUniformLocation(programId, "diffuseTint"), color.x, color.y, color.z);
-	glUniformMatrix4fv(
-		glGetUniformLocation(programId, "modelMatrix"),
-		1,
-		GL_FALSE,
-		glm::value_ptr(modelMatrix)
-	);
-	glUniformMatrix4fv(glGetUniformLocation(programId, "cameraMatrix"), 1, GL_FALSE, glm::value_ptr(cameraMatrix));
-	glActiveTexture(GL_TEXTURE0);
-	glBindVertexArray(textVAO);
+	text_program_id->use();
+	text_program_id->setVec3("diffuseTint", color);
+	text_program_id->setMat4("modelMatrix", modelMatrix);
 
 	// iterate through all characters
+	glBindVertexArray(textVAO);
 	float x = 0;
 	float y = 0;
 	std::string::const_iterator c;
@@ -2312,7 +2329,7 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 			{ xpos + w, ypos + h,   1.0f, 0.0f }
 		};
 		// render glyph texture over quad
-		glBindTexture(GL_TEXTURE_2D, ch.textureId);
+		glBindTextureUnit(0, ch.textureId);
 		// update content of VBO memory
 		glBindBuffer(GL_ARRAY_BUFFER, textVBO);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
@@ -2323,7 +2340,6 @@ void RenderManager::renderText(unsigned int programId, std::string text, glm::ma
 		x += (ch.advance >> 6); // bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 	glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 #ifdef _DEVELOP

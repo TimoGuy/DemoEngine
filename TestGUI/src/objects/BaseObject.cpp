@@ -248,6 +248,11 @@ RenderComponent::~RenderComponent()
 		),
 		MainLoop::getInstance().renderObjects.end()
 	);
+
+	for (size_t i = 0; i < textRenderers.size(); i++)
+	{
+		MainLoop::getInstance().renderManager->removeTextRenderer(textRenderers[i]);
+	}
 }
 
 void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadata)
@@ -258,6 +263,12 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 void RenderComponent::clearAllModels()
 {
 	modelsWithMetadata.clear();
+}
+
+void RenderComponent::addTextToRender(TextRenderer* textRenderer)
+{
+	textRenderers.push_back(textRenderer);
+	MainLoop::getInstance().renderManager->addTextRenderer(textRenderer);
 }
 
 void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader)								// @Copypasta

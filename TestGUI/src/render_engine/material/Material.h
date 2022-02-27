@@ -18,8 +18,6 @@ public:
 	virtual Texture* getMainTexture() = 0;
 	Shader* getShader() { return myShader; }
 
-	static bool resetFlag;
-
 	float ditherAlpha;
 	float fadeAlpha;
 	bool isTransparent;

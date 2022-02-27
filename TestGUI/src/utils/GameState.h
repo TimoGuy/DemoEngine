@@ -38,7 +38,7 @@ public:
 
 	static GameState& getInstance();
 
-	void addPuddleGUID(const std::string& guid);
+	void addPuddleGUID(const std::string& guid);		// @@@@@@TODO: The water system is changing, so no need for this guid-collected system!
 	void removePuddleGUID(const std::string& guid);
 	bool isPuddleCollected(const std::string& guid);
 

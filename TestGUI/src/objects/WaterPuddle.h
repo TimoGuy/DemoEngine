@@ -29,7 +29,7 @@ public:
 	void onTrigger(const physx::PxTriggerPair& pair);
 
 	void collectWaterPuddle();
-	bool containsWater;
+	int numWaterServings;
 
 	inline bool isBeingTriggeredByPlayer() { return beingTriggeredByPlayer; }
 
@@ -47,4 +47,5 @@ private:
 	Model* model;
 	Animator animator;
 	std::map<std::string, Material*> materials;
+	TextRenderer waterServingsText;
 };

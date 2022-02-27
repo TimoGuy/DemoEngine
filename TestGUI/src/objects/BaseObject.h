@@ -140,6 +140,13 @@ struct ModelWithMetadata
 	Animator* modelAnimator;
 };
 
+struct TextRenderer
+{
+	std::string text;
+	glm::mat4 modelMatrix;
+	glm::vec3 color;
+};
+
 class Shader;
 struct ViewFrustum;
 class RenderComponent final
@@ -155,6 +162,8 @@ public:
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
 	void clearAllModels();
 
+	void addTextToRender(TextRenderer* textRenderer);
+
 	void render(const ViewFrustum* viewFrustum, Shader* zPassShader);
 	void renderShadow(Shader* shader);
 
@@ -164,6 +173,7 @@ public:
 
 private:
 	std::vector<ModelWithMetadata> modelsWithMetadata;
+	std::vector<TextRenderer*> textRenderers;
 
 #ifdef _DEVELOP
 	void refreshResources();

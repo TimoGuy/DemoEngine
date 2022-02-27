@@ -11,8 +11,6 @@
 #include <iostream>
 
 
-bool Material::resetFlag = false;
-
 Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
 
 

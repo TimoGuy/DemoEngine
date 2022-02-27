@@ -4,7 +4,6 @@ layout (location=0) in vec4 vertexPosition;
 out vec2 texCoords;
 
 uniform mat4 modelMatrix;
-uniform mat4 cameraMatrix;
 
 // Camera
 layout (std140, binding = 3) uniform CameraInformation
