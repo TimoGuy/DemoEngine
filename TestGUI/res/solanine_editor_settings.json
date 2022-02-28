@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        0.7537235617637634,
-        -0.5357046127319336,
-        0.3806784451007843
+        -0.6910279989242554,
+        -0.7224032878875732,
+        -0.024782419204711914
     ],
     "level_editor_camera_pos": [
-        -17.742328643798828,
-        35.49292755126953,
-        32.0970573425293
+        14.896347045898438,
+        40.022098541259766,
+        40.98230743408203
     ],
-    "startup_level": "C:\\Users\\Tristan\\source\\repos\\DemoEngine\\TestGUI\\res\\level\\lvl_challenge_6.hsfs"
+    "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_challenge_6.hsfs"
 }
