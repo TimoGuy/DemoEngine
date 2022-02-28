@@ -120,8 +120,7 @@ void WaterPuddle::preRenderUpdate()
 	// Update the modelmatrix
 	glm::vec3 pos = PhysicsUtils::getPosition(getTransform());
 	pos.y += 1.5f;
-	glm::quat rot(glm::vec3(0, 1, 0), MainLoop::getInstance().camera.up);
-	waterServingsText.modelMatrix = glm::translate(glm::mat4(1.0f), pos - MainLoop::getInstance().camera.position) * glm::inverse(MainLoop::getInstance().camera.calculateViewMatrix());
+	waterServingsText.modelMatrix = glm::translate(glm::mat4(1.0f), pos - MainLoop::getInstance().camera.position) * glm::inverse(MainLoop::getInstance().camera.calculateViewMatrix()) * glm::scale(glm::mat4(1.0f), glm::vec3(0.06f));
 	waterServingsText.text = std::to_string(numWaterServings);
 
 	//
@@ -178,6 +177,7 @@ void WaterPuddle::refreshResources()
 void WaterPuddle::imguiPropertyPanel()
 {
 	ImGui::InputInt("Num Water servings", &numWaterServings);
+	ImGui::InputFloat("Font Text Size", &textSize);
 }
 
 void WaterPuddle::imguiRender()

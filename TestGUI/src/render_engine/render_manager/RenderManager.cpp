@@ -698,7 +698,7 @@ void RenderManager::createFonts()
 		return;
 	}
 
-	FT_Set_Pixel_Sizes(face, 0, 48);
+	FT_Set_Pixel_Sizes(face, 0, 32);
 
 	//
 	// Load ASCII first 128 characters (test for now)
