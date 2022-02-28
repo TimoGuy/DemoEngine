@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "../mainloop/MainLoop.h"
 #include "../utils/PhysicsUtils.h"
 #include "../utils/GameState.h"
@@ -22,7 +23,7 @@ WaterPuddle::WaterPuddle() : numWaterServings(1)
 	renderComponent = new RenderComponent(this);
 	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
 	renderComponent->addModelToRender({ model, true, &animator });
-	waterServingsText = { "Hello", getTransform(), glm::vec3(1, 1, 0) };
+	waterServingsText = { std::to_string(numWaterServings), getTransform(), glm::vec3(1, 1, 0), TextAlignment::CENTER, TextAlignment::BOTTOM };
 	renderComponent->addTextToRender(&waterServingsText);
 }
 
@@ -116,6 +117,13 @@ void WaterPuddle::collectWaterPuddle()
 
 void WaterPuddle::preRenderUpdate()
 {
+	// Update the modelmatrix
+	glm::vec3 pos = PhysicsUtils::getPosition(getTransform());
+	pos.y += 1.5f;
+	glm::quat rot(glm::vec3(0, 1, 0), MainLoop::getInstance().camera.up);
+	waterServingsText.modelMatrix = glm::translate(glm::mat4(1.0f), pos - MainLoop::getInstance().camera.position) * glm::inverse(MainLoop::getInstance().camera.calculateViewMatrix());
+	waterServingsText.text = std::to_string(numWaterServings);
+
 	//
 	// Process Animations
 	//

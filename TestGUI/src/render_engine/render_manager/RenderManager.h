@@ -28,7 +28,8 @@ struct TextCharacter
 	unsigned int textureId;
 	glm::ivec2 size;
 	glm::ivec2 bearing;
-	unsigned int advance;
+	unsigned int advanceX;
+	unsigned int advanceY;
 };
 
 class Mesh;
@@ -255,7 +256,7 @@ private:
 	GLuint textVAO, textVBO;
 	void createFonts();
 	void destroyFonts();
-	void renderText(std::string text, glm::mat4 modelMatrix, glm::vec3 color);
+	void renderText(TextRenderer& tr);
 
 #ifdef _DEVELOP
 	// @PHYSX_VISUALIZATION

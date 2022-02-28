@@ -32,7 +32,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	// Load all info of the level
 	std::string fname;
 	{
-		std::ifstream i("res\\solanine_editor_settings.json");
+		std::ifstream i("res\\solanine_editor_settings.json");		// @TODO: This kinda bothers me. There's no way to guarantee the user has this file touched. At the very least there should be a "if file doesn't exist, touch it real quick" at the beginning of the program... dango bango yoooo.
 		if (i.is_open())
 		{
 			nlohmann::json j;
@@ -41,6 +41,16 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 			if (j.contains("startup_level"))
 			{
 				fname = j["startup_level"];
+			}
+
+			if (j.contains("level_editor_camera_pos"))
+			{
+				MainLoop::getInstance().camera.position = { j["level_editor_camera_pos"][0], j["level_editor_camera_pos"][1], j["level_editor_camera_pos"][2] };
+			}
+
+			if (j.contains("level_editor_camera_orientation"))
+			{
+				MainLoop::getInstance().camera.orientation = { j["level_editor_camera_orientation"][0], j["level_editor_camera_orientation"][1], j["level_editor_camera_orientation"][2] };
 			}
 		}
 	}
@@ -66,6 +76,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 		}
 
 		// Set this opened file as the new default for next time you open the program
+		// @Copypasta
 		nlohmann::json j;
 		j["startup_level"] = fnameOpened;		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
 		std::ofstream o("res\\solanine_editor_settings.json");
@@ -187,3 +198,25 @@ void FileLoading::saveFile(bool withPrompt)
 
 	std::cout << "::Saving:: DONE!" << std::endl;
 }
+
+#ifdef _DEVELOP
+void FileLoading::saveCameraPosition()
+{
+	nlohmann::json j;
+	{
+		std::ifstream i("res\\solanine_editor_settings.json");
+		if (i.is_open())
+		{
+			i >> j;
+
+			// Append the camera information to this
+			Camera& cam = MainLoop::getInstance().camera;
+			j["level_editor_camera_pos"] = { cam.position.x, cam.position.y, cam.position.z };
+			j["level_editor_camera_orientation"] = { cam.orientation.x, cam.orientation.y, cam.orientation.z };
+		}
+	}
+
+	std::ofstream o("res\\solanine_editor_settings.json");
+	o << std::setw(4) << j << std::endl;
+}
+#endif

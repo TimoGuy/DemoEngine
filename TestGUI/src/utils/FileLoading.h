@@ -15,6 +15,10 @@ public:
 	bool isCurrentPathValid() { return !currentWorkingPath.empty(); }
 	void loadFileWithPrompt(bool withPrompt);
 	void saveFile(bool withPrompt);
+	
+#ifdef _DEVELOP
+	void saveCameraPosition();
+#endif
 
 	void createObjectWithJson(nlohmann::json& object);
 

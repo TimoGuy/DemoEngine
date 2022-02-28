@@ -140,11 +140,22 @@ struct ModelWithMetadata
 	Animator* modelAnimator;
 };
 
+enum class TextAlignment
+{
+	LEFT,
+	RIGHT,
+	CENTER,
+	TOP = LEFT,		// Copies
+	BOTTOM = RIGHT	// Copies
+};
+
 struct TextRenderer
 {
 	std::string text;
 	glm::mat4 modelMatrix;
 	glm::vec3 color;
+	TextAlignment horizontalAlign;
+	TextAlignment verticalAlign;
 };
 
 class Shader;

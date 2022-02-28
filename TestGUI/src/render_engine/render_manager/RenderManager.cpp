@@ -739,7 +739,8 @@ void RenderManager::createFonts()
 			texture,
 			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-			(unsigned int)face->glyph->advance.x
+			(unsigned int)face->glyph->advance.x,
+			(unsigned int)face->glyph->advance.y
 		};
 		characters.insert(std::pair<char, TextCharacter>(c, newChar));
 	}
@@ -1353,7 +1354,7 @@ void RenderManager::renderScene()
 	for (size_t i = 0; i < textRQ.textRenderers.size(); i++)
 	{
 		TextRenderer& tr = *textRQ.textRenderers[i];
-		renderText(tr.text, tr.modelMatrix, tr.color);
+		renderText(tr);
 	}
 
 	//
@@ -2297,19 +2298,44 @@ void RenderManager::renderImGuiContents()
 }
 #endif
 
-void RenderManager::renderText(std::string text, glm::mat4 modelMatrix, glm::vec3 color)		// @Cleanup: this needs to go in some kind of text utils... it's super useful however, soooooo.
+void RenderManager::renderText(TextRenderer& tr)		// @Cleanup: this needs to go in some kind of text utils... it's super useful however, soooooo.
 {
 	// Activate corresponding render state
 	text_program_id->use();
-	text_program_id->setVec3("diffuseTint", color);
-	text_program_id->setMat4("modelMatrix", modelMatrix);
+	text_program_id->setVec3("diffuseTint", tr.color);
+	text_program_id->setMat4("modelMatrix", tr.modelMatrix);
+
+	// Check to see what the width of the text is
+	float x = 0;
+	if (tr.horizontalAlign != TextAlignment::LEFT)
+	{
+		for (std::string::const_iterator c = tr.text.begin(); c != tr.text.end(); c++)
+			x += (characters[*c].advanceX >> 6); // @NOTE: the advance of the glyph is the amount to move to get the next glyph. ALSO, bitshift by 6 to get value in pixels (2^6 = 64)
+		
+		if (tr.horizontalAlign == TextAlignment::CENTER)
+			x = -x / 2.0f;		// NOTE: x is total width rn so we're using total_width to calculate the starting point of the glyph drawing.
+		else if (tr.horizontalAlign == TextAlignment::RIGHT)
+			x = -x;				// NOTE: this means that the start of the text will be -total_width
+	}
+
+	// Check to see what the total height of the text is	@TODO: @FIXME: FOR SOME REASON THIS DOESN'T WORK?????!?!??!!?!?
+	float y = 0;
+	if (tr.verticalAlign != TextAlignment::TOP)
+	{
+		// @TODO: be able to support multiple lines here... this solution atm only supports one line
+		/*for (*/ std::string::const_iterator c = tr.text.begin();// c != tr.text.end(); c++)
+			y += (characters[*c].advanceY >> 6);
+
+		if (tr.verticalAlign == TextAlignment::CENTER)
+			y = y / 2.0f;		// NOTE: positive bc we scoot negatively here
+		else if (tr.verticalAlign == TextAlignment::BOTTOM)
+			y = y;				// @TODO: this is redundant. Lol.
+	}
 
 	// iterate through all characters
 	glBindVertexArray(textVAO);
-	float x = 0;
-	float y = 0;
 	std::string::const_iterator c;
-	for (c = text.begin(); c != text.end(); c++)
+	for (c = tr.text.begin(); c != tr.text.end(); c++)
 	{
 		TextCharacter ch = characters[*c];
 
@@ -2337,7 +2363,7 @@ void RenderManager::renderText(std::string text, glm::mat4 modelMatrix, glm::vec
 		// render quad
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.advance >> 6); // bitshift by 6 to get value in pixels (2^6 = 64)
+		x += (ch.advanceX >> 6); // bitshift by 6 to get value in pixels (2^6 = 64)
 	}
 	glBindVertexArray(0);
 }

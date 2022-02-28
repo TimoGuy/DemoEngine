@@ -344,6 +344,8 @@ void MainLoop::cleanup()
 	delete renderManager;
 
 #ifdef _DEVELOP
+	FileLoading::getInstance().saveCameraPosition();
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
