@@ -9,7 +9,7 @@ uniform vec3 diffuseTint;
 void main()
 {
     float alpha = texture(textTexture, texCoords).r;
-    if (alpha < 0.5)
-        discard;
+    //if (alpha < 0.5)
+    //    discard;
     fragmentColor = vec4(diffuseTint, 1.0) * vec4(1.0, 1.0, 1.0, alpha);
 }

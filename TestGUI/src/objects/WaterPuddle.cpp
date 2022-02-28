@@ -177,7 +177,6 @@ void WaterPuddle::refreshResources()
 void WaterPuddle::imguiPropertyPanel()
 {
 	ImGui::InputInt("Num Water servings", &numWaterServings);
-	ImGui::InputFloat("Font Text Size", &textSize);
 }
 
 void WaterPuddle::imguiRender()
