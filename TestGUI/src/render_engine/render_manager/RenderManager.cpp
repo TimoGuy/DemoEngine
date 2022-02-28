@@ -361,6 +361,12 @@ void RenderManager::removeTextRenderer(TextRenderer* textRenderer)
 	);
 }
 
+void RenderManager::pushMessage(const std::string& text)
+{
+	notifHoldTimers.push_back(0);
+	notifMessages.push_back(text);
+}
+
 void RenderManager::createHDRBuffer()
 {
 	//
@@ -654,6 +660,7 @@ void RenderManager::createShaderPrograms()
 	postprocessing_program_id = (Shader*)Resources::getResource("shader;postprocessing");
 	pbrShaderProgramId = (Shader*)Resources::getResource("shader;pbr");
 	hudUIProgramId = (Shader*)Resources::getResource("shader;hudUI");
+	notificationUIProgramId = (Shader*)Resources::getResource("shader;notificationUI");
 	INTERNALzPassShader = (Shader*)Resources::getResource("shader;zPassShader");
 	ssaoProgramId = (Shader*)Resources::getResource("shader;ssao");
 	volumetricProgramId = (Shader*)Resources::getResource("shader;volumetricLighting");
@@ -675,6 +682,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;postprocessing");
 	Resources::unloadResource("shader;pbr");
 	Resources::unloadResource("shader;hudUI");
+	Resources::unloadResource("shader;notificationUI");
 	Resources::unloadResource("shader;zPassShader");
 	Resources::unloadResource("shader;ssao");
 	Resources::unloadResource("shader;volumetricLighting");
@@ -1551,16 +1559,9 @@ void RenderManager::renderUI()
 	if (camWidth == 0.0f || camHeight == 0.0f)
 		return;
 
-	//
-	// Render UI Stamina Bar
-	//
 	const float referenceScreenHeight = 500.0f;
-	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
-	const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
-	staminaAmountFilled = glm::min(staminaAmountFilled, staminaDepleteChaser);		// @NOTE: This just creates a little animation as the stamina bar refills. It's just for effect.  -Timo
-
 	const float cameraAspectRatio = camWidth / camHeight;
-	glm::mat4 viewMatrix =
+	const glm::mat4 viewMatrix =
 		glm::ortho(
 			-referenceScreenHeight * cameraAspectRatio / 2.0f,
 			referenceScreenHeight * cameraAspectRatio / 2.0f,
@@ -1569,38 +1570,109 @@ void RenderManager::renderUI()
 			-1.0f,
 			1.0f
 		);
-	glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), staminaBarPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(staminaBarSize));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
 
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-	glViewport(0, 0, camWidth, camHeight);
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	hudUIProgramId->use();
-	
-	constexpr size_t staminaWheelCount = 16;
-	for (size_t i = 0; i < staminaWheelCount; i++)
+	//
+	// Render UI Stamina Bar
+	//
 	{
-		hudUIProgramId->setFloat("staminaAmountFilled[" + std::to_string(i) + "]", glm::clamp(staminaAmountFilled * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
-		hudUIProgramId->setFloat("staminaDepleteChaser[" + std::to_string(i) + "]", glm::clamp(staminaDepleteChaser * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
+		float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+		const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
+		staminaAmountFilled = glm::min(staminaAmountFilled, staminaDepleteChaser);		// @NOTE: This just creates a little animation as the stamina bar refills. It's just for effect.  -Timo
+
+		const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), staminaBarPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(staminaBarSize));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
+
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		glViewport(0, 0, camWidth, camHeight);
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		hudUIProgramId->use();
+
+		constexpr size_t staminaWheelCount = 16;
+		for (size_t i = 0; i < staminaWheelCount; i++)
+		{
+			hudUIProgramId->setFloat("staminaAmountFilled[" + std::to_string(i) + "]", glm::clamp(staminaAmountFilled * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
+			hudUIProgramId->setFloat("staminaDepleteChaser[" + std::to_string(i) + "]", glm::clamp(staminaDepleteChaser * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
+		}
+		hudUIProgramId->setVec3("staminaBarColor1", staminaBarColor1);
+		hudUIProgramId->setVec3("staminaBarColor2", staminaBarColor2);
+		hudUIProgramId->setVec3("staminaBarColor3", staminaBarColor3);
+		hudUIProgramId->setVec3("staminaBarColor4", staminaBarColor4);
+		hudUIProgramId->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
+		hudUIProgramId->setMat4("viewMatrix", viewMatrix);
+		hudUIProgramId->setMat4("modelMatrix", modelMatrix);
+
+		glEnable(GL_BLEND);
+		staminaBar->render(modelMatrix, hudUIProgramId, nullptr, nullptr, RenderStage::UI);		// @NOTE: this is just a special mesh that has the uv coordinates aligned so that each row (16 total rows) contains a stamina bar value.
+		glDisable(GL_BLEND);
+
+		GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
 	}
-	hudUIProgramId->setVec3("staminaBarColor1", staminaBarColor1);
-	hudUIProgramId->setVec3("staminaBarColor2", staminaBarColor2);
-	hudUIProgramId->setVec3("staminaBarColor3", staminaBarColor3);
-	hudUIProgramId->setVec3("staminaBarColor4", staminaBarColor4);
-	hudUIProgramId->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
-	hudUIProgramId->setMat4("viewMatrix", viewMatrix);
-	hudUIProgramId->setMat4("modelMatrix", modelMatrix);
-
-	glEnable(GL_BLEND);
-	staminaBar->render(modelMatrix, hudUIProgramId, nullptr, nullptr, RenderStage::UI);		// @NOTE: this is just a special mesh that has the uv coordinates aligned so that each row (16 total rows) contains a stamina bar value.
-	glDisable(GL_BLEND);
-
-	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
 
 	//
 	// Render Message boxes UI
 	//
-	// @TODO: work from here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		glViewport(0, 0, camWidth, camHeight);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		glEnable(GL_BLEND);
+
+		notificationUIProgramId->use();
+		notificationUIProgramId->setFloat("padding", notifPadding);
+		notificationUIProgramId->setVec2("extents", notifExtents);
+		notificationUIProgramId->setVec3("color1", notifColor1);
+		notificationUIProgramId->setVec3("color2", notifColor2);
+		notificationUIProgramId->setMat4("viewMatrix", viewMatrix);
+
+		glm::vec2 currentPosition = notifPosition;
+		for (size_t i = 0; i < notifHoldTimers.size(); i++)
+		{
+			float& timer = notifHoldTimers[i];
+			std::string& message = notifMessages[i];
+
+			timer += MainLoop::getInstance().deltaTime;
+
+			float scale = 0.0f;
+			if (timer < notifAnimTime)
+			{
+				// Lead in
+				scale = timer / notifAnimTime;
+				scale = glm::pow(1 - scale, 4.0f);
+			}
+			else if (timer < notifAnimTime + notifHoldTime)
+			{
+				// Hold
+				scale = 0.0f;
+			}
+			else
+			{
+				// Ease out
+				scale = (timer - notifAnimTime - notifHoldTime) / notifAnimTime;
+				scale = glm::pow(scale, 4.0f);
+			}
+
+			notificationUIProgramId->setFloat("fadeAlpha", 1.0f - scale);
+
+			const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(currentPosition + notifHidingOffset * scale, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(notifExtents, 1.0f));
+			notificationUIProgramId->setMat4("modelMatrix", modelMatrix);
+			renderCube();
+
+			currentPosition += notifAdvance;
+		}
+
+		// Delete stale messages
+		for (int i = (int)notifHoldTimers.size() - 1; i >= 0; i--)
+		{
+			if (notifHoldTimers[i] > notifAnimTime * 2.0f + notifHoldTime)
+			{
+				// DELETE!
+				notifHoldTimers.erase(notifHoldTimers.begin() + i);
+				notifMessages.erase(notifMessages.begin() + i);
+			}
+		}
+
+		glDisable(GL_BLEND);
+	}
 }
 
 // TODO: REMEMBER THIS!!!!

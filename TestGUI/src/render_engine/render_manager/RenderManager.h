@@ -159,8 +159,11 @@ public:
 	void addTextRenderer(TextRenderer* textRenderer);
 	void removeTextRenderer(TextRenderer* textRenderer);
 
+	// Message System
+	void pushMessage(const std::string& text);
+
 private:
-	Shader* debug_csm_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *hudUIProgramId;
+	Shader* debug_csm_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *hudUIProgramId, *notificationUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
@@ -218,6 +221,19 @@ private:
 	glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
 	float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
 	Model* staminaBar;
+
+	// UI Notifications
+	float notifPadding = 1.0f;
+	glm::vec2 notifExtents{ 25.0f, 10.0f };
+	glm::vec2 notifPosition{ 150.0f, 0.0f };
+	glm::vec2 notifAdvance{ 5.0f, -15.0f };
+	glm::vec2 notifHidingOffset{ 15.0f, 0.0f };
+	glm::vec3 notifColor1{ 0.0588, 0.0588, 0.0588 };
+	glm::vec3 notifColor2{ 0.3216, 0.7765, 0.3647 };
+	float notifAnimTime = 0.5f;
+	float notifHoldTime = 5.0f;
+	std::vector<float> notifHoldTimers;
+	std::vector<std::string> notifMessages;
 
 	// Camera Information
 	GLuint cameraInfoUBO;

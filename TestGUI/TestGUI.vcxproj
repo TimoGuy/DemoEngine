@@ -199,6 +199,7 @@
     <None Include="shader\irradianceGeneration.json" />
     <None Include="shader\luminance_postprocessing.json" />
     <None Include="shader\lvlGrid.json" />
+    <None Include="shader\notificationUI.json" />
     <None Include="shader\pbr.json" />
     <None Include="shaders\bloom_postprocessing.frag" />
     <None Include="shaders\bloom_postprocessing.vert" />
@@ -262,6 +263,8 @@
     <None Include="shader\src\luminance_postprocessing.frag" />
     <None Include="shader\src\lvlGrid.frag" />
     <None Include="shader\src\lvlGrid.vert" />
+    <None Include="shader\src\notificationUI.frag" />
+    <None Include="shader\src\notificationUI.vert" />
     <None Include="shader\src\pbr.frag" />
     <None Include="shader\src\pbr.vert" />
     <None Include="shader\src\point_shadow.frag" />

@@ -285,6 +285,9 @@
     <None Include="shader\zelly.json" />
     <None Include="shader\zPassShader.json" />
     <None Include="shader\src\hdri_equirectangular.frag" />
+    <None Include="shader\notificationUI.json" />
+    <None Include="shader\src\notificationUI.frag" />
+    <None Include="shader\src\notificationUI.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

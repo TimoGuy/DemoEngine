@@ -77,6 +77,8 @@ void WaterPuddle::onTrigger(const physx::PxTriggerPair& pair)
 
 void WaterPuddle::collectWaterPuddle()
 {
+	MainLoop::getInstance().renderManager->pushMessage("Hello Notif");
+
 	// Event!!!
 	if (GameState::getInstance().playerIsHoldingWater)
 	{
