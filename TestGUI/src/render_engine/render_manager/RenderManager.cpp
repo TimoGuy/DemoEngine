@@ -1596,6 +1596,11 @@ void RenderManager::renderUI()
 	glDisable(GL_BLEND);
 
 	GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
+
+	//
+	// Render Message boxes UI
+	//
+	// @TODO: work from here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 }
 
 // TODO: REMEMBER THIS!!!!
