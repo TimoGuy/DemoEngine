@@ -224,12 +224,13 @@ private:
 
 	// UI Notifications
 	float notifPadding = 1.0f;
-	glm::vec2 notifExtents{ 25.0f, 10.0f };
-	glm::vec2 notifPosition{ 150.0f, 0.0f };
-	glm::vec2 notifAdvance{ 5.0f, -15.0f };
-	glm::vec2 notifHidingOffset{ 15.0f, 0.0f };
+	glm::vec2 notifExtents{ 82.0f, 24.0f };
+	glm::vec2 notifPosition{ 284.0f, 92.0f };
+	glm::vec2 notifAdvance{ 0.0f, -54.0f };
+	glm::vec2 notifHidingOffset{ 32.0f, 0.0f };
 	glm::vec3 notifColor1{ 0.0588, 0.0588, 0.0588 };
-	glm::vec3 notifColor2{ 0.3216, 0.7765, 0.3647 };
+	glm::vec3 notifColor2{ 0.6, 0.780392157, 0.61568627451 };
+	float notifMessageSize = 0.5f;
 	float notifAnimTime = 0.5f;
 	float notifHoldTime = 5.0f;
 	std::vector<float> notifHoldTimers;

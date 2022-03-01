@@ -1570,6 +1570,9 @@ void RenderManager::renderUI()
 			-1.0f,
 			1.0f
 		);
+	updateCameraInfoUBO(viewMatrix, glm::mat4(1.0f));
+
+	glDepthMask(GL_FALSE);
 
 	//
 	// Render UI Stamina Bar
@@ -1598,7 +1601,6 @@ void RenderManager::renderUI()
 		hudUIProgramId->setVec3("staminaBarColor3", staminaBarColor3);
 		hudUIProgramId->setVec3("staminaBarColor4", staminaBarColor4);
 		hudUIProgramId->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
-		hudUIProgramId->setMat4("viewMatrix", viewMatrix);
 		hudUIProgramId->setMat4("modelMatrix", modelMatrix);
 
 		glEnable(GL_BLEND);
@@ -1617,15 +1619,13 @@ void RenderManager::renderUI()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
 
-		notificationUIProgramId->use();
 		notificationUIProgramId->setFloat("padding", notifPadding);
 		notificationUIProgramId->setVec2("extents", notifExtents);
 		notificationUIProgramId->setVec3("color1", notifColor1);
 		notificationUIProgramId->setVec3("color2", notifColor2);
-		notificationUIProgramId->setMat4("viewMatrix", viewMatrix);
 
 		glm::vec2 currentPosition = notifPosition;
-		for (size_t i = 0; i < notifHoldTimers.size(); i++)
+		for (int i = (int)notifHoldTimers.size() - 1; i >= 0; i--)
 		{
 			float& timer = notifHoldTimers[i];
 			std::string& message = notifMessages[i];
@@ -1651,18 +1651,28 @@ void RenderManager::renderUI()
 				scale = glm::pow(scale, 4.0f);
 			}
 
-			notificationUIProgramId->setFloat("fadeAlpha", 1.0f - scale);
+			notificationUIProgramId->setFloat("fadeAlpha", (1.0f - scale) * 0.5f);
 
-			const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(currentPosition + notifHidingOffset * scale, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(notifExtents, 1.0f));
+			const glm::vec3 translation(currentPosition + notifHidingOffset * scale, 0.0f);
+			const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation) * glm::scale(glm::mat4(1.0f), glm::vec3(notifExtents, 1.0f));
 			notificationUIProgramId->setMat4("modelMatrix", modelMatrix);
-			renderCube();
+			
+			notificationUIProgramId->use();
+			renderQuad();
 
-			currentPosition += notifAdvance;
-		}
+			TextRenderer tr =
+			{
+				message,
+				glm::translate(glm::mat4(1.0f), translation) * glm::scale(glm::mat4(1.0f), glm::vec3(notifMessageSize)),
+				notifColor2,
+				TextAlignment::CENTER,
+				TextAlignment::CENTER
+			};
+			renderText(tr);
 
-		// Delete stale messages
-		for (int i = (int)notifHoldTimers.size() - 1; i >= 0; i--)
-		{
+			currentPosition += notifAdvance * (1.0f - scale);
+
+			// Delete stale messages
 			if (notifHoldTimers[i] > notifAnimTime * 2.0f + notifHoldTime)
 			{
 				// DELETE!
@@ -1673,6 +1683,8 @@ void RenderManager::renderUI()
 
 		glDisable(GL_BLEND);
 	}
+
+	glDepthMask(GL_TRUE);
 }
 
 // TODO: REMEMBER THIS!!!!
@@ -2127,6 +2139,17 @@ void RenderManager::renderImGuiContents()
 			ImGui::ColorEdit3("StaminaBarColor2", &staminaBarColor2[0]);
 			ImGui::ColorEdit3("StaminaBarColor3", &staminaBarColor3[0]);
 			ImGui::DragFloat("StaminaDepletecolorIntensity", &staminaBarDepleteColorIntensity);
+
+			ImGui::Separator();
+			ImGui::DragFloat2("notifExtents", &notifExtents[0]);
+			ImGui::DragFloat2("notifPosition", &notifPosition[0]);
+			ImGui::DragFloat2("notifAdvance", &notifAdvance[0]);
+			ImGui::DragFloat2("notifHidingOffset", &notifHidingOffset[0]);
+			ImGui::ColorEdit3("notifColor1", &notifColor1[0]);
+			ImGui::ColorEdit3("notifColor2", &notifColor2[0]);
+			ImGui::DragFloat("notifMessageSize", &notifMessageSize);
+			ImGui::DragFloat("notifAnimTime", &notifAnimTime);
+			ImGui::DragFloat("notifHoldTime", &notifHoldTime);
 
 			ImGui::Separator();
 			ImGui::Text("Skybox properties");

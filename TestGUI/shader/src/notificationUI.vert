@@ -9,13 +9,19 @@ out vec2 fragLocalPosition;
 uniform float padding;
 uniform vec2 extents;
 
-
-uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+
+// Camera
+layout (std140, binding = 3) uniform CameraInformation
+{
+    mat4 cameraProjection;
+	mat4 cameraView;
+	mat4 cameraProjectionView;
+};
 
 void main()
 {
-	gl_Position = viewMatrix * modelMatrix * vec4(aPosition, 1.0);
+	gl_Position = cameraProjectionView * modelMatrix * vec4(aPosition, 1.0);
 	fragLocalPosition = aPosition.xy * (extents + vec2(padding));
 	texCoord = aTexCoords;
 }
