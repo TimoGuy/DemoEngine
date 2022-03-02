@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        0.12638115882873535,
-        -0.2470521777868271,
-        0.9607070088386536
+        -0.9049131870269775,
+        0.3803441822528839,
+        0.1909722089767456
     ],
     "level_editor_camera_pos": [
-        -77.44536590576172,
-        246.51832580566406,
-        -143.12669372558594
+        268.64520263671875,
+        -6183.91796875,
+        -276.9588928222656
     ],
     "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_challenge_6.hsfs"
 }

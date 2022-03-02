@@ -940,8 +940,10 @@ void RenderManager::render()
 			size_t id = (size_t)pixInfo.objectID;
 
 			mostRecentPickedIndex = (int)id - 1;
-			deselectAllSelectedObject();		@TODO: now you need to do the ctrl behavior, AND also fix scaling. Probs doing an average of that would be okay too. maybe? Or not...			MAYBE: you could just allow scaling to be done with single objects only.		OR!!!! Just not update the avg position variable when editing (isusing()) in the scaling mode.
 
+			if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+				!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+				deselectAllSelectedObject();
 			if (mostRecentPickedIndex >= 0)
 				addSelectObject((size_t)mostRecentPickedIndex);
 		}
@@ -2132,7 +2134,9 @@ void RenderManager::renderImGuiContents()
 						isSelected
 					))
 					{
-						deselectAllSelectedObject();		// @TODO: a bit of extra ctrl+click logic needed here yo....
+						if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+							!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+							deselectAllSelectedObject();
 						addSelectObject(n);
 					}
 
@@ -2165,7 +2169,9 @@ void RenderManager::renderImGuiContents()
 
 				if (newObject != nullptr)
 				{
-					deselectAllSelectedObject();
+					if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+						!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+						deselectAllSelectedObject();
 					addSelectObject(MainLoop::getInstance().objects.size() - 1);
 				}
 
@@ -2471,12 +2477,23 @@ void RenderManager::renderImGuiContents()
 
 		glm::vec3 averagePosition(0.0f);
 		glm::quat latestOrientation;
-		for (size_t i = 0; i < objs.size(); i++)
+		if (transOperation == ImGuizmo::OPERATION::SCALE && ImGuizmo::IsUsing())
 		{
-			averagePosition += PhysicsUtils::getPosition(objs[i]->getTransform());
-			latestOrientation = PhysicsUtils::getRotation(objs[i]->getTransform());
+			// Okay, I thought that this would be the fix for scale... but it's now just super buggy hahahaha
+			// I don't really care about scale, so we can keep it like this
+			//   -Timo
+			averagePosition = INTERNALselectionSystemAveragePosition;
+			latestOrientation = INTERNALselectionSystemLatestOrientation;
 		}
-		averagePosition /= (float)objs.size();
+		else
+		{
+			for (size_t i = 0; i < objs.size(); i++)
+			{
+				averagePosition += PhysicsUtils::getPosition(objs[i]->getTransform());
+				latestOrientation = PhysicsUtils::getRotation(objs[i]->getTransform());
+			}
+			averagePosition /= (float)objs.size();
+		}
 
 		glm::mat4 tempTrans = glm::translate(glm::mat4(1.0f), averagePosition) * glm::toMat4(latestOrientation);
 		glm::mat4 deltaMatrix;
