@@ -99,7 +99,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	}
 
 #ifdef _DEVELOP
-	MainLoop::getInstance().renderManager->currentSelectedObjectIndex = -1;
+	MainLoop::getInstance().renderManager->deselectAllSelectedObject();
 #endif
 
 	std::cout << "::Opening:: \"" << fname << "\" ..." << std::endl;

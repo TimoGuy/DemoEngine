@@ -577,10 +577,7 @@ void VoxelGroup::preRenderUpdate()
 		return;
 
 	// If current selected object is me
-	int currentObjIndex = MainLoop::getInstance().renderManager->currentSelectedObjectIndex;
-	if (currentObjIndex < 0 ||
-		currentObjIndex >= MainLoop::getInstance().objects.size() ||
-		MainLoop::getInstance().objects[currentObjIndex] != this)
+	if (MainLoop::getInstance().renderManager->isObjectSelected(this))
 		return;
 
 	// MODE: 0: normal. 1: appending a bunch of voxels

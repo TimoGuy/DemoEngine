@@ -7,7 +7,6 @@
 #include <random>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
@@ -334,6 +333,60 @@ void RenderManager::recreateRenderBuffers()
 	destroyPickingBuffer();
 	createPickingBuffer();
 #endif
+}
+
+std::vector<BaseObject*> RenderManager::getSelectedObjects()
+{
+	std::vector<BaseObject*> objs;
+
+	for (size_t i = 0; i < selectedObjectIndices.size(); i++)
+	{
+		size_t selectedIndex = selectedObjectIndices[i];
+		if (selectedIndex >= MainLoop::getInstance().objects.size())
+			continue;
+
+		objs.push_back(MainLoop::getInstance().objects[selectedIndex]);
+	}
+
+	return objs;
+}
+
+bool RenderManager::isObjectSelected(size_t index)
+{
+	return (std::find(selectedObjectIndices.begin(), selectedObjectIndices.end(), index) != selectedObjectIndices.end());
+}
+
+bool RenderManager::isObjectSelected(BaseObject* obj)
+{
+	// @NOTE: this is very inefficient, but it's only used in the voxelgroup class in the level editor, so yeah. It should be okay eh.
+	for (size_t i = 0; i < MainLoop::getInstance().objects.size(); i++)
+	{
+		if (MainLoop::getInstance().objects[i] == obj)
+			return true;
+	}
+
+	return false;
+}
+
+void RenderManager::addSelectObject(size_t index)
+{
+	if (!isObjectSelected(index))
+		selectedObjectIndices.push_back(index);
+}
+
+void RenderManager::deselectAllSelectedObject()
+{
+	selectedObjectIndices.clear();
+}
+
+void RenderManager::deleteAllSelectedObjects()
+{
+	std::vector<BaseObject*> objs = getSelectedObjects();
+	for (size_t i = 0; i < objs.size(); i++)
+	{
+		delete objs[i];
+	}
+	deselectAllSelectedObject();
 }
 
 #ifdef _DEVELOP
@@ -856,6 +909,8 @@ void RenderManager::render()
 	{
 		if (!MainLoop::getInstance().playMode)		// NOTE: no reason in particular for making this !playmode only
 		{
+			static int mostRecentPickedIndex = -1;
+
 			// Render out picking data
 			glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 			glBindFramebuffer(GL_FRAMEBUFFER, pickingFBO);
@@ -865,7 +920,7 @@ void RenderManager::render()
 			pickingRenderFormatShader->use();
 			for (uint32_t i = 0; i < (uint32_t)MainLoop::getInstance().objects.size(); i++)
 			{
-				if (i == (uint32_t)currentSelectedObjectIndex)
+				if (i == (uint32_t)mostRecentPickedIndex)
 					continue;
 
 				RenderComponent* rc = MainLoop::getInstance().objects[i]->getRenderComponent();
@@ -883,7 +938,12 @@ void RenderManager::render()
 			glfwGetCursorPos(MainLoop::getInstance().window, &mouseX, &mouseY);
 			PixelInfo pixInfo = readPixelFromPickingBuffer((uint32_t)mouseX, (uint32_t)(MainLoop::getInstance().camera.height - mouseY - 1));
 			size_t id = (size_t)pixInfo.objectID;
-			currentSelectedObjectIndex = (int)id - 1;
+
+			mostRecentPickedIndex = (int)id - 1;
+			deselectAllSelectedObject();		@TODO: now you need to do the ctrl behavior, AND also fix scaling. Probs doing an average of that would be okay too. maybe? Or not...			MAYBE: you could just allow scaling to be done with single objects only.		OR!!!! Just not update the avg position variable when editing (isusing()) in the scaling mode.
+
+			if (mostRecentPickedIndex >= 0)
+				addSelectObject((size_t)mostRecentPickedIndex);
 		}
 
 		// Unset flag
@@ -969,49 +1029,54 @@ void RenderManager::render()
 	// @Debug: Render wireframe of selected object
 	//
 	static float selectedColorIntensityTime = -1.15f;
-	static int previousSelectedObjInd = -1;
+	static size_t prevNumSelectedObjs = 0;
 	if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE &&		// @NOTE: when pressing shift, this is the start to doing group append for voxel groups, so in the even that this happens, now the creator can see better by not rendering the wireframe (I believe)
 		!MainLoop::getInstance().playMode)														// @NOTE: don't render the wireframe if in playmode. It's annoying.
 	{
-		if (previousSelectedObjInd != currentSelectedObjectIndex)
+		if (prevNumSelectedObjs != selectedObjectIndices.size())
 		{
 			// Reset @Copypasta
-			previousSelectedObjInd = currentSelectedObjectIndex;
+			prevNumSelectedObjs = selectedObjectIndices.size();
 			selectedColorIntensityTime = -1.15f;
 		}
 
-		if (currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+		auto objs = getSelectedObjects();
+		if (!objs.empty())
 		{
-			RenderComponent* rc = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getRenderComponent();
-			if (rc != nullptr)
+			// Render that selected objects!!!!
+			Shader* selectionWireframeShader =
+				(Shader*)Resources::getResource("shader;selectionSkinnedWireframe");
+			selectionWireframeShader->use();
+
+			glDepthMask(GL_FALSE);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			{
-				// Render that selected object!!!!
-				glDepthMask(GL_FALSE);
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+				glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+
+				for (size_t i = 0; i < objs.size(); i++)
 				{
-					glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-					glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
-
-					float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
-					//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
-					Shader* selectionWireframeShader =
-						(Shader*)Resources::getResource("shader;selectionSkinnedWireframe");
-					selectionWireframeShader->use();
-					selectionWireframeShader->setVec4("color", { 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f) });
-					selectionWireframeShader->setFloat("colorIntensity", evaluatedIntensityValue);
-					rc->renderShadow(selectionWireframeShader);
+					RenderComponent* rc = objs[i]->getRenderComponent();
+					if (rc != nullptr)
+					{
+						float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
+						//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
+						selectionWireframeShader->setVec4("color", { 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f) });
+						selectionWireframeShader->setFloat("colorIntensity", evaluatedIntensityValue);
+						rc->renderShadow(selectionWireframeShader);
+					}
 				}
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				glDepthMask(GL_TRUE);
-
-				selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 4.0f;
 			}
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDepthMask(GL_TRUE);
+
+			selectedColorIntensityTime += MainLoop::getInstance().deltaTime * 4.0f;
 		}
 	}
 	else
 	{
 		// Reset @Copypasta
-		previousSelectedObjInd = currentSelectedObjectIndex;
+		prevNumSelectedObjs = selectedObjectIndices.size();
 		selectedColorIntensityTime = -1.15f;
 	}
 #endif
@@ -1413,7 +1478,7 @@ void RenderManager::renderScene()
 	//
 	static bool imguizmoIsUsingPrevious = false;
 
-	if (ImGuizmo::IsUsing() && currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+	if (ImGuizmo::IsUsing() && !selectedObjectIndices.empty())
 	{
 		static bool showXGrid = false;
 		static bool showYGrid = false;
@@ -1474,10 +1539,8 @@ void RenderManager::renderScene()
 		//
 		// Draw the grids!!!
 		//
-		const glm::vec3 positionVector = PhysicsUtils::getPosition(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform());
-
-		glm::mat4 position = glm::translate(glm::mat4(1.0f), positionVector);
-		glm::mat4 rotation = glm::toMat4(PhysicsUtils::getRotation(MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()));
+		glm::mat4 position = glm::translate(glm::mat4(1.0f), INTERNALselectionSystemAveragePosition);
+		glm::mat4 rotation = glm::toMat4(INTERNALselectionSystemLatestOrientation);
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), { 100, 100, 100 });
 		constexpr float divisor = 4.0f;
 		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
@@ -1796,20 +1859,31 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 
 				ImGui::Separator();
-				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
+				auto objs = getSelectedObjects();
+				if (ImGui::MenuItem("Duplicate", "CTRL+D", false, !objs.empty()))
 				{
 					// NOTE: copypasta
-					nlohmann::json j = MainLoop::getInstance().objects[currentSelectedObjectIndex]->savePropertiesToJson();
-					j["baseObject"].erase("guid");
-					FileLoading::getInstance().createObjectWithJson(j);
+					for (size_t i = 0; i < objs.size(); i++)
+					{
+						nlohmann::json j = objs[i]->savePropertiesToJson();
+						j["baseObject"].erase("guid");
+						FileLoading::getInstance().createObjectWithJson(j);
+					}
 
-					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
+					if (objs.size() == 1)
+					{
+						// Select the last object if there's only one obj selected.
+						deselectAllSelectedObject();
+						addSelectObject(MainLoop::getInstance().objects.size() - 1);
+					}
+					else
+						// If there's a group selection, then just deselect everything. It's kinda a hassle to try to select everything i think.
+						deselectAllSelectedObject();
 				}
-				if (ImGui::MenuItem("Delete", "SHIFT+Del", false, currentSelectedObjectIndex >= 0 && currentSelectedObjectIndex < MainLoop::getInstance().objects.size()))
+				if (ImGui::MenuItem("Delete", "SHIFT+Del", false, !objs.empty()))
 				{
 					// NOTE: This is copypasta
-					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
-					currentSelectedObjectIndex = -1;
+					deleteAllSelectedObjects();
 				}
 
 				ImGui::EndMenu();
@@ -1988,8 +2062,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
 
 			GLFWwindow* windowRef = MainLoop::getInstance().window;
-			if (currentSelectedObjectIndex >= 0 &&
-				currentSelectedObjectIndex < MainLoop::getInstance().objects.size() &&
+			auto objs = getSelectedObjects();
+			if (!objs.empty() &&
 				!ImGuizmo::IsUsing() &&
 				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 			{
@@ -2007,9 +2081,7 @@ void RenderManager::renderImGuiContents()
 				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_SHIFT)) &&
 					glfwGetKey(windowRef, GLFW_KEY_DELETE))
 				{
-					// NOTE: This is copypasta
-					delete MainLoop::getInstance().objects[currentSelectedObjectIndex];
-					currentSelectedObjectIndex = -1;
+					deleteAllSelectedObjects();
 				}
 
 				//
@@ -2024,11 +2096,22 @@ void RenderManager::renderImGuiContents()
 							objectDupeKeyboardShortcutLock = true;
 
 							// NOTE: copypasta
-							nlohmann::json j = MainLoop::getInstance().objects[currentSelectedObjectIndex]->savePropertiesToJson();
-							j["baseObject"].erase("guid");
-							FileLoading::getInstance().createObjectWithJson(j);
+							for (size_t i = 0; i < objs.size(); i++)
+							{
+								nlohmann::json j = objs[i]->savePropertiesToJson();
+								j["baseObject"].erase("guid");
+								FileLoading::getInstance().createObjectWithJson(j);
+							}
 
-							currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
+							if (objs.size() == 1)
+							{
+								// Select the last object if there's only one obj selected.
+								deselectAllSelectedObject();
+								addSelectObject(MainLoop::getInstance().objects.size() - 1);
+							}
+							else
+								// If there's a group selection, then just deselect everything. It's kinda a hassle to try to select everything i think.
+								deselectAllSelectedObject();
 						}
 					}
 					else
@@ -2041,14 +2124,17 @@ void RenderManager::renderImGuiContents()
 				//
 				// Display all of the objects in the scene
 				//
-				for (int n = 0; n < MainLoop::getInstance().objects.size(); n++)
+				for (size_t n = 0; n < MainLoop::getInstance().objects.size(); n++)
 				{
-					const bool isSelected = (currentSelectedObjectIndex == n);
+					const bool isSelected = isObjectSelected(n);
 					if (ImGui::Selectable(
 						(MainLoop::getInstance().objects[n]->name + "##" + MainLoop::getInstance().objects[n]->guid).c_str(),
 						isSelected
 					))
-						currentSelectedObjectIndex = n;
+					{
+						deselectAllSelectedObject();		// @TODO: a bit of extra ctrl+click logic needed here yo....
+						addSelectObject(n);
+					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 					if (isSelected)
@@ -2078,7 +2164,10 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::Selectable("Spline Tool"))				newObject = new Spline();
 
 				if (newObject != nullptr)
-					currentSelectedObjectIndex = (int)MainLoop::getInstance().objects.size() - 1;
+				{
+					deselectAllSelectedObject();
+					addSelectObject(MainLoop::getInstance().objects.size() - 1);
+				}
 
 				ImGui::EndPopup();
 			}
@@ -2181,13 +2270,14 @@ void RenderManager::renderImGuiContents()
 	//
 	ImGui::Begin("Selected Object Properties");
 	{
-		if (currentSelectedObjectIndex >= 0 &&
-			currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+		auto objs = getSelectedObjects();
+		if (objs.size() == 1)
 		{
+			BaseObject* obj = objs[0];
+
 			//
 			// Property panel stuff that's the same with all objects
 			//
-			BaseObject* obj = MainLoop::getInstance().objects[currentSelectedObjectIndex];
 			ImGui::Text((obj->name + " -- Properties").c_str());
 			ImGui::Text(("GUID: " + obj->guid).c_str());
 			ImGui::Separator();
@@ -2207,6 +2297,10 @@ void RenderManager::renderImGuiContents()
 
 			// Other property panel stuff
 			obj->imguiPropertyPanel();
+		}
+		else if (objs.size() > 1)
+		{
+			ImGui::Text("Multiple objects are currently selected");
 		}
 		else
 		{
@@ -2345,8 +2439,8 @@ void RenderManager::renderImGuiContents()
 	ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
 	ImVec2 work_size = viewport->WorkSize;
 
-	if (currentSelectedObjectIndex >= 0 &&
-		currentSelectedObjectIndex < MainLoop::getInstance().objects.size())
+	auto objs = getSelectedObjects();
+	if (!objs.empty() && !MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
 	{
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
 		ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
@@ -2375,38 +2469,39 @@ void RenderManager::renderImGuiContents()
 		}
 		glm::vec3 snapValues(snapAmount);
 
-		if (!MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
+		glm::vec3 averagePosition(0.0f);
+		glm::quat latestOrientation;
+		for (size_t i = 0; i < objs.size(); i++)
 		{
-			glm::mat4 transformCopy = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
-			glm::mat4 deltaMatrix;
-			bool changed =
-				ImGuizmo::Manipulate(
-					glm::value_ptr(cameraInfo.view),
-					glm::value_ptr(cameraInfo.projection),
-					transOperation,
-					transMode,
-					glm::value_ptr(transformCopy),
-					glm::value_ptr(deltaMatrix),
-					&snapValues.x
-				);
+			averagePosition += PhysicsUtils::getPosition(objs[i]->getTransform());
+			latestOrientation = PhysicsUtils::getRotation(objs[i]->getTransform());
+		}
+		averagePosition /= (float)objs.size();
 
-			if (changed)
-			{
-				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(
-					deltaMatrix * MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()
-				);
+		glm::mat4 tempTrans = glm::translate(glm::mat4(1.0f), averagePosition) * glm::toMat4(latestOrientation);
+		glm::mat4 deltaMatrix;
+		bool changed =
+			ImGuizmo::Manipulate(
+				glm::value_ptr(cameraInfo.view),
+				glm::value_ptr(cameraInfo.projection),
+				transOperation,
+				transMode,
+				glm::value_ptr(tempTrans),
+				glm::value_ptr(deltaMatrix),
+				&snapValues.x
+			);
 
-				//for (int i = 0; i < 4; i++)
-				//{
-				//	for (int j = 0; j < 4; j++)
-				//		std::cout << " " << deltaMatrix[i][j];
-				//	std::cout << std::endl;
-				//}
-			}
+		if (changed)
+		{
+			for (size_t i = 0; i < objs.size(); i++)
+				objs[i]->setTransform(deltaMatrix * objs[i]->getTransform());
+
+			INTERNALselectionSystemAveragePosition = averagePosition;
+			INTERNALselectionSystemLatestOrientation = latestOrientation;
 		}
 
-		tempDisableImGuizmoManipulateForOneFrame = false;
 	}
+	tempDisableImGuizmoManipulateForOneFrame = false;
 
 	ImGuizmo::ViewManipulate(glm::value_ptr(cameraInfo.view), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }

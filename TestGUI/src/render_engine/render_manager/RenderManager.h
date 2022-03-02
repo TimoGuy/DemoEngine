@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -128,7 +129,16 @@ public:
 	void recreateRenderBuffers();
 
 #ifdef _DEVELOP
-	int currentSelectedObjectIndex = -1;
+	std::vector<size_t> selectedObjectIndices;
+	std::vector<BaseObject*> getSelectedObjects();
+	bool isObjectSelected(size_t index);
+	bool isObjectSelected(BaseObject* obj);
+	void addSelectObject(size_t index);
+	void deselectAllSelectedObject();
+	void deleteAllSelectedObjects();
+	glm::vec3 INTERNALselectionSystemAveragePosition;
+	glm::quat INTERNALselectionSystemLatestOrientation;
+
 	bool tempDisableImGuizmoManipulateForOneFrame = false;
 #endif
 
