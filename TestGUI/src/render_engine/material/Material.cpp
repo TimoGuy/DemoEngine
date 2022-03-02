@@ -87,7 +87,7 @@ LvlGridMaterial::LvlGridMaterial(glm::vec3 color) :
 	Material((Shader*)Resources::getResource("shader;lvlGrid"), 1.0f, 0.0f, true)
 {
 	LvlGridMaterial::color = color;
-	LvlGridMaterial::tilingAndOffset = glm::vec4(50, 50, 0, 0);
+	LvlGridMaterial::tilingAndOffset = glm::vec4(25, 25, 0, 0);
 }
 
 void LvlGridMaterial::applyTextureUniforms(nlohmann::json injection)

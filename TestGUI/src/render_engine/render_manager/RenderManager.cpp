@@ -789,11 +789,7 @@ void RenderManager::destroyFonts()
 void RenderManager::render()
 {
 #ifdef _DEVELOP
-	renderImGuiPass();
-
-	//
 	// @Debug: reload shaders
-	//
 	createShaderPrograms();
 #endif
 
@@ -834,6 +830,10 @@ void RenderManager::render()
 		glm::mat4 cameraView = MainLoop::getInstance().camera.calculateViewMatrix();
 		updateCameraInfoUBO(cameraProjection, cameraView);
 	}
+
+#ifdef _DEVELOP
+	renderImGuiPass();
+#endif
 
 	//
 	// Render shadow map(s) to depth framebuffer(s)
@@ -964,9 +964,6 @@ void RenderManager::render()
 	glDispatchCompute(1, 1, 1);
 	//glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);		// See this later
 
-	// Render ui
-	renderUI();
-
 #ifdef _DEVELOP
 	//
 	// @Debug: Render wireframe of selected object
@@ -992,6 +989,9 @@ void RenderManager::render()
 				glDepthMask(GL_FALSE);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 				{
+					glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+					glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+
 					float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
 					//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
 					Shader* selectionWireframeShader =
@@ -1015,6 +1015,13 @@ void RenderManager::render()
 		selectedColorIntensityTime = -1.15f;
 	}
 #endif
+
+	//
+	// Render ui
+	// @NOTE: the cameraUBO changes from the normal world space camera to the UI space camera mat4's.
+	// @NOTE: this change does not effect the post processing. Simply just the renderUI contents.
+	//
+	renderUI();
 
 	//
 	// Do bloom: breakdown-preprocessing
@@ -1477,7 +1484,6 @@ void RenderManager::renderScene()
 
 		if (showZGrid)
 		{
-			gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.y / divisor });
 			gridMaterial->setColor(glm::vec3(0.1, 0.1, 1) * 5);
 			gridMaterial->applyTextureUniforms();
 			gridMaterial->getShader()->setMat4("modelMatrix", position * rotation * scale);
@@ -1486,7 +1492,6 @@ void RenderManager::renderScene()
 
 		if (showYGrid)
 		{
-			gridMaterial->setTilingAndOffset({ 50, 50, positionVector.x / divisor, positionVector.z / divisor });
 			gridMaterial->setColor(glm::vec3(0.1, 1, 0.1) * 5);
 			gridMaterial->applyTextureUniforms();
 			glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
@@ -1496,7 +1501,6 @@ void RenderManager::renderScene()
 
 		if (showXGrid)
 		{
-			gridMaterial->setTilingAndOffset({ 50, 50, -positionVector.z / divisor, positionVector.y / divisor });
 			gridMaterial->setColor(glm::vec3(1, 0.1, 0.1) * 5);
 			gridMaterial->applyTextureUniforms();
 			glm::mat4 zRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 90, 0))));
@@ -2374,6 +2378,7 @@ void RenderManager::renderImGuiContents()
 		if (!MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
 		{
 			glm::mat4 transformCopy = MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform();
+			glm::mat4 deltaMatrix;
 			bool changed =
 				ImGuizmo::Manipulate(
 					glm::value_ptr(cameraInfo.view),
@@ -2381,13 +2386,22 @@ void RenderManager::renderImGuiContents()
 					transOperation,
 					transMode,
 					glm::value_ptr(transformCopy),
-					NULL,
+					glm::value_ptr(deltaMatrix),
 					&snapValues.x
 				);
 
 			if (changed)
 			{
-				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(transformCopy);
+				MainLoop::getInstance().objects[currentSelectedObjectIndex]->setTransform(
+					deltaMatrix * MainLoop::getInstance().objects[currentSelectedObjectIndex]->getTransform()
+				);
+
+				//for (int i = 0; i < 4; i++)
+				//{
+				//	for (int j = 0; j < 4; j++)
+				//		std::cout << " " << deltaMatrix[i][j];
+				//	std::cout << std::endl;
+				//}
 			}
 		}
 

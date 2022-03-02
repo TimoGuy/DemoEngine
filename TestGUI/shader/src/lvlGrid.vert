@@ -17,6 +17,6 @@ uniform mat4 modelMatrix;
 
 void main()
 {
-	texCoord = uvCoordinate;
+	texCoord = (mat3(inverse(modelMatrix)) * vec3(modelMatrix * vec4(vertexPosition, 1.0))).xy;
 	gl_Position = cameraProjectionView * modelMatrix * vec4(vertexPosition, 1.0);
 }
