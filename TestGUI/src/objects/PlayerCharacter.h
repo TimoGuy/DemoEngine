@@ -31,6 +31,21 @@ private:
 };
 
 
+enum class PlayerState
+{
+	NORMAL, WALL_CLIMB_HUMAN
+};
+
+
+struct PlayerState_WallClimbHuman_Data
+{
+	bool canEnterIntoState = true;
+	float climbTime = 0.5f;
+	float climbTimer = 0.0f;
+	float climbVelocityY = 1.0f;
+};
+
+
 class PlayerPhysics : public PhysicsComponent, public physx::PxUserControllerHitReport, public physx::PxControllerBehaviorCallback
 {
 public:
@@ -171,6 +186,9 @@ private:
 	void processMovement();
 	physx::PxVec3 processGroundedMovement(const glm::vec2& movementVector);
 	physx::PxVec3 processAirMovement(const glm::vec2& movementVector);
+
+	PlayerState playerState = PlayerState::NORMAL;
+	PlayerState_WallClimbHuman_Data ps_wallClimbHumanData;
 
 	void processActions();
 

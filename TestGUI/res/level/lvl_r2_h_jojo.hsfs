@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    0.719969630241394,
-                    7.350000858306885,
-                    -0.6966516375541687
+                    -11.513814926147461,
+                    15.34999942779541,
+                    5.035587310791016
                 ],
                 "rotation": [
                     0.0,
@@ -150,7 +150,7 @@
                 0.0
             ],
             "type": "voxel_group",
-            "voxel_bit_field": "16:1;",
+            "voxel_bit_field": "8:0;4:1;8:0;4:1;8:0;16:1;",
             "voxel_group_color": [
                 1.0,
                 1.0,
@@ -158,13 +158,68 @@
             ],
             "voxel_group_offset": [
                 2,
-                0,
+                2,
                 2
             ],
             "voxel_group_size": [
                 4,
-                1,
+                3,
                 4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "89c4839ee963ac841da163caa5d40d18226a160695d4a0a0333ecc58e84ebaf1",
+                "name": "Voxel Group (platform)",
+                "position": [
+                    -53.7411003112793,
+                    32.13703536987305,
+                    -10.267229080200195
+                ],
+                "rotation": [
+                    0.0,
+                    -45.0197868347168,
+                    0.0
+                ],
+                "scale": [
+                    0.9999998211860657,
+                    1.0,
+                    0.9999998211860657
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "45:0;4:1;45:0;4:1;45:0;53:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                6,
+                5
+            ],
+            "voxel_group_size": [
+                4,
+                7,
+                7
             ],
             "voxel_render_size": 4.0
         }

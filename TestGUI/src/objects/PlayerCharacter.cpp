@@ -773,56 +773,96 @@ void PlayerCharacter::processMovement()
 	isMoving = false;
 
 	physx::PxVec3 velocity(0.0f);
-	if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() && !((PlayerPhysics*)getPhysicsComponent())->getIsSliding())		// @TODO: for some reason sliding and trying to jump doesn't work... why???
+
+	//
+	// @SPECIAL_SKILL: Normal
+	//
+	if (playerState == PlayerState::NORMAL)
 	{
-		velocity = processGroundedMovement(movementVector);
-		jumpCoyoteTimer = jumpCoyoteTime;
-	}
-	else
-	{
-		velocity = processAirMovement(movementVector);
-		jumpCoyoteTimer -= MainLoop::getInstance().deltaTime;
-	}
-
-	// Poll input for the jump (include debounce input)
-	jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
-	static bool prevJumpPressed = false;
-	if (!prevJumpPressed && InputManager::getInstance().jumpPressed)
-		jumpInputDebounceTimer = jumpInputDebounceTime;
-	prevJumpPressed = InputManager::getInstance().jumpPressed;
-
-	// Update number of jumps performed
-	human_numJumpsCurrent = (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() || jumpCoyoteTimer > 0.0f) ? 0 : glm::max(1, human_numJumpsCurrent);
-
-	// Jump (but not if sliding)
-	const bool jumpInput =				(!lockJumping && jumpInputDebounceTimer > 0.0f);
-	const bool canJumpGrounded =		(jumpInput && jumpCoyoteTimer > 0.0f);
-	const bool human_canJumpAirbourne = (jumpInput && GameState::getInstance().currentTransformation == Transformation::HUMAN && human_numJumpsCurrent < GameState::getInstance().human_numJumps);
-	if (canJumpGrounded || human_canJumpAirbourne)
-	{
-		jumpInputDebounceTimer = -1.0f;
-		jumpCoyoteTimer = -1.0f;
-		velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
-		GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
-		((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
-		((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
-		triggerAnimationStateReset = true;
-
-		// Human Jump
-		human_numJumpsCurrent++;
-		if (human_canJumpAirbourne && glm::length2(movementVector) > 0.1f)
+		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() &&
+			!((PlayerPhysics*)getPhysicsComponent())->getIsSliding())		// @TODO: for some reason sliding and trying to jump doesn't work... why???
 		{
-			// glm::vec2 flatVelocity(velocity.x, velocity.z);
-			glm::vec2 flatVelocity = glm::normalize(movementVector) * runSpeed;  // glm::length(flatVelocity);
-			velocity.x = flatVelocity.x;
-			velocity.z = flatVelocity.y;
-
-			facingDirection = movementVector;
+			velocity = processGroundedMovement(movementVector);
 		}
+		else
+		{
+			velocity = processAirMovement(movementVector);
+		}
+
+		// Poll input for the jump (include debounce input)
+		jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
+		static bool prevJumpPressed = false;
+		if (!prevJumpPressed && InputManager::getInstance().jumpPressed)
+			jumpInputDebounceTimer = jumpInputDebounceTime;
+		prevJumpPressed = InputManager::getInstance().jumpPressed;
+
+		// Update number of jumps performed
+		human_numJumpsCurrent = (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() || jumpCoyoteTimer > 0.0f) ? 0 : glm::max(1, human_numJumpsCurrent);
+
+		// Jump (but not if sliding)
+		const bool jumpInput =				(!lockJumping && jumpInputDebounceTimer > 0.0f);
+		const bool canJumpGrounded =		(jumpInput && jumpCoyoteTimer > 0.0f);
+		const bool human_canJumpAirbourne = (jumpInput && GameState::getInstance().currentTransformation == Transformation::HUMAN && human_numJumpsCurrent < GameState::getInstance().human_numJumps);
+		if (canJumpGrounded || human_canJumpAirbourne)
+		{
+			jumpInputDebounceTimer = -1.0f;
+			jumpCoyoteTimer = -1.0f;
+			velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
+			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
+			((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
+			((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
+			triggerAnimationStateReset = true;
+
+			//
+			// @SPECIAL_SKILL: @HUMAN: Human midair Jump
+			//
+			human_numJumpsCurrent++;
+			if (human_canJumpAirbourne && glm::length2(movementVector) > 0.1f)
+			{
+				glm::vec2 flatVelocity = glm::normalize(movementVector) * runSpeed;
+				velocity.x = flatVelocity.x;
+				velocity.z = flatVelocity.y;
+
+				facingDirection = movementVector;
+			}
+		}
+
+		if (isMoving)
+			GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
 	}
 
-	if (isMoving)
-		GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
+	//
+	// @SPECIAL_SKILL: @HUMAN: Wall climb
+	//
+	else if (playerState == PlayerState::WALL_CLIMB_HUMAN)
+	{
+		if (ps_wallClimbHumanData.climbTimer > 0.0f)
+			velocity = physx::PxVec3(0, ps_wallClimbHumanData.climbVelocityY, 0);
+		else
+			velocity = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+
+		//
+		// See if should revert to normal playerstate
+		// @Copypasta
+		//
+		const float radiusWithPadding = ((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + 0.1f;
+		const float raycastDistance = glm::sqrt(2.0f * radiusWithPadding * radiusWithPadding);		// This is supposed to be 45 degrees... so the algorithm is pythagoren's theorem. sqrt(x^2 + x^2)
+		physx::PxRaycastBuffer hitInfo;
+		bool hit = PhysicsUtils::raycast(getPhysicsComponent()->getGlobalPose().p, physx::PxVec3(facingDirection.x, 0.0f, facingDirection.y), raycastDistance, hitInfo) && hitInfo.hasBlock;
+		if (hit && velocity.y > 0.0f)
+		{
+			glm::vec3 flatNormal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+			flatNormal.y = 0.0f;
+			flatNormal = glm::normalize(flatNormal);
+
+			facingDirection.x = -flatNormal.x;
+			facingDirection.y = -flatNormal.z;
+		}
+		else
+			playerState = PlayerState::NORMAL;		// Return back to normal when gravity takes its toll or if there's no more wall to climb up (raycast fails)
+
+		ps_wallClimbHumanData.climbTimer -= MainLoop::getInstance().deltaTime;
+	}
 
 	characterLeanValue = PhysicsUtils::lerp(
 		characterLeanValue,
@@ -857,7 +897,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	if (movementVectorLength > 0.001f)
 	{
 		isMoving = true;
-		//movementVectorLength = 0.5f * movementVectorLength + 0.5f;		// NOTE: having 0.0006f as a movement vector length is too slow
 
 		//
 		// Update facing direction
@@ -873,7 +912,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			if (flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
 			{
 				facingDirection = movementVector;
-				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity   //0;
+				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
 			}
 			// Immediate facing direction when moving slowly:
 			else if (flatVelocityMagnitude <= immediateTurningRequiredSpeed)
@@ -890,7 +929,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
 				float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - runSpeed) * (flatVelocityMagnitude - runSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
-				//std::cout << "FACTSC: \t\t\t\t" << facingTurnSpeedCalculated << std::endl;
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeedCalculated * MainLoop::getInstance().deltaTime));
 
 				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
@@ -919,15 +957,12 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	//
 	float targetRunningSpeed = movementVectorLength * runSpeed;
 
-	//std::cout << (currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? "00000\t\t" : "11111\t\t") << currentRunSpeed;
-
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
 		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
-	//std::cout << "\t\t" << currentRunSpeed << std::endl;
 
 	//
 	// Apply the maths onto the actual velocity vector now!
@@ -953,8 +988,13 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	else
 		velocity.y = ((PlayerPhysics*)getPhysicsComponent())->velocity.y;
 
+	// Reset coyote time timer
+	jumpCoyoteTimer = jumpCoyoteTime;
+	ps_wallClimbHumanData.canEnterIntoState = true;		// Reset wallclimb since touched ground
+
 	return physx::PxVec3(velocity.x, velocity.y, velocity.z);
 }
+
 
 physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVector)
 {
@@ -973,6 +1013,33 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
 
 		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+
+		//
+		// @SPECIAL_SKILL: @HUMAN: Wall climb
+		//
+		if (GameState::getInstance().currentTransformation == Transformation::HUMAN &&
+			((PlayerPhysics*)getPhysicsComponent())->velocity.y < 0.0f &&
+			ps_wallClimbHumanData.canEnterIntoState)
+		{
+			// @copypasta
+			const float radiusWithPadding = ((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + 0.1f;
+			const float raycastDistance = glm::sqrt(2.0f * radiusWithPadding * radiusWithPadding);		// This is supposed to be 45 degrees... so the algorithm is pythagoren's theorem. sqrt(x^2 + x^2)
+			physx::PxRaycastBuffer hitInfo;
+			bool hit = PhysicsUtils::raycast(getPhysicsComponent()->getGlobalPose().p, physx::PxVec3(facingDirection.x, 0.0f, facingDirection.y), raycastDistance, hitInfo) && hitInfo.hasBlock;
+			if (hit)
+			{
+				glm::vec3 flatNormal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+				flatNormal.y = 0.0f;
+				flatNormal = glm::normalize(flatNormal);
+
+				facingDirection.x = -flatNormal.x;
+				facingDirection.y = -flatNormal.z;
+
+				ps_wallClimbHumanData.canEnterIntoState = false;
+				ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
+				playerState = PlayerState::WALL_CLIMB_HUMAN;
+			}
+		}
 	}
 
 	//
@@ -985,6 +1052,9 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	currentFlatVelocity = PhysicsUtils::moveTowardsVec2(currentFlatVelocity, targetFlatVelocity, airAcceleration * MainLoop::getInstance().deltaTime);
 	currentVelocity.x = currentFlatVelocity.x;
 	currentVelocity.z = currentFlatVelocity.y;
+
+	// Deplete coyote time timer
+	jumpCoyoteTimer -= MainLoop::getInstance().deltaTime;
 
 	return currentVelocity;
 }
