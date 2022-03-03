@@ -2140,6 +2140,7 @@ void RenderManager::renderImGuiContents()
 				//
 				// Display all of the objects in the scene
 				//
+				int shiftSelectRequest[] = { -1, -1 };
 				for (size_t n = 0; n < MainLoop::getInstance().objects.size(); n++)
 				{
 					const bool isSelected = isObjectSelected(n);
@@ -2148,21 +2149,43 @@ void RenderManager::renderImGuiContents()
 						isSelected
 					))
 					{
-						if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
-							!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
-							deselectAllSelectedObject();
+						bool isShiftHeld =
+							glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) ||
+							glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT);
 
-						if (isObjectSelected(n))
-							deselectObject(n);
+						if (isShiftHeld)
+						{
+							if (!isSelected && !selectedObjectIndices.empty())
+							{
+								shiftSelectRequest[0] = glm::min((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
+								shiftSelectRequest[1] = glm::max((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
+							}
+						}
 						else
-							addSelectObject(n);
+						{
+							if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+								!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+								deselectAllSelectedObject();
+
+							if (isObjectSelected(n))
+								deselectObject(n);
+							else
+								addSelectObject(n);
+						}
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					//if (isSelected)
-					//	ImGui::SetItemDefaultFocus();
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndListBox();
+
+				//
+				// Finally Execute SHIFT+click group selection
+				//
+				if (shiftSelectRequest[0] >= 0 && shiftSelectRequest[1] >= 0)
+					for (size_t n = (size_t)shiftSelectRequest[0]; n <= (size_t)shiftSelectRequest[1]; n++)
+						addSelectObject(n);
 			}
 
 			//

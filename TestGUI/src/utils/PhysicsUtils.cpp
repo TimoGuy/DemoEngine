@@ -301,7 +301,7 @@ namespace PhysicsUtils
 #ifdef _DEVELOP
 #pragma region imgui property panel functions
 
-	float positionSnapAmount = 1.0f;
+	float positionSnapAmount = 4.0f;
 	void imguiTransformMatrixProps(float* matrixPtr)
 	{
 		static glm::vec3 clipboardTranslation, clipboardRotation, clipboardScale;

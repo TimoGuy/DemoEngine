@@ -1,0 +1,172 @@
+{
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
+                "name": "Player Controller",
+                "position": [
+                    0.719969630241394,
+                    7.350000858306885,
+                    -0.6966516375541687
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "4ce30b0f6e3517931b12d5eac5ffeb1ca88dcedef1f773fbdbb89efcf48eab89",
+                "name": "Voxel Group (start)",
+                "position": [
+                    0.0,
+                    9.5367431640625e-07,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                0.8373051881790161,
+                0.906862735748291,
+                0.31562379002571106
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "de808fe480ae7808dff7a28fdb34a9a38ee45a948c83cb9207b33853492c11cf",
+                "name": "Directional Light",
+                "position": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "color_multiplier": 5.0,
+            "hiokure_color": [
+                1.0,
+                0.722000002861023,
+                0.44699999690055847
+            ],
+            "hiruma_color": [
+                1.0,
+                0.9330000281333923,
+                0.8899999856948853
+            ],
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "85ca7a729c88bc469211cc264fe2fb995b653b4fe48a5ff70191fd817dadabc2",
+                "name": "Voxel Group (platform)",
+                "position": [
+                    -16.0,
+                    8.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        }
+    ]
+}

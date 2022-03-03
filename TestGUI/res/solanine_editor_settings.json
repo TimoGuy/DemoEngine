@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        0.5789684057235718,
-        -0.2947353720664978,
-        0.7602079510688782
+        -0.9693173766136169,
+        -0.2455315887928009,
+        -0.011815443634986877
     ],
     "level_editor_camera_pos": [
-        -45.610774993896484,
-        102.12187957763672,
-        -44.312347412109375
+        30.237689971923828,
+        16.897186279296875,
+        -6.967187404632568
     ],
-    "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_challenge_6.hsfs"
+    "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_r2_h_jojo.hsfs"
 }
