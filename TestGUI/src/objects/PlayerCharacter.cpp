@@ -859,7 +859,10 @@ void PlayerCharacter::processMovement()
 			facingDirection.y = -flatNormal.z;
 		}
 		else
+		{
 			playerState = PlayerState::NORMAL;		// Return back to normal when gravity takes its toll or if there's no more wall to climb up (raycast fails)
+			velocity = physx::PxVec3(0, ps_wallClimbHumanData.climbVelocityY, 0);		// Bonus one final push! (especially useful if you met the end of the wall)
+		}
 
 		ps_wallClimbHumanData.climbTimer -= MainLoop::getInstance().deltaTime;
 	}
