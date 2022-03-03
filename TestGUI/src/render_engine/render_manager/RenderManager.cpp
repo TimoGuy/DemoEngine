@@ -374,6 +374,15 @@ void RenderManager::addSelectObject(size_t index)
 		selectedObjectIndices.push_back(index);
 }
 
+void RenderManager::deselectObject(size_t index)
+{
+	auto it = std::find(selectedObjectIndices.begin(), selectedObjectIndices.end(), index);
+	if (it != selectedObjectIndices.end())
+	{
+		selectedObjectIndices.erase(it);
+	}
+}
+
 void RenderManager::deselectAllSelectedObject()
 {
 	selectedObjectIndices.clear();
@@ -945,7 +954,12 @@ void RenderManager::render()
 				!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
 				deselectAllSelectedObject();
 			if (mostRecentPickedIndex >= 0)
-				addSelectObject((size_t)mostRecentPickedIndex);
+			{
+				if (isObjectSelected((size_t)mostRecentPickedIndex))
+					deselectObject((size_t)mostRecentPickedIndex);
+				else
+					addSelectObject((size_t)mostRecentPickedIndex);
+			}
 		}
 
 		// Unset flag
@@ -2137,12 +2151,16 @@ void RenderManager::renderImGuiContents()
 						if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
 							!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
 							deselectAllSelectedObject();
-						addSelectObject(n);
+
+						if (isObjectSelected(n))
+							deselectObject(n);
+						else
+							addSelectObject(n);
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
+					//if (isSelected)
+					//	ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndListBox();
 			}

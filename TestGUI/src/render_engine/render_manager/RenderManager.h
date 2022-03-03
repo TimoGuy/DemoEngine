@@ -134,6 +134,7 @@ public:
 	bool isObjectSelected(size_t index);
 	bool isObjectSelected(BaseObject* obj);
 	void addSelectObject(size_t index);
+	void deselectObject(size_t index);
 	void deselectAllSelectedObject();
 	void deleteAllSelectedObjects();
 	glm::vec3 INTERNALselectionSystemAveragePosition;
