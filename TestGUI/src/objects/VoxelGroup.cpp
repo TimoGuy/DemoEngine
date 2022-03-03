@@ -577,7 +577,7 @@ void VoxelGroup::preRenderUpdate()
 		return;
 
 	// If current selected object is me
-	if (MainLoop::getInstance().renderManager->isObjectSelected(this))
+	if (!MainLoop::getInstance().renderManager->isObjectSelected(guid))
 		return;
 
 	// MODE: 0: normal. 1: appending a bunch of voxels
@@ -640,6 +640,8 @@ void VoxelGroup::preRenderUpdate()
 
 		if (!hit || !hitInfo.hasBlock || hitInfo.block.actor != getPhysicsComponent()->getActor())
 			return;
+
+		std::cout << "Jojoj" << std::endl;
 
 		glm::vec3 positionRaw = glm::inverse(getTransform()) * glm::vec4(PhysicsUtils::toGLMVec3(hitInfo.block.position), 1.0f) / voxel_render_size;
 		glm::vec3 normal = glm::round(glm::mat3(glm::transpose(getTransform())) * PhysicsUtils::toGLMVec3(hitInfo.block.normal));

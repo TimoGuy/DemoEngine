@@ -132,7 +132,7 @@ public:
 	std::vector<size_t> selectedObjectIndices;
 	std::vector<BaseObject*> getSelectedObjects();
 	bool isObjectSelected(size_t index);
-	bool isObjectSelected(BaseObject* obj);
+	bool isObjectSelected(const std::string& guid);
 	void addSelectObject(size_t index);
 	void deselectObject(size_t index);
 	void deselectAllSelectedObject();

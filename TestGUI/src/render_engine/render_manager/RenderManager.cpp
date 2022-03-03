@@ -356,12 +356,12 @@ bool RenderManager::isObjectSelected(size_t index)
 	return (std::find(selectedObjectIndices.begin(), selectedObjectIndices.end(), index) != selectedObjectIndices.end());
 }
 
-bool RenderManager::isObjectSelected(BaseObject* obj)
+bool RenderManager::isObjectSelected(const std::string& guid)
 {
 	// @NOTE: this is very inefficient, but it's only used in the voxelgroup class in the level editor, so yeah. It should be okay eh.
-	for (size_t i = 0; i < MainLoop::getInstance().objects.size(); i++)
+	for (size_t i = 0; i < selectedObjectIndices.size(); i++)
 	{
-		if (MainLoop::getInstance().objects[i] == obj)
+		if (MainLoop::getInstance().objects[selectedObjectIndices[i]]->guid == guid)
 			return true;
 	}
 
