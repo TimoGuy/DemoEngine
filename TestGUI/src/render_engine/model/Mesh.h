@@ -46,7 +46,7 @@ enum class RenderStage
 class Mesh
 {
 public:
-	Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName);
+	Mesh(glm::vec3 centerOfGravity, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName);
 	~Mesh();
 
 	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
@@ -57,6 +57,7 @@ public:
 	inline void setDepthPriority(float priority) { depthPriority = priority; }
 	inline float getDepthPriority() { return depthPriority; }
 
+	const glm::vec3& getCenterOfGravity() const { return centerOfGravity; }
 	const std::vector<Vertex>& getVertices() const { return vertices; }
 	const std::vector<uint32_t>& getIndices() const { return indices; }
 	inline void setMaterialInjections(const nlohmann::json j) { materialInjections = j; }
@@ -67,6 +68,7 @@ private:
 	unsigned int VAO, VBO, EBO;
 	void setupMesh();
 
+	glm::vec3					centerOfGravity;
 	std::vector<Vertex>			vertices;
 	std::vector<uint32_t>		indices;
 	float						depthPriority;

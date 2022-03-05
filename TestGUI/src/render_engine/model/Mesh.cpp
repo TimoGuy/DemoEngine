@@ -8,8 +8,9 @@
 #include "../material/Shader.h"
 
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName)
+Mesh::Mesh(glm::vec3 centerOfGravity, std::vector<Vertex> vertices, std::vector<unsigned int> indices, const RenderAABB& bounds, const std::string& materialName)
 {
+    Mesh::centerOfGravity = centerOfGravity;
     Mesh::vertices = vertices;
     Mesh::indices = indices;
     Mesh::bounds = bounds;
@@ -21,6 +22,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, cons
 
 Mesh::~Mesh()
 {
+    // @TODO: create a destructor ya dungus!
 }
 
 void Mesh::setupMesh()

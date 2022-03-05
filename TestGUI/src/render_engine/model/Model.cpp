@@ -129,7 +129,7 @@ Model::Model(const std::vector<Vertex>& quadMesh)
 	}
 
 	// Finally, create the mesh
-	meshes.push_back(Mesh(vertices, indices, modelRenderAABB, "Material"));		// Default material name
+	meshes.push_back(Mesh(glm::vec3(0.0f), vertices, indices, modelRenderAABB, "Material"));		// Default material name
 }
 
 bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView)
@@ -251,6 +251,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 	std::vector<Vertex> vertices;
 	std::vector<unsigned int> indices;
 
+	glm::vec3  centerOfGravity(0.0f);
 	glm::vec3* minAABBPoint = nullptr;
 	glm::vec3* maxAABBPoint = nullptr;
 
@@ -307,7 +308,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
 		// Add to array
 		vertices.push_back(vertex);
+		centerOfGravity += vertex.position;
 	}
+	centerOfGravity /= (float)mesh->mNumVertices;
 
 	//
 	// Process indices
@@ -346,7 +349,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 		delete maxAABBPoint;
 	}
 
-	return Mesh(vertices, indices, modelRenderAABB, materialName);
+	return Mesh(centerOfGravity, vertices, indices, modelRenderAABB, materialName);
 }
 
 

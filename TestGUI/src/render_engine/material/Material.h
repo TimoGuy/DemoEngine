@@ -85,3 +85,23 @@ private:
 	glm::vec3 color;
 	glm::vec4 tilingAndOffset;
 };
+
+
+class StaminaMeterMaterial : public Material
+{
+public:
+	static StaminaMeterMaterial& getInstance();
+private:
+	StaminaMeterMaterial();
+public:
+	void applyTextureUniforms(nlohmann::json injection = nullptr);
+	Texture* getMainTexture();
+
+private:
+	// @Hardcoded
+	glm::vec3 staminaBarColor1{ 0.0588, 0.0588, 0.0588 };
+	glm::vec3 staminaBarColor2{ 0.3216, 0.7765, 0.3647 };
+	glm::vec3 staminaBarColor3{ 0.1686, 0.4275, 0.1922 };
+	glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
+	float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
+};

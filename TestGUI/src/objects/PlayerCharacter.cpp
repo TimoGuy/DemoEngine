@@ -540,6 +540,7 @@ void PlayerCharacter::refreshResources()
 		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
 		bottleModelMaterials["Water"] = (Material*)Resources::getResource("material;containedWater");
+		bottleModelMaterials["StaminaMeter"] = &StaminaMeterMaterial::getInstance();
 
 		bottleModel->setMaterials(bottleModelMaterials);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);

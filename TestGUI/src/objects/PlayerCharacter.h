@@ -40,7 +40,7 @@ enum class PlayerState
 struct PlayerState_WallClimbHuman_Data
 {
 	bool canEnterIntoState = true;
-	float climbTime = 0.5f;
+	float climbTime = 0.15f;
 	float climbTimer = 0.0f;
 	float climbVelocityY = 1.0f;
 };

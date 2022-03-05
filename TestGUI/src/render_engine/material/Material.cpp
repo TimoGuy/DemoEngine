@@ -7,8 +7,7 @@
 #include "../render_manager/RenderManager.h"
 #include "../material/Shader.h"
 #include "../../mainloop/MainLoop.h"
-
-#include <iostream>
+#include "../../utils/GameState.h"
 
 
 Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
@@ -101,4 +100,46 @@ void LvlGridMaterial::applyTextureUniforms(nlohmann::json injection)
 Texture* LvlGridMaterial::getMainTexture()
 {
 	return (Texture*)Resources::getResource("texture;lvlGridTexture");
+}
+
+
+//
+// StaminaMeterMaterial
+//
+StaminaMeterMaterial& StaminaMeterMaterial::getInstance()
+{
+	static StaminaMeterMaterial instance;
+	return instance;
+}
+
+StaminaMeterMaterial::StaminaMeterMaterial() :
+	Material((Shader*)Resources::getResource("shader;hudUI"), 1.0f, 0.0f, true)
+{
+}
+
+void StaminaMeterMaterial::applyTextureUniforms(nlohmann::json injection)
+{
+	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	staminaAmountFilled = glm::min(staminaAmountFilled, staminaDepleteChaser);		// @NOTE: This just creates a little animation as the stamina bar refills. It's just for effect.  -Timo
+
+	myShader->use();
+
+	constexpr size_t staminaWheelCount = 16;
+	for (size_t i = 0; i < staminaWheelCount; i++)
+	{
+		myShader->setFloat("staminaAmountFilled[" + std::to_string(i) + "]", glm::clamp(staminaAmountFilled * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
+		myShader->setFloat("staminaDepleteChaser[" + std::to_string(i) + "]", glm::clamp(staminaDepleteChaser * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
+	}
+	myShader->setVec3("staminaBarColor1", staminaBarColor1);
+	myShader->setVec3("staminaBarColor2", staminaBarColor2);
+	myShader->setVec3("staminaBarColor3", staminaBarColor3);
+	myShader->setVec3("staminaBarColor4", staminaBarColor4);
+	myShader->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
+	//myShader->setMat4("modelMatrix", modelMatrix);
+}
+
+Texture* StaminaMeterMaterial::getMainTexture()
+{
+	return nullptr;
 }
