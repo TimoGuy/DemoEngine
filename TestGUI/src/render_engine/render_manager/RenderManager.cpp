@@ -1186,16 +1186,6 @@ void RenderManager::render()
 }
 
 
-//void RenderManager::loadResources()
-//{
-//	staminaBar = (Model*)Resources::getResource("model;custommodel;res/ui/stamina_meter.glb");
-//}
-//
-//void RenderManager::unloadResources()
-//{
-//	Resources::unloadResource("model;custommodel;res/ui/stamina_meter.glb");
-//}
-
 void RenderManager::createCameraInfoUBO()
 {
 	glCreateBuffers(1, &cameraInfoUBO);
@@ -1656,38 +1646,9 @@ void RenderManager::renderUI()
 	glDepthMask(GL_FALSE);
 
 	//
-	// Render UI Stamina Bar
+	// Update UI Stamina Bar
 	//
 	{
-		//float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
-		//const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
-		//staminaAmountFilled = glm::min(staminaAmountFilled, staminaDepleteChaser);		// @NOTE: This just creates a little animation as the stamina bar refills. It's just for effect.  -Timo
-		//
-		//const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), staminaBarPosition) * glm::scale(glm::mat4(1.0f), glm::vec3(staminaBarSize));		// @NOTE: remember that renderQuad();'s quad is (-1, 1) width and height, so it has a width/height of 2, not 1
-		//
-		//glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-		//glViewport(0, 0, camWidth, camHeight);
-		//glClear(GL_DEPTH_BUFFER_BIT);
-		//
-		//hudUIProgramId->use();
-		//
-		//constexpr size_t staminaWheelCount = 16;
-		//for (size_t i = 0; i < staminaWheelCount; i++)
-		//{
-		//	hudUIProgramId->setFloat("staminaAmountFilled[" + std::to_string(i) + "]", glm::clamp(staminaAmountFilled * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
-		//	hudUIProgramId->setFloat("staminaDepleteChaser[" + std::to_string(i) + "]", glm::clamp(staminaDepleteChaser * (float)staminaWheelCount - (float)i, 0.0f, 1.0f));
-		//}
-		//hudUIProgramId->setVec3("staminaBarColor1", staminaBarColor1);
-		//hudUIProgramId->setVec3("staminaBarColor2", staminaBarColor2);
-		//hudUIProgramId->setVec3("staminaBarColor3", staminaBarColor3);
-		//hudUIProgramId->setVec3("staminaBarColor4", staminaBarColor4);
-		//hudUIProgramId->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
-		//hudUIProgramId->setMat4("modelMatrix", modelMatrix);
-		//
-		//glEnable(GL_BLEND);
-		//staminaBar->render(modelMatrix, hudUIProgramId, nullptr, nullptr, RenderStage::UI);		// @NOTE: this is just a special mesh that has the uv coordinates aligned so that each row (16 total rows) contains a stamina bar value.
-		//glDisable(GL_BLEND);
-
 		GameState::getInstance().updateStaminaDepletionChaser(MainLoop::getInstance().deltaTime);
 	}
 
@@ -2269,14 +2230,6 @@ void RenderManager::renderImGuiContents()
 			ImGui::Separator();
 			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
 			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
-
-			//ImGui::Separator();
-			//ImGui::DragFloat2("StaminaBarPosition", &staminaBarPosition[0]);
-			//ImGui::DragFloat("StaminaBarSize", &staminaBarSize);
-			//ImGui::ColorEdit3("StaminaBarColor1", &staminaBarColor1[0]);
-			//ImGui::ColorEdit3("StaminaBarColor2", &staminaBarColor2[0]);
-			//ImGui::ColorEdit3("StaminaBarColor3", &staminaBarColor3[0]);
-			//ImGui::DragFloat("StaminaDepletecolorIntensity", &staminaBarDepleteColorIntensity);
 
 			ImGui::Separator();
 			ImGui::DragFloat2("notifExtents", &notifExtents[0]);

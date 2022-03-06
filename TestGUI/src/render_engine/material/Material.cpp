@@ -136,6 +136,7 @@ void StaminaMeterMaterial::applyTextureUniforms(nlohmann::json injection)
 	myShader->setVec3("staminaBarColor3", staminaBarColor3);
 	myShader->setVec3("staminaBarColor4", staminaBarColor4);
 	myShader->setFloat("staminaBarDepleteColorIntensity", staminaBarDepleteColorIntensity);
+	myShader->setFloat("ditherAlpha", ditherAlpha);
 	//myShader->setMat4("modelMatrix", modelMatrix);
 }
 

@@ -221,18 +221,6 @@ private:
 	float mapInterpolationAmt;
 	Texture* nightSkybox;
 
-	// UI StaminaBar
-	//void loadResources();
-	//void unloadResources();
-	//glm::vec3 staminaBarPosition{ 128, -50, 0 };
-	//float staminaBarSize = 15.0f;
-	//glm::vec3 staminaBarColor1{ 0.0588, 0.0588, 0.0588 };
-	//glm::vec3 staminaBarColor2{ 0.3216, 0.7765, 0.3647 };
-	//glm::vec3 staminaBarColor3{ 0.1686, 0.4275, 0.1922 };
-	//glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
-	//float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
-	//Model* staminaBar;
-
 	// UI Notifications
 	float notifPadding = 1.0f;
 	glm::vec2 notifExtents{ 82.0f, 24.0f };
