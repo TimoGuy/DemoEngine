@@ -1041,7 +1041,20 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 
 				ps_wallClimbHumanData.canEnterIntoState = false;
 				ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
-				playerState = PlayerState::WALL_CLIMB_HUMAN;
+				//playerState = PlayerState::WALL_CLIMB_HUMAN;
+
+				//
+				// Do another raycast to see if should ledge grab
+				//
+				physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
+				ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkHeightFromCenterY;
+				ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
+				hit = PhysicsUtils::raycast(ledgeGrabRaycastOrigin, physx::PxVec3(0.0f, -1.0f, 0.0f), ps_ledgeGrabHumanData.checkHeightDepth, hitInfo) && hitInfo.hasBlock;
+				if (hit)
+				{
+					// There's a hit for ledgegrab!
+					playerState = PlayerState::LEDGE_GRAB_HUMAN;
+				}
 			}
 		}
 	}
@@ -1077,7 +1090,7 @@ void PlayerCharacter::processActions()
 	}
 }
 
-float hairWeightMult = 10.0f;				// @Debug
+float hairWeightMult = 25.0f;				// @Debug
 float speedAnimRunningMult = 1.3f;			// @Debug
 float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
@@ -1345,7 +1358,7 @@ void PlayerCharacter::processAnimation()
 
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
-			backAttachment.simulateRope(hairWeightMult * 10.0f);
+			backAttachment.simulateRope(hairWeightMult * 25.0f);
 
 			//
 			// Do ik calculations for sideburns
