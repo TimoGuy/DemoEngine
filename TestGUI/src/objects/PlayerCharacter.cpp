@@ -1017,51 +1017,6 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
 
 		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
-
-		//
-		// @SPECIAL_SKILL: @HUMAN: Wall climb
-		//
-		if (GameState::getInstance().currentTransformation == Transformation::HUMAN &&
-			((PlayerPhysics*)getPhysicsComponent())->velocity.y < 0.0f &&
-			ps_wallClimbHumanData.canEnterIntoState)
-		{
-			// @copypasta
-			const float radiusWithPadding = ((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + 0.1f;
-			const float raycastDistance = glm::sqrt(2.0f * radiusWithPadding * radiusWithPadding);		// This is supposed to be 45 degrees... so the algorithm is pythagoren's theorem. sqrt(x^2 + x^2)
-			physx::PxRaycastBuffer hitInfo;
-			bool hit = PhysicsUtils::raycast(getPhysicsComponent()->getGlobalPose().p, physx::PxVec3(facingDirection.x, 0.0f, facingDirection.y), raycastDistance, hitInfo) && hitInfo.hasBlock;
-			if (hit)
-			{
-				glm::vec3 flatNormal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
-				flatNormal.y = 0.0f;
-				flatNormal = glm::normalize(flatNormal);
-
-				facingDirection.x = -flatNormal.x;
-				facingDirection.y = -flatNormal.z;
-
-				ps_wallClimbHumanData.canEnterIntoState = false;
-				ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
-				playerState = PlayerState::WALL_CLIMB_HUMAN;
-
-				//
-				// Do another raycast to see if should ledge grab
-				//
-				physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
-				ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkHeightFromCenterY;
-				ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
-				hit = PhysicsUtils::raycast(ledgeGrabRaycastOrigin, physx::PxVec3(0.0f, -1.0f, 0.0f), ps_ledgeGrabHumanData.checkHeightDepth, hitInfo) && hitInfo.hasBlock;
-				if (hit)
-				{
-					// Check to make sure the ledge grab crevice is large enough
-					hit = PhysicsUtils::raycast(hitInfo.block.position, physx::PxVec3(0.0f, 1.0f, 0.0f), ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, hitInfo) && hitInfo.hasBlock;
-					if (!hit)
-					{
-						// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
-						playerState = PlayerState::LEDGE_GRAB_HUMAN;
-					}
-				}
-			}
-		}
 	}
 
 	//
@@ -1074,6 +1029,56 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	currentFlatVelocity = PhysicsUtils::moveTowardsVec2(currentFlatVelocity, targetFlatVelocity, airAcceleration * MainLoop::getInstance().deltaTime);
 	currentVelocity.x = currentFlatVelocity.x;
 	currentVelocity.z = currentFlatVelocity.y;
+
+	//
+	// @SPECIAL_SKILL: @HUMAN: Wall climb
+	//
+	if (GameState::getInstance().currentTransformation == Transformation::HUMAN &&
+		((PlayerPhysics*)getPhysicsComponent())->velocity.y < 0.0f)
+	{
+		// @copypasta
+		const float radiusWithPadding = ((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + 0.1f;		// @COPYPASTA
+		const float raycastDistance = glm::sqrt(2.0f * radiusWithPadding * radiusWithPadding);		// This is supposed to be 45 degrees... so the algorithm is pythagoren's theorem. sqrt(x^2 + x^2)
+		physx::PxRaycastBuffer hitInfo;
+		bool hit = PhysicsUtils::raycast(getPhysicsComponent()->getGlobalPose().p, physx::PxVec3(facingDirection.x, 0.0f, facingDirection.y), raycastDistance, hitInfo) && hitInfo.hasBlock;
+		if (hit)
+		{
+			glm::vec3 flatNormal = PhysicsUtils::toGLMVec3(hitInfo.block.normal);
+			flatNormal.y = 0.0f;
+			flatNormal = glm::normalize(flatNormal);
+
+			facingDirection.x = -flatNormal.x;
+			facingDirection.y = -flatNormal.z;
+
+			//
+			// Do another raycast to see if should ledge grab
+			//
+			physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
+			ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkHeightFromCenterY;	// @COPYPASTA
+			ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
+			hit = PhysicsUtils::raycast(ledgeGrabRaycastOrigin, physx::PxVec3(0.0f, -1.0f, 0.0f), ps_ledgeGrabHumanData.checkHeightDepth, hitInfo) && hitInfo.hasBlock;
+			if (hit)
+			{
+				// Check to make sure the ledge grab crevice is large enough
+				hit = PhysicsUtils::raycast(hitInfo.block.position, physx::PxVec3(0.0f, 1.0f, 0.0f), ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, hitInfo) && hitInfo.hasBlock;
+				if (!hit)
+				{
+					// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
+					playerState = PlayerState::LEDGE_GRAB_HUMAN;
+				}
+			}
+
+			//
+			// Enter into the wall climb state bc no ledge grab!
+			//
+			else if (ps_wallClimbHumanData.canEnterIntoState && glm::length2(currentFlatVelocity) > 0.001f)		// @NOTE: you need to be moving to do a wall climb, but not to do a ledge grab. Keep that in mind, yo.  -Timo
+			{
+				ps_wallClimbHumanData.canEnterIntoState = false;
+				ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
+				playerState = PlayerState::WALL_CLIMB_HUMAN;
+			}
+		}
+	}
 
 	// Deplete coyote time timer
 	jumpCoyoteTimer -= MainLoop::getInstance().deltaTime;
@@ -1439,6 +1444,7 @@ void PlayerCharacter::preRenderUpdate()
 
 #ifdef _DEVELOP
 bool showPlayerIndoorDetectionCapsuleOverlap = false;
+bool showPlayerLedgeGrabAndWallClimbVisuals = true;
 
 void PlayerCharacter::imguiPropertyPanel()
 {
@@ -1493,6 +1499,13 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::DragFloat("Indoor check height", &indoorOverlapCheckHeight);
 	ImGui::DragFloat("Indoor check offset y", &indoorOverlapCheckOffY);
 
+	ImGui::Separator();
+	ImGui::Checkbox("Ledge grab and wall climb vis", &showPlayerLedgeGrabAndWallClimbVisuals);
+	ImGui::DragFloat("LG Check height Y", &ps_ledgeGrabHumanData.checkHeightFromCenterY);
+	ImGui::DragFloat("LG check height Depth", &ps_ledgeGrabHumanData.checkHeightDepth);
+	ImGui::DragFloat("LG Tuckin", &ps_ledgeGrabHumanData.checkLedgeTuckin);
+	ImGui::DragFloat("LG crevice Height min", &ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin);
+
 	
 	
 	// @Tune: these will mess up the matrices bc of how the imguiTransformMatrixProps() func works
@@ -1513,6 +1526,22 @@ void PlayerCharacter::imguiRender()
 			indoorOverlapCheckRadius,
 			indoorOverlapCheckHeight
 		);
+
+	}
+
+	if (showPlayerLedgeGrabAndWallClimbVisuals)
+	{
+		// WALL_CLIMB_HUMAN
+		const float radiusWithPadding = ((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + 0.1f;		// @COPYPASTA
+		const float raycastDistance = glm::sqrt(2.0f * radiusWithPadding * radiusWithPadding);
+		PhysicsUtils::imguiRenderRay(PhysicsUtils::toGLMVec3(getPhysicsComponent()->getGlobalPose().p), glm::vec3(facingDirection.x, 0.0f, facingDirection.y) * raycastDistance, ImColor(0.3f, 1.0f, 0.4f));
+
+		// LEDGE_GRAB_HUMAN
+		glm::vec3 ledgeGrabOrigin = PhysicsUtils::toGLMVec3(getPhysicsComponent()->getGlobalPose().p) + glm::vec3(facingDirection.x, 0.0f, facingDirection.y) * raycastDistance;
+		ledgeGrabOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkHeightFromCenterY;		// @COPYPASTA
+		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(0, -ps_ledgeGrabHumanData.checkHeightDepth, 0), ImColor(0.67f, 0.87f, 0.247f));
+		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(facingDirection.x, 0.0f, facingDirection.y) * ps_ledgeGrabHumanData.checkLedgeTuckin, ImColor(0.2f, 0.254f, 0.941f));
+		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(0, ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, 0), ImColor(0.87f, 0.247f, 0.819f));
 	}
 }
 #endif

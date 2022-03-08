@@ -82,6 +82,10 @@ namespace PhysicsUtils
 
 #pragma region imgui draw functions
 
+	void imguiRenderLine(glm::vec3 point1, glm::vec3 point2, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));
+
+	void imguiRenderRay(glm::vec3 origin, glm::vec3 direction, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));		// @NOTE: the direction does not have to be normalized.
+
 	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry, ImU32 color = ImColor::HSV(0.39f, 0.88f, 0.92f));
 
 	void imguiRenderSphereCollider(glm::mat4 modelMatrix, float radius);

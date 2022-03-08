@@ -371,6 +371,43 @@ namespace PhysicsUtils
 
 #pragma region imgui draw functions
 
+	void imguiRenderLine(glm::vec3 point1, glm::vec3 point2, ImU32 color)
+	{
+		//
+		// Convert to screen space
+		//
+		bool willBeOnScreen = true;
+		glm::vec3 pointsOnScreen[] = {
+			MainLoop::getInstance().camera.PositionToClipSpace(point1),
+			MainLoop::getInstance().camera.PositionToClipSpace(point2)
+		};
+		for (size_t ii = 0; ii < 2; ii++)
+		{
+			if (pointsOnScreen[ii].z < 0.0f)
+			{
+				// Short circuit bc it won't be on screen anymore
+				willBeOnScreen = false;
+				break;
+			}
+
+			pointsOnScreen[ii] /= pointsOnScreen[ii].z;
+			pointsOnScreen[ii].x = ImGui::GetWindowPos().x + pointsOnScreen[ii].x * MainLoop::getInstance().camera.width / 2 + MainLoop::getInstance().camera.width / 2;
+			pointsOnScreen[ii].y = ImGui::GetWindowPos().y - pointsOnScreen[ii].y * MainLoop::getInstance().camera.height / 2 + MainLoop::getInstance().camera.height / 2;
+		}
+
+		if (!willBeOnScreen)
+			return;
+
+		ImVec2 screenSpacePoint1(pointsOnScreen[0].x, pointsOnScreen[0].y);
+		ImVec2 screenSpacePoint2(pointsOnScreen[1].x, pointsOnScreen[1].y);
+		ImGui::GetBackgroundDrawList()->AddLine(screenSpacePoint1, screenSpacePoint2, color, 1.0f);
+	}
+
+	void imguiRenderRay(glm::vec3 origin, glm::vec3 direction, ImU32 color)
+	{
+		imguiRenderLine(origin, origin + direction, color);
+	}
+
 	void imguiRenderBoxCollider(glm::mat4 modelMatrix, physx::PxBoxGeometry& boxGeometry, ImU32 color)
 	{
 		physx::PxVec3 halfExtents = boxGeometry.halfExtents;
