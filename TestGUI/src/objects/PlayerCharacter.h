@@ -51,9 +51,10 @@ struct PlayerState_WallClimbHuman_Data
 struct PlayerState_LedgeGrabHuman_Data
 {
 	float checkHeightFromCenterY = 5.0f;		// @TODO: TUNE THESE VALUES
-	float checkHeightDepth = 5.0f;
+	float checkHeightDepth = 2.5f;
 	float checkLedgeTuckin = 0.1f;
 	float checkLedgeCreviceHeightMin = 0.5f;
+	float jumpSpeed = 2.0f;
 };
 
 

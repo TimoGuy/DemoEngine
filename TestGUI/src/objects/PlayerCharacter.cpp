@@ -868,6 +868,19 @@ void PlayerCharacter::processMovement()
 		ps_wallClimbHumanData.climbTimer -= MainLoop::getInstance().deltaTime;
 	}
 
+	//
+	// @SPECIAL_SKILL: @HUMAN: Ledge grab
+	//
+	else if (playerState == PlayerState::LEDGE_GRAB_HUMAN)
+	{
+		if (InputManager::getInstance().jumpPressed)
+		{
+			velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
+			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
+			playerState = PlayerState::NORMAL;
+		}
+	}
+
 	characterLeanValue = PhysicsUtils::lerp(
 		characterLeanValue,
 		targetCharacterLeanValue,
