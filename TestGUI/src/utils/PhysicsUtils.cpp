@@ -37,6 +37,11 @@ namespace PhysicsUtils
 		return glm::vec3(in.x, in.y, in.z);
 	}
 
+	glm::vec3 toGLMVec3(const physx::PxExtendedVec3& in)
+	{
+		return glm::vec3(in.x, in.y, in.z);
+	}
+
 	physx::PxQuat createQuatFromEulerDegrees(glm::vec3 eulerAnglesDegrees)
 	{
 		//
