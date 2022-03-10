@@ -1552,6 +1552,9 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::Checkbox("Ledge grab and wall climb vis", &showPlayerLedgeGrabAndWallClimbVisuals);
+	ImGui::DragFloat("WC Climb Time", &ps_wallClimbHumanData.climbTime);
+	ImGui::DragFloat("WC Climb Velo", &ps_wallClimbHumanData.climbVelocityY);
+	ImGui::DragFloat("WC Climb Distance", &ps_wallClimbHumanData.climbDistancePadding);
 	ImGui::DragFloat("LG Check wall Y", &ps_ledgeGrabHumanData.checkWallFromCenterY);
 	ImGui::DragFloat("LG Check wall padding", &ps_ledgeGrabHumanData.checkWallPadding);
 	ImGui::DragFloat("LG Check height Y", &ps_ledgeGrabHumanData.checkLedgeFromCenterY);
