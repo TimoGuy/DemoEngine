@@ -45,6 +45,7 @@ struct PlayerState_WallClimbHuman_Data
 	float climbTime = 0.15f;
 	float climbTimer = 0.0f;
 	float climbVelocityY = 1.0f;
+	float climbDistancePadding = 1.0f;	// @NOTE: the capsule controller's radius will be added onto this
 };
 
 

@@ -856,6 +856,11 @@ void PlayerCharacter::processMovement()
 
 			facingDirection.x = -flatNormal.x;
 			facingDirection.y = -flatNormal.z;
+
+			physx::PxVec3 targetPosition = hitInfo.block.position + PhysicsUtils::toPxVec3(flatNormal) * (((PlayerPhysics*)getPhysicsComponent())->controller->getRadius() + ps_wallClimbHumanData.climbDistancePadding);
+			physx::PxVec3 deltaPosition = targetPosition - getPhysicsComponent()->getGlobalPose().p;
+			velocity.x = deltaPosition.x;
+			velocity.z = deltaPosition.z;
 		}
 		else
 		{
