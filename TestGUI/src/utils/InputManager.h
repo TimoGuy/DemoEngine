@@ -15,14 +15,14 @@ public:
 	//
 	float leftStickX, leftStickY;
 	float rightStickX, rightStickY;
-	bool jumpPressed,
-		attackPressed,
-		interactPressed,
-		useItemPressed,
-		transformPressed,
-		resetCamPressed,
-		inventoryPressed,
-		pausePressed;
+	bool jumpPressed,		prev_jumpPressed,		on_jumpPressed,
+		attackPressed,		prev_attackPressed,		on_attackPressed,
+		interactPressed,	prev_interactPressed,	on_interactPressed,
+		useItemPressed,		prev_useItemPressed,	on_useItemPressed,
+		transformPressed,	prev_transformPressed,	on_transformPressed,
+		resetCamPressed,	prev_resetCamPressed,	on_resetCamPressed,
+		inventoryPressed,	prev_inventoryPressed,	on_inventoryPressed,
+		pausePressed,		prev_pausePressed,		on_pausePressed;
 
 	void INTERNALSetIJ1CAIG(bool flag);
 

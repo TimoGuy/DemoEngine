@@ -146,16 +146,13 @@ void WaterPuddle::preRenderUpdate()
 		getPhysicsComponent()->getActor() != GameState::getInstance().getCurrentTriggerHold())
 		return;
 
-	static bool prevEBtnPressed = GLFW_RELEASE;
-	bool EBtnpressed = InputManager::getInstance().interactPressed;
-	if (prevEBtnPressed == GLFW_RELEASE && EBtnpressed == GLFW_PRESS)
+	if (InputManager::getInstance().on_interactPressed)
 	{
 		//
 		// Collect this object!
 		//
 		collectWaterPuddle();
 	}
-	prevEBtnPressed = EBtnpressed;
 }
 
 void WaterPuddle::refreshResources()

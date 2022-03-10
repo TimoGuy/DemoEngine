@@ -33,6 +33,16 @@ void InputManager::resetInputs()
 	rightStickX = 0;
 	rightStickY = 0;
 
+	prev_jumpPressed = jumpPressed;
+	prev_attackPressed = attackPressed;
+	prev_interactPressed = interactPressed;
+	prev_useItemPressed = useItemPressed;
+	prev_transformPressed = transformPressed;
+	prev_resetCamPressed = resetCamPressed;
+	prev_inventoryPressed = inventoryPressed;
+	prev_pausePressed = pausePressed;
+
+
 	jumpPressed = false;
 	attackPressed = false;
 	interactPressed = false;
@@ -56,7 +66,7 @@ void joystickCallback(int jid, int event)
 		if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1))
 		{
 			std::cout << "JOYSTICK:: Joystick_1 is a gamepad! NOW AVAILABLE FOR USE" << std::endl;
-			InputManager::getInstance().INTERNALSetIJ1CAIG(true);
+			InputManager::getInstance().INTERNALSetIJ1CAIG(true);	// Set is Joystick 1 connected and is gamepad
 		}
 	}
 	else if (event == GLFW_DISCONNECTED)
@@ -187,4 +197,15 @@ void InputManager::updateInputState()
 			previousMouseY = mouseY;
 		}
 	}
+
+	// Update the on_ variables
+	on_jumpPressed = (jumpPressed && !prev_jumpPressed);
+	on_attackPressed = (attackPressed && !prev_attackPressed);
+	on_interactPressed = (interactPressed && !prev_interactPressed);
+	on_useItemPressed = (useItemPressed && !prev_useItemPressed);
+	on_transformPressed = (transformPressed && !prev_transformPressed);
+	on_resetCamPressed = (resetCamPressed && !prev_resetCamPressed);
+	on_inventoryPressed = (inventoryPressed && !prev_inventoryPressed);
+	on_pausePressed = (pausePressed && !prev_pausePressed);
+
 }

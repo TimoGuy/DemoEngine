@@ -569,7 +569,7 @@ void PlayerCharacter::processMovement()
 			useFollowCamera = false;
 
 		// Reset to default if reset camera button pressed
-		if (InputManager::getInstance().resetCamPressed)
+		if (InputManager::getInstance().on_resetCamPressed)
 		{
 			lookingInputReturnToDefaultTime = 0.0f;
 			lookingInputReturnToDefaultCachedFromInput = lookingInput;
@@ -792,10 +792,8 @@ void PlayerCharacter::processMovement()
 
 		// Poll input for the jump (include debounce input)
 		jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
-		static bool prevJumpPressed = false;
-		if (!prevJumpPressed && InputManager::getInstance().jumpPressed)
+		if (InputManager::getInstance().on_jumpPressed)
 			jumpInputDebounceTimer = jumpInputDebounceTime;
-		prevJumpPressed = InputManager::getInstance().jumpPressed;
 
 		// Update number of jumps performed
 		human_numJumpsCurrent = (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() || jumpCoyoteTimer > 0.0f) ? 0 : glm::max(1, human_numJumpsCurrent);
@@ -884,7 +882,7 @@ void PlayerCharacter::processMovement()
 			PhysicsUtils::toPxVec3(controller->getPosition());
 
 		// Jump out of the ledge grab
-		if (InputManager::getInstance().jumpPressed)
+		if (InputManager::getInstance().on_jumpPressed)
 		{
 			//velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
@@ -1137,7 +1135,7 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 void PlayerCharacter::processActions()
 {
 	if (GameState::getInstance().playerIsHoldingWater &&
-		InputManager::getInstance().useItemPressed)
+		InputManager::getInstance().on_useItemPressed)
 	{
 		// Drink the water
 		GameState::getInstance().playerIsHoldingWater = false;
@@ -1278,7 +1276,7 @@ void PlayerCharacter::processAnimation()
 		animationState = 5;
 	}
 
-	if (InputManager::getInstance().pausePressed)
+	if (InputManager::getInstance().pausePressed)		// @TODO: this should be on_ but where the actual "saving in the journal" happens is in physicsupdate. So refactor it outta there first of all!
 		animationState = 7;
 
 	//
