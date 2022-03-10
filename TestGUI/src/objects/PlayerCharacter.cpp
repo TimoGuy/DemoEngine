@@ -884,7 +884,7 @@ void PlayerCharacter::processMovement()
 		// Jump out of the ledge grab
 		if (InputManager::getInstance().on_jumpPressed)
 		{
-			//velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
+			velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			playerState = PlayerState::NORMAL;
 		}

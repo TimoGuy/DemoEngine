@@ -58,7 +58,7 @@ struct PlayerState_LedgeGrabHuman_Data
 	float checkLedgeCreviceHeightMin = 0.5f;
 	glm::vec3 holdLedgePosition;
 	glm::vec2 holdLedgeOffset{ 0.3f, -2.0f };
-	float jumpSpeed = 2.0f;
+	float jumpSpeed = 1.2f;
 };
 
 
