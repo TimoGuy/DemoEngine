@@ -1523,7 +1523,7 @@ void PlayerCharacter::preRenderUpdate()
 
 #ifdef _DEVELOP
 bool showPlayerIndoorDetectionCapsuleOverlap = false;
-bool showPlayerLedgeGrabAndWallClimbVisuals = true;
+bool showPlayerLedgeGrabAndWallClimbVisuals = false;
 
 void PlayerCharacter::imguiPropertyPanel()
 {
