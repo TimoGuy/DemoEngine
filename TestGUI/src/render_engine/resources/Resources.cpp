@@ -483,7 +483,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Slime Girl Model and Materials
 	//
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false } });
+	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false }, { "Wall_Climbing", false }, { "Wall_Hang", false }});
 	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
 
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");

@@ -1165,6 +1165,8 @@ void PlayerCharacter::processAnimation()
 	constexpr int DRINK_WATER_ANIM = 10;
 	constexpr int SHEATH_BOTTLE_ANIM = 11;
 	constexpr int WRITE_IN_JOURNAL_ANIM = 12;
+	constexpr int HUMAN_SPEC_WALL_CLIMB = 13;
+	constexpr int HUMAN_SPEC_WALL_HANG = 14;
 
 	//
 	// Process movement into animationstates
@@ -1268,6 +1270,16 @@ void PlayerCharacter::processAnimation()
 			animationState = 6;
 		}
 	}
+	else if (animationState == 8)
+	{
+		if (playerState != PlayerState::WALL_CLIMB_HUMAN && ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded())
+			animationState = 3;
+	}
+	else if (animationState == 9)
+	{
+		if (playerState != PlayerState::LEDGE_GRAB_HUMAN)
+			animationState = 0;
+	}
 
 	// Overriding animation states
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
@@ -1283,6 +1295,12 @@ void PlayerCharacter::processAnimation()
 
 	if (InputManager::getInstance().pausePressed)		// @TODO: this should be on_ but where the actual "saving in the journal" happens is in physicsupdate. So refactor it outta there first of all!
 		animationState = 7;
+
+	if (playerState == PlayerState::WALL_CLIMB_HUMAN)
+		animationState = 8;
+
+	if (playerState == PlayerState::LEDGE_GRAB_HUMAN)
+		animationState = 9;
 
 	//
 	// Update Animation State
@@ -1340,6 +1358,16 @@ void PlayerCharacter::processAnimation()
 		case 7:
 			// Write in journal
 			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false, true);
+			break;
+
+		case 8:
+			// @SPECIAL_SKILL: @HUMAN: Wall Climb
+			animator.playAnimation(HUMAN_SPEC_WALL_CLIMB, 0.0f, false, true);
+			break;
+
+		case 9:
+			// @SPECIAL_SKILL: @HUMAN: Ledge grab
+			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false, true);
 			break;
 
 		default:
