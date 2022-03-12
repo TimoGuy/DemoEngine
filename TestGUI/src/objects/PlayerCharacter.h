@@ -52,8 +52,8 @@ struct PlayerState_WallClimbHuman_Data
 struct PlayerState_LedgeGrabHuman_Data
 {
 	float checkWallFromCenterY = 1.0f;
-	float checkWallPadding = 3.0f;		// @NOTE: it's a lot of padding, but it'll be nice bc of the extra length
-	float checkLedgeFromCenterY = 5.0f;		// @TODO: TUNE THESE VALUES
+	float checkWallPadding = 1.0f;		// @NOTE: it's a lot of padding, but it'll be nice bc of the extra length
+	float checkLedgeFromCenterY = 3.5f;		// @TODO: TUNE THESE VALUES
 	float checkLedgeRayDistance = 2.5f;
 	float checkLedgeTuckin = 0.1f;
 	float checkLedgeCreviceHeightMin = 0.5f;
