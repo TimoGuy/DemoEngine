@@ -861,6 +861,36 @@ void PlayerCharacter::processMovement()
 			physx::PxVec3 deltaPosition = targetPosition - getPhysicsComponent()->getGlobalPose().p;
 			velocity.x = deltaPosition.x;
 			velocity.z = deltaPosition.z;
+
+			//
+			// Do another raycast to see if should ledge grab  @COPYPASTA
+			//
+			glm::vec3 ledgeGrabPoint = PhysicsUtils::toGLMVec3(hitInfo.block.position);		// @NOTE: this is the wall hit position
+			physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
+			ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkLedgeFromCenterY;	// @COPYPASTA
+			ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
+			hit =
+				PhysicsUtils::raycast(
+					ledgeGrabRaycastOrigin,
+					physx::PxVec3(0.0f, -1.0f, 0.0f),
+					ps_ledgeGrabHumanData.checkLedgeRayDistance,
+					hitInfo
+				) &&
+				hitInfo.hasBlock;
+
+			if (hit)
+			{
+				ledgeGrabPoint.y = hitInfo.block.position.y;	// @NOTE: this is the top of the ledge Y position. This combined with the X,Z of the wall, you get the wall edge, so this should be exactly the wall edge.
+
+				// Check to make sure the ledge grab crevice is large enough
+				hit = PhysicsUtils::raycast(hitInfo.block.position, physx::PxVec3(0.0f, 1.0f, 0.0f), ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, hitInfo) && hitInfo.hasBlock;
+				if (!hit)
+				{
+					// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
+					ps_ledgeGrabHumanData.holdLedgePosition = ledgeGrabPoint;
+					playerState = PlayerState::LEDGE_GRAB_HUMAN;
+				}
+			}
 		}
 		else
 		{
@@ -1091,7 +1121,7 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 			glm::vec3 ledgeGrabPoint = PhysicsUtils::toGLMVec3(hitInfo.block.position);		// @NOTE: this is the wall hit position
 
 			//
-			// Do another raycast to see if should ledge grab
+			// Do another raycast to see if should ledge grab  @COPYPASTA
 			//
 			physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
 			ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkLedgeFromCenterY;	// @COPYPASTA
