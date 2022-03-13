@@ -43,9 +43,9 @@ private:
 ///			=========================================
 /// 
 ///			WASD 		/		leftstick		- move
-///			movemouse	/		rightstick		- adjust camera
+///			movemouse	/		rightstick		- adjust camera / (when weapon is out, attack)
 ///			space		/		A				- jump
-///			leftclick	/		X				- attack
+///			leftclick	/		X				- brandish/sheath weapon
 ///			E			/		B				- interact
 ///			F			/		Y				- use item (usually drink water)
 ///			rightclick	/		RightBumper		- transform
