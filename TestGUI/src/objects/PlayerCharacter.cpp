@@ -558,15 +558,19 @@ void PlayerCharacter::processMovement()
 	useFollowCamera = true;
 	if (lookingInputReturnToDefaultTime >= 1.0f)
 	{
-		lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
-		lookingInput.x = fmodf(lookingInput.x, 360.0f);
-		lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+		// @NOTE: during combat mode, the player cannot control the camera with the right stick anymore.
+		if (!weaponDrawn)
+		{
+			lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
+			lookingInput.x = fmodf(lookingInput.x, 360.0f);
+			lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
 
-		if (lookingInput.x < 0.0f)
-			lookingInput.x += 360.0f;
+			if (lookingInput.x < 0.0f)
+				lookingInput.x += 360.0f;
 
-		if (glm::abs(InputManager::getInstance().rightStickX) > 0.001f)
-			useFollowCamera = false;
+			if (glm::abs(InputManager::getInstance().rightStickX) > 0.001f)
+				useFollowCamera = false;
+		}
 
 		// Reset to default if reset camera button pressed
 		if (InputManager::getInstance().on_resetCamPressed)
@@ -824,6 +828,12 @@ void PlayerCharacter::processMovement()
 
 				facingDirection = movementVector;
 			}
+		}
+
+		if (InputManager::getInstance().on_attackPressed)
+		{
+			weaponDrawn = !weaponDrawn;
+			triggerAnimationStateReset = true;
 		}
 
 		if (isMoving)
@@ -1186,17 +1196,22 @@ float speedAnimRunningMult = 1.3f;			// @Debug
 float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
 {
-	constexpr int IDLE_ANIM = 0;
-	constexpr int WALKING_ANIM = 1;
-	constexpr int RUNNING_ANIM = 2;
-	constexpr int JUMP_ANIM = 3;
-	constexpr int LAND_ANIM = 5;
-	constexpr int DRAW_WATER_ANIM = 9;
-	constexpr int DRINK_WATER_ANIM = 10;
-	constexpr int SHEATH_BOTTLE_ANIM = 11;
-	constexpr int WRITE_IN_JOURNAL_ANIM = 12;
-	constexpr int HUMAN_SPEC_WALL_CLIMB = 13;
-	constexpr int HUMAN_SPEC_WALL_HANG = 14;
+	constexpr int IDLE_ANIM				= 0;
+	constexpr int WALKING_ANIM			= 1;
+	constexpr int RUNNING_ANIM			= 2;
+	constexpr int JUMP_ANIM				= 3;
+	constexpr int LAND_ANIM				= 5;
+	constexpr int DRAW_WATER_ANIM		= 9;
+	constexpr int DRINK_WATER_ANIM		= 10;
+	constexpr int SHEATH_BOTTLE_ANIM	= 11;
+	constexpr int WRITE_IN_JOURNAL_ANIM	= 12;
+	constexpr int HUMAN_SPEC_WALL_CLIMB	= 13;
+	constexpr int HUMAN_SPEC_WALL_HANG	= 14;
+	constexpr int IDLE_WEAPON			= 15;
+	constexpr int ATTACK_LIGHT_UP		= 16;
+	constexpr int ATTACK_LIGHT_DOWN		= 17;
+	constexpr int ATTACK_LIGHT_LEFT		= 18;
+	constexpr int ATTACK_LIGHT_RIGHT	= 19;
 
 	//
 	// Process movement into animationstates
@@ -1310,8 +1325,30 @@ void PlayerCharacter::processAnimation()
 		if (playerState != PlayerState::LEDGE_GRAB_HUMAN)
 			animationState = 0;
 	}
+	else if (animationState == 10)
+	{
+		if (animator.isAnimationFinished(currentAttackAnim, MainLoop::getInstance().deltaTime))
+			animationState = 0;
+	}
 
 	// Overriding animation states
+	if (playerState == PlayerState::NORMAL && weaponDrawn)
+	{
+		// Attack animations
+		float rsX = InputManager::getInstance().rightStickX;
+		float rsY = InputManager::getInstance().rightStickY;
+		const float deadzone = 0.5f;	// @NOTE: a big square deadzone
+
+		if (glm::abs(rsX) > deadzone || glm::abs(rsY) > deadzone)
+		{
+			animationState = 10;
+			if (glm::abs(rsX) > glm::abs(rsY))
+				currentAttackAnim = (rsX < 0.0f) ? ATTACK_LIGHT_LEFT : ATTACK_LIGHT_RIGHT;
+			else
+				currentAttackAnim = (rsY < 0.0f) ? ATTACK_LIGHT_UP : ATTACK_LIGHT_DOWN;
+		}
+	}
+
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
 	{
 		animationState = 4;
@@ -1344,7 +1381,10 @@ void PlayerCharacter::processAnimation()
 		{
 		case 0:
 			// Idle
-			animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+			if (weaponDrawn)
+				animator.playAnimation(IDLE_WEAPON, 6.0f, true, true);
+			else
+				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
 			break;
 
 		case 1:
@@ -1398,6 +1438,11 @@ void PlayerCharacter::processAnimation()
 		case 9:
 			// @SPECIAL_SKILL: @HUMAN: Ledge grab
 			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false, true);
+			break;
+
+		case 10:
+			// Attack animation
+			animator.playAnimation(currentAttackAnim, 6.0f, false, true);
 			break;
 
 		default:
@@ -1523,7 +1568,7 @@ void PlayerCharacter::processAnimation()
 		//
 		// Calculate the bottle transformation matrix
 		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-		if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7)
+		if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7 || weaponDrawn)
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;

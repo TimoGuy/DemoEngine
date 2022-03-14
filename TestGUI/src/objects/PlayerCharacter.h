@@ -218,6 +218,10 @@ private:
 	float indoorOverlapCheckHeight = 17.5f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
 	float indoorOverlapCheckOffY = 20.0f;
 
+	// Combat
+	bool weaponDrawn = false;
+	int currentAttackAnim = -1;
+
 	//
 	// Animation Variables
 	//
