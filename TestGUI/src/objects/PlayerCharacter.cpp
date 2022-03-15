@@ -1401,7 +1401,7 @@ void PlayerCharacter::processAnimation()
 		case 2:
 			// Jump
 			if (human_numJumpsCurrent > 1)
-				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false, true);
+				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false, true);		// Midair jump
 			else
 				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
 			break;
