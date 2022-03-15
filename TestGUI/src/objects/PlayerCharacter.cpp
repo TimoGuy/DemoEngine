@@ -1328,11 +1328,15 @@ void PlayerCharacter::processAnimation()
 	else if (animationState == 10)
 	{
 		if (animator.isAnimationFinished(currentAttackAnim, MainLoop::getInstance().deltaTime))
+		{
+			currentAttackAnim = -1;
 			animationState = 0;
+			triggerAnimationStateReset = true;		// @NOTE: currentAttackAnim could get reset, so the animation state needs to get reset
+		}
 	}
 
 	// Overriding animation states
-	if (playerState == PlayerState::NORMAL && weaponDrawn)
+	if (playerState == PlayerState::NORMAL && weaponDrawn && currentAttackAnim == -1)
 	{
 		// Attack animations
 		float rsX = InputManager::getInstance().rightStickX;
