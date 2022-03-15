@@ -1200,18 +1200,18 @@ void PlayerCharacter::processAnimation()
 	constexpr int WALKING_ANIM			= 1;
 	constexpr int RUNNING_ANIM			= 2;
 	constexpr int JUMP_ANIM				= 3;
-	constexpr int LAND_ANIM				= 5;
-	constexpr int DRAW_WATER_ANIM		= 9;
-	constexpr int DRINK_WATER_ANIM		= 10;
-	constexpr int SHEATH_BOTTLE_ANIM	= 11;
-	constexpr int WRITE_IN_JOURNAL_ANIM	= 12;
-	constexpr int HUMAN_SPEC_WALL_CLIMB	= 13;
-	constexpr int HUMAN_SPEC_WALL_HANG	= 14;
-	constexpr int IDLE_WEAPON			= 15;
-	constexpr int ATTACK_LIGHT_UP		= 16;
-	constexpr int ATTACK_LIGHT_DOWN		= 17;
-	constexpr int ATTACK_LIGHT_LEFT		= 18;
-	constexpr int ATTACK_LIGHT_RIGHT	= 19;
+	constexpr int LAND_ANIM				= 6;
+	constexpr int DRAW_WATER_ANIM		= 10;
+	constexpr int DRINK_WATER_ANIM		= 11;
+	constexpr int SHEATH_BOTTLE_ANIM	= 12;
+	constexpr int WRITE_IN_JOURNAL_ANIM	= 13;
+	constexpr int HUMAN_SPEC_WALL_CLIMB	= 14;
+	constexpr int HUMAN_SPEC_WALL_HANG	= 15;
+	constexpr int IDLE_WEAPON			= 16;
+	constexpr int ATTACK_LIGHT_UP		= 17;
+	constexpr int ATTACK_LIGHT_DOWN		= 18;
+	constexpr int ATTACK_LIGHT_LEFT		= 19;
+	constexpr int ATTACK_LIGHT_RIGHT	= 20;
 
 	//
 	// Process movement into animationstates
@@ -1400,7 +1400,10 @@ void PlayerCharacter::processAnimation()
 
 		case 2:
 			// Jump
-			animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
+			if (human_numJumpsCurrent > 1)
+				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false, true);
+			else
+				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
 			break;
 
 		case 3:
