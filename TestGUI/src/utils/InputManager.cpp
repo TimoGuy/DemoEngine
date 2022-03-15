@@ -106,7 +106,7 @@ void InputManager::updateInputState()
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state) == GLFW_TRUE)
 		{
 			jumpPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_A];
-			attackPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			attackPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f);  // (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
 			interactPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_B];
 			useItemPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_Y];
 			transformPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];

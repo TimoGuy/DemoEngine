@@ -830,10 +830,12 @@ void PlayerCharacter::processMovement()
 			}
 		}
 
-		if (InputManager::getInstance().on_attackPressed)
+		weaponDrawn = InputManager::getInstance().attackPressed;
+		if (weaponDrawn != InputManager::getInstance().prev_attackPressed)
 		{
-			weaponDrawn = !weaponDrawn;
+			// @BUG: @TODO: fix that the animations can get reset while mid-attack or midair if you let go of the R trigger.
 			triggerAnimationStateReset = true;
+			currentAttackAnim = -1;
 		}
 
 		if (isMoving)
