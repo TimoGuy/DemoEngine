@@ -830,13 +830,17 @@ void PlayerCharacter::processMovement()
 			}
 		}
 
-		weaponDrawn = InputManager::getInstance().attackPressed;
-		if (weaponDrawn != InputManager::getInstance().prev_attackPressed)
+		static int prevAttackAnim = currentAttackAnim;		// @REFACTOR: fix this up. At least all the bugs below. Have some kind of isAttacking variable would be good I think.
+		weaponDrawn = (currentAttackAnim == -1) ? InputManager::getInstance().attackPressed : true;		// @NOTE: lock weapon as drawn when the player is doing an attack animation, else actually look at the attack button
+		if (InputManager::getInstance().on_attackPressed ||
+			(currentAttackAnim == -1 && !weaponDrawn && InputManager::getInstance().prev_attackPressed) ||		// @NOTE: this is when the player lets go of the attack button (while not doing an attack animation at that moment)
+			(currentAttackAnim == -1 && prevAttackAnim != -1 && !weaponDrawn))		// @NOTE: this is when the animation ends and the player isn't holding down the attack button anymore
 		{
 			// @BUG: @TODO: fix that the animations can get reset while mid-attack or midair if you let go of the R trigger.
 			triggerAnimationStateReset = true;
 			currentAttackAnim = -1;
 		}
+		prevAttackAnim = currentAttackAnim;
 
 		if (isMoving)
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
@@ -938,6 +942,14 @@ void PlayerCharacter::processMovement()
 
 		// @TODO: Hold the stick away from facingDirection to do a let go instead of a jump up.
 		// @TODO: SCRATCH THAT, you should be able to jump when you press A, so pressing B should be let go. If you hold back (away from facingDirection) and press A, you should do a jump away from the ledge.)
+	}
+
+	//
+	// @SPECIAL_SKILL: @CAT: Scale the wall
+	//
+	else if (playerState == PlayerState::WALL_SCALE_CAT)
+	{
+		std::cout << "Hello" << std::endl;
 	}
 
 	characterLeanValue = PhysicsUtils::lerp(
@@ -1104,8 +1116,10 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 
 	//
 	// @SPECIAL_SKILL: @HUMAN: Wall climb & Ledge grab
+	// @SPECIAL_SKILL: @CAT:   Wall scaling if rough walls! @TODO: figger
 	//
-	if (GameState::getInstance().currentTransformation == Transformation::HUMAN &&
+	if ((GameState::getInstance().currentTransformation == Transformation::HUMAN ||
+		GameState::getInstance().currentTransformation == Transformation::CAT) &&
 		((PlayerPhysics*)getPhysicsComponent())->velocity.y < 0.0f)
 	{
 		// @copypasta
@@ -1130,45 +1144,55 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 			facingDirection.x = -flatNormal.x;
 			facingDirection.y = -flatNormal.z;
 
-			glm::vec3 ledgeGrabPoint = PhysicsUtils::toGLMVec3(hitInfo.block.position);		// @NOTE: this is the wall hit position
-
-			//
-			// Do another raycast to see if should ledge grab  @COPYPASTA
-			//
-			physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
-			ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkLedgeFromCenterY;	// @COPYPASTA
-			ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
-			hit =
-				PhysicsUtils::raycast(
-					ledgeGrabRaycastOrigin,
-					physx::PxVec3(0.0f, -1.0f, 0.0f),
-					ps_ledgeGrabHumanData.checkLedgeRayDistance,
-					hitInfo
-				) &&
-				hitInfo.hasBlock;
-
-			if (hit)
+			if (GameState::getInstance().currentTransformation == Transformation::HUMAN)
 			{
-				ledgeGrabPoint.y = hitInfo.block.position.y;	// @NOTE: this is the top of the ledge Y position. This combined with the X,Z of the wall, you get the wall edge, so this should be exactly the wall edge.
+				glm::vec3 ledgeGrabPoint = PhysicsUtils::toGLMVec3(hitInfo.block.position);		// @NOTE: this is the wall hit position
 
-				// Check to make sure the ledge grab crevice is large enough
-				hit = PhysicsUtils::raycast(hitInfo.block.position, physx::PxVec3(0.0f, 1.0f, 0.0f), ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, hitInfo) && hitInfo.hasBlock;
-				if (!hit)
+				//
+				// Do another raycast to see if should ledge grab  @COPYPASTA
+				//
+				physx::PxVec3 ledgeGrabRaycastOrigin = hitInfo.block.position;
+				ledgeGrabRaycastOrigin.y = getPhysicsComponent()->getGlobalPose().p.y + ps_ledgeGrabHumanData.checkLedgeFromCenterY;	// @COPYPASTA
+				ledgeGrabRaycastOrigin += PhysicsUtils::toPxVec3(-flatNormal * ps_ledgeGrabHumanData.checkLedgeTuckin);
+				hit =
+					PhysicsUtils::raycast(
+						ledgeGrabRaycastOrigin,
+						physx::PxVec3(0.0f, -1.0f, 0.0f),
+						ps_ledgeGrabHumanData.checkLedgeRayDistance,
+						hitInfo
+					) &&
+					hitInfo.hasBlock;
+
+				if (hit)
 				{
-					// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
-					ps_ledgeGrabHumanData.holdLedgePosition = ledgeGrabPoint;
-					playerState = PlayerState::LEDGE_GRAB_HUMAN;
+					ledgeGrabPoint.y = hitInfo.block.position.y;	// @NOTE: this is the top of the ledge Y position. This combined with the X,Z of the wall, you get the wall edge, so this should be exactly the wall edge.
+
+					// Check to make sure the ledge grab crevice is large enough
+					hit = PhysicsUtils::raycast(hitInfo.block.position, physx::PxVec3(0.0f, 1.0f, 0.0f), ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, hitInfo) && hitInfo.hasBlock;
+					if (!hit)
+					{
+						// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
+						ps_ledgeGrabHumanData.holdLedgePosition = ledgeGrabPoint;
+						playerState = PlayerState::LEDGE_GRAB_HUMAN;
+					}
+				}
+
+				//
+				// Enter into the wall climb state bc no ledge grab!
+				//
+				else if (ps_wallClimbHumanData.canEnterIntoState && glm::length2(currentFlatVelocity) > 0.001f)		// @NOTE: you need to be moving to do a wall climb, but not to do a ledge grab. Keep that in mind, yo.  -Timo
+				{
+					ps_wallClimbHumanData.canEnterIntoState = false;
+					ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
+					playerState = PlayerState::WALL_CLIMB_HUMAN;
 				}
 			}
-
-			//
-			// Enter into the wall climb state bc no ledge grab!
-			//
-			else if (ps_wallClimbHumanData.canEnterIntoState && glm::length2(currentFlatVelocity) > 0.001f)		// @NOTE: you need to be moving to do a wall climb, but not to do a ledge grab. Keep that in mind, yo.  -Timo
+			else if (GameState::getInstance().currentTransformation == Transformation::CAT)
 			{
-				ps_wallClimbHumanData.canEnterIntoState = false;
-				ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
-				playerState = PlayerState::WALL_CLIMB_HUMAN;
+				if (glm::length2(currentFlatVelocity) > 0.001f)
+				{
+					playerState = PlayerState::WALL_SCALE_CAT;
+				}
 			}
 		}
 	}

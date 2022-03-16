@@ -34,8 +34,9 @@ private:
 enum class PlayerState
 {
 	NORMAL,
-	WALL_CLIMB_HUMAN,  // @NOTE: this contains a short wall kick-up, and then a last-effort small jump up to get the last boost. Why not, just so the player can possibly get that ledge grab.  -Timo
-	LEDGE_GRAB_HUMAN,  // @NOTE: if you press <jump> on this ledge grab, I'm not gonna do the player a favor and push them onto the platform. If they don't do it themselves, that's wasted stamina on their part. I'm not gonna babysit the player yo.  -Timo
+	WALL_CLIMB_HUMAN,	// @NOTE: this contains a short wall kick-up, and then a last-effort small jump up to get the last boost. Why not, just so the player can possibly get that ledge grab.  -Timo
+	LEDGE_GRAB_HUMAN,	// @NOTE: if you press <jump> on this ledge grab, I'm not gonna do the player a favor and push them onto the platform. If they don't do it themselves, that's wasted stamina on their part. I'm not gonna babysit the player yo.  -Timo
+	WALL_SCALE_CAT,		// @NOTE: @TODO: figger how this works
 };
 
 
