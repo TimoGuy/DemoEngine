@@ -123,6 +123,7 @@ public:
 	void renderSceneShadowPass(Shader* shader);
 	void renderUI();
 
+	glm::vec3 sunColorForClouds;  // @TEMP: @REFACTOR: this is the saved sunlight intensity and color
 
 	int debugCSMLayerNum = 0;
 

@@ -437,6 +437,16 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Common textures & materials
 	//
+
+
+
+	if (resourceName == "texture;cloudTestPos")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_pos.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;cloudTestNeg")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_neg.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+
+
+
+
+
 	if (resourceName == "texture;lightIcon")							return loadTexture2D(resourceName, isUnloading, "res/_debug/cool_img.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrDefaultNormal")						return loadTexture2D(resourceName, isUnloading, "res/common_texture/default_normal.png", GL_RGB, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);
 	if (resourceName == "texture;pbr0Value")							return loadTexture2D(resourceName, isUnloading, "res/common_texture/0_value.png", GL_RED, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, true, false);

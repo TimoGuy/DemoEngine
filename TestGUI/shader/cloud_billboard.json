@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "cloud_billboard.vert",
+  "F": "cloud_billboard.frag",
+  "props": [
+    "sampler2D textTexture",
+    "vec3 diffuseTint"
+  ]
+}

@@ -288,6 +288,9 @@
     <None Include="shader\notificationUI.json" />
     <None Include="shader\src\notificationUI.frag" />
     <None Include="shader\src\notificationUI.vert" />
+    <None Include="shader\src\cloud_billboard.frag" />
+    <None Include="shader\cloud_billboard.json" />
+    <None Include="shader\src\cloud_billboard.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

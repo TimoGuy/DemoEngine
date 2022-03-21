@@ -1442,6 +1442,20 @@ void RenderManager::renderScene()
 	}
 
 	//
+	// @TEMP: @REFACTOR: try and render a CLOUD!!@!
+	//
+	static Shader* cloudShader = (Shader*)Resources::getResource("shader;cloud_billboard");
+	static Texture* posVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestPos");
+	static Texture* negVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestNeg");
+	cloudShader->use();
+	cloudShader->setMat4("modelMatrix", glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0) - MainLoop::getInstance().camera.position) * glm::inverse(cameraInfo.view));
+	cloudShader->setVec3("mainLightDirectionVS", glm::mat3(cameraInfo.view) * skyboxParams.sunOrientation);
+	cloudShader->setVec3("mainLightColor", sunColorForClouds);
+	cloudShader->setSampler("posVolumeTexture", posVolumeTexture->getHandle());
+	cloudShader->setSampler("negVolumeTexture", negVolumeTexture->getHandle());
+	renderQuad();
+
+	//
 	// TRANSPARENT RENDER QUEUE
 	//
 	glEnable(GL_CULL_FACE);
@@ -2662,6 +2676,8 @@ void RenderManager::createLightInformationUBO()
 
 void RenderManager::updateLightInformationUBO()
 {
+	bool TEMPJOJOJOJOJOJOO = false;
+
 	// Insert lights into the struct for the UBO
 	int shadowIndex = 0;
 	const size_t numLights = std::min((size_t)RenderLightInformation::MAX_LIGHTS, MainLoop::getInstance().lightObjects.size());
@@ -2679,6 +2695,13 @@ void RenderManager::updateLightInformationUBO()
 		lightInformation.lightPositions[i] = lightPosition;
 		lightInformation.lightDirections[i] = glm::vec4(lightDirection, 0);
 		lightInformation.lightColors[i] = glm::vec4(lightColorWithIntensity, 0.0f);
+
+		if (!TEMPJOJOJOJOJOJOO && light->lightType == LightType::DIRECTIONAL)
+		{
+			// MAIN DIREC LUIGHT
+			sunColorForClouds = lightColorWithIntensity;
+			TEMPJOJOJOJOJOJOO = true;
+		}
 
 		if (shadowIndex < ShaderExtShadow::MAX_SHADOWS && light->castsShadows)
 		{
