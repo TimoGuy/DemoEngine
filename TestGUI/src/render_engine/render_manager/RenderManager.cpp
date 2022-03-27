@@ -51,6 +51,7 @@ void renderQuad();
 
 const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static bool showShadowMapView = false;
+static bool showCloudNoiseView = false;
 bool RenderManager::isWireFrameMode = false;
 bool RenderManager::renderPhysicsDebug = false;
 bool RenderManager::renderMeshRenderAABB = false;
@@ -69,6 +70,7 @@ RenderManager::RenderManager()
 	createFonts();
 	createHDRBuffer();
 	createLumenAdaptationTextures();
+	createCloudNoise();
 	//loadResources();
 
 #ifdef _DEVELOP
@@ -104,6 +106,7 @@ RenderManager::~RenderManager()
 	destroyFonts();
 	destroyHDRBuffer();
 	destroyLumenAdaptationTextures();
+	destroyCloudNoise();
 	//unloadResources();
 
 #ifdef _DEVELOP
@@ -708,6 +711,132 @@ void RenderManager::destroyLumenAdaptationTextures()
 	delete hdrLumAdaptationProcessed;
 }
 
+// @NOTE: https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf
+constexpr GLsizei cloudNoiseTex1Size = 128;
+constexpr GLsizei cloudNoiseTex2Size = 32;
+void RenderManager::createCloudNoise()
+{
+	//
+	// Cloud noise 1:
+	//		R: perlin-worley
+	//		G: worley	(Same freq. as R)
+	//		B: worley	(Medium frequency)
+	//		A: worley	(Highest frequency)
+	//
+	cloudNoise1 =
+		new Texture2DArray(
+			cloudNoiseTex1Size,
+			cloudNoiseTex1Size,
+			cloudNoiseTex1Size,
+			1,
+			GL_RGBA,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_REPEAT,
+			GL_REPEAT,
+			GL_REPEAT
+		);
+
+	std::random_device randomDevice;
+	std::mt19937 randomEngine(randomDevice());
+	std::uniform_real_distribution<> distribution(0.0, 1.0);
+
+	size_t  worley1 = 0,
+			worley2 = 0,
+			worley3 = 0,
+			worley4 = 0;
+	
+	cloudNoiseGenerateShader->use();
+	cloudNoiseGenerateShader->setInt("numChannels", 4);
+
+	for (size_t i = 0; i < 25; i++)
+	{
+		cloudNoiseGenerateShader->setVec3(("channel1Points[" + std::to_string(i) + "]").c_str(), glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+		worley1++;
+	}
+
+	for (size_t i = 0; i < 25; i++)
+	{
+		cloudNoiseGenerateShader->setVec3(("channel2Points[" + std::to_string(i) + "]").c_str(), glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+		worley2++;
+	}
+	
+	for (size_t i = 0; i < 50; i++)
+	{
+		cloudNoiseGenerateShader->setVec3(("channel3Points[" + std::to_string(i) + "]").c_str(), glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+		worley3++;
+	}
+	
+	for (size_t i = 0; i < 100; i++)
+	{
+		cloudNoiseGenerateShader->setVec3(("channel4Points[" + std::to_string(i) + "]").c_str(), glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+		worley4++;
+	}
+
+	cloudNoiseGenerateShader->setIvec4("pointsPerChannel", glm::ivec4((int)worley1, (int)worley2, (int)worley3, (int)worley4));
+
+	// Render out all the layers with the points!
+	GLuint noiseFBO;
+	glCreateFramebuffers(1, &noiseFBO);
+	for (size_t i = 0; i < cloudNoiseTex1Size; i++)
+	{
+		glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1->getHandle(), 0, i);
+		if (glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete! (Worley Noise FBO) (Layer: " << i << ")" << std::endl;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, noiseFBO);
+		glViewport(0, 0, cloudNoiseTex1Size, cloudNoiseTex1Size);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
+
+		renderQuad();
+	}
+
+	//
+	// Cloud noise 2:
+	//		R: worley	(Lowest frequency)
+	//		G: worley
+	//		B: worley	(Highest frequency)
+	//
+	cloudNoise2 =
+		new Texture2DArray(
+			cloudNoiseTex2Size,
+			cloudNoiseTex2Size,
+			cloudNoiseTex2Size,
+			1,
+			GL_RGB,
+			GL_RGB,
+			GL_UNSIGNED_BYTE,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_REPEAT,
+			GL_REPEAT,
+			GL_REPEAT
+		);
+
+	std::vector<glm::vec3> worleySmol1, worleySmol2, worleySmol3;
+
+	for (size_t i = 0; i < 25; i++)
+		worleySmol1.push_back(glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+
+	for (size_t i = 0; i < 50; i++)
+		worleySmol2.push_back(glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+
+	for (size_t i = 0; i < 100; i++)
+		worleySmol3.push_back(glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)));
+}
+
+void RenderManager::destroyCloudNoise()
+{
+	delete cloudNoise1;
+	delete cloudNoise2;
+}
+
 void RenderManager::createShaderPrograms()
 {
 	skybox_program_id = (Shader*)Resources::getResource("shader;skybox");
@@ -727,6 +856,7 @@ void RenderManager::createShaderPrograms()
 	volumetricProgramId = (Shader*)Resources::getResource("shader;volumetricLighting");
 	blurXProgramId = (Shader*)Resources::getResource("shader;blurX");
 	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
+	cloudNoiseGenerateShader = (Shader*)Resources::getResource("shader;cloudNoiseGenerate");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -748,6 +878,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;volumetricLighting");
 	Resources::unloadResource("shader;blurX");
 	Resources::unloadResource("shader;blurY");
+	Resources::unloadResource("shader;cloudNoiseGenerate");
 }
 
 void RenderManager::createFonts()
@@ -1603,6 +1734,14 @@ void RenderManager::renderScene()
 		debug_csm_program_id->setSampler("depthMap", MainLoop::getInstance().lightObjects[0]->shadowMapTexture);
 		renderQuad();
 	}
+
+	if (showCloudNoiseView)
+	{
+		/*debug_cloud_noise_program_id*/debug_csm_program_id->use();
+		/*debug_cloud_noise_program_id*///debug_csm_program_id->setInt("layer", debugCloudNoiseLayerNum);
+		/*debug_cloud_noise_program_id*/debug_csm_program_id->setSampler("depthMap", cloudNoise1->getHandle());
+		renderQuad();
+	}
 }
 
 
@@ -2204,6 +2343,7 @@ void RenderManager::renderImGuiContents()
 		{
 			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
+			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 
 			static bool showLuminanceTextures = false;
 			ImGui::Checkbox("Show Luminance Texture", &showLuminanceTextures);

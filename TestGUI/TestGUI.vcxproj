@@ -191,6 +191,7 @@
     <None Include="shader\blurX.json" />
     <None Include="shader\blurY.json" />
     <None Include="shader\brdfGeneration.json" />
+    <None Include="shader\cloudNoiseGenerate.json" />
     <None Include="shader\cloud_billboard.json" />
     <None Include="shader\computeLuminanceAdaptation.json" />
     <None Include="shader\csmShadowPass.json" />
@@ -251,6 +252,7 @@
     <None Include="shader\src\brdf.vert" />
     <None Include="shader\src\cloud_billboard.frag" />
     <None Include="shader\src\cloud_billboard.vert" />
+    <None Include="shader\src\cloud_noise_generate.frag" />
     <None Include="shader\src\color.frag" />
     <None Include="shader\src\csm_shadow.geom" />
     <None Include="shader\src\csm_shadow.vert" />

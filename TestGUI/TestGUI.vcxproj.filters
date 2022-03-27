@@ -291,6 +291,8 @@
     <None Include="shader\src\cloud_billboard.frag" />
     <None Include="shader\cloud_billboard.json" />
     <None Include="shader\src\cloud_billboard.vert" />
+    <None Include="shader\cloudNoiseGenerate.json" />
+    <None Include="shader\src\cloud_noise_generate.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

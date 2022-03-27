@@ -192,9 +192,9 @@ private:
 	int volumetricTextureWidth, volumetricTextureHeight;
 	float volumetricLightingStrength, volumetricLightingStrengthExternal;
 
-	// SSAO effect			// @Deprecate: Looks like the S word
+	// SSAO effect		(Uses NVIDIA's HBAO effect)
 	Shader* ssaoProgramId;
-	GLuint ssaoFBO, ssaoBlurFBO;// , blurXProgramId, blurYProgramId;
+	GLuint ssaoFBO, ssaoBlurFBO;
 	float ssaoFBOSize = 1024;
 	Texture* ssaoRotationTexture;
 	Texture* ssaoTexture;
@@ -209,7 +209,10 @@ private:
 	float exposure = 0.15f;
 	float bloomIntensity = 0.005f;
 
-	//float deltaTimeMultiplier = 42.0f;			// @Remember: this is a very important number to multiply the time for the animations.
+	// Cloud noises
+	Texture* cloudNoise1;
+	Texture* cloudNoise2;
+	Shader* cloudNoiseGenerateShader;
 
 	// Skybox Rendering
 	Shader* skybox_program_id;
@@ -249,6 +252,8 @@ private:
 	void destroyHDRBuffer();
 	void createLumenAdaptationTextures();
 	void destroyLumenAdaptationTextures();
+	void createCloudNoise();
+	void destroyCloudNoise();
 
     void createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation);
 

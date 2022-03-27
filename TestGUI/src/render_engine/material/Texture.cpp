@@ -166,6 +166,24 @@ Texture2D::Texture2D(GLsizei width, GLsizei height, GLsizei levels, GLenum inter
 	loaded = true;
 }
 
+Texture2DArray::Texture2DArray(GLsizei width, GLsizei height, GLsizei depth, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR)
+{
+	glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &textureHandle);
+
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_R, wrapR);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTextureStorage3D(textureHandle, levels, internalFormat, width, height, depth);
+
+	if (pixels != nullptr)
+		glTextureSubImage3D(textureHandle, 0, 0, 0, 0, width, height, depth, format, pixelType, pixels);
+
+	loaded = true;
+}
+
 TextureCubemapFromFile::TextureCubemapFromFile(
 	const std::vector<ImageFile>& files,
 	GLenum toTexture,
