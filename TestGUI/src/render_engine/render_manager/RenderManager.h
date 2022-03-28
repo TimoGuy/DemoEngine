@@ -126,6 +126,7 @@ public:
 	glm::vec3 sunColorForClouds;  // @TEMP: @REFACTOR: this is the saved sunlight intensity and color
 
 	int debugCSMLayerNum = 0;
+	float debugCloudNoiseLayerNum = 0;
 
 	void recreateRenderBuffers();
 
@@ -175,7 +176,7 @@ public:
 	void pushMessage(const std::string& text);
 
 private:
-	Shader* debug_csm_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *notificationUIProgramId;
+	Shader* debug_csm_program_id, *debug_cloud_noise_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *notificationUIProgramId;
 
 	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 

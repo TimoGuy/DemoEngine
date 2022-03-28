@@ -1,0 +1,11 @@
+{
+  "type": "VF",
+  "V": "debug_cloud_noise.vert",
+  "F": "debug_cloud_noise.frag",
+  "props": [
+    "sampler2DArray depthMap",
+    "float near_plane",
+    "float far_plane",
+    "int layer"
+  ]
+}

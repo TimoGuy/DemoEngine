@@ -195,6 +195,7 @@
     <None Include="shader\cloud_billboard.json" />
     <None Include="shader\computeLuminanceAdaptation.json" />
     <None Include="shader\csmShadowPass.json" />
+    <None Include="shader\debugCloudNoise.json" />
     <None Include="shader\debugCSM.json" />
     <None Include="shader\hdriGeneration.json" />
     <None Include="shader\hudUI.json" />
@@ -257,6 +258,8 @@
     <None Include="shader\src\csm_shadow.geom" />
     <None Include="shader\src\csm_shadow.vert" />
     <None Include="shader\src\cubemap.vert" />
+    <None Include="shader\src\debug_cloud_noise.frag" />
+    <None Include="shader\src\debug_cloud_noise.vert" />
     <None Include="shader\src\debug_csm.frag" />
     <None Include="shader\src\debug_csm.vert" />
     <None Include="shader\src\debug_picking.frag" />

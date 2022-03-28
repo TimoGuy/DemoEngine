@@ -25,6 +25,11 @@ float vignette(vec2 uv, float radius, float smoothness) {
 //----------------------------------------------------------------
 void main()
 {
+	fragColor = vec4(texture(hdrColorBuffer, texCoord).rgb, 1.0);
+	return;
+
+	////////////////////////////////////////////////////////////////////////////////////////////
+
 	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r;
 
 	hdrColor += texture(bloomColorBuffer, texCoord).rgb * bloomIntensity;
