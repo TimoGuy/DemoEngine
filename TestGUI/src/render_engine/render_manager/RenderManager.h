@@ -112,7 +112,7 @@ struct CameraInformation
 
 struct CloudNoiseInformation
 {
-	int numPoints;
+	int numPoints;		// @NOTE: this'll be rounded up to 16 bytes (glm::vec4 size)
 	std::vector<glm::vec4> worleyPoints;
 };
 
@@ -133,6 +133,7 @@ public:
 	glm::vec3 sunColorForClouds;  // @TEMP: @REFACTOR: this is the saved sunlight intensity and color
 
 	int debugCSMLayerNum = 0;
+	int debugCloudNoiseChannel = 0;
 	float debugCloudNoiseLayerNum = 0;
 
 	void recreateRenderBuffers();

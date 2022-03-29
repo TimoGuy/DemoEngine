@@ -572,7 +572,7 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
-	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol  -Timo 01-20-2022
+	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol (According to Tiffoneus Bamboozler)  -Timo 01-20-2022
 
 	constexpr float volumetricTextureScale = 0.125f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
@@ -744,7 +744,7 @@ void RenderManager::createCloudNoise()
 	// Create just a temporary UBO to store the worley noise points
 	GLuint cloudNoiseUBO;
 	glCreateBuffers(1, &cloudNoiseUBO);
-	glNamedBufferData(cloudNoiseUBO, sizeof(CloudNoiseInformation), nullptr, GL_STATIC_DRAW);
+	glNamedBufferData(cloudNoiseUBO, sizeof(glm::vec4) + sizeof(glm::vec4) * 8192, nullptr, GL_STATIC_DRAW);	 // @NOTE: the int:numPoints variable gets rounded up to 16 bytes in the buffer btw. No packing.
 	glBindBufferBase(GL_UNIFORM_BUFFER, 4, cloudNoiseUBO);
 
 	//Texture* cloudNoise1Channels[] = {
@@ -754,7 +754,7 @@ void RenderManager::createCloudNoise()
 		cloudNoise1Channels[3] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	//};
 
-	const size_t channelGridSizes[] = { 5, 5, 10, 15 };
+	const size_t channelGridSizes[] = { 5, 5, 7, 10 };
 	std::vector<glm::vec3> worleyPoints[] = { std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>() };
 
 	std::random_device randomDevice;
@@ -782,13 +782,15 @@ void RenderManager::createCloudNoise()
 
 		for (size_t j = 0; j < 4; j++)
 		{
+			cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j]);
+
 			cloudNoiseInfo.numPoints = worleyPoints[j].size();
 			assert(worleyPoints[j].size() <= 1024);
 			cloudNoiseInfo.worleyPoints.clear();
 			for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j].size(); worleypointcopy++)
 				cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j][worleypointcopy], 0.0f));
 			glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(int), &cloudNoiseInfo.numPoints);
-			glNamedBufferSubData(cloudNoiseUBO, sizeof(int), sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), &cloudNoiseInfo.worleyPoints[0]);	FDSASDF	// @TODO: figure out why the worleypoints are 0,0,0 (maybe none of them are getting set???? dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
+			glNamedBufferSubData(cloudNoiseUBO, sizeof(glm::vec4), sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), glm::value_ptr(cloudNoiseInfo.worleyPoints[0]));	 // @NOTE: the offset is sizeof(glm::vec4) bc the memory layout std140 rounds up the 4 bytes of the sizeof(int) up to 16 bytes (size of a vec4)
 
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
@@ -1749,7 +1751,7 @@ void RenderManager::renderScene()
 	{
 		debug_cloud_noise_program_id->use();
 		debug_cloud_noise_program_id->setFloat("layer", debugCloudNoiseLayerNum);
-		debug_cloud_noise_program_id->setSampler("noiseMap", cloudNoise1Channels[0]->getHandle());
+		debug_cloud_noise_program_id->setSampler("noiseMap", cloudNoise1Channels[debugCloudNoiseChannel]->getHandle());
 		renderQuad();
 	}
 }
@@ -2356,6 +2358,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{
+				ImGui::InputInt("Cloud noise channel", &debugCloudNoiseChannel);
 				ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
 			}
 

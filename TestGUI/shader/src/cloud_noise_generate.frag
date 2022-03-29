@@ -4,6 +4,7 @@ in vec2 texCoord;
 out vec4 fragmentColor;
 
 uniform float currentRenderDepth;
+uniform int gridSize;
 
 layout (std140, binding = 4) uniform WorleyPoints
 {
@@ -21,5 +22,5 @@ void main()
 			for (int y = -1; y <= 1; y++)
 				for (int z = -1; z <= 1; z++)
 					closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
-	fragmentColor = vec4(vec3(closestDistance * 7), 1.0);
+	fragmentColor = vec4(vec3(closestDistance * gridSize), 1.0);
 }
