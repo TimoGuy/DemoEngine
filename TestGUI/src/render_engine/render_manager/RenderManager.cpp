@@ -754,7 +754,7 @@ void RenderManager::createCloudNoise()
 		cloudNoise1Channels[3] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	//};
 
-	const size_t channelGridSizes[] = { 5, 5, 7, 10 };
+	const size_t channelGridSizes[] = { 5, 5, 7, 10 };		// @NOTE: amount^3 must not exceed 1024... bc I can't figure out how to get more than 1024 in a ubo even though the spec says I should have at least 64kb of vram????
 	std::vector<glm::vec3> worleyPoints[] = { std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>() };
 
 	std::random_device randomDevice;
