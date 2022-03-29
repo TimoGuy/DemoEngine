@@ -110,6 +110,13 @@ struct CameraInformation
 };
 
 
+struct CloudNoiseInformation
+{
+	int numPoints;
+	std::vector<glm::vec4> worleyPoints;
+};
+
+
 class RenderManager
 {
 public:
@@ -214,6 +221,7 @@ private:
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
 	Shader* cloudNoiseGenerateShader;
+	CloudNoiseInformation cloudNoiseInfo;
 
 	// Skybox Rendering
 	Shader* skybox_program_id;

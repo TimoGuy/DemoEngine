@@ -741,12 +741,19 @@ void RenderManager::createCloudNoise()
 			GL_REPEAT
 		);
 
+	// Create just a temporary UBO to store the worley noise points
+	GLuint cloudNoiseUBO;
+	glCreateBuffers(1, &cloudNoiseUBO);
+	glNamedBufferData(cloudNoiseUBO, sizeof(CloudNoiseInformation), nullptr, GL_STATIC_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, 4, cloudNoiseUBO);
+
 	//Texture* cloudNoise1Channels[] = {
 		cloudNoise1Channels[0] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 		cloudNoise1Channels[1] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 		cloudNoise1Channels[2] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 		cloudNoise1Channels[3] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	//};
+
 	const size_t channelGridSizes[] = { 5, 5, 10, 15 };
 	std::vector<glm::vec3> worleyPoints[] = { std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>() };
 
@@ -775,9 +782,13 @@ void RenderManager::createCloudNoise()
 
 		for (size_t j = 0; j < 4; j++)
 		{
-			for (size_t ptInd = 0; ptInd < worleyPoints[j].size(); ptInd++)
-				cloudNoiseGenerateShader->setVec3(("worleyPoints[" + std::to_string(ptInd) + "]").c_str(), worleyPoints[j][ptInd]);
-			cloudNoiseGenerateShader->setInt("numPoints", worleyPoints[j].size());
+			cloudNoiseInfo.numPoints = worleyPoints[j].size();
+			assert(worleyPoints[j].size() <= 1024);
+			cloudNoiseInfo.worleyPoints.clear();
+			for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j].size(); worleypointcopy++)
+				cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j][worleypointcopy], 0.0f));
+			glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(int), &cloudNoiseInfo.numPoints);
+			glNamedBufferSubData(cloudNoiseUBO, sizeof(int), sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), &cloudNoiseInfo.worleyPoints[0]);	FDSASDF	// @TODO: figure out why the worleypoints are 0,0,0 (maybe none of them are getting set???? dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd
 
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
@@ -791,6 +802,7 @@ void RenderManager::createCloudNoise()
 		}
 	}
 	glDeleteFramebuffers(1, &noiseFBO);
+	glDeleteBuffers(1, &cloudNoiseUBO);
 
 	//
 	// Cloud noise 2:
