@@ -10,6 +10,6 @@ uniform sampler2DArray noiseMap;
 
 void main()
 {
-    vec3 thingo = 1.0 - texture(noiseMap, vec3(TexCoords, layer)).rrr;
+    vec3 thingo = texture(noiseMap, vec3(TexCoords, layer)).rrr;
     FragColor = vec4(thingo, 1.0);
 }

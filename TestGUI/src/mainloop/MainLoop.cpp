@@ -440,7 +440,7 @@ void createWindow(const char* appName)
 		0
 	};
 
-	MainLoop::getInstance().window = glfwCreateWindow(1920, 1080, (appName + std::string(" :: ") + BUILD_VERSION + " :: build " + IsoDate).c_str(), NULL, NULL);
+	MainLoop::getInstance().window = glfwCreateWindow(1080, 1080, (appName + std::string(" :: ") + BUILD_VERSION + " :: build " + IsoDate).c_str(), NULL, NULL);
 
 #if FULLSCREEN_MODE
 	setFullscreen(true, true);
