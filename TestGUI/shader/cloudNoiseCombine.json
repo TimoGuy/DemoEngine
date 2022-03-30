@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "cloud_noise_combine.frag",
+  "props": [
+    "sampler2D textTexture",
+    "vec3 diffuseTint"
+  ]
+}

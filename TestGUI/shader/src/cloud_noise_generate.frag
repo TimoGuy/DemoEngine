@@ -4,6 +4,7 @@ in vec2 texCoord;
 out vec4 fragmentColor;
 
 uniform float currentRenderDepth;
+uniform bool includePerlin;
 uniform int gridSize;
 
 layout (std140, binding = 4) uniform WorleyPoints
@@ -103,9 +104,19 @@ void main()
 				for (int z = -1; z <= 1; z++)
 					closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
 	float normalizedDistance = 1.0 - clamp(closestDistance * gridSize * 1.25, 0.0, 1.0);
-	float simplexFractal = simplex3d_fractal(myPos.xyz*8.0+8.0) + 0.5;
-	simplexFractal = clamp(0.5 + 0.5 * simplexFractal, 0.0, 1.0);
 
-	float floorAmount = 0.1;
-	fragmentColor = vec4(vec3(simplexFractal * (floorAmount + (1.0 - floorAmount) * smoothstep(0.0, 1.0, normalizedDistance))), 1.0);
+	if (includePerlin)
+	{
+		float simplexFractal = simplex3d_fractal(myPos.xyz * 8.0 + 8.0) + 0.5;
+		simplexFractal = clamp(0.5 + 0.5 * simplexFractal, 0.0, 1.0);
+	
+		//float floorAmount = 0.1;
+		//float floorAmount2 = 0.1;
+		//fragmentColor = vec4(vec3((floorAmount + (1.0 - floorAmount) * simplexFractal) * (floorAmount2 + (1.0 - floorAmount2) * smoothstep(0.0, 1.0, normalizedDistance))), 1.0);
+
+		fragmentColor = vec4(vec3((simplexFractal) * smoothstep(0.0, 1.0, normalizedDistance) + (simplexFractal * 0.2)), 1.0);
+		return;
+	}
+
+	fragmentColor = vec4(vec3(normalizedDistance), 1.0);
 }

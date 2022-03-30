@@ -221,7 +221,7 @@ private:
 	// Cloud noises
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
-	Shader* cloudNoiseGenerateShader;
+	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader;
 	CloudNoiseInformation cloudNoiseInfo;
 
 	// Skybox Rendering

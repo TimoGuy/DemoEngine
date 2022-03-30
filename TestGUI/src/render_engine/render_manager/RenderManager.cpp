@@ -772,16 +772,20 @@ void RenderManager::createCloudNoise()
 				}
 	
 	// Render out all the layers with the points!
-	cloudNoiseGenerateShader->use();
+	// @TODO: I think what needs to happen is to generate a texture that contains all the points for a worley map and then use that texture to generate the actual worley map. This look up image can just be a GL_NEAREST filtered 8192x8192 texture I think. That should be big enough, and then delete it after it's not needed anymore.  -Timo
+	// @TODO: Also I am noting that there is noise stacking on page 33 of the pdf (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf) FOR SURE!!!!!
 	GLuint noiseFBO;
 	glCreateFramebuffers(1, &noiseFBO);
 	glViewport(0, 0, cloudNoiseTex1Size, cloudNoiseTex1Size);
 	for (size_t i = 0; i < cloudNoiseTex1Size; i++)
 	{
+		// Render noise textures onto 4 different 8 bit textures
+		cloudNoiseGenerateShader->use();
 		cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 
 		for (size_t j = 0; j < 4; j++)
 		{
+			cloudNoiseGenerateShader->setInt("includePerlin", (int)(j == 0));
 			cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j]);
 
 			cloudNoiseInfo.numPoints = worleyPoints[j].size();
@@ -802,7 +806,26 @@ void RenderManager::createCloudNoise()
 			renderQuad();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
+
+		// Render all 4 of the noise textures onto a single RGBA texture
+		cloudNoiseCombineShader->use();
+		cloudNoiseCombineShader->setInt("renderArrayIndex", (int)i);
+		cloudNoiseCombineShader->setSampler("R", cloudNoise1Channels[0]->getHandle());
+		cloudNoiseCombineShader->setSampler("G", cloudNoise1Channels[1]->getHandle());
+		cloudNoiseCombineShader->setSampler("B", cloudNoise1Channels[2]->getHandle());
+		cloudNoiseCombineShader->setSampler("A", cloudNoise1Channels[3]->getHandle());
+
+		glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1->getHandle(), 0, i);
+		auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete! (Worley Noise FBO) (Layer: " << i << ") (Channel: COMBINER)" << std::endl;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, noiseFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		renderQuad();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
 	glDeleteFramebuffers(1, &noiseFBO);
 	glDeleteBuffers(1, &cloudNoiseUBO);
 
@@ -868,6 +891,7 @@ void RenderManager::createShaderPrograms()
 	blurXProgramId = (Shader*)Resources::getResource("shader;blurX");
 	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
 	cloudNoiseGenerateShader = (Shader*)Resources::getResource("shader;cloudNoiseGenerate");
+	cloudNoiseCombineShader = (Shader*)Resources::getResource("shader;cloudNoiseCombine");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -891,6 +915,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;blurX");
 	Resources::unloadResource("shader;blurY");
 	Resources::unloadResource("shader;cloudNoiseGenerate");
+	Resources::unloadResource("shader;cloudNoiseCombine");
 }
 
 void RenderManager::createFonts()
@@ -1751,7 +1776,7 @@ void RenderManager::renderScene()
 	{
 		debug_cloud_noise_program_id->use();
 		debug_cloud_noise_program_id->setFloat("layer", debugCloudNoiseLayerNum);
-		debug_cloud_noise_program_id->setSampler("noiseMap", cloudNoise1Channels[debugCloudNoiseChannel]->getHandle());
+		debug_cloud_noise_program_id->setSampler("noiseMap", cloudNoise1->getHandle());  // cloudNoise1Channels[debugCloudNoiseChannel]->getHandle());
 		renderQuad();
 	}
 }
