@@ -30,32 +30,49 @@ void main()
     vec3 projectedDeltaPosition = (worldSpaceFragPosition - mainCameraPosition);
     projectedDeltaPosition /= abs(projectedDeltaPosition.y);       // @NOTE: This projects this to (0, +-1, 0)... so I guess it technically isn't being normalized though hahaha
 
-    // Find the correct starting position if the camera position isn't inside the cloud volume already
-    if (mainCameraPosition.y > cloudLayerY)
+    // Find the Y points where the collisions would happen
+    float nearY = currentPosition.y;
+    if (currentPosition.y > cloudLayerY ||
+        currentPosition.y < cloudLayerY - cloudLayerThickness)
     {
-        // If this is the furthest draw distance (skybox), then just have this extend to the cloud plane for the best raymarching eh.
-        if (z == 1.0)
-        {
-            if (projectedDeltaPosition.y < 0.0)  // NOTE: won't resolve if looking upwards! Clouds will always be below
-            {
-                float differenceYToCloud = max(0.0, mainCameraPosition.y - cloudLayerY + 0.1);
-                vec3 extendedDeltaPosition = projectedDeltaPosition * differenceYToCloud;
-                worldSpaceFragPosition = mainCameraPosition + extendedDeltaPosition;
-            }
-        }
+        nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
 
-        // Return if fragPosition never even penetrated the cloud layer!
-        if (worldSpaceFragPosition.y > cloudLayerY)
+        // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
+        if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
+        {
+            fragmentColor = vec4(0.0);
+            return;
+        }
+    }
+    float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
+
+    // Calc the raymarch start/end points
+    currentPosition     = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
+    vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
+
+    // Check for depth test
+    if (z != 1.0)
+    {
+        vec3 deltaWSFragPos     = worldSpaceFragPosition - mainCameraPosition;
+        vec3 deltaCurrentPos    = currentPosition - mainCameraPosition;
+        vec3 deltaTargetPos     = targetPosition - mainCameraPosition;
+        float depthTestSqr      = dot(deltaWSFragPos, deltaWSFragPos);
+        float depthCurrentPos   = dot(deltaCurrentPos, deltaCurrentPos);
+        float depthTargetPos    = dot(deltaTargetPos, deltaTargetPos);
+
+        if (depthTestSqr < depthCurrentPos)
         {
             fragmentColor = vec4(0.0);
             return;
         }
 
-        // Starting raymarching position (if camera ain't inside the cloud layer already bc that's a possibility yo)
-        currentPosition = worldSpaceFragPosition;
+        if (depthTestSqr < depthTargetPos)
+        {
+            targetPosition = worldSpaceFragPosition;
+        }
     }
 
-    vec3 targetPosition = worldSpaceFragPosition + (projectedDeltaPosition * cloudLayerThickness);
+    // Setup the raymarching magic!!!
     vec3 realDeltaPosition = targetPosition - currentPosition;
     float rayLength = length(realDeltaPosition);
     vec3 deltaStepIncrement = realDeltaPosition / float(NB_RAYMARCH_STEPS);
