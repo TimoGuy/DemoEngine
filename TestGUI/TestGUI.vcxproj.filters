@@ -298,6 +298,8 @@
     <None Include="shader\src\debug_cloud_noise.vert" />
     <None Include="shader\src\cloud_noise_combine.frag" />
     <None Include="shader\cloudNoiseCombine.json" />
+    <None Include="shader\src\cloud_effect_screenspace.frag" />
+    <None Include="shader\cloudEffectSS.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

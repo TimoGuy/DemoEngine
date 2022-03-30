@@ -219,9 +219,11 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
+	GLuint cloudEffectFBO;
+	Texture* cloudEffectTexture;		// @NOTE: this is a framebuffer (full size)
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
-	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader;
+	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader, *cloudEffectShader;
 	CloudNoiseInformation cloudNoiseInfo;
 
 	// Skybox Rendering

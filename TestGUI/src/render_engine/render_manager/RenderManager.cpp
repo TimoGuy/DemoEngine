@@ -616,10 +616,36 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(volumetricBlurFBO, GL_COLOR_ATTACHMENT0, volumetricBlurTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(volumetricBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Volumetric Blur Framebuffer)" << std::endl;
+
+	//
+	// Create cloud raymarching buffer
+	//
+	cloudEffectTexture =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
+			GL_RGB32F,
+			GL_RGB,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+
+	glCreateFramebuffers(1, &cloudEffectFBO);
+	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT0, cloudEffectTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Screenspace Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
 {
+	delete cloudEffectTexture;
+	glDeleteFramebuffers(1, &cloudEffectFBO);
+
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
 	delete volumetricTexture;
@@ -892,6 +918,7 @@ void RenderManager::createShaderPrograms()
 	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
 	cloudNoiseGenerateShader = (Shader*)Resources::getResource("shader;cloudNoiseGenerate");
 	cloudNoiseCombineShader = (Shader*)Resources::getResource("shader;cloudNoiseCombine");
+	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -916,6 +943,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;blurY");
 	Resources::unloadResource("shader;cloudNoiseGenerate");
 	Resources::unloadResource("shader;cloudNoiseCombine");
+	Resources::unloadResource("shader;cloudEffectSS");
 }
 
 void RenderManager::createFonts()
@@ -1443,7 +1471,7 @@ void RenderManager::renderScene()
 	}
 
 	//
-	// Capture screen for SSAO
+	// Capture z-passed screen for SSAO
 	//
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
@@ -1491,6 +1519,18 @@ void RenderManager::renderScene()
 		GL_DEPTH_BUFFER_BIT,
 		GL_NEAREST
 	);
+
+	//
+	// Capture z-passed screen for Clouds
+	//
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectShader->use();
+	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
+	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
+	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	renderQuad();
 
 	//
 	// Render scene normally
