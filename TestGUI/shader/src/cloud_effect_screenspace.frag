@@ -89,7 +89,10 @@ void main()
     currentPosition += deltaStepIncrement * ditherPattern[index];
 
     // RAYMARCH!!!!!
-    float scale = 1.0 / 10.0;
+    float accumulatedDensity = 0.0;
+    float densityCap = 100.0;
+    float scale = 1.0 / 100.0;
+    float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
     for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
     {
         // DO STUFF @TODO: continue here 
@@ -100,14 +103,16 @@ void main()
 			+ 0.1333333 * noise.b
 			+ 0.0666667 * noise.a;
 
-            @TODO: figure out why the heck this is always returning white yooooo. I guess maybne it's time to true to do better with these clouds perhaps????
-
-        fragmentColor = vec4(vec3(1.0), clamp(density * cloudDensityMultiplier, 0.0, 1.0));
-        return;
+        accumulatedDensity += density * stepWeight;
+        if (accumulatedDensity > densityCap)
+            break;
 
         // Advance raymarch
         currentPosition += deltaStepIncrement;
     }
+
+    
+    fragmentColor = vec4(vec3(clamp(accumulatedDensity * cloudDensityMultiplier, 0.0, 1.0)), 1.0);
 }
 
     /*

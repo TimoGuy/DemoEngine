@@ -121,7 +121,7 @@ struct CloudEffectInformation
 {
 	float cloudLayerY = -100.0f;
 	float cloudLayerThickness = 10.0f;
-	float cloudDensityMultiplier = 0.5f;
+	float cloudDensityMultiplier = 0.01f;
 };
 
 
