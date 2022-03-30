@@ -1533,6 +1533,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
+	cloudEffectShader->setFloat("cloudDensityMultiplier", cloudEffectInfo.cloudDensityMultiplier);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	renderQuad();
 
@@ -2426,6 +2427,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
 			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
+			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
+			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.cloudDensityMultiplier);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

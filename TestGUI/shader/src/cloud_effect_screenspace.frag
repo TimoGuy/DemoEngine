@@ -9,6 +9,7 @@ uniform vec3 mainCameraPosition;
 
 uniform float cloudLayerY;
 uniform float cloudLayerThickness;
+uniform float cloudDensityMultiplier;
 uniform sampler2DArray cloudNoiseTexture;
 
 // ext: zBuffer
@@ -88,10 +89,22 @@ void main()
     currentPosition += deltaStepIncrement * ditherPattern[index];
 
     // RAYMARCH!!!!!
+    float scale = 1.0 / 10.0;
     for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
     {
-        // DO STUFF @TODO: continue here eh!!!! @WIP
-        fdassdfasdfasdf
+        // DO STUFF @TODO: continue here 
+        vec4 noise = texture(cloudNoiseTexture, mod(vec3(currentPosition.xzy) * scale, 1.0)).rgba;
+        float density =
+            0.5333333 * noise.r
+			+ 0.2666667 * noise.g
+			+ 0.1333333 * noise.b
+			+ 0.0666667 * noise.a;
+
+            @TODO: figure out why the heck this is always returning white yooooo. I guess maybne it's time to true to do better with these clouds perhaps????
+
+        fragmentColor = vec4(vec3(1.0), clamp(density * cloudDensityMultiplier, 0.0, 1.0));
+        return;
+
         // Advance raymarch
         currentPosition += deltaStepIncrement;
     }
