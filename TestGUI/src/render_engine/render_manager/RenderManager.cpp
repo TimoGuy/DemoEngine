@@ -1367,6 +1367,7 @@ void RenderManager::render()
 	postprocessing_program_id->setSampler("bloomColorBuffer", bloomColorBuffers[1]);	// 1 is the final color buffer of the reconstructed bloom
 	postprocessing_program_id->setSampler("luminanceProcessed", hdrLumAdaptationProcessed->getHandle());
 	postprocessing_program_id->setSampler("volumetricLighting", volumetricTexture->getHandle());
+	postprocessing_program_id->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	postprocessing_program_id->setVec3("sunLightColor", mainlight->color* mainlight->colorIntensity* volumetricLightingStrength* volumetricLightingStrengthExternal);
 	postprocessing_program_id->setFloat("exposure", exposure);
 	postprocessing_program_id->setFloat("bloomIntensity", bloomIntensity);
@@ -1530,6 +1531,9 @@ void RenderManager::renderScene()
 	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
 	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
 	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
+	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
+	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	renderQuad();
 
 	//
@@ -2420,6 +2424,8 @@ void RenderManager::renderImGuiContents()
 		{
 			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
+
+			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

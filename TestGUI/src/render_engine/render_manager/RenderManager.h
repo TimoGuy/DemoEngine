@@ -117,6 +117,13 @@ struct CloudNoiseInformation
 };
 
 
+struct CloudEffectInformation
+{
+	float cloudLayerY = -100.0f;
+	float cloudLayerThickness = 10.0f;
+};
+
+
 class RenderManager
 {
 public:
@@ -225,6 +232,7 @@ private:
 	Texture* cloudNoise2;
 	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader, *cloudEffectShader;
 	CloudNoiseInformation cloudNoiseInfo;
+	CloudEffectInformation cloudEffectInfo;
 
 	// Skybox Rendering
 	Shader* skybox_program_id;

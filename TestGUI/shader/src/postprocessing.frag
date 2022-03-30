@@ -7,9 +7,7 @@ uniform sampler2D hdrColorBuffer;
 uniform sampler2D bloomColorBuffer;
 uniform sampler2D luminanceProcessed;
 uniform sampler2D volumetricLighting;
-
-//uniform float ssaoScale;		@Deprecate
-//uniform float ssaoBias;
+uniform sampler2D cloudEffect;
 
 uniform vec3 sunLightColor;
 
@@ -37,6 +35,9 @@ void main()
 
 	hdrColor *= exposure * vignette(texCoord, 0.5, 0.75) * 0.5 / (avgLuminance + 0.001);
 	hdrColor = hdrColor / (hdrColor + 0.155) * 1.019;				// UE4 Tonemapper
+
+	vec4 cloudEffectColor = texture(cloudEffect, texCoord);		// @TODO: @FIXME: @HACK: this is super duper one-off and should get fixed asap!!!!! (And make a more temporal solution in the future yo...)
+	hdrColor += cloudEffectColor.rgb * cloudEffectColor.a;
 
 	fragColor = vec4(hdrColor, 1.0);
 }
