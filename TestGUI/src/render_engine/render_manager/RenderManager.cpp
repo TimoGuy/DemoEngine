@@ -1237,6 +1237,7 @@ void RenderManager::render()
 	hdrLuminanceProgramId->use();
 	hdrLuminanceProgramId->setSampler("hdrColorBuffer", hdrColorBuffer);
 	hdrLuminanceProgramId->setSampler("volumetricLighting", volumetricTexture->getHandle());
+	hdrLuminanceProgramId->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	hdrLuminanceProgramId->setVec3("sunLightColor", mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal);
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
@@ -1544,6 +1545,7 @@ void RenderManager::renderScene()
 
 	//
 	// Capture z-passed screen for @Clouds
+	// @NOTE: I don't know if this render step should be inside of renderscene() or around where the volumetric lighting occurs...  -Timo
 	//
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
@@ -1555,38 +1557,43 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
 	cloudEffectShader->setVec4("cloudLayerTileSize", cloudEffectInfo.cloudLayerTileSize);
-	cloudEffectShader->setFloat("cloudDensityMultiplier", cloudEffectInfo.cloudDensityMultiplier);
-	cloudEffectShader->setFloat("cloudDensityOffset", cloudEffectInfo.cloudDensityOffset);
+	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
+	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
+	cloudEffectShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);
+	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
+	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
+	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
+	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
 	renderQuad();
 
-	////
-	//// Blur @Clouds pass
-	////
-	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
-	//glClear(GL_COLOR_BUFFER_BIT);
-	//blurXProgramId->use();
-	//blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
-	//renderQuad();
 	//
-	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
-	//glClear(GL_COLOR_BUFFER_BIT);
-	//blurYProgramId->use();
-	//blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
-	//renderQuad();
+	// Blur @Clouds pass
 	//
-	//glBlitNamedFramebuffer(
-	//	zPrePassFBO,
-	//	hdrFBO,
-	//	0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-	//	0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-	//	GL_DEPTH_BUFFER_BIT,
-	//	GL_NEAREST
-	//);
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurXProgramId->use();
+	blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+	renderQuad();
+	
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurYProgramId->use();
+	blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+	renderQuad();
 
 	//
 	// Render scene normally
 	//
+	glBlitNamedFramebuffer(
+		zPrePassFBO,
+		hdrFBO,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		GL_DEPTH_BUFFER_BIT,
+		GL_NEAREST
+	);
+
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -2476,8 +2483,11 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
 			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
 			ImGui::DragFloat4("Cloud layer tile size", &cloudEffectInfo.cloudLayerTileSize.x);
-			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.cloudDensityMultiplier, 0.01f);
-			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.cloudDensityOffset, 0.05f);
+			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
+			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
+			ImGui::DragFloat("Cloud darkness threshold", &cloudEffectInfo.darknessThreshold, 0.01f);
+			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
+			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

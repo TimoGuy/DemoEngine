@@ -37,7 +37,7 @@ void main()
 	hdrColor = hdrColor / (hdrColor + 0.155) * 1.019;				// UE4 Tonemapper
 
 	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;		// @TODO: @FIXME: @HACK: this is super duper one-off and should get fixed asap!!!!! (And make a more temporal solution in the future yo...)
-	hdrColor += cloudEffectColor.rgb * cloudEffectColor.a;
+	hdrColor = hdrColor * cloudEffectColor.a + cloudEffectColor.rgb;
 
 	fragColor = vec4(hdrColor, 1.0);
 }

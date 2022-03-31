@@ -121,9 +121,12 @@ struct CloudEffectInformation
 {
 	float cloudLayerY = -100.0f;
 	float cloudLayerThickness = 300.0f;
-	glm::vec4 cloudLayerTileSize = { 1000.0f, 500.0f, 250.0f, 150.0f };
-	float cloudDensityMultiplier = 0.1f;
-	float cloudDensityOffset = -1.65f;
+	glm::vec4 cloudLayerTileSize = { 185.0f, 500.0f, 250.0f, 150.0f };
+	float densityOffset = -0.34f;
+	float densityMultiplier = 0.01f;
+	float darknessThreshold = 0.5f;
+	float lightAbsorptionTowardsSun = 0.5f;
+	float lightAbsorptionThroughCloud = 0.5f;
 };
 
 

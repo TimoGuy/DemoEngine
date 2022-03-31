@@ -14,21 +14,50 @@ uniform float cloudDensityMultiplier;
 uniform float cloudDensityOffset;
 uniform sampler2DArray cloudNoiseTexture;
 
+uniform float densityOffset;
+uniform float densityMultiplier;
+
+uniform float darknessThreshold;
+uniform float lightAbsorptionTowardsSun;
+uniform float lightAbsorptionThroughCloud;
+
+uniform vec3 lightColor;
+uniform vec3 lightDirection;
+
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
 #define NB_RAYMARCH_STEPS 10
+#define NB_IN_SCATTER_RAYMARCH_STEPS 5
 
 vec4 textureArrayInterpolate(sampler2DArray tex, float numTexLayers, vec3 str)
 {
     float zInterpolation = mod(str.z, 1.0);
+    str.xy = mod(str.xy, 1.0);
 
-    return
+    vec4 color =
         mix(
             texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
             texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers + 1.0), numTexLayers))).rgba,
             zInterpolation
         );
+
+    return (color + densityOffset) * densityMultiplier;
+}
+
+// Henyey-Greenstein
+float hg(float a, float g)
+{
+    float g2 = g*g;
+    return (1-g2) / (4*3.1415*pow(1+g2-2*g*(a), 1.5));
+}
+
+float phase(float a)
+{
+    float blend = .5;
+    vec4 phaseParams = vec4(0.83, 0.3, 0.8, 0.15);      // @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
+    float hgBlend = hg(a, phaseParams.x) * (1 - blend) + hg(a, -phaseParams.y) * blend;
+    return phaseParams.z + hgBlend * phaseParams.w;
 }
 
 // @DEBUG: @NOTE: this is simply for debugggin purposes!!!!!!
@@ -62,7 +91,7 @@ void main()
         // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
         if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
         {
-            fragmentColor = vec4(0.0);
+            fragmentColor = vec4(0, 0, 0, 1.0);
             return;
         }
     }
@@ -84,7 +113,7 @@ void main()
 
         if (depthTestSqr < depthCurrentPos)
         {
-            fragmentColor = vec4(0.0);
+            fragmentColor = vec4(0, 0, 0, 1.0);
             return;
         }
 
@@ -113,26 +142,61 @@ void main()
     float accumulatedDensity = 0.0;
     vec4 sampleScale = 1.0 / cloudLayerTileSize;
     float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
-    int i = 0;
-    for (i = 0; i < NB_RAYMARCH_STEPS; i++)
-    {
-        // DO STUFF @TODO: continue here
-        vec4 noise =
-            vec4(
-                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * currentPosition.xzy).r,
-                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.g * currentPosition.xzy).g,
-                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.b * currentPosition.xzy).b,
-                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.a * currentPosition.xzy).a
-            );
-        float density =
-            0.5333333 * noise.r
-			+ 0.2666667 * noise.g
-			+ 0.1333333 * noise.b
-			+ 0.0666667 * noise.a;
 
-        accumulatedDensity += max(0.0, density * stepWeight * cloudDensityMultiplier + cloudDensityOffset);
-        if (accumulatedDensity > 1.0)
-            break;
+    float phaseValue = phase(dot(realDeltaPosition / rayLength, lightDirection));
+    float transmittance = 1.0;
+    vec3 lightEnergy = vec3(0.0);
+
+    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
+    {
+        float densityAtStep = 0.0;
+
+        //
+        // Calculate the raymarch towards the light
+        //
+        vec3 inScatterCurrentPosition = currentPosition;
+        vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
+        vec3 inScatterDeltaPosition = projectedLightDirection * abs(inScatterCurrentPosition.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
+        vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
+        float inScatterStepWeight = length(inScatterDeltaStepIncrement);
+        float inScatterDensity = 0.0;
+
+        for (int j = 0; j < NB_IN_SCATTER_RAYMARCH_STEPS; j++)
+        {
+            vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * inScatterCurrentPosition.xzy);
+            float density =
+                0.5333333 * noise.r
+			    + 0.2666667 * noise.g
+			    + 0.1333333 * noise.b
+			    + 0.0666667 * noise.a;
+
+            if (j == 0)
+            {
+                densityAtStep = density;
+                if (densityAtStep <= 0.0)
+                    break;
+            }
+
+            inScatterDensity += max(0.0, density) * inScatterStepWeight;
+            if (inScatterDensity > 7.6)   // @NOTE: this is essentially 0 when it's e^-x
+                break;
+
+            // Advance raymarch
+            inScatterCurrentPosition += inScatterDeltaStepIncrement;
+        }
+        float inScatterTransmittance = darknessThreshold + exp(-inScatterDensity * lightAbsorptionTowardsSun) * (1.0 - darknessThreshold);
+
+        //
+        // Add on the inScatterTransmittance and lightEnergy
+        //
+        if (densityAtStep > 0.0)
+        {
+            lightEnergy += densityAtStep * stepWeight * transmittance * inScatterTransmittance * phaseValue;
+            transmittance *= exp(-densityAtStep * stepWeight * lightAbsorptionThroughCloud);
+
+            if (transmittance < 0.01)
+                break;
+        }
 
         // Advance raymarch
         currentPosition += deltaStepIncrement;
@@ -140,7 +204,7 @@ void main()
 
 
     //fragmentColor = vec4(hsv2rgb(vec3(float(i) / float(NB_RAYMARCH_STEPS), 1.0, 1.0)), 1.0);
-    fragmentColor = vec4(vec3(clamp(accumulatedDensity, 0.0, 1.0)), 1.0);
+    fragmentColor = vec4(lightColor * lightEnergy, transmittance);
 }
 
     /*
