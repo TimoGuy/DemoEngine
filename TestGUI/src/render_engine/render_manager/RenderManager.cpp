@@ -634,10 +634,29 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
+	cloudEffectBlurTexture =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
+			GL_RGB32F,
+			GL_RGB,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
 
 	glCreateFramebuffers(1, &cloudEffectFBO);
 	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT0, cloudEffectTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectBlurFBO);
+	glNamedFramebufferTexture(cloudEffectBlurFBO, GL_COLOR_ATTACHMENT0, cloudEffectBlurTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Screenspace Framebuffer)" << std::endl;
 }
 
@@ -645,6 +664,8 @@ void RenderManager::destroyHDRBuffer()
 {
 	delete cloudEffectTexture;
 	glDeleteFramebuffers(1, &cloudEffectFBO);
+	delete cloudEffectBlurTexture;
+	glDeleteFramebuffers(1, &cloudEffectBlurFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1522,7 +1543,7 @@ void RenderManager::renderScene()
 	);
 
 	//
-	// Capture z-passed screen for Clouds
+	// Capture z-passed screen for @Clouds
 	//
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
@@ -1533,9 +1554,35 @@ void RenderManager::renderScene()
 	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
+	cloudEffectShader->setVec4("cloudLayerTileSize", cloudEffectInfo.cloudLayerTileSize);
 	cloudEffectShader->setFloat("cloudDensityMultiplier", cloudEffectInfo.cloudDensityMultiplier);
+	cloudEffectShader->setFloat("cloudDensityOffset", cloudEffectInfo.cloudDensityOffset);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	renderQuad();
+
+	////
+	//// Blur @Clouds pass
+	////
+	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//blurXProgramId->use();
+	//blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+	//renderQuad();
+	//
+	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//blurYProgramId->use();
+	//blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+	//renderQuad();
+	//
+	//glBlitNamedFramebuffer(
+	//	zPrePassFBO,
+	//	hdrFBO,
+	//	0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+	//	0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+	//	GL_DEPTH_BUFFER_BIT,
+	//	GL_NEAREST
+	//);
 
 	//
 	// Render scene normally
@@ -2428,7 +2475,9 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
 			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
-			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.cloudDensityMultiplier);
+			ImGui::DragFloat4("Cloud layer tile size", &cloudEffectInfo.cloudLayerTileSize.x);
+			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.cloudDensityMultiplier, 0.01f);
+			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.cloudDensityOffset, 0.05f);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

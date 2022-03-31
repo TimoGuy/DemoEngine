@@ -120,8 +120,10 @@ struct CloudNoiseInformation
 struct CloudEffectInformation
 {
 	float cloudLayerY = -100.0f;
-	float cloudLayerThickness = 10.0f;
-	float cloudDensityMultiplier = 0.01f;
+	float cloudLayerThickness = 300.0f;
+	glm::vec4 cloudLayerTileSize = { 1000.0f, 500.0f, 250.0f, 150.0f };
+	float cloudDensityMultiplier = 0.1f;
+	float cloudDensityOffset = -1.65f;
 };
 
 
@@ -227,8 +229,8 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO;
-	Texture* cloudEffectTexture;		// @NOTE: this is a framebuffer (full size)
+	GLuint cloudEffectFBO, cloudEffectBlurFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture;		// @NOTE: this is a framebuffer (full size)
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
 	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader, *cloudEffectShader;

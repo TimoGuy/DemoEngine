@@ -9,7 +9,9 @@ uniform vec3 mainCameraPosition;
 
 uniform float cloudLayerY;
 uniform float cloudLayerThickness;
+uniform vec4 cloudLayerTileSize;
 uniform float cloudDensityMultiplier;
+uniform float cloudDensityOffset;
 uniform sampler2DArray cloudNoiseTexture;
 
 // ext: zBuffer
@@ -17,6 +19,25 @@ uniform sampler2D depthTexture;
 
 #define NB_RAYMARCH_STEPS 10
 
+vec4 textureArrayInterpolate(sampler2DArray tex, float numTexLayers, vec3 str)
+{
+    float zInterpolation = mod(str.z, 1.0);
+
+    return
+        mix(
+            texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
+            texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers + 1.0), numTexLayers))).rgba,
+            zInterpolation
+        );
+}
+
+// @DEBUG: @NOTE: this is simply for debugggin purposes!!!!!!
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
 
 void main()
 {
@@ -90,29 +111,36 @@ void main()
 
     // RAYMARCH!!!!!
     float accumulatedDensity = 0.0;
-    float densityCap = 100.0;
-    float scale = 1.0 / 100.0;
+    vec4 sampleScale = 1.0 / cloudLayerTileSize;
     float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
-    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
+    int i = 0;
+    for (i = 0; i < NB_RAYMARCH_STEPS; i++)
     {
-        // DO STUFF @TODO: continue here 
-        vec4 noise = texture(cloudNoiseTexture, mod(vec3(currentPosition.xzy) * scale, 1.0)).rgba;
+        // DO STUFF @TODO: continue here
+        vec4 noise =
+            vec4(
+                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * currentPosition.xzy).r,
+                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.g * currentPosition.xzy).g,
+                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.b * currentPosition.xzy).b,
+                textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.a * currentPosition.xzy).a
+            );
         float density =
             0.5333333 * noise.r
 			+ 0.2666667 * noise.g
 			+ 0.1333333 * noise.b
 			+ 0.0666667 * noise.a;
 
-        accumulatedDensity += density * stepWeight;
-        if (accumulatedDensity > densityCap)
+        accumulatedDensity += max(0.0, density * stepWeight * cloudDensityMultiplier + cloudDensityOffset);
+        if (accumulatedDensity > 1.0)
             break;
 
         // Advance raymarch
         currentPosition += deltaStepIncrement;
     }
 
-    
-    fragmentColor = vec4(vec3(clamp(accumulatedDensity * cloudDensityMultiplier, 0.0, 1.0)), 1.0);
+
+    //fragmentColor = vec4(hsv2rgb(vec3(float(i) / float(NB_RAYMARCH_STEPS), 1.0, 1.0)), 1.0);
+    fragmentColor = vec4(vec3(clamp(accumulatedDensity, 0.0, 1.0)), 1.0);
 }
 
     /*
