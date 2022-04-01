@@ -144,6 +144,7 @@ void main()
     //
     // RAYMARCH!!!
     //
+    float transmittance = 1.0;
     float totalDensity = 0.0;
     vec4 sampleScale = 1.0 / cloudLayerTileSize;
     float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
@@ -167,26 +168,36 @@ void main()
 			    + 0.2666667 * noise.g
 			    + 0.1333333 * noise.b
 			    + 0.0666667 * noise.a;
-            inScatterDensity += (density + densityOffset) * densityMultiplier * inScatterStepWeight;
+            inScatterDensity += max(0.0, (density + densityOffset) * densityMultiplier) * inScatterStepWeight;
 
-            if (inScatterDensity > 10.0)
-                break;
+            //if (inScatterDensity > 10.0)
+            //    break;
 
             // Advance march
             inScatterCurrentPosition += inScatterDeltaStepIncrement;
         }
 
+        if (inScatterDensity > 0.0)
+        {
+            //lightEnergy += densityAtStep * stepWeight * transmittance * inScatterTransmittance * phaseValue;
+            transmittance *= exp(-inScatterDensity * stepWeight * lightAbsorptionThroughCloud);
+        }
+
         totalDensity += inScatterDensity * stepWeight;
 
-        if (totalDensity > 10.0)
+        if (transmittance < 0.01)
             break;
+
+        //if (totalDensity > 10.0)
+        //    break;
 
         // Advance march
         currentPosition += deltaStepIncrement;
     }
 
     float lightEnergy = exp(-totalDensity);
-    fragmentColor = vec4(lightColor * lightEnergy, totalDensity);
+    fragmentColor = vec4(lightColor * lightEnergy, transmittance);
+
 }
 
 
@@ -197,18 +208,8 @@ void main()
 
 
 
+    /*
 
-
-
-
-
-
-/*
-
-
-
-void oldRAYMARHC()
-{
     // RAYMARCH!!!!!
     float accumulatedDensity = 0.0;
     vec4 sampleScale = 1.0 / cloudLayerTileSize;
@@ -281,7 +282,9 @@ void oldRAYMARHC()
     fragmentColor = vec4(lightColor * lightEnergy, transmittance);
 }
 
+
 */
+
 
     /*
 

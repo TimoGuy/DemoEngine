@@ -625,8 +625,8 @@ void RenderManager::createHDRBuffer()
 			(GLsizei)MainLoop::getInstance().camera.width,
 			(GLsizei)MainLoop::getInstance().camera.height,
 			1,
-			GL_RGB32F,
-			GL_RGB,
+			GL_RGBA32F,
+			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
 			GL_NEAREST,
@@ -639,8 +639,8 @@ void RenderManager::createHDRBuffer()
 			(GLsizei)MainLoop::getInstance().camera.width,
 			(GLsizei)MainLoop::getInstance().camera.height,
 			1,
-			GL_RGB32F,
-			GL_RGB,
+			GL_RGBA32F,
+			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
 			GL_NEAREST,
@@ -1570,17 +1570,17 @@ void RenderManager::renderScene()
 	//
 	// Blur @Clouds pass
 	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurXProgramId->use();
-	blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
-	renderQuad();
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurYProgramId->use();
-	blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
-	renderQuad();
+	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//blurXProgramId->use();
+	//blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+	//renderQuad();
+	//
+	//glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	//blurYProgramId->use();
+	//blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+	//renderQuad();
 
 	//
 	// Render scene normally
