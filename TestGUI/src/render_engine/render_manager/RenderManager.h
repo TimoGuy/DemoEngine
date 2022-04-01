@@ -116,7 +116,7 @@ struct CloudNoiseInformation
 	std::vector<glm::vec4> worleyPoints;
 };
 
-
+// Added values from (https://github.com/SebLague/Clouds/blob/fcc997c40d36c7bedf95a294cd2136b8c5127009/Assets/_Scenes/Clouds%20Test.unity)
 struct CloudEffectInformation
 {
 	float cloudLayerY = -100.0f;
