@@ -105,7 +105,7 @@ void main()
 					closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
 	float normalizedDistance = 1.0 - clamp(closestDistance * gridSize * 1.25, 0.0, 1.0);
 
-	if (includePerlin)
+	if (includePerlin && false)
 	{
 		float simplexFractal = simplex3d_fractal(myPos.xyz * 8.0 + 8.0) + 0.5;
 		simplexFractal = clamp(0.5 + 0.5 * simplexFractal, 0.0, 1.0);

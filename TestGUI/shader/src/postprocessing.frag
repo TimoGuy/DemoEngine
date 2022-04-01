@@ -28,16 +28,14 @@ void main()
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
-	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r;
+	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;		// @TODO: @FIXME: @HACK: this is super duper one-off and should get fixed asap!!!!! (And make a more temporal solution in the future yo...)
+	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r * (cloudEffectColor.a) + cloudEffectColor.rgb;
 
 	hdrColor += texture(bloomColorBuffer, texCoord).rgb * bloomIntensity;
 	float avgLuminance = texture(luminanceProcessed, vec2(0.5, 0.5)).r;
 
 	hdrColor *= exposure * vignette(texCoord, 0.5, 0.75) * 0.5 / (avgLuminance + 0.001);
 	hdrColor = hdrColor / (hdrColor + 0.155) * 1.019;				// UE4 Tonemapper
-
-	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;		// @TODO: @FIXME: @HACK: this is super duper one-off and should get fixed asap!!!!! (And make a more temporal solution in the future yo...)
-	hdrColor = hdrColor * (cloudEffectColor.a) + cloudEffectColor.rgb;
 
 	fragColor = vec4(hdrColor, 1.0);
 }
