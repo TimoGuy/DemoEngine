@@ -176,11 +176,13 @@ void main()
     vec3 deltaPosition = targetPosition - currentPosition;
     float rayLength = length(deltaPosition);
 
-    if (rayLength > maxRaymarchLength)
-    {
-        deltaPosition = deltaPosition / rayLength * maxRaymarchLength;
-        rayLength = maxRaymarchLength;
-    }
+    // @NOTE: commented out bc of the horizon artifacts not actually being caused by the long ray length. I wonder what is actually causing it though.... Perhaps the less transmission there is there is in fact less stuff???
+    //float xzRayLength = length(deltaPosition.xz);
+    //if (xzRayLength > maxRaymarchLength)
+    //{
+    //    deltaPosition = deltaPosition / xzRayLength * maxRaymarchLength;
+    //    rayLength = length(deltaPosition);
+    //}
 
     vec3 deltaStepIncrement = deltaPosition / float(NB_RAYMARCH_STEPS);
 
@@ -201,8 +203,10 @@ void main()
         if (density > 0.0)
         {
             float inScatterTransmittance = inScatterLightMarch(currentPosition);
-            lightEnergy += density * stepWeight * transmittance * inScatterTransmittance * phaseValue;
-            transmittance *= exp(-density * stepWeight * lightAbsorptionThroughCloud);
+            float d = density * stepWeight * lightAbsorptionThroughCloud;
+
+            lightEnergy += density * stepWeight * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            transmittance *= exp(-d);
 
             if (transmittance < 0.01)
                 break;
