@@ -28,17 +28,17 @@ uniform vec3 lightDirection;
 uniform sampler2D depthTexture;
 
 #define NB_RAYMARCH_STEPS 10
-#define NB_IN_SCATTER_RAYMARCH_STEPS 5
+#define NB_IN_SCATTER_RAYMARCH_STEPS 10
 
 vec4 textureArrayInterpolate(sampler2DArray tex, float numTexLayers, vec3 str)
 {
-    float zInterpolation = mod(str.z, 1.0);
+    float zInterpolation = mod(abs(str.z), 1.0);
     str.xy = mod(str.xy, 1.0);
 
     vec4 color =
         mix(
+            texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
             texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
-            texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers + 1.0), numTexLayers))).rgba,
             zInterpolation
         );
 
@@ -183,6 +183,9 @@ void main()
 
             // Advance raymarch
             inScatterCurrentPosition += inScatterDeltaStepIncrement;
+
+            if (j == 0)
+                inScatterCurrentPosition += inScatterDeltaStepIncrement * ditherPattern[index];
         }
         float inScatterTransmittance = darknessThreshold + exp(-inScatterDensity * lightAbsorptionTowardsSun) * (1.0 - darknessThreshold);
 
