@@ -79,10 +79,10 @@ private:
 };
 
 
-class Texture2DArray : public Texture
+class Texture3D : public Texture
 {
 public:
-	Texture2DArray(GLsizei width, GLsizei height, GLsizei depth, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
+	Texture3D(GLsizei width, GLsizei height, GLsizei depth, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
 
 private:
 	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data) { }

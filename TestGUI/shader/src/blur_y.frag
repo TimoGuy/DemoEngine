@@ -22,15 +22,15 @@ const vec2 gaussFilter[11] = vec2[](
 
 void main()
 {
-	vec3 color = vec3(0.0);
+	vec4 color = vec4(0.0);
 
 	float scale = 1.0 / textureSize(textureMap, 0).y;
 
 	for (int i = 0; i < 11; i++)
 	{
 		vec2 coord = vec2(texCoord.x, texCoord.y + gaussFilter[i].x * scale);
-		color += textureLod(textureMap, coord, 0).rgb * gaussFilter[i].y;
+		color += textureLod(textureMap, coord, 0).rgba * gaussFilter[i].y;
 	}
 
-	fragColor = vec4(color, 1.0);
+	fragColor = color;
 }

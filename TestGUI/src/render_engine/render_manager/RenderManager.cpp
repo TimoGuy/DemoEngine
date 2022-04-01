@@ -772,7 +772,7 @@ void RenderManager::createCloudNoise()
 	//		A: worley	(Highest frequency)
 	//
 	cloudNoise1 =
-		new Texture2DArray(
+		new Texture3D(
 			cloudNoiseTex1Size,
 			cloudNoiseTex1Size,
 			cloudNoiseTex1Size,
@@ -795,10 +795,10 @@ void RenderManager::createCloudNoise()
 	glBindBufferBase(GL_UNIFORM_BUFFER, 4, cloudNoiseUBO);
 
 	//Texture* cloudNoise1Channels[] = {
-		cloudNoise1Channels[0] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[1] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[2] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[3] = new Texture2DArray(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+		cloudNoise1Channels[0] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+		cloudNoise1Channels[1] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+		cloudNoise1Channels[2] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+		cloudNoise1Channels[3] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	//};
 
 	const size_t channelGridSizes[] = { 5, 5, 7, 10 };		// @NOTE: amount^3 must not exceed 1024... bc I can't figure out how to get more than 1024 in a ubo even though the spec says I should have at least 64kb of vram????
@@ -856,7 +856,7 @@ void RenderManager::createCloudNoise()
 
 		// Render all 4 of the noise textures onto a single RGBA texture
 		cloudNoiseCombineShader->use();
-		cloudNoiseCombineShader->setInt("renderArrayIndex", (int)i);
+		cloudNoiseCombineShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 		cloudNoiseCombineShader->setSampler("R", cloudNoise1Channels[0]->getHandle());
 		cloudNoiseCombineShader->setSampler("G", cloudNoise1Channels[1]->getHandle());
 		cloudNoiseCombineShader->setSampler("B", cloudNoise1Channels[2]->getHandle());
@@ -883,7 +883,7 @@ void RenderManager::createCloudNoise()
 	//		B: worley	(Highest frequency)
 	//
 	cloudNoise2 =
-		new Texture2DArray(
+		new Texture3D(
 			cloudNoiseTex2Size,
 			cloudNoiseTex2Size,
 			cloudNoiseTex2Size,
@@ -1563,6 +1563,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
 	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
+	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
+	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
 	renderQuad();
@@ -2488,6 +2490,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud darkness threshold", &cloudEffectInfo.darknessThreshold, 0.01f);
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
+			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
+			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

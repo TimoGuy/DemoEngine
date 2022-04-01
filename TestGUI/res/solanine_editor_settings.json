@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        -0.29141128063201904,
-        0.2943972051143646,
-        0.9101701974868774
+        0.9590844511985779,
+        -0.2802131772041321,
+        0.03580465540289879
     ],
     "level_editor_camera_pos": [
-        45.032798767089844,
-        -176336.21875,
-        53.78448486328125
+        -46.72914505004883,
+        98.86100769042969,
+        -110.80487823486328
     ],
     "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_r2_h_jojo.hsfs"
 }

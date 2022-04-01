@@ -166,9 +166,9 @@ Texture2D::Texture2D(GLsizei width, GLsizei height, GLsizei levels, GLenum inter
 	loaded = true;
 }
 
-Texture2DArray::Texture2DArray(GLsizei width, GLsizei height, GLsizei depth, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR)
+Texture3D::Texture3D(GLsizei width, GLsizei height, GLsizei depth, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR)
 {
-	glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &textureHandle);
+	glCreateTextures(GL_TEXTURE_3D, 1, &textureHandle);
 
 	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
 	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);

@@ -10,7 +10,9 @@ uniform vec3 mainCameraPosition;
 uniform float cloudLayerY;
 uniform float cloudLayerThickness;
 uniform vec4 cloudLayerTileSize;
-uniform sampler2DArray cloudNoiseTexture;
+uniform sampler3D cloudNoiseTexture;
+uniform float raymarchOffset;
+uniform float maxRaymarchLength;
 
 uniform float densityOffset;
 uniform float densityMultiplier;
@@ -25,22 +27,23 @@ uniform vec3 lightDirection;
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
-#define NB_RAYMARCH_STEPS 10
-#define NB_IN_SCATTER_RAYMARCH_STEPS 10
+#define NB_RAYMARCH_STEPS 16
+#define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
-vec4 textureArrayInterpolate(sampler2DArray tex, float numTexLayers, vec3 str)
+vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 {
-    float zInterpolation = mod(abs(str.z), 1.0);
-    str.xy = mod(str.xy, 1.0);
+    //float zInterpolation = mod(abs(str.z), 1.0);
+    //str.xy = mod(str.xy, 1.0);
+    //
+    //vec4 color =
+    //    mix(
+    //        texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
+    //        texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
+    //        zInterpolation
+    //    );
 
-    vec4 color =
-        mix(
-            texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
-            texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
-            zInterpolation
-        );
-
-    //vec4 color = texture(tex, vec3(str.xy, mod(zInterpolation * numTexLayers, numTexLayers))).rgba;
+    // SAMPLER3D method
+    vec4 color = texture(tex, str).rgba;
 
     //return (color + densityOffset) * densityMultiplier;
     return color;
@@ -58,19 +61,33 @@ float sampleDensityAtPoint(vec3 point)
     return (density + densityOffset) * densityMultiplier;
 }
 
+vec3 offsetPoint(vec3 point, vec3 direction)
+{
+    float ditherPattern[16] = {
+        0.0, 0.5, 0.125, 0.625,
+        0.75, 0.22, 0.875, 0.375,
+        0.1875, 0.6875, 0.0625, 0.5625,
+        0.9375, 0.4375, 0.8125, 0.3125
+    };
+    uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
+    return point + direction * ditherPattern[index] * raymarchOffset;
+}
+
 float inScatterLightMarch(vec3 position)
 {
     vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
     vec3 inScatterDeltaPosition = projectedLightDirection * abs(position.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
     vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
+    
+    //position = offsetPoint(position, inScatterDeltaStepIncrement);
         
     float inScatterDensity = 0.0;
-    float inScatterStepWeight = length(inScatterDeltaStepIncrement);
+    float inScatterStepWeight = length(inScatterDeltaStepIncrement) / float(NB_IN_SCATTER_RAYMARCH_STEPS);
 
     for (int i = 0; i < NB_IN_SCATTER_RAYMARCH_STEPS - 1; i++)
     {
-        position += inScatterDeltaStepIncrement;        // @NOTE: since density is already sampled at the first spot, move first, then sample density!
         inScatterDensity += max(0.0, sampleDensityAtPoint(position) * inScatterStepWeight);
+        position += inScatterDeltaStepIncrement;        // @NOTE: since density is already sampled at the first spot, move first, then sample density!
     }
 
     float transmittance = exp(-inScatterDensity * lightAbsorptionTowardsSun);
@@ -158,17 +175,16 @@ void main()
     // Setup the raymarching magic!!!
     vec3 deltaPosition = targetPosition - currentPosition;
     float rayLength = length(deltaPosition);
+
+    if (rayLength > maxRaymarchLength)
+    {
+        deltaPosition = deltaPosition / rayLength * maxRaymarchLength;
+        rayLength = maxRaymarchLength;
+    }
+
     vec3 deltaStepIncrement = deltaPosition / float(NB_RAYMARCH_STEPS);
 
-    // Offset the start position
-    float ditherPattern[16] = {
-        0.0, 0.5, 0.125, 0.625,
-        0.75, 0.22, 0.875, 0.375,
-        0.1875, 0.6875, 0.0625, 0.5625,
-        0.9375, 0.4375, 0.8125, 0.3125
-    };
-    uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
-    currentPosition += deltaStepIncrement * ditherPattern[index];
+    currentPosition = offsetPoint(currentPosition, deltaStepIncrement);
 
     //
     // RAYMARCH!!!
