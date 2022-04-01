@@ -143,7 +143,7 @@ void main()
     vec4 sampleScale = 1.0 / cloudLayerTileSize;
     float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
 
-    float phaseValue = phase(dot(realDeltaPosition / rayLength, lightDirection));
+    float phaseValue = phase(dot(realDeltaPosition / rayLength, -lightDirection));
     float transmittance = 1.0;
     vec3 lightEnergy = vec3(0.0);
 
@@ -178,8 +178,8 @@ void main()
             }
 
             inScatterDensity += max(0.0, density) * inScatterStepWeight;
-            if (inScatterDensity > 7.6)   // @NOTE: this is essentially 0 when it's e^-x
-                break;
+            //if (inScatterDensity > 7.6)   // @NOTE: this is essentially 0 when it's e^-x
+            //    break;
 
             // Advance raymarch
             inScatterCurrentPosition += inScatterDeltaStepIncrement;
