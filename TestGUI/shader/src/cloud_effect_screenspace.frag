@@ -35,14 +35,17 @@ vec4 textureArrayInterpolate(sampler2DArray tex, float numTexLayers, vec3 str)
     float zInterpolation = mod(abs(str.z), 1.0);
     str.xy = mod(str.xy, 1.0);
 
-    vec4 color =
-        mix(
-            texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
-            texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
-            zInterpolation
-        );
+    //vec4 color =
+    //    mix(
+    //        texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
+    //        texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
+    //        zInterpolation
+    //    );
 
-    return (color + densityOffset) * densityMultiplier;
+    vec4 color = texture(tex, vec3(str.xy, mod(zInterpolation * numTexLayers, numTexLayers))).rgba;
+
+    //return (color + densityOffset) * densityMultiplier;
+    return color;
 }
 
 // Henyey-Greenstein
@@ -138,6 +141,74 @@ void main()
     uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
     currentPosition += deltaStepIncrement * ditherPattern[index];
 
+    //
+    // RAYMARCH!!!
+    //
+    float totalDensity = 0.0;
+    vec4 sampleScale = 1.0 / cloudLayerTileSize;
+    float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
+
+    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
+    {
+        // Prep for inscatter raymarching
+        vec3 inScatterCurrentPosition = currentPosition;
+        vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
+        vec3 inScatterDeltaPosition = projectedLightDirection * abs(inScatterCurrentPosition.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
+        vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
+        
+        float inScatterDensity = 0.0;
+        float inScatterStepWeight = length(inScatterDeltaStepIncrement);
+        
+        for (int j = 0; j < NB_IN_SCATTER_RAYMARCH_STEPS; j++)
+        {
+            vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * inScatterCurrentPosition.xzy);
+            float density =
+                0.5333333 * noise.r
+			    + 0.2666667 * noise.g
+			    + 0.1333333 * noise.b
+			    + 0.0666667 * noise.a;
+            inScatterDensity += (density + densityOffset) * densityMultiplier * inScatterStepWeight;
+
+            if (inScatterDensity > 10.0)
+                break;
+
+            // Advance march
+            inScatterCurrentPosition += inScatterDeltaStepIncrement;
+        }
+
+        totalDensity += inScatterDensity * stepWeight;
+
+        if (totalDensity > 10.0)
+            break;
+
+        // Advance march
+        currentPosition += deltaStepIncrement;
+    }
+
+    float lightEnergy = exp(-totalDensity);
+    fragmentColor = vec4(lightColor * lightEnergy, totalDensity);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+void oldRAYMARHC()
+{
     // RAYMARCH!!!!!
     float accumulatedDensity = 0.0;
     vec4 sampleScale = 1.0 / cloudLayerTileSize;
@@ -209,6 +280,8 @@ void main()
     //fragmentColor = vec4(hsv2rgb(vec3(float(i) / float(NB_RAYMARCH_STEPS), 1.0, 1.0)), 1.0);
     fragmentColor = vec4(lightColor * lightEnergy, transmittance);
 }
+
+*/
 
     /*
 
