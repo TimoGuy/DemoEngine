@@ -9,7 +9,6 @@ uniform int gridSize;
 
 layout (std140, binding = 4) uniform WorleyPoints
 {
-	int numPoints;
     vec4 worleyPoints[1024];
 };
 
@@ -98,11 +97,22 @@ void main()
 	fragmentColor = vec4(0.0);
 	vec3 myPos = vec3(texCoord, currentRenderDepth);
 	float closestDistance = 1.0;
-	for (int i = 0; i < numPoints; i++)
-		for (int x = -1; x <= 1; x++)
-			for (int y = -1; y <= 1; y++)
-				for (int z = -1; z <= 1; z++)
-					closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
+	
+	for (int i = 0; i < gridSize; i++)
+		for (int j = 0; j < gridSize; j++)
+			for (int k = 0; k < gridSize; k++)
+			{
+				int worleyIndex = mod(i * gridSize * gridSize + j * gridSize + k, 1024);
+				vec3 worleyPoint = vec3(i, j, k) + worleyPoints[worleyIndex].xyz;
+				worleyPoint /= float(gridSize);		// NOTE: this normalizes it.
+
+				for (int x = -1; x <= 1; x++)
+					for (int y = -1; y <= 1; y++)
+						for (int z = -1; z <= 1; z++)
+						{
+							closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
+						}
+			}
 	float normalizedDistance = 1.0 - clamp(closestDistance * gridSize * 1.25, 0.0, 1.0);
 
 	if (includePerlin && false)

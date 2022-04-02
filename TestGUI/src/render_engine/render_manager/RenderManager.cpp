@@ -791,8 +791,14 @@ void RenderManager::createCloudNoise()
 	// Create just a temporary UBO to store the worley noise points
 	GLuint cloudNoiseUBO;
 	glCreateBuffers(1, &cloudNoiseUBO);
-	glNamedBufferData(cloudNoiseUBO, sizeof(glm::vec4) + sizeof(glm::vec4) * 8192, nullptr, GL_STATIC_DRAW);	 // @NOTE: the int:numPoints variable gets rounded up to 16 bytes in the buffer btw. No packing.
+	glNamedBufferData(cloudNoiseUBO, sizeof(glm::vec4) * 1024, nullptr, GL_STATIC_DRAW);	 // @NOTE: the int:numPoints variable gets rounded up to 16 bytes in the buffer btw. No packing.
 	glBindBufferBase(GL_UNIFORM_BUFFER, 4, cloudNoiseUBO);
+
+	Texture* cloudNoiseFractalOctaves[] = {
+		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+	};
 
 	//Texture* cloudNoise1Channels[] = {
 		cloudNoise1Channels[0] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
@@ -801,22 +807,31 @@ void RenderManager::createCloudNoise()
 		cloudNoise1Channels[3] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	//};
 
-	const size_t channelGridSizes[] = { 5, 5, 7, 10 };		// @NOTE: amount^3 must not exceed 1024... bc I can't figure out how to get more than 1024 in a ubo even though the spec says I should have at least 64kb of vram????
-	std::vector<glm::vec3> worleyPoints[] = { std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>() };
+	const size_t channelGridSizes[] = {
+		3, 7, 11,
+		9, 20, 33,
+		12, 24, 40,
+		20, 35, 49
+	};		// @NOTE: amount^3 must not exceed 1024... bc I can't figure out how to get more than 1024 in a ubo even though the spec says I should have at least 64kb of vram????
+	std::vector<glm::vec3> worleyPoints[] = {
+		std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(),
+		std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(),
+		std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>(),
+		std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>()
+	};
 
 	std::random_device randomDevice;
 	std::mt19937 randomEngine(randomDevice());
 	std::uniform_real_distribution<> distribution(0.0, 1.0);
 
-	for (size_t channel = 0; channel < 4; channel++)
-		for (size_t x = 0; x < channelGridSizes[channel]; x++)
-			for (size_t y = 0; y < channelGridSizes[channel]; y++)
-				for (size_t z = 0; z < channelGridSizes[channel]; z++)
-				{
-					glm::vec3 point((float)x, (float)y, (float)z);
-					glm::vec3 offset(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine));
-					worleyPoints[channel].push_back((point + offset) / (float)channelGridSizes[channel]);
-				}
+	for (size_t i = 0; i < 12; i++)
+	{
+		size_t worleyPointCount = channelGridSizes[i] * channelGridSizes[i] * channelGridSizes[i];
+		for (size_t j = 0; j < glm::min((size_t)1024, worleyPointCount); j++)
+			worleyPoints[i].push_back(
+				glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine))
+			);
+	}
 	
 	// Render out all the layers with the points!
 	// @TODO: I think what needs to happen is to generate a texture that contains all the points for a worley map and then use that texture to generate the actual worley map. This look up image can just be a GL_NEAREST filtered 8192x8192 texture I think. That should be big enough, and then delete it after it's not needed anymore.  -Timo
@@ -827,22 +842,43 @@ void RenderManager::createCloudNoise()
 	for (size_t i = 0; i < cloudNoiseTex1Size; i++)
 	{
 		// Render noise textures onto 4 different 8 bit textures
-		cloudNoiseGenerateShader->use();
-		cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
-
 		for (size_t j = 0; j < 4; j++)
 		{
+			cloudNoiseGenerateShader->use();
+			cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 			cloudNoiseGenerateShader->setInt("includePerlin", (int)(j == 0));
-			cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j]);
 
-			cloudNoiseInfo.numPoints = worleyPoints[j].size();
-			assert(worleyPoints[j].size() <= 1024);
-			cloudNoiseInfo.worleyPoints.clear();
-			for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j].size(); worleypointcopy++)
-				cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j][worleypointcopy], 0.0f));
-			glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(int), &cloudNoiseInfo.numPoints);
-			glNamedBufferSubData(cloudNoiseUBO, sizeof(glm::vec4), sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), glm::value_ptr(cloudNoiseInfo.worleyPoints[0]));	 // @NOTE: the offset is sizeof(glm::vec4) bc the memory layout std140 rounds up the 4 bytes of the sizeof(int) up to 16 bytes (size of a vec4)
+			// Render each octave (3 total) for one 8 bit noise texture
+			size_t numNoiseOctaves = 3;
+			for (size_t k = 0; k < numNoiseOctaves; k++)
+			{
+				cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j * numNoiseOctaves + k]);
 
+				cloudNoiseInfo.numPoints = worleyPoints[j * numNoiseOctaves + k].size();
+				assert(worleyPoints[j * numNoiseOctaves + k].size() <= 1024);
+				cloudNoiseInfo.worleyPoints.clear();
+				for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j * numNoiseOctaves + k].size(); worleypointcopy++)
+					cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j * numNoiseOctaves + k][worleypointcopy], 0.0f));
+				//glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(int), &cloudNoiseInfo.numPoints);
+				glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), glm::value_ptr(cloudNoiseInfo.worleyPoints[0]));	 // @NOTE: the offset is sizeof(glm::vec4) bc the memory layout std140 rounds up the 4 bytes of the sizeof(int) up to 16 bytes (size of a vec4)
+
+				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoiseFractalOctaves[k]->getHandle(), 0, i);
+				auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
+				if (status != GL_FRAMEBUFFER_COMPLETE)
+					std::cout << "Framebuffer not complete! (Worley Noise FBO) (Layer: " << i << ") (Channel: " << j << ") (Octave: " << k << ")" << std::endl;
+
+				glBindFramebuffer(GL_FRAMEBUFFER, noiseFBO);
+				glClear(GL_COLOR_BUFFER_BIT);
+				renderQuad();
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			}
+
+			// Combine octaves into a single noise channel
+			cloudNoiseFractalShader->use();
+			cloudNoiseFractalShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
+			cloudNoiseFractalShader->setFloat("sample1", cloudNoiseFractalOctaves[0]->getHandle());
+			cloudNoiseFractalShader->setFloat("sample2", cloudNoiseFractalOctaves[1]->getHandle());
+			cloudNoiseFractalShader->setFloat("sample3", cloudNoiseFractalOctaves[2]->getHandle());
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE)
