@@ -300,6 +300,8 @@
     <None Include="shader\cloudNoiseCombine.json" />
     <None Include="shader\src\cloud_effect_screenspace.frag" />
     <None Include="shader\cloudEffectSS.json" />
+    <None Include="shader\src\cloud_noise_fractal.frag" />
+    <None Include="shader\cloudNoiseFractal.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

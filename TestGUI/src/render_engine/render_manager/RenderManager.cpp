@@ -765,7 +765,7 @@ Texture* cloudNoise1Channels[4];
 void RenderManager::createCloudNoise()
 {
 	//
-	// Cloud noise 1:
+	// @Cloud noise 1:
 	//		R: perlin-worley
 	//		G: worley	(Same freq. as R)
 	//		B: worley	(Medium frequency)
@@ -938,6 +938,7 @@ void RenderManager::createShaderPrograms()
 	blurXProgramId = (Shader*)Resources::getResource("shader;blurX");
 	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
 	cloudNoiseGenerateShader = (Shader*)Resources::getResource("shader;cloudNoiseGenerate");
+	cloudNoiseFractalShader = (Shader*)Resources::getResource("shader;cloudNoiseFractal");
 	cloudNoiseCombineShader = (Shader*)Resources::getResource("shader;cloudNoiseCombine");
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 }
@@ -963,6 +964,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;blurX");
 	Resources::unloadResource("shader;blurY");
 	Resources::unloadResource("shader;cloudNoiseGenerate");
+	Resources::unloadResource("shader;cloudNoiseFractal");
 	Resources::unloadResource("shader;cloudNoiseCombine");
 	Resources::unloadResource("shader;cloudEffectSS");
 }

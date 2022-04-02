@@ -238,7 +238,7 @@ private:
 	Texture* cloudEffectTexture, *cloudEffectBlurTexture;		// @NOTE: this is a framebuffer (full size)
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
-	Shader* cloudNoiseGenerateShader, *cloudNoiseCombineShader, *cloudEffectShader;
+	Shader* cloudNoiseGenerateShader, *cloudNoiseFractalShader, *cloudNoiseCombineShader, *cloudEffectShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
 
