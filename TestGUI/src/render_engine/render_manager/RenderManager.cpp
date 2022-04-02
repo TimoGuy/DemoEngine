@@ -1569,6 +1569,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
+	cloudEffectShader->setVec4("phaseParameters", cloudEffectInfo.phaseParameters);
 	renderQuad();
 
 	//
@@ -2494,6 +2495,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
 			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
+			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{

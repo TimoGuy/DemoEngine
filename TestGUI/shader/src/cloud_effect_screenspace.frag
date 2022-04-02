@@ -24,6 +24,8 @@ uniform float lightAbsorptionThroughCloud;
 uniform vec3 lightColor;
 uniform vec3 lightDirection;
 
+uniform vec4 phaseParameters;
+
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
@@ -104,9 +106,8 @@ float hg(float a, float g)
 float phase(float a)
 {
     float blend = .5;
-    vec4 phaseParams = vec4(0.83, 0.3, 0.8, 0.15);      // @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
-    float hgBlend = hg(a, phaseParams.x) * (1 - blend) + hg(a, -phaseParams.y) * blend;
-    return phaseParams.z + hgBlend * phaseParams.w;
+    float hgBlend = hg(a, phaseParameters.x) * (1 - blend) + hg(a, -phaseParameters.y) * blend;
+    return phaseParameters.z + hgBlend * phaseParameters.w;
 }
 
 // @DEBUG: @NOTE: this is simply for debugggin purposes!!!!!!
