@@ -102,7 +102,7 @@ void main()
 		for (int j = 0; j < gridSize; j++)
 			for (int k = 0; k < gridSize; k++)
 			{
-				int worleyIndex = mod(i * gridSize * gridSize + j * gridSize + k, 1024);
+				int worleyIndex = int(mod(i * gridSize * gridSize + j * gridSize + k, 1024));
 				vec3 worleyPoint = vec3(i, j, k) + worleyPoints[worleyIndex].xyz;
 				worleyPoint /= float(gridSize);		// NOTE: this normalizes it.
 
@@ -110,7 +110,7 @@ void main()
 					for (int y = -1; y <= 1; y++)
 						for (int z = -1; z <= 1; z++)
 						{
-							closestDistance = min(closestDistance, distance(myPos, worleyPoints[i].xyz + vec3(x, y, z)));
+							closestDistance = min(closestDistance, distance(myPos, worleyPoint + vec3(x, y, z)));
 						}
 			}
 	float normalizedDistance = 1.0 - clamp(closestDistance * gridSize * 1.25, 0.0, 1.0);

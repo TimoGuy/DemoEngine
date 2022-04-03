@@ -122,7 +122,7 @@ struct CloudEffectInformation
 	float cloudLayerY = -150.0f;		// @NOTE: revert to -100 after all this is done!
 	float cloudLayerThickness = 300.0f;
 	glm::vec4 cloudLayerTileSize = { 800.0f, 0.0f, 0.0f, 0.0f };  //{ 185.0f, 500.0f, 250.0f, 150.0f };
-	float densityOffset = -0.44f;
+	float densityOffset = -0.33f;
 	float densityMultiplier = 0.65f;
 	float darknessThreshold = 0.07f;
 	float lightAbsorptionTowardsSun = 1.2f;
@@ -130,6 +130,7 @@ struct CloudEffectInformation
 	float raymarchOffset = 1.0f;
 	float maxRaymarchLength = 1100.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 0.15f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
+	bool doBlurPass = true;
 };
 
 

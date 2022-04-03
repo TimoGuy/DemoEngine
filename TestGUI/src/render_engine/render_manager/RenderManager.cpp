@@ -876,9 +876,9 @@ void RenderManager::createCloudNoise()
 			// Combine octaves into a single noise channel
 			cloudNoiseFractalShader->use();
 			cloudNoiseFractalShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
-			cloudNoiseFractalShader->setFloat("sample1", cloudNoiseFractalOctaves[0]->getHandle());
-			cloudNoiseFractalShader->setFloat("sample2", cloudNoiseFractalOctaves[1]->getHandle());
-			cloudNoiseFractalShader->setFloat("sample3", cloudNoiseFractalOctaves[2]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample1", cloudNoiseFractalOctaves[0]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample2", cloudNoiseFractalOctaves[1]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample3", cloudNoiseFractalOctaves[2]->getHandle());
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -1611,17 +1611,20 @@ void RenderManager::renderScene()
 	//
 	// Blur @Clouds pass
 	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurXProgramId->use();
-	blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
-	renderQuad();
-	
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurYProgramId->use();
-	blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
-	renderQuad();
+	if (cloudEffectInfo.doBlurPass)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		blurXProgramId->use();
+		blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+		renderQuad();
+
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		blurYProgramId->use();
+		blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+		renderQuad();
+	}
 
 	//
 	// Render scene normally
@@ -2532,6 +2535,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
 			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
+			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
+
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)
 			{
