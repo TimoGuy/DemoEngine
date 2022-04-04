@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        -0.8995469808578491,
-        0.2527060806751251,
-        0.3562048077583313
+        -0.24981343746185303,
+        -0.438505619764328,
+        -0.8632540106773376
     ],
     "level_editor_camera_pos": [
-        -966.7771606445313,
-        -724.6376342773438,
-        -9.199639320373535
+        27.503692626953125,
+        212.23988342285156,
+        -46.37810516357422
     ],
-    "startup_level": "C:\\Users\\Timothy\\source\\repos\\DemoEngine\\TestGUI\\res\\level\\lvl_r2_h_jojo.hsfs"
+    "startup_level": "C:\\Users\\Timo\\Documents\\Repositories\\DemoEngine\\TestGUI\\res\\level\\lvl_r2_h_jojo.hsfs"
 }

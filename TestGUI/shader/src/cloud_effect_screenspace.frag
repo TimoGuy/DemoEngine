@@ -186,8 +186,8 @@ void main()
     //}
 
     vec3 deltaStepIncrement = deltaPosition / float(NB_RAYMARCH_STEPS);
-
-    currentPosition = offsetPoint(currentPosition, deltaStepIncrement);
+    //currentPosition = offsetPoint(currentPosition, normalize(deltaPosition));
+    currentPosition = offsetPoint(currentPosition, deltaStepIncrement);     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
     //
     // RAYMARCH!!!
