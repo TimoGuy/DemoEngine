@@ -112,7 +112,6 @@ struct CameraInformation
 
 struct CloudNoiseInformation
 {
-	int numPoints;		// @NOTE: this'll be rounded up to 16 bytes (glm::vec4 size)
 	std::vector<glm::vec4> worleyPoints;
 };
 

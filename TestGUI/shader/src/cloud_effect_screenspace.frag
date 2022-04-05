@@ -151,6 +151,11 @@ void main()
     currentPosition     = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
     vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
 
+    const float maxRaymarchLength2 = maxRaymarchLength * maxRaymarchLength;
+    vec3 cpfc = mainCameraPosition - currentPosition;   // Current Position From Camera
+    if (dot(cpfc, cpfc) > maxRaymarchLength2)
+        return;
+
     // Check for depth test
     if (z != 1.0)
     {

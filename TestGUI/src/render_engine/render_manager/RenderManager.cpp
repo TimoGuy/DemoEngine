@@ -801,11 +801,11 @@ void RenderManager::createCloudNoise()
 	};
 
 	//Texture* cloudNoise1Channels[] = {
-		cloudNoise1Channels[0] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[1] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[2] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-		cloudNoise1Channels[3] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
-	//};
+	cloudNoise1Channels[0] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+	cloudNoise1Channels[1] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+	cloudNoise1Channels[2] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+	cloudNoise1Channels[3] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+//};
 
 	const size_t channelGridSizes[] = {
 		3, 7, 11,
@@ -832,35 +832,38 @@ void RenderManager::createCloudNoise()
 				glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine))
 			);
 	}
-	
+
 	// Render out all the layers with the points!
 	// @TODO: I think what needs to happen is to generate a texture that contains all the points for a worley map and then use that texture to generate the actual worley map. This look up image can just be a GL_NEAREST filtered 8192x8192 texture I think. That should be big enough, and then delete it after it's not needed anymore.  -Timo
 	// @TODO: Also I am noting that there is noise stacking on page 33 of the pdf (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf) FOR SURE!!!!!
 	GLuint noiseFBO;
 	glCreateFramebuffers(1, &noiseFBO);
 	glViewport(0, 0, cloudNoiseTex1Size, cloudNoiseTex1Size);
-	for (size_t i = 0; i < cloudNoiseTex1Size; i++)
+
+	// Render noise textures onto 4 different 8 bit textures
+	for (size_t j = 0; j < 4; j++)
 	{
-		// Render noise textures onto 4 different 8 bit textures
-		for (size_t j = 0; j < 4; j++)
+		cloudNoiseGenerateShader->use();
+		cloudNoiseGenerateShader->setInt("includePerlin", (int)(j == 0));
+
+		// Render each octave (3 total) for one 8 bit noise texture
+		size_t numNoiseOctaves = 3;
+		for (size_t k = 0; k < numNoiseOctaves; k++)
 		{
-			cloudNoiseGenerateShader->use();
-			cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
-			cloudNoiseGenerateShader->setInt("includePerlin", (int)(j == 0));
+			cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j * numNoiseOctaves + k]);
 
-			// Render each octave (3 total) for one 8 bit noise texture
-			size_t numNoiseOctaves = 3;
-			for (size_t k = 0; k < numNoiseOctaves; k++)
+			assert(worleyPoints[j * numNoiseOctaves + k].size() <= 1024);
+			cloudNoiseInfo.worleyPoints.clear();
+			for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j * numNoiseOctaves + k].size(); worleypointcopy++)
+				cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j * numNoiseOctaves + k][worleypointcopy], 0.0f));
+			glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), glm::value_ptr(cloudNoiseInfo.worleyPoints[0]));	 // @NOTE: the offset is sizeof(glm::vec4) bc the memory layout std140 rounds up the 4 bytes of the sizeof(int) up to 16 bytes (size of a vec4)
+
+			//
+			// Render each layer with the noise profile
+			//
+			for (size_t i = 0; i < cloudNoiseTex1Size; i++)
 			{
-				cloudNoiseGenerateShader->setInt("gridSize", (int)channelGridSizes[j * numNoiseOctaves + k]);
-
-				cloudNoiseInfo.numPoints = worleyPoints[j * numNoiseOctaves + k].size();
-				assert(worleyPoints[j * numNoiseOctaves + k].size() <= 1024);
-				cloudNoiseInfo.worleyPoints.clear();
-				for (size_t worleypointcopy = 0; worleypointcopy < worleyPoints[j * numNoiseOctaves + k].size(); worleypointcopy++)
-					cloudNoiseInfo.worleyPoints.push_back(glm::vec4(worleyPoints[j * numNoiseOctaves + k][worleypointcopy], 0.0f));
-				//glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(int), &cloudNoiseInfo.numPoints);
-				glNamedBufferSubData(cloudNoiseUBO, 0, sizeof(glm::vec4) * cloudNoiseInfo.worleyPoints.size(), glm::value_ptr(cloudNoiseInfo.worleyPoints[0]));	 // @NOTE: the offset is sizeof(glm::vec4) bc the memory layout std140 rounds up the 4 bytes of the sizeof(int) up to 16 bytes (size of a vec4)
+				cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 
 				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoiseFractalOctaves[k]->getHandle(), 0, i);
 				auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
@@ -872,8 +875,13 @@ void RenderManager::createCloudNoise()
 				renderQuad();
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			}
+		}
 
-			// Combine octaves into a single noise channel
+		//
+		// Combine octaves into a single noise channel
+		//
+		for (size_t i = 0; i < cloudNoiseTex1Size; i++)
+		{
 			cloudNoiseFractalShader->use();
 			cloudNoiseFractalShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 			cloudNoiseFractalShader->setSampler("sample1", cloudNoiseFractalOctaves[0]->getHandle());
@@ -889,8 +897,13 @@ void RenderManager::createCloudNoise()
 			renderQuad();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
+	}
 
-		// Render all 4 of the noise textures onto a single RGBA texture
+	//
+	// Render all 4 of the noise textures onto a single RGBA texture
+	//
+	for (size_t i = 0; i < cloudNoiseTex1Size; i++)
+	{
 		cloudNoiseCombineShader->use();
 		cloudNoiseCombineShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 		cloudNoiseCombineShader->setSampler("R", cloudNoise1Channels[0]->getHandle());
