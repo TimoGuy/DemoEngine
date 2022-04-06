@@ -151,10 +151,10 @@ void main()
     currentPosition     = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
     vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
 
-    const float maxRaymarchLength2 = maxRaymarchLength * maxRaymarchLength;
-    vec3 cpfc = mainCameraPosition - currentPosition;   // Current Position From Camera
-    if (dot(cpfc, cpfc) > maxRaymarchLength2)
-        return;
+    //const float maxRaymarchLength2 = maxRaymarchLength * maxRaymarchLength;
+    //vec3 cpfc = mainCameraPosition - currentPosition;   // Current Position From Camera
+    //if (dot(cpfc, cpfc) > maxRaymarchLength2)
+    //    return;
 
     // Check for depth test
     if (z != 1.0)
@@ -180,7 +180,13 @@ void main()
 
     // Setup the raymarching magic!!!
     vec3 deltaPosition = targetPosition - currentPosition;
-    float rayLength = length(deltaPosition);
+
+    //////////////float flatTravel = abs(normalize(deltaPosition).y);
+    //////////////if (flatTravel < maxRaymarchLength)       // NOTE: set this to 0.002
+    //////////////{
+    //////////////    fragmentColor = vec4(0, 0, 0, 1);
+    //////////////    return;
+    //////////////}
 
     // @NOTE: commented out bc of the horizon artifacts not actually being caused by the long ray length. I wonder what is actually causing it though.... Perhaps the less transmission there is there is in fact less stuff???
     //float xzRayLength = length(deltaPosition.xz);
@@ -190,8 +196,19 @@ void main()
     //    rayLength = length(deltaPosition);
     //}
 
-    vec3 deltaStepIncrement = deltaPosition / float(NB_RAYMARCH_STEPS);
-    //currentPosition = offsetPoint(currentPosition, normalize(deltaPosition));
+    const float MAX_RAYMARCH_DISTANCE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
+    const float rayLength = min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
+    const vec3 deltaPositionNormalized = normalize(deltaPosition);
+    float stepSize = rayLength / float(NB_RAYMARCH_STEPS);
+    if (stepSize > MAX_RAYMARCH_DISTANCE)
+    {
+        const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
+        const float remainder = mod(idealStepSize, 1.0);
+        const float idealStepSize_rounded = floor(idealStepSize);
+        const float weightPadding = remainder / idealStepSize_rounded;
+        stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
+    }
+    vec3 deltaStepIncrement = deltaPositionNormalized * stepSize;
     currentPosition = offsetPoint(currentPosition, deltaStepIncrement);     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
     //
@@ -199,19 +216,19 @@ void main()
     //
     float transmittance = 1.0;
     float lightEnergy = 0.0;
-    float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
-    float phaseValue = phase(dot(deltaPosition / rayLength, -lightDirection));
+    float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
+    float distanceTraveled = 0.0;
 
-    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
+    while (distanceTraveled < rayLength)
     {
         float density = sampleDensityAtPoint(currentPosition);
 
         if (density > 0.0)
         {
             float inScatterTransmittance = inScatterLightMarch(currentPosition);
-            float d = density * stepWeight * lightAbsorptionThroughCloud;
+            float d = density * stepSize * lightAbsorptionThroughCloud;
 
-            lightEnergy += density * stepWeight * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            lightEnergy += density * stepSize * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
             transmittance *= exp(-d);
 
             if (transmittance < 0.01)
@@ -242,11 +259,11 @@ void main()
 
             if (inScatterDensity > 0.0)
             {
-                //lightEnergy += densityAtStep * stepWeight * transmittance * inScatterTransmittance * phaseValue;
-                transmittance *= exp(-inScatterDensity * stepWeight * lightAbsorptionThroughCloud);
+                //lightEnergy += densityAtStep * stepSize * transmittance * inScatterTransmittance * phaseValue;
+                transmittance *= exp(-inScatterDensity * stepSize * lightAbsorptionThroughCloud);
             }
 
-            totalDensity += inScatterDensity * stepWeight;
+            totalDensity += inScatterDensity * stepSize;
 
             if (transmittance < 0.01)
                 break;
@@ -259,10 +276,10 @@ void main()
 
         // Advance march
         currentPosition += deltaStepIncrement;
+        distanceTraveled += stepSize;
     }
 
     fragmentColor = vec4(lightColor * lightEnergy, transmittance);
-
 }
 
 

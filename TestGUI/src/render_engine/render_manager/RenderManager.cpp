@@ -338,6 +338,7 @@ void RenderManager::recreateRenderBuffers()
 #endif
 }
 
+#ifdef _DEVELOP
 std::vector<BaseObject*> RenderManager::getSelectedObjects()
 {
 	std::vector<BaseObject*> objs;
@@ -400,6 +401,7 @@ void RenderManager::deleteAllSelectedObjects()
 	}
 	deselectAllSelectedObject();
 }
+#endif
 
 #ifdef _DEVELOP
 void RenderManager::physxVisSetDebugLineList(std::vector<physx::PxDebugLine>* lineList)
@@ -835,6 +837,7 @@ void RenderManager::createCloudNoise()
 
 	// Render out all the layers with the points!
 	// @TODO: I think what needs to happen is to generate a texture that contains all the points for a worley map and then use that texture to generate the actual worley map. This look up image can just be a GL_NEAREST filtered 8192x8192 texture I think. That should be big enough, and then delete it after it's not needed anymore.  -Timo
+	//		@RESPONSE: So I think that the current sitation where only 1024 points are inserted and then repeated works just fine actually. This allows for a smaller set of information needed to look thru.  -Timo
 	// @TODO: Also I am noting that there is noise stacking on page 33 of the pdf (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf) FOR SURE!!!!!
 	GLuint noiseFBO;
 	glCreateFramebuffers(1, &noiseFBO);
@@ -2546,7 +2549,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
-			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
+			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength, 0.001f);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
 

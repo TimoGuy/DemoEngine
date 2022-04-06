@@ -393,6 +393,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 	const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 
+#ifdef _DEVELOP
 	if (InputManager::getInstance().pausePressed)
 	{
 		DEBUG_frustumLightSpaceCalculations& newJ = heyho[heyho.size() - 1];
@@ -520,6 +521,7 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 		newJ.frustumCornersJojoSpace.push_back(lightView * corners[3]);
 		newJ.frustumCornersJojoSpace.push_back(lightView * corners[7]);
 	}
+#endif
 
 #endif
 
@@ -528,8 +530,10 @@ glm::mat4 DirectionalLightLight::getLightSpaceMatrix(const float nearPlane, cons
 
 std::vector<glm::mat4> DirectionalLightLight::getLightSpaceMatrices()
 {
+#ifdef _DEVELOP
 	if (InputManager::getInstance().pausePressed)
 		heyho.push_back(DEBUG_frustumLightSpaceCalculations());
+#endif
 
 	std::vector<glm::mat4> ret;
 	for (size_t i = 0; i < shadowCascadeLevels.size() + 1; ++i)

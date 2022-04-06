@@ -115,7 +115,7 @@ void main()
 			}
 	float normalizedDistance = 1.0 - clamp(closestDistance * gridSize * 1.25, 0.0, 1.0);
 
-	if (includePerlin && false)
+	if (includePerlin && false)		// @TODO: review and see if this noise algorithm to include perlin noise too should get improved. I'm not really seeing the effect of it in the end product so yeah.  -Timo
 	{
 		float simplexFractal = simplex3d_fractal(myPos.xyz * 8.0 + 8.0) + 0.5;
 		simplexFractal = clamp(0.5 + 0.5 * simplexFractal, 0.0, 1.0);

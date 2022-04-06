@@ -22,8 +22,7 @@ void main()
 
 	float luminance =
 		dot(vec3(0.2125, 0.7154, 0.0721),
-			texture(hdrColorBuffer, texCoord).rgb +
-			//cloudEffectColor.rgb * cloudEffectColor.a +		// @NOTE: this is how postprocessing.frag does it, and it's labeled @HACK, so expect this algorithm to change in the future eh!
+			texture(hdrColorBuffer, texCoord).rgb * (0.25 * cloudEffectColor.a + 0.75) + cloudEffectColor.rgb * 0.25 +	// @HACK: Multiplying the cloudEffectColor.rgb by 0.5 bc I'm a hoe  -Timo
 			sunLightColor * texture(volumetricLighting, texCoord).r) *			// NOTE: this is cheap and dirty. It's like a hoe.
 		vignette(texCoord, 0.5, 0.75);
 

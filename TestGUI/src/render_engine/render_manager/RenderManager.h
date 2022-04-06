@@ -127,7 +127,7 @@ struct CloudEffectInformation
 	float lightAbsorptionTowardsSun = 1.2f;
 	float lightAbsorptionThroughCloud = 0.84f;
 	float raymarchOffset = 1.0f;
-	float maxRaymarchLength = 1100.0f;
+	float maxRaymarchLength = 1000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 0.15f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
 };
