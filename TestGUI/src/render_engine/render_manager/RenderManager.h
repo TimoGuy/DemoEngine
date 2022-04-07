@@ -120,8 +120,8 @@ struct CloudEffectInformation
 {
 	float cloudLayerY = -150.0f;		// @NOTE: revert to -100 after all this is done!
 	float cloudLayerThickness = 300.0f;
-	float cloudNoiseMainSize = 800.0f;
-	float cloudNoiseDetailSize = 50.0f;
+	float cloudNoiseMainSize = 1750.0f;
+	float cloudNoiseDetailSize = 75.0f;
 	float densityOffset = -0.33f;
 	float densityMultiplier = 0.65f;
 	float darknessThreshold = 0.07f;
