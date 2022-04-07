@@ -797,7 +797,7 @@ void RenderManager::createCloudNoise()
 	glNamedBufferData(cloudNoiseUBO, sizeof(glm::vec4) * 1024, nullptr, GL_STATIC_DRAW);	 // @NOTE: the int:numPoints variable gets rounded up to 16 bytes in the buffer btw. No packing.
 	glBindBufferBase(GL_UNIFORM_BUFFER, 4, cloudNoiseUBO);
 
-	Texture* cloudNoiseFractalOctaves[] = {
+	Texture* cloudNoise1FractalOctaves[] = {
 		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
 		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
 		new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
@@ -869,7 +869,7 @@ void RenderManager::createCloudNoise()
 			{
 				cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
 
-				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoiseFractalOctaves[k]->getHandle(), 0, i);
+				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1FractalOctaves[k]->getHandle(), 0, i);
 				auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 				if (status != GL_FRAMEBUFFER_COMPLETE)
 					std::cout << "Framebuffer not complete! (Worley Noise FBO) (Layer: " << i << ") (Channel: " << j << ") (Octave: " << k << ")" << std::endl;
@@ -888,9 +888,9 @@ void RenderManager::createCloudNoise()
 		{
 			cloudNoiseFractalShader->use();
 			cloudNoiseFractalShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex1Size);
-			cloudNoiseFractalShader->setSampler("sample1", cloudNoiseFractalOctaves[0]->getHandle());
-			cloudNoiseFractalShader->setSampler("sample2", cloudNoiseFractalOctaves[1]->getHandle());
-			cloudNoiseFractalShader->setSampler("sample3", cloudNoiseFractalOctaves[2]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample1", cloudNoise1FractalOctaves[0]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample2", cloudNoise1FractalOctaves[1]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample3", cloudNoise1FractalOctaves[2]->getHandle());
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise1Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -949,6 +949,12 @@ void RenderManager::createCloudNoise()
 			GL_REPEAT
 		);
 
+	Texture* cloudNoise2FractalOctaves[] = {
+		new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+		new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+		new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT),
+	};
+
 	//Texture* cloudNoise2Channels[] = {
 		cloudNoise2Channels[0] = new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 		cloudNoise2Channels[1] = new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
@@ -959,6 +965,7 @@ void RenderManager::createCloudNoise()
 	for (size_t i = 0; i < 9; i++)
 	{
 		size_t worleyPointCount = channelGridSizes[i] * channelGridSizes[i] * channelGridSizes[i];
+		worleyPoints[i].clear();
 		for (size_t j = 0; j < glm::min((size_t)1024, worleyPointCount); j++)
 			worleyPoints[i].push_back(
 				glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine))
@@ -993,7 +1000,7 @@ void RenderManager::createCloudNoise()
 			{
 				cloudNoiseGenerateShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex2Size);
 
-				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoiseFractalOctaves[k]->getHandle(), 0, i);
+				glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise2FractalOctaves[k]->getHandle(), 0, i);
 				auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 				if (status != GL_FRAMEBUFFER_COMPLETE)
 					std::cout << "Framebuffer not complete! (Worley Noise FBO (pt2)) (Layer: " << i << ") (Channel: " << j << ") (Octave: " << k << ")" << std::endl;
@@ -1012,9 +1019,9 @@ void RenderManager::createCloudNoise()
 		{
 			cloudNoiseFractalShader->use();
 			cloudNoiseFractalShader->setFloat("currentRenderDepth", (float)i / (float)cloudNoiseTex2Size);
-			cloudNoiseFractalShader->setSampler("sample1", cloudNoiseFractalOctaves[0]->getHandle());
-			cloudNoiseFractalShader->setSampler("sample2", cloudNoiseFractalOctaves[1]->getHandle());
-			cloudNoiseFractalShader->setSampler("sample3", cloudNoiseFractalOctaves[2]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample1", cloudNoise2FractalOctaves[0]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample2", cloudNoise2FractalOctaves[1]->getHandle());
+			cloudNoiseFractalShader->setSampler("sample3", cloudNoise2FractalOctaves[2]->getHandle());
 			glNamedFramebufferTextureLayer(noiseFBO, GL_COLOR_ATTACHMENT0, cloudNoise2Channels[j]->getHandle(), 0, i);
 			auto status = glCheckNamedFramebufferStatus(noiseFBO, GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE)
