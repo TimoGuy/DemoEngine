@@ -764,6 +764,7 @@ void RenderManager::destroyLumenAdaptationTextures()
 constexpr GLsizei cloudNoiseTex1Size = 128;
 constexpr GLsizei cloudNoiseTex2Size = 32;
 Texture* cloudNoise1Channels[4];
+Texture* cloudNoise2Channels[3];
 void RenderManager::createCloudNoise()
 {
 	//
@@ -807,6 +808,15 @@ void RenderManager::createCloudNoise()
 	cloudNoise1Channels[1] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	cloudNoise1Channels[2] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 	cloudNoise1Channels[3] = new Texture3D(cloudNoiseTex1Size, cloudNoiseTex1Size, cloudNoiseTex1Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+//};
+
+
+	@TODO: continue on from here!!!!!!!
+
+	//Texture* cloudNoise2Channels[] = {
+	cloudNoise2Channels[0] = new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+	cloudNoise2Channels[1] = new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
+	cloudNoise2Channels[2] = new Texture3D(cloudNoiseTex2Size, cloudNoiseTex2Size, cloudNoiseTex2Size, 1, GL_R8, GL_RED, GL_UNSIGNED_BYTE, nullptr, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, GL_REPEAT);   //,
 //};
 
 	const size_t channelGridSizes[] = {
@@ -1610,13 +1620,15 @@ void RenderManager::renderScene()
 	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
-	cloudEffectShader->setVec4("cloudLayerTileSize", cloudEffectInfo.cloudLayerTileSize);
+	cloudEffectShader->setFloat("cloudNoiseMainSize", cloudEffectInfo.cloudNoiseMainSize);
+	cloudEffectShader->setFloat("cloudNoiseDetailSize", cloudEffectInfo.cloudNoiseDetailSize);
 	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
 	cloudEffectShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);
 	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
 	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
+	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
 	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
@@ -2047,7 +2059,7 @@ void RenderManager::renderUI()
 			const glm::vec3 translation(currentPosition + notifHidingOffset * scale, 0.0f);
 			const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation) * glm::scale(glm::mat4(1.0f), glm::vec3(notifExtents, 1.0f));
 			notificationUIProgramId->setMat4("modelMatrix", modelMatrix);
-			
+
 			notificationUIProgramId->use();
 			renderQuad();
 
@@ -2176,7 +2188,7 @@ void RenderManager::renderImGuiContents()
 			{
 				if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
 				if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-				
+
 				ImGui::Separator();
 				if (ImGui::MenuItem("Cut", "CTRL+X")) {}
 				if (ImGui::MenuItem("Copy", "CTRL+C")) {}
@@ -2542,7 +2554,8 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
 			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
-			ImGui::DragFloat4("Cloud layer tile size", &cloudEffectInfo.cloudLayerTileSize.x);
+			ImGui::DragFloat("Cloud layer tile size", &cloudEffectInfo.cloudNoiseMainSize);
+			ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
 			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
 			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
 			ImGui::DragFloat("Cloud darkness threshold", &cloudEffectInfo.darknessThreshold, 0.01f);

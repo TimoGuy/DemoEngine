@@ -9,8 +9,10 @@ uniform vec3 mainCameraPosition;
 
 uniform float cloudLayerY;
 uniform float cloudLayerThickness;
-uniform vec4 cloudLayerTileSize;
+uniform float cloudNoiseMainSize;
+uniform float cloudNoiseDetailSize;
 uniform sampler3D cloudNoiseTexture;
+uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
 uniform float maxRaymarchLength;
 
@@ -53,14 +55,20 @@ vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 
 float sampleDensityAtPoint(vec3 point)
 {
-    const vec4 sampleScale = 1.0 / cloudLayerTileSize;
-    vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * point.xzy);
+    const float sampleScale = 1.0 / cloudNoiseMainSize;
+    const float sampleScaleDetailed = 1.0 / cloudNoiseDetailSize;
+    vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale * point.xzy);
+    vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * point.xzy);
     float density =
         0.5333333 * noise.r
 		+ 0.2666667 * noise.g
 		+ 0.1333333 * noise.b
 		+ 0.0666667 * noise.a;
-    return (density + densityOffset) * densityMultiplier;
+    float detailSubtract =
+        0.533333333 * noiseDetail.r
+        + 0.2666667 * noiseDetail.g
+        + 0.1333333 * noiseDetail.b;
+    return (density - 0.25 * detailSubtract + densityOffset) * densityMultiplier;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
 }
 
 vec3 offsetPoint(vec3 point, vec3 direction)
