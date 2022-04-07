@@ -200,20 +200,18 @@ void main()
     
     vec3 deltaPosition = targetPosition - currentPosition;
 
-    @TODO: for some reason when going into the cloud, you see more cloud than you're supposed to 
-
     const float MAX_RAYMARCH_DISTANCE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
-    const float rayLength = maxRaymarchLength;//min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
+    const float rayLength = min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     float stepSize = rayLength / float(NB_RAYMARCH_STEPS);
-    if (stepSize > MAX_RAYMARCH_DISTANCE)
-    {
-        const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
-        const float remainder = mod(idealStepSize, 1.0);
-        const float idealStepSize_rounded = floor(idealStepSize);
-        const float weightPadding = remainder / idealStepSize_rounded;
-        stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
-    }
+    //if (stepSize > MAX_RAYMARCH_DISTANCE)         @TODO: see if this is still a viable/wanted solution. Seems like it helps with the stability of the clouds. However, how does the gpu horsepower/fps hold up when this sectino is enabled???  -Timo
+    //{
+    //    const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
+    //    const float remainder = mod(idealStepSize, 1.0);
+    //    const float idealStepSize_rounded = floor(idealStepSize);
+    //    const float weightPadding = remainder / idealStepSize_rounded;
+    //    stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
+    //}
     vec3 deltaStepIncrement = deltaPositionNormalized * stepSize;
     currentPosition = offsetPoint(currentPosition, deltaStepIncrement);     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
