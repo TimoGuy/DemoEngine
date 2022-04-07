@@ -126,9 +126,9 @@ struct CloudEffectInformation
 	float densityMultiplier = 0.65f;
 	float darknessThreshold = 0.07f;
 	float lightAbsorptionTowardsSun = 1.2f;
-	float lightAbsorptionThroughCloud = 0.84f;
+	float lightAbsorptionThroughCloud = 0.84f;		@TODO: it appears that slices 0-7 are very incomplete. They only have an 8x8 little tingo goign on! What the hecko.
 	float raymarchOffset = 1.0f;
-	float maxRaymarchLength = 1000.0f;
+	float maxRaymarchLength = 2000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 0.15f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
 };
