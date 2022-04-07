@@ -1718,6 +1718,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
+	cloudEffectShader->setFloat("maxCloudscapeRadius", cloudEffectInfo.maxCloudscapeRadius);
 	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
@@ -2650,7 +2651,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
-			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength, 0.001f);
+			ImGui::DragFloat("Cloudscape radius", &cloudEffectInfo.maxCloudscapeRadius);
+			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
 

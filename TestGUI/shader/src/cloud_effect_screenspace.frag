@@ -14,6 +14,7 @@ uniform float cloudNoiseDetailSize;
 uniform sampler3D cloudNoiseTexture;
 uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
+uniform float maxCloudscapeRadius;
 uniform float maxRaymarchLength;
 
 uniform float densityOffset;
@@ -140,11 +141,10 @@ void main()
     projectedDeltaPosition /= abs(projectedDeltaPosition.y);       // @NOTE: This projects this to (0, +-1, 0)... so I guess it technically isn't being normalized though hahaha
 
     // Find the Y points where the collisions would happen
-    float nearY = currentPosition.y;
-    if (currentPosition.y > cloudLayerY ||
-        currentPosition.y < cloudLayerY - cloudLayerThickness)
+    if (mainCameraPosition.y > cloudLayerY ||
+        mainCameraPosition.y < cloudLayerY - cloudLayerThickness)
     {
-        nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
+        float nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
 
         // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
         if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
@@ -152,17 +152,14 @@ void main()
             fragmentColor = vec4(0, 0, 0, 1.0);
             return;
         }
+
+        // Recalculate the currentPosition
+        currentPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
     }
-    float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
 
     // Calc the raymarch start/end points
-    currentPosition     = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
+    const float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
     vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
-
-    //const float maxRaymarchLength2 = maxRaymarchLength * maxRaymarchLength;
-    //vec3 cpfc = mainCameraPosition - currentPosition;   // Current Position From Camera
-    //if (dot(cpfc, cpfc) > maxRaymarchLength2)
-    //    return;
 
     // Check for depth test
     if (z != 1.0)
@@ -187,25 +184,26 @@ void main()
     }
 
     // Setup the raymarching magic!!!
+    if (length(currentPosition.xz - mainCameraPosition.xz) > maxCloudscapeRadius)
+    {
+        fragmentColor = vec4(0, 0, 0, 1.0);
+        return;
+    }
+
+    vec3 targetPositionFromCamera = targetPosition - mainCameraPosition;
+    const float targetPositionLength = length(targetPositionFromCamera.xz);
+    if (targetPositionLength > maxCloudscapeRadius)
+    {
+        targetPositionFromCamera = targetPositionFromCamera * maxCloudscapeRadius / targetPositionLength;
+        targetPosition = mainCameraPosition + targetPositionFromCamera;
+    }
+    
     vec3 deltaPosition = targetPosition - currentPosition;
 
-    //////////////float flatTravel = abs(normalize(deltaPosition).y);
-    //////////////if (flatTravel < maxRaymarchLength)       // NOTE: set this to 0.002
-    //////////////{
-    //////////////    fragmentColor = vec4(0, 0, 0, 1);
-    //////////////    return;
-    //////////////}
-
-    // @NOTE: commented out bc of the horizon artifacts not actually being caused by the long ray length. I wonder what is actually causing it though.... Perhaps the less transmission there is there is in fact less stuff???
-    //float xzRayLength = length(deltaPosition.xz);
-    //if (xzRayLength > maxRaymarchLength)
-    //{
-    //    deltaPosition = deltaPosition / xzRayLength * maxRaymarchLength;
-    //    rayLength = length(deltaPosition);
-    //}
+    @TODO: for some reason when going into the cloud, you see more cloud than you're supposed to 
 
     const float MAX_RAYMARCH_DISTANCE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
-    const float rayLength = min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
+    const float rayLength = maxRaymarchLength;//min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     float stepSize = rayLength / float(NB_RAYMARCH_STEPS);
     if (stepSize > MAX_RAYMARCH_DISTANCE)
