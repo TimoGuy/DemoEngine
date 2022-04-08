@@ -19,6 +19,7 @@ uniform float maxRaymarchLength;
 
 uniform float densityOffset;
 uniform float densityMultiplier;
+uniform float densityRequirement;
 
 uniform float darknessThreshold;
 uniform float lightAbsorptionTowardsSun;
@@ -56,6 +57,12 @@ vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 
 float sampleDensityAtPoint(vec3 point)
 {
+    // Sample density cutoff from height below cloud layer
+    float distanceFromCloudY = cloudLayerY - point.y;
+    distanceFromCloudY /= cloudLayerThickness;
+    const float densityMult = 1.0 - pow(2.0 * distanceFromCloudY - 1.0, 2.0);     // https://www.desmos.com/calculator/ltnhmcb1ow
+
+    // Sample density from noise textures
     const float sampleScale = 1.0 / cloudNoiseMainSize;
     const float sampleScaleDetailed = 1.0 / cloudNoiseDetailSize;
     vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale * point.xzy);
@@ -69,7 +76,7 @@ float sampleDensityAtPoint(vec3 point)
         0.533333333 * noiseDetail.r
         + 0.2666667 * noiseDetail.g
         + 0.1333333 * noiseDetail.b;
-    return (density - 0.25 * detailSubtract + densityOffset) * densityMultiplier;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
+    return (density - 0.15 * detailSubtract + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
 }
 
 vec3 offsetPoint(vec3 point, vec3 direction)
@@ -202,16 +209,18 @@ void main()
 
     const float MAX_RAYMARCH_DISTANCE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
     const float rayLength = min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
-    const vec3 deltaPositionNormalized = normalize(deltaPosition);
     float stepSize = rayLength / float(NB_RAYMARCH_STEPS);
-    //if (stepSize > MAX_RAYMARCH_DISTANCE)         @TODO: see if this is still a viable/wanted solution. Seems like it helps with the stability of the clouds. However, how does the gpu horsepower/fps hold up when this sectino is enabled???  -Timo
-    //{
-    //    const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
-    //    const float remainder = mod(idealStepSize, 1.0);
-    //    const float idealStepSize_rounded = floor(idealStepSize);
-    //    const float weightPadding = remainder / idealStepSize_rounded;
-    //    stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
-    //}
+
+    if (stepSize > MAX_RAYMARCH_DISTANCE)        // @TODO: see if this is still a viable/wanted solution. Seems like it helps with the stability of the clouds. However, how does the gpu horsepower/fps hold up when this sectino is enabled???  -Timo
+    {
+        const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
+        const float remainder = mod(idealStepSize, 1.0);
+        const float idealStepSize_rounded = floor(idealStepSize);
+        const float weightPadding = remainder / idealStepSize_rounded;
+        stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
+    }
+
+    const vec3 deltaPositionNormalized = normalize(deltaPosition);
     vec3 deltaStepIncrement = deltaPositionNormalized * stepSize;
     currentPosition = offsetPoint(currentPosition, deltaStepIncrement);     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
@@ -227,55 +236,19 @@ void main()
     {
         float density = sampleDensityAtPoint(currentPosition);
 
-        if (density > 0.0)
+        if (density > densityRequirement)  // 0.0)
         {
+            stepSize = 1.0;             // @POC
             float inScatterTransmittance = inScatterLightMarch(currentPosition);
-            float d = density * stepSize * lightAbsorptionThroughCloud;
+            float d = density * stepSize;  // * lightAbsorptionThroughCloud;
 
-            lightEnergy += density * stepSize * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            lightEnergy += density * stepSize * lightAbsorptionThroughCloud * 0.1 * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
             transmittance *= exp(-d);
+            break;                      // @POC
+            transmittance = 0.0;        // @POC
 
             if (transmittance < 0.01)
                 break;
-
-
-            /*
-            // Prep for inscatter raymarching
-            vec3 inScatterCurrentPosition = currentPosition;
-            vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
-            vec3 inScatterDeltaPosition = projectedLightDirection * abs(inScatterCurrentPosition.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
-            vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
-        
-            float inScatterDensity = 0.0;
-            float inScatterStepWeight = length(inScatterDeltaStepIncrement);
-        
-            for (int j = 0; j < NB_IN_SCATTER_RAYMARCH_STEPS; j++)
-            {
-                float density = sampleDensityAtPoint(inScatterCurrentPosition);
-                inScatterDensity += max(0.0, (density + densityOffset) * densityMultiplier) * inScatterStepWeight;
-
-                //if (inScatterDensity > 10.0)
-                //    break;
-
-                // Advance march
-                inScatterCurrentPosition += inScatterDeltaStepIncrement;
-            }
-
-            if (inScatterDensity > 0.0)
-            {
-                //lightEnergy += densityAtStep * stepSize * transmittance * inScatterTransmittance * phaseValue;
-                transmittance *= exp(-inScatterDensity * stepSize * lightAbsorptionThroughCloud);
-            }
-
-            totalDensity += inScatterDensity * stepSize;
-
-            if (transmittance < 0.01)
-                break;
-
-            //if (totalDensity > 10.0)
-            //    break;
-
-            */
         }
 
         // Advance march

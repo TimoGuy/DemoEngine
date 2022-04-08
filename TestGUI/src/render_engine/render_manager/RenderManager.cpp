@@ -1712,6 +1712,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("cloudNoiseDetailSize", cloudEffectInfo.cloudNoiseDetailSize);
 	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
+	cloudEffectShader->setFloat("densityRequirement", cloudEffectInfo.densityRequirement);
 	cloudEffectShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);
 	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
 	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
@@ -2647,6 +2648,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
 			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
 			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
+			ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);
 			ImGui::DragFloat("Cloud darkness threshold", &cloudEffectInfo.darknessThreshold, 0.01f);
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);

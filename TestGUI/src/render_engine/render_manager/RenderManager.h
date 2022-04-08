@@ -119,18 +119,19 @@ struct CloudNoiseInformation
 struct CloudEffectInformation
 {
 	float cloudLayerY = -150.0f;		// @NOTE: revert to -100 after all this is done!
-	float cloudLayerThickness = 300.0f;
+	float cloudLayerThickness = 430.0f;
 	float cloudNoiseMainSize = 1750.0f;
-	float cloudNoiseDetailSize = 75.0f;
-	float densityOffset = -0.33f;
-	float densityMultiplier = 0.65f;
+	float cloudNoiseDetailSize = 93.0f;
+	float densityOffset = -0.3f;
+	float densityMultiplier = 300.0f;
+	float densityRequirement = 8.0f;
 	float darknessThreshold = 0.07f;
 	float lightAbsorptionTowardsSun = 1.2f;
 	float lightAbsorptionThroughCloud = 0.84f;//   @CHECK????		@TODO: it appears that slices 0-7 are very incomplete. They only have an 8x8 little tingo goign on! What the hecko.
 	float raymarchOffset = 1.0f;
 	float maxCloudscapeRadius = 2000.0f;
 	float maxRaymarchLength = 2000.0f;		// @CHECK: unneeded now?????  -Timo
-	glm::vec4 phaseParameters = { 0.83f, 0.3f, 0.15f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
+	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
 };
 
