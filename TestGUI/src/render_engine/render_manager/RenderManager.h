@@ -118,10 +118,10 @@ struct CloudNoiseInformation
 // Added values from (https://github.com/SebLague/Clouds/blob/fcc997c40d36c7bedf95a294cd2136b8c5127009/Assets/_Scenes/Clouds%20Test.unity)
 struct CloudEffectInformation
 {
-	float cloudLayerY = -150.0f;		// @NOTE: revert to -100 after all this is done!
-	float cloudLayerThickness = 430.0f;
-	float cloudNoiseMainSize = 1750.0f;
-	float cloudNoiseDetailSize = 93.0f;
+	float cloudLayerY = 92.0f;
+	float cloudLayerThickness = 1125.0f;
+	float cloudNoiseMainSize = 3721.0f;
+	float cloudNoiseDetailSize = 151.0f;
 	float densityOffset = -0.3f;
 	float densityMultiplier = 300.0f;
 	float densityRequirement = 8.0f;
