@@ -121,13 +121,13 @@ struct CloudEffectInformation
 	float cloudLayerY = 92.0f;
 	float cloudLayerThickness = 1125.0f;
 	float cloudNoiseMainSize = 3721.0f;
-	float cloudNoiseDetailSize = 151.0f;
+	float cloudNoiseDetailSize = 160.0f;
 	float densityOffset = -0.3f;
 	float densityMultiplier = 300.0f;
 	float densityRequirement = 8.0f;
 	float darknessThreshold = 0.07f;
-	float lightAbsorptionTowardsSun = 1.2f;
-	float lightAbsorptionThroughCloud = 0.84f;//   @CHECK????		@TODO: it appears that slices 0-7 are very incomplete. They only have an 8x8 little tingo goign on! What the hecko.
+	float lightAbsorptionTowardsSun = 0.01f;
+	float lightAbsorptionThroughCloud = 0.2f;
 	float raymarchOffset = 1.0f;
 	float maxCloudscapeRadius = 2000.0f;
 	float maxRaymarchLength = 2000.0f;		// @CHECK: unneeded now?????  -Timo

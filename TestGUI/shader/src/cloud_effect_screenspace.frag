@@ -240,15 +240,36 @@ void main()
         {
             stepSize = 1.0;             // @POC
             float inScatterTransmittance = inScatterLightMarch(currentPosition);
-            float d = density * stepSize;  // * lightAbsorptionThroughCloud;
 
-            lightEnergy += density * stepSize * lightAbsorptionThroughCloud * 0.1 * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
-            transmittance *= exp(-d);
-            break;                      // @POC
-            transmittance = 0.0;        // @POC
 
-            if (transmittance < 0.01)
-                break;
+
+            float d = density - densityRequirement;
+            //lightEnergy += d * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
+            lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
+            transmittance = 0.0;
+            break;
+
+
+
+
+
+
+
+            //transmittance = 0.0;
+            //lightEnergy = inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;     // @POC: remove ref to lightAbsorptionThroughCloud
+            //break;      // @POC
+            //
+            //
+            //float d = density * stepSize;  // * lightAbsorptionThroughCloud;
+            //
+            //float dJ = d - densityRequirement;
+            //lightEnergy += dJ * transmittance * (1.0 - exp(-dJ * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            //transmittance *= exp(-d);
+            //break;                      // @POC
+            //transmittance = 0.0;        // @POC
+            //
+            //if (transmittance < 0.01)
+            //    break;
         }
 
         // Advance march

@@ -20,7 +20,7 @@ void main()
 {
 	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;
 
-	const float cloudAmount = 0.5;
+	const float cloudAmount = 0.25;
 	float luminance =
 		dot(vec3(0.2125, 0.7154, 0.0721),
 			texture(hdrColorBuffer, texCoord).rgb * (cloudAmount * cloudEffectColor.a + (1.0 - cloudAmount)) + cloudEffectColor.rgb * cloudAmount +	// @HACK: Multiplying the cloudEffectColor.rgb by 0.5 bc I'm a hoe  -Timo
