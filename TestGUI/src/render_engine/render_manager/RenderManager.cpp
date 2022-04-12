@@ -1745,7 +1745,8 @@ void RenderManager::renderScene()
 	}
 
 	// @TODO: SO ABOUT THESE @CLOUDS
-	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque (this is the only transparent thing that will probs hinder the experience if it's not faked.
+	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque
+	// (this is the only transparent thing that will probs hinder the experience if it's not faked.
 	//
 	// @TODO: ACTUALLY, I HAVE A REAL IDEA!!!! ABOUT @CLOUDS
 	// 
