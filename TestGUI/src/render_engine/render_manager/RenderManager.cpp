@@ -1744,6 +1744,34 @@ void RenderManager::renderScene()
 		renderQuad();
 	}
 
+	// @TODO: SO ABOUT THESE @CLOUDS
+	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque (this is the only transparent thing that will probs hinder the experience if it's not faked.
+	//
+	// @TODO: ACTUALLY, I HAVE A REAL IDEA!!!! ABOUT @CLOUDS
+	// 
+	// 			So hear me out: basically it's an extra channel for the clouds where it shows the depth
+	// of the cloud, and then the cloud will be drawn before any opaque objects are drawn (right after
+	// the skybox, so clouds are not post-processing, laid over everything anymore).
+	//			
+	//			This extra channel's depth indication will just have a simple function that things behind
+	// it depth-wise will disappear depending on e^-d and maybe d:=that depth function? NOOOOOO, actually it
+	// should be some kind of other value, such as the area's alpha channel or something like that.
+	// 
+	//			So essentially the same stuff, however, how the stuff blends into the cloud will change.
+	// We'll do a render step where we take the depth map of the clouds and then compare it with the depth
+	// value generated after all opaque and transparent objects are rendered. Then, in a postprocessing step
+	// we compare the cloud's depth with the finished depth map and fade out stuff with that. For even more
+	// detail, maybe I could put the depth map of the transparent objects separate from the depth map of the
+	// opaque stuff and do a calculation from there. This could be bad, however. Or, we could just do the
+	// fading postprocessing step right after the opaque render queue and then right after do transparents.
+	// When we're working with transparent materials, however, the fade out parameter is done right there in
+	// the shader. Well, after thinking about that, we probs can just do the fadeout right then and there.
+	// 
+	// Or maybe not. Maybe not mess with alpha channel stuff, but rather just do a mix() between the cloud
+	// color behind the object and the fadeout value. If that is the case, I guess we'll just have to have
+	// the clouds not pay attention to the depth buffer from the z prepass???? Idk man.
+	//
+
 	//
 	// Render scene normally
 	//

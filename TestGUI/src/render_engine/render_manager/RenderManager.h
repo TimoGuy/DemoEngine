@@ -119,7 +119,7 @@ struct CloudNoiseInformation
 struct CloudEffectInformation
 {
 	float cloudLayerY = 92.0f;
-	float cloudLayerThickness = 1125.0f;		@TODO: add cloud point saving. This can be done inside of a json file or something for now eh. Eventually into textures ideally eh.
+	float cloudLayerThickness = 1125.0f;		// @TODO: add cloud point saving. This can be done inside of a json file or something for now eh. Eventually into textures ideally eh.
 	float cloudNoiseMainSize = 3721.0f;
 	float cloudNoiseDetailSize = 160.0f;
 	float densityOffset = -0.3f;
