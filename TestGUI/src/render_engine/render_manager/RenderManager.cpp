@@ -1771,6 +1771,15 @@ void RenderManager::renderScene()
 	// Or maybe not. Maybe not mess with alpha channel stuff, but rather just do a mix() between the cloud
 	// color behind the object and the fadeout value. If that is the case, I guess we'll just have to have
 	// the clouds not pay attention to the depth buffer from the z prepass???? Idk man.
+	// 
+	// 
+	// 
+	// @TODO: So here are my thoughts about the "REAL IDEA"
+	// 
+	//			It's gonna be hard to assign a depth value with this effect bc of the dithering.
+	// I'm thinking that a simple flood-fill algorithm (probs 2x2) will be good enough for the effect.
+	// We'll just do a test where if the 2x2 grid contains more than 50% close depth values, then we just sample
+	// the min (closest) depth in there and call it a day. See RenderDoc if you wanna make this more accurate yo.  -Timo
 	//
 
 	//
