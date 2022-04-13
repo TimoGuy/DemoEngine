@@ -33,7 +33,10 @@ uniform vec4 phaseParameters;
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
-#define NB_RAYMARCH_STEPS 16
+// @NOTE: the NB_RAYMARCH_STEPS value is a base for marching thru,
+// so the number of samples is going to be >64. 64 samples is if the ray
+// is perfectly orthogonal to the cloudLayerThickness (the y thru the cloud layer)
+#define NB_RAYMARCH_STEPS 64
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
 vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
@@ -79,7 +82,7 @@ float sampleDensityAtPoint(vec3 point)
     return (density - 0.15 * detailSubtract + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
 }
 
-vec3 offsetPoint(vec3 point, vec3 direction)
+float offsetAmount()
 {
     float ditherPattern[16] = {
         0.0, 0.5, 0.125, 0.625,
@@ -88,7 +91,7 @@ vec3 offsetPoint(vec3 point, vec3 direction)
         0.9375, 0.4375, 0.8125, 0.3125
     };
     uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
-    return point + direction * ditherPattern[index] * raymarchOffset;
+    return ditherPattern[index] * raymarchOffset;
 }
 
 float inScatterLightMarch(vec3 position)
@@ -96,8 +99,6 @@ float inScatterLightMarch(vec3 position)
     vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
     vec3 inScatterDeltaPosition = projectedLightDirection * abs(position.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
     vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
-    
-    //position = offsetPoint(position, inScatterDeltaStepIncrement);
         
     float inScatterDensity = 0.0;
     float inScatterStepWeight = length(inScatterDeltaStepIncrement) / float(NB_IN_SCATTER_RAYMARCH_STEPS);
@@ -207,22 +208,17 @@ void main()
     
     vec3 deltaPosition = targetPosition - currentPosition;
 
-    const float MAX_RAYMARCH_DISTANCE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
-    const float rayLength = min(length(deltaPosition), maxRaymarchLength);      // @NOTE: the raymarching shader kept crashing the game bc of how long it was taking for some really long raymarched clouds took, so I think what I'll do is keep this in. I don't know how much this'll affect the look of the clouds, but setting some kind of max limit would be good to keep.  -Timo PS: it's 2am.
-    float stepSize = rayLength / float(NB_RAYMARCH_STEPS);
+    const float RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
+    const float rayLength = min(length(deltaPosition), maxRaymarchLength);
 
-    if (stepSize > MAX_RAYMARCH_DISTANCE)        // @TODO: see if this is still a viable/wanted solution. Seems like it helps with the stability of the clouds. However, how does the gpu horsepower/fps hold up when this sectino is enabled???  -Timo
-    {
-        const float idealStepSize = rayLength / MAX_RAYMARCH_DISTANCE;
-        const float remainder = mod(idealStepSize, 1.0);
-        const float idealStepSize_rounded = floor(idealStepSize);
-        const float weightPadding = remainder / idealStepSize_rounded;
-        stepSize = MAX_RAYMARCH_DISTANCE * (1.0 + weightPadding);
-    }
-
+    // Fitting starting position to raymarching "grid"
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
-    vec3 deltaStepIncrement = deltaPositionNormalized * stepSize;
-    currentPosition = offsetPoint(currentPosition, deltaStepIncrement);     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
+    vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
+    const float offsetAmount = offsetAmount();
+    const float distanceFromCameraToStartingPt = length(mainCameraPosition - currentPosition);
+    const float griddedDistanceFromCameraToStartingPt = distanceFromCameraToStartingPt - mod(distanceFromCameraToStartingPt, RAYMARCH_STEP_SIZE);
+    currentPosition = mainCameraPosition + deltaPositionNormalized * griddedDistanceFromCameraToStartingPt;     // @NOTE: This modulus op is for the top and bottom of the cloud layers to start at the correct position when the camera's position is above/below the cloud area.  -Timo
+    currentPosition += deltaStepIncrement * offsetAmount;     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
     //
     // RAYMARCH!!!
@@ -230,51 +226,25 @@ void main()
     float transmittance = 1.0;
     float lightEnergy = 0.0;
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
-    float distanceTraveled = 0.0;
+    float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
     while (distanceTraveled < rayLength)
     {
         float density = sampleDensityAtPoint(currentPosition);
 
-        if (density > densityRequirement)  // 0.0)
+        if (density > densityRequirement)
         {
-            stepSize = 1.0;             // @POC
             float inScatterTransmittance = inScatterLightMarch(currentPosition);
 
-
-
             float d = density - densityRequirement;
-            //lightEnergy += d * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             transmittance = 0.0;
             break;
-
-
-
-
-
-
-
-            //transmittance = 0.0;
-            //lightEnergy = inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;     // @POC: remove ref to lightAbsorptionThroughCloud
-            //break;      // @POC
-            //
-            //
-            //float d = density * stepSize;  // * lightAbsorptionThroughCloud;
-            //
-            //float dJ = d - densityRequirement;
-            //lightEnergy += dJ * transmittance * (1.0 - exp(-dJ * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
-            //transmittance *= exp(-d);
-            //break;                      // @POC
-            //transmittance = 0.0;        // @POC
-            //
-            //if (transmittance < 0.01)
-            //    break;
         }
 
         // Advance march
         currentPosition += deltaStepIncrement;
-        distanceTraveled += stepSize;
+        distanceTraveled += RAYMARCH_STEP_SIZE;
     }
 
     fragmentColor = vec4(lightColor * lightEnergy, transmittance);
