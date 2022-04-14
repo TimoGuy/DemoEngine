@@ -507,7 +507,7 @@ void main()
     if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
     {
         const vec3 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution).rgb;
-        FragColor = mix(vec4(cloudEffectColor, 1.0), FragColor, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
+        FragColor.rgb = mix(cloudEffectColor, FragColor.rgb, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
 
     //FragColor = vec4(vec3(1) * ao, fadeAlpha);        @DEBUG: for seeing how the ao affects the scene
