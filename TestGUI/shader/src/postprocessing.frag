@@ -7,7 +7,6 @@ uniform sampler2D hdrColorBuffer;
 uniform sampler2D bloomColorBuffer;
 uniform sampler2D luminanceProcessed;
 uniform sampler2D volumetricLighting;
-uniform sampler2D cloudEffect;
 
 uniform vec3 sunLightColor;
 
@@ -29,9 +28,6 @@ void main()
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
 	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r;
-	
-	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;		// @TODO: @FIXME: @HACK: this is super duper one-off and should get fixed asap!!!!! (And make a more temporal solution in the future yo...)
-	hdrColor = hdrColor * (cloudEffectColor.a) + cloudEffectColor.rgb;
 
 	hdrColor += texture(bloomColorBuffer, texCoord).rgb * bloomIntensity;
 	float avgLuminance = texture(luminanceProcessed, vec2(0.5, 0.5)).r;

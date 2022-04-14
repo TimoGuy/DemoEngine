@@ -1135,6 +1135,7 @@ void RenderManager::createShaderPrograms()
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
+	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1165,6 +1166,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectSS");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
+	Resources::unloadResource("shader;cloudEffectApply");
 }
 
 void RenderManager::createFonts()
@@ -1437,7 +1439,6 @@ void RenderManager::render()
 	hdrLuminanceProgramId->use();
 	hdrLuminanceProgramId->setSampler("hdrColorBuffer", hdrColorBuffer);
 	hdrLuminanceProgramId->setSampler("volumetricLighting", volumetricTexture->getHandle());
-	hdrLuminanceProgramId->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	hdrLuminanceProgramId->setVec3("sunLightColor", mainlight->color * mainlight->colorIntensity * volumetricLightingStrength * volumetricLightingStrengthExternal);
 	renderQuad();
 	glGenerateTextureMipmap(hdrLumDownsampling->getHandle());		// This gets the FBO's luminance down to 1x1
@@ -1589,7 +1590,6 @@ void RenderManager::render()
 	postprocessing_program_id->setSampler("bloomColorBuffer", bloomColorBuffers[1]);	// 1 is the final color buffer of the reconstructed bloom
 	postprocessing_program_id->setSampler("luminanceProcessed", hdrLumAdaptationProcessed->getHandle());
 	postprocessing_program_id->setSampler("volumetricLighting", volumetricTexture->getHandle());
-	postprocessing_program_id->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	postprocessing_program_id->setVec3("sunLightColor", mainlight->color* mainlight->colorIntensity* volumetricLightingStrength* volumetricLightingStrengthExternal);
 	postprocessing_program_id->setFloat("exposure", exposure);
 	postprocessing_program_id->setFloat("bloomIntensity", bloomIntensity);
@@ -1894,6 +1894,27 @@ void RenderManager::renderScene()
 	//perlinTime += MainLoop::getInstance().deltaTime;
 
 	renderCube();
+
+	//
+	// Apply the @Clouds layer
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectApplyShader->use();
+	cloudEffectApplyShader->setSampler("hdrColorBuffer", hdrColorBuffer);
+	cloudEffectApplyShader->setSampler("cloudEffect", cloudEffectTexture->getHandle());
+	renderQuad();
+
+	glBlitNamedFramebuffer(
+		cloudEffectBlurFBO,
+		hdrFBO,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
+		GL_COLOR_BUFFER_BIT,
+		GL_NEAREST
+	);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 
 	glDepthMask(GL_TRUE);
 
