@@ -71,9 +71,20 @@ Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED), currentT
 	// Too's Magic of Love
 	glLinkProgram(programId);
 
+	GLint linked;
+	glGetProgramiv(programId, GL_LINK_STATUS, &linked);
+	if (linked != GL_TRUE)
+	{
+		GLsizei log_length = 0;
+		GLchar message[1024];
+		glGetProgramInfoLog(programId, 1024, &log_length, message);
+		
+		std::cout << "LINK ERROR:: " << message << std::endl;
+	}
+
 	// Delete shaders
 	for (size_t i = 0; i < compiledShaders.size(); i++)
-		glAttachShader(programId, compiledShaders[i]);
+		glDeleteShader(compiledShaders[i]);		// @NOTE: before, this was 'glAttachShader()', so like after 256 shaders or whatever, the program would crash. Man, I'm dumb. But it's fixed now!  -Timo
 
 	//
 	// Load in all props

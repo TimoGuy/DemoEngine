@@ -73,6 +73,11 @@ void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLe
 	}();
 	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
 }
+
+void glfwOnError(int error, const char* description)
+{
+	std::cout << "GLFW ERROR:: " << description << std::endl;
+}
 #endif
 
 
@@ -150,6 +155,7 @@ void MainLoop::initialize()
 #ifdef _DEVELOP
 	glEnable(GL_DEBUG_OUTPUT);
 	glDebugMessageCallback(openglMessageCallback, 0);
+	glfwSetErrorCallback(glfwOnError);
 #endif
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);

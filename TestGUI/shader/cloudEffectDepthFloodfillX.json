@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "cloud_effect_depth_floodfill_x.frag",
+  "props": [
+    "sampler2D textTexture",
+    "vec3 diffuseTint"
+  ]
+}

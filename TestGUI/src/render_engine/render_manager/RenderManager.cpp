@@ -690,10 +690,15 @@ void RenderManager::createHDRBuffer()
 	if (glCheckNamedFramebufferStatus(cloudEffectBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Blur Screenspace Framebuffer)" << std::endl;
 
-	glCreateFramebuffers(1, &cloudEffectDepthFloodFillFBO);
-	glNamedFramebufferTexture(cloudEffectDepthFloodFillFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTextureFloodFill->getHandle(), 0);
-	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Screenspace Framebuffer)" << std::endl;
+	glCreateFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
+	glNamedFramebufferTexture(cloudEffectDepthFloodFillXFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTextureFloodFill->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillXFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill X Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
+	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -1122,11 +1127,14 @@ void RenderManager::createShaderPrograms()
 	volumetricProgramId = (Shader*)Resources::getResource("shader;volumetricLighting");
 	blurXProgramId = (Shader*)Resources::getResource("shader;blurX");
 	blurYProgramId = (Shader*)Resources::getResource("shader;blurY");
+	blurX3ProgramId = (Shader*)Resources::getResource("shader;blurX3");
+	blurY3ProgramId = (Shader*)Resources::getResource("shader;blurY3");
 	cloudNoiseGenerateShader = (Shader*)Resources::getResource("shader;cloudNoiseGenerate");
 	cloudNoiseFractalShader = (Shader*)Resources::getResource("shader;cloudNoiseFractal");
 	cloudNoiseCombineShader = (Shader*)Resources::getResource("shader;cloudNoiseCombine");
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
-	cloudEffectFloodFillShader = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfill");
+	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
+	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1149,11 +1157,14 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;volumetricLighting");
 	Resources::unloadResource("shader;blurX");
 	Resources::unloadResource("shader;blurY");
+	Resources::unloadResource("shader;blurX3");
+	Resources::unloadResource("shader;blurY3");
 	Resources::unloadResource("shader;cloudNoiseGenerate");
 	Resources::unloadResource("shader;cloudNoiseFractal");
 	Resources::unloadResource("shader;cloudNoiseCombine");
 	Resources::unloadResource("shader;cloudEffectSS");
-	Resources::unloadResource("shader;cloudEffectDepthFloodfill");
+	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
+	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
 }
 
 void RenderManager::createFonts()
@@ -1777,24 +1788,30 @@ void RenderManager::renderScene()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		blurXProgramId->use();
-		blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+		blurX3ProgramId->use();
+		blurX3ProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
 		renderQuad();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		blurYProgramId->use();
-		blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+		blurY3ProgramId->use();
+		blurY3ProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
 		renderQuad();
 	}
 
 	//
 	// Floodfill @Clouds depth pass
 	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillXFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	cloudEffectFloodFillShader->use();
-	cloudEffectFloodFillShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	cloudEffectFloodFillShaderX->use();
+	cloudEffectFloodFillShaderX->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillYFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectFloodFillShaderY->use();
+	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
 	renderQuad();
 
 

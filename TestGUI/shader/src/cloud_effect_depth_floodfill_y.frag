@@ -5,16 +5,12 @@ out vec4 fragmentColor;
 
 uniform sampler2D cloudEffectDepthBuffer;
 
-const vec3 sampleFilter[9] = vec3[](
-	vec3(-1.0, -1.0, 0.0625),
-	vec3( 0.0, -1.0, 0.125),
-	vec3( 1.0, -1.0, 0.0625),
-	vec3(-1.0,  0.0, 0.125),
-	vec3( 0.0,  0.0, 0.25),
-	vec3( 1.0,  0.0, 0.125),
-	vec3(-1.0,  1.0, 0.0625),
-	vec3( 0.0,  1.0, 0.125),
-	vec3( 1.0,  1.0, 0.0625)
+const vec2 sampleFilter[5] = vec2[](
+	vec2(-2.0,  7.0/107.0),
+	vec2(-1.0, 26.0/107.0),
+	vec2( 0.0, 41.0/107.0),
+	vec2( 1.0, 26.0/107.0),
+	vec2( 2.0,  7.0/107.0)
 );
 
 void main()
@@ -27,13 +23,13 @@ void main()
 	float maxDepth = -100.0;
 	float avgDepth = 0.0;
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 5; i++)		// @NOTE: I spent over an hour trying to figure out why the shader program wasn't compiling. It was written i<9 when sampleFilter.size was 5. Apparently there are compile time checks like this, but I wish they'd let you see the error you were producing. Upon linking, it'd just crash, and wouldn't even let me look at the error! Thanks Nvidia.  -Timo
 	{
-		vec2 coord = vec2(texCoord.x + sampleFilter[i].x * scale, texCoord.y + sampleFilter[i].y * scale);
+		vec2 coord = vec2(texCoord.x, texCoord.y + sampleFilter[i].x * scale);
 		const float sampledDepth = textureLod(cloudEffectDepthBuffer, coord, 0).r;
 		minDepth = min(sampledDepth, minDepth);
 		maxDepth = max(sampledDepth, maxDepth);
-		avgDepth += sampledDepth * sampleFilter[i].z;
+		avgDepth += sampledDepth * sampleFilter[i].y;
 	}
 
 	fragmentColor = vec4(vec3(minDepth), 1.0);		// Idk what's up, but this seems to be a-okay??? Like, I'm wanting to do minDepth for now, but there could be a more complex algorithm for this for sure, so we'll see for now eh.
