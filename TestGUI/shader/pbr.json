@@ -16,6 +16,7 @@
     "ssao",
     "pbr_daynight_cycle",
     "shadow",
-    "csm_shadow"
+    "csm_shadow",
+    "cloud_effect"
   ]
 }

@@ -55,6 +55,12 @@ uniform int cascadeCount;   // number of frusta - 1
 uniform float nearPlane;
 uniform float farPlane;
 
+// ext: cloud_effect
+uniform sampler2D cloudEffect;
+uniform float cloudEffectDensity;
+uniform sampler2D cloudDepthTexture;
+uniform vec3 mainCameraPosition;
+
 // Lights
 const int MAX_LIGHTS = 1024;
 layout (std140, binding = 2) uniform LightInformation
@@ -494,7 +500,16 @@ void main()
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, fadeAlpha);
-    
+
+    // @DEBUG: for cloud depth texture sensing!
+    float cloudDepth = texture(cloudDepthTexture, gl_FragCoord.xy * invFullResolution).r;
+    const float cloudDepthDiff = cloudDepth - length(mainCameraPosition - fragPosition);
+    if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
+    {
+        const vec3 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution).rgb;
+        FragColor = mix(vec4(cloudEffectColor, 1.0), FragColor, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
+    }
+
     //FragColor = vec4(vec3(1) * ao, fadeAlpha);        @DEBUG: for seeing how the ao affects the scene
 
     //FragColor = vec4(vec3(linearDepth), 1.0);

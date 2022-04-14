@@ -183,6 +183,9 @@
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCloud_effect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">
@@ -477,6 +480,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExtSSAO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCloud_effect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

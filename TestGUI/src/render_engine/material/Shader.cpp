@@ -12,6 +12,7 @@
 #include "shaderext/ShaderExtPBR_daynight_cycle.h"
 #include "shaderext/ShaderExtShadow.h"
 #include "shaderext/ShaderExtCSM_shadow.h"
+#include "shaderext/ShaderExtCloud_effect.h"
 #include "shaderext/ShaderExtSSAO.h"
 
 const GLchar* readFile(const char* filename);
@@ -117,6 +118,7 @@ Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED), currentT
 			if (e == "pbr_daynight_cycle")	extensions.push_back(new ShaderExtPBR_daynight_cycle(this));
 			if (e == "shadow")				extensions.push_back(new ShaderExtShadow(this));
 			if (e == "csm_shadow")			extensions.push_back(new ShaderExtCSM_shadow(this));
+			if (e == "cloud_effect")		extensions.push_back(new ShaderExtCloud_effect(this));
 		}
 	}
 }

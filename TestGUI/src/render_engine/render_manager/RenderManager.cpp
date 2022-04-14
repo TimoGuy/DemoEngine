@@ -23,6 +23,7 @@
 
 #include "../material/Texture.h"
 #include "../material/Shader.h"
+#include "../material/shaderext/ShaderExtCloud_effect.h"
 #include "../material/shaderext/ShaderExtCSM_shadow.h"
 #include "../material/shaderext/ShaderExtPBR_daynight_cycle.h"
 #include "../material/shaderext/ShaderExtShadow.h"
@@ -679,6 +680,9 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE
 		);
 
+	ShaderExtCloud_effect::cloudEffect = cloudEffectTexture->getHandle();
+	ShaderExtCloud_effect::cloudDepthTexture = cloudEffectDepthTexture->getHandle();
+
 	glCreateFramebuffers(1, &cloudEffectFBO);
 	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT0, cloudEffectTexture->getHandle(), 0);
 	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT1, cloudEffectDepthTexture->getHandle(), 0);		// @NOTE: this is needing to be a color attachment and not a depth attachment bc we need to write the depth value manually instead of letting the fullscreen quad be the "Depth"  -Timo
@@ -708,6 +712,9 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteFramebuffers(1, &cloudEffectFBO);
 	delete cloudEffectBlurTexture;
 	glDeleteFramebuffers(1, &cloudEffectBlurFBO);
+	delete cloudEffectDepthTextureFloodFill;
+	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
+	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1814,6 +1821,7 @@ void RenderManager::renderScene()
 	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
 	renderQuad();
 
+	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
 
 	// @TODO: SO ABOUT THESE @CLOUDS
 	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque
@@ -2787,6 +2795,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
+			ImGui::DragFloat("Cloud apply ss effect density", &ShaderExtCloud_effect::cloudEffectDensity);
 
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
 			if (showCloudNoiseView)

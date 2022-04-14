@@ -140,7 +140,8 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    calculatedDepthValue = vec4(1.0);
+    //calculatedDepthValue = vec4(1.0);
+    calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
 
 	// Get WS position based off depth texture
     float z = texture(depthTexture, texCoord).x * 2.0 - 1.0;
@@ -187,12 +188,14 @@ void main()
         if (depthTestSqr < depthCurrentPos)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
+            calculatedDepthValue = vec4(0, 0, 0, 1);        // @NOTE: this is a special value (< mainCameraZNear) so that it doesn't get processed in the flood fill and leak into the actual geometry when it's rendered (see pbr.frag with the depth comparison with the cloudDepthTexture)  -Timo.
             return;
         }
 
         if (depthTestSqr < depthTargetPos)
         {
             targetPosition = worldSpaceFragPosition;
+            calculatedDepthValue = vec4(0, 0, 0, 1);    // @NOTE: this block means that there is geometry blocking the raymarch from going to infinity. If this fails, then keep the depth value as 0.0 (the bail value)
         }
     }
 
@@ -245,7 +248,8 @@ void main()
             lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             transmittance = 0.0;
             
-            calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
+            //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
+            calculatedDepthValue = vec4(vec3(clamp(distanceTraveled, mainCameraZNear, mainCameraZFar)), 1.0);
             break;
         }
 

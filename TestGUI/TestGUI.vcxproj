@@ -154,6 +154,7 @@
     <ClCompile Include="src\render_engine\light\LightManager.cpp" />
     <ClCompile Include="src\render_engine\material\Material.cpp" />
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExt.cpp" />
+    <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCloud_effect.cpp" />
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.cpp" />
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.cpp" />
     <ClCompile Include="src\render_engine\material\shaderext\ShaderExtShadow.cpp" />
@@ -330,6 +331,7 @@
     <ClInclude Include="src\render_engine\light\LightManager.h" />
     <ClInclude Include="src\render_engine\material\Material.h" />
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExt.h" />
+    <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCloud_effect.h" />
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExtCSM_shadow.h" />
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExtPBR_daynight_cycle.h" />
     <ClInclude Include="src\render_engine\material\shaderext\ShaderExtShadow.h" />
