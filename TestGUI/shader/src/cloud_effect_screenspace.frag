@@ -1,11 +1,14 @@
 #version 430
 
 in vec2 texCoord;
-out vec4 fragmentColor;
+layout (location=0) out vec4 fragmentColor;
+layout (location=1) out vec4 calculatedDepthValue;
 
 uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseViewMatrix;
 uniform vec3 mainCameraPosition;
+uniform float mainCameraZNear;
+uniform float mainCameraZFar;
 
 uniform float cloudLayerY;
 uniform float cloudLayerThickness;
@@ -137,6 +140,8 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
+    calculatedDepthValue = vec4(1.0);
+
 	// Get WS position based off depth texture
     float z = texture(depthTexture, texCoord).x * 2.0 - 1.0;
     vec4 clipSpacePosition = vec4(texCoord * 2.0 - 1.0, z, 1.0);
@@ -239,6 +244,8 @@ void main()
             float d = density - densityRequirement;
             lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             transmittance = 0.0;
+            
+            calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             break;
         }
 
@@ -249,106 +256,3 @@ void main()
 
     fragmentColor = vec4(lightColor * lightEnergy, transmittance);
 }
-
-
-
-
-
-
-
-
-
-    /*
-
-    // RAYMARCH!!!!!
-    float accumulatedDensity = 0.0;
-    vec4 sampleScale = 1.0 / cloudLayerTileSize;
-    float stepWeight = rayLength / float(NB_RAYMARCH_STEPS);
-
-    float phaseValue = phase(dot(realDeltaPosition / rayLength, -lightDirection));
-    float transmittance = 1.0;
-    vec3 lightEnergy = vec3(0.0);
-
-    for (int i = 0; i < NB_RAYMARCH_STEPS; i++)
-    {
-        float densityAtStep = 0.0;
-
-        //
-        // Calculate the raymarch towards the light
-        //
-        vec3 inScatterCurrentPosition = currentPosition;
-        vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
-        vec3 inScatterDeltaPosition = projectedLightDirection * abs(inScatterCurrentPosition.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
-        vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
-        float inScatterStepWeight = length(inScatterDeltaStepIncrement);
-        float inScatterDensity = 0.0;
-
-        for (int j = 0; j < NB_IN_SCATTER_RAYMARCH_STEPS; j++)
-        {
-            vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale.r * inScatterCurrentPosition.xzy);
-            float density =
-                0.5333333 * noise.r
-			    + 0.2666667 * noise.g
-			    + 0.1333333 * noise.b
-			    + 0.0666667 * noise.a;
-
-            if (j == 0)
-            {
-                densityAtStep = density;
-                if (densityAtStep <= 0.0)
-                    break;
-            }
-
-            inScatterDensity += max(0.0, density) * inScatterStepWeight;
-            //if (inScatterDensity > 7.6)   // @NOTE: this is essentially 0 when it's e^-x
-            //    break;
-
-            // Advance raymarch
-            inScatterCurrentPosition += inScatterDeltaStepIncrement;
-
-            if (j == 0)
-                inScatterCurrentPosition += inScatterDeltaStepIncrement * ditherPattern[index];
-        }
-        float inScatterTransmittance = darknessThreshold + exp(-inScatterDensity * lightAbsorptionTowardsSun) * (1.0 - darknessThreshold);
-
-        //
-        // Add on the inScatterTransmittance and lightEnergy
-        //
-        if (densityAtStep > 0.0)
-        {
-            lightEnergy += densityAtStep * stepWeight * transmittance * inScatterTransmittance * phaseValue;
-            transmittance *= exp(-densityAtStep * stepWeight * lightAbsorptionThroughCloud);
-
-            if (transmittance < 0.01)
-                break;
-        }
-
-        // Advance raymarch
-        currentPosition += deltaStepIncrement;
-    }
-
-
-    //fragmentColor = vec4(hsv2rgb(vec3(float(i) / float(NB_RAYMARCH_STEPS), 1.0, 1.0)), 1.0);
-    fragmentColor = vec4(lightColor * lightEnergy, transmittance);
-}
-
-
-*/
-
-
-    /*
-
-    // Setup raymarching
-    vec3 currentPosition = mainCameraPosition;
-    vec3 deltaPosition = worldSpaceFragPosition - mainCameraPosition;
-    float rayLength = length(deltaPosition);
-    vec3 deltaPositionNormalized = deltaPosition / rayLength;
-    float rayStepIncrement = min(rayLength, farPlane) / NB_RAYMARCH_STEPS;      // Clamp the furthest the rayLength can go is where shadows end (farPlane)
-    vec3 stepVector = deltaPositionNormalized * rayStepIncrement;
-    float lightDotView = dot(deltaPositionNormalized, -mainlightDirection);
-
-    
-
-    vec4 accumulatedCloud = vec4(0.0);      // @NOTE: once .a reaches 1, exit early
-
-}*/

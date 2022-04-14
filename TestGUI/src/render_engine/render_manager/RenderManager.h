@@ -238,11 +238,11 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture;		// @NOTE: this is a framebuffer (full size)
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;		// @NOTE: this is a framebuffer (full size)
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
-	Shader* cloudNoiseGenerateShader, *cloudNoiseFractalShader, *cloudNoiseCombineShader, *cloudEffectShader;
+	Shader* cloudNoiseGenerateShader, *cloudNoiseFractalShader, *cloudNoiseCombineShader, *cloudEffectShader, *cloudEffectFloodFillShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
 

@@ -302,6 +302,8 @@
     <None Include="shader\cloudEffectSS.json" />
     <None Include="shader\src\cloud_noise_fractal.frag" />
     <None Include="shader\cloudNoiseFractal.json" />
+    <None Include="shader\src\cloud_effect_depth_floodfill.frag" />
+    <None Include="shader\cloudEffectDepthFloodfill.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

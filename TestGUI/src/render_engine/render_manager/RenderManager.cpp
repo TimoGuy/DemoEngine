@@ -650,21 +650,56 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
+	cloudEffectDepthTexture =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
+			GL_R32F,  //GL_DEPTH_COMPONENT24,
+			GL_RED,  //GL_DEPTH_COMPONENT,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	cloudEffectDepthTextureFloodFill =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
+			GL_R32F,
+			GL_RED,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
 
 	glCreateFramebuffers(1, &cloudEffectFBO);
 	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT0, cloudEffectTexture->getHandle(), 0);
+	glNamedFramebufferTexture(cloudEffectFBO, GL_COLOR_ATTACHMENT1, cloudEffectDepthTexture->getHandle(), 0);		// @NOTE: this is needing to be a color attachment and not a depth attachment bc we need to write the depth value manually instead of letting the fullscreen quad be the "Depth"  -Timo
 	if (glCheckNamedFramebufferStatus(cloudEffectFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Screenspace Framebuffer)" << std::endl;
 
 	glCreateFramebuffers(1, &cloudEffectBlurFBO);
 	glNamedFramebufferTexture(cloudEffectBlurFBO, GL_COLOR_ATTACHMENT0, cloudEffectBlurTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (Cloud Effect Screenspace Framebuffer)" << std::endl;
+		std::cout << "Framebuffer not complete! (Cloud Effect Blur Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectDepthFloodFillFBO);
+	glNamedFramebufferTexture(cloudEffectDepthFloodFillFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTextureFloodFill->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Screenspace Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
 {
 	delete cloudEffectTexture;
+	delete cloudEffectDepthTexture;
 	glDeleteFramebuffers(1, &cloudEffectFBO);
 	delete cloudEffectBlurTexture;
 	glDeleteFramebuffers(1, &cloudEffectBlurFBO);
@@ -1091,6 +1126,7 @@ void RenderManager::createShaderPrograms()
 	cloudNoiseFractalShader = (Shader*)Resources::getResource("shader;cloudNoiseFractal");
 	cloudNoiseCombineShader = (Shader*)Resources::getResource("shader;cloudNoiseCombine");
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
+	cloudEffectFloodFillShader = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfill");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1117,6 +1153,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudNoiseFractal");
 	Resources::unloadResource("shader;cloudNoiseCombine");
 	Resources::unloadResource("shader;cloudEffectSS");
+	Resources::unloadResource("shader;cloudEffectDepthFloodfill");
 }
 
 void RenderManager::createFonts()
@@ -1699,6 +1736,9 @@ void RenderManager::renderScene()
 	// Capture z-passed screen for @Clouds
 	// @NOTE: I don't know if this render step should be inside of renderscene() or around where the volumetric lighting occurs...  -Timo
 	//
+	const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glNamedFramebufferDrawBuffers(cloudEffectFBO, 2, attachments);
+
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -1706,6 +1746,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
 	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
 	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	cloudEffectShader->setFloat("mainCameraZNear", MainLoop::getInstance().camera.zNear);
+	cloudEffectShader->setFloat("mainCameraZFar", MainLoop::getInstance().camera.zFar);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
 	cloudEffectShader->setFloat("cloudNoiseMainSize", cloudEffectInfo.cloudNoiseMainSize);
@@ -1726,6 +1768,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setVec4("phaseParameters", cloudEffectInfo.phaseParameters);
 	renderQuad();
 
+	glNamedFramebufferDrawBuffers(cloudEffectFBO, 1, attachments);
+
 	//
 	// Blur @Clouds pass
 	//
@@ -1743,6 +1787,16 @@ void RenderManager::renderScene()
 		blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
 		renderQuad();
 	}
+
+	//
+	// Floodfill @Clouds depth pass
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectFloodFillShader->use();
+	cloudEffectFloodFillShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	renderQuad();
+
 
 	// @TODO: SO ABOUT THESE @CLOUDS
 	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque
