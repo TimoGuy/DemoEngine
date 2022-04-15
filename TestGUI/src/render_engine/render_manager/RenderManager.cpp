@@ -820,7 +820,9 @@ void RenderManager::createCloudNoise()
 	constexpr const char* baseNoiseDirectory = "res/_generated/cloud_base_noise";
 	constexpr const char* detailNoiseDirectory = "res/_generated/cloud_detail_noise";
 
+	//
 	// PRECHECK: see if should load clouds from textures instead
+	//
 	if (std::filesystem::is_directory(baseNoiseDirectory) &&
 		std::filesystem::is_directory(detailNoiseDirectory))
 	{
@@ -865,7 +867,9 @@ void RenderManager::createCloudNoise()
 		}
 	}
 
-
+	//
+	// GENERATE CLOUD NOISE (Fallback/first time... @NOTE: ship the game with the cloud cache fyi, or at least a file that contains the points)
+	//
 	std::cout << "::CLOUD NOISE GENERATOR:: Start" << std::endl;
 
 	//
