@@ -53,6 +53,16 @@ uniform int cascadeCount;   // number of frusta - 1
 uniform float nearPlane;
 uniform float farPlane;
 
+// ext: SSAO
+uniform sampler2D ssaoTexture;      // @NOTE: this is unused. It should just get snuffed out during shader compilation
+uniform vec2 invFullResolution;
+
+// ext: cloud_effect
+uniform sampler2D cloudEffect;
+uniform float cloudEffectDensity;
+uniform sampler2D cloudDepthTexture;
+uniform vec3 mainCameraPosition;
+
 
 const float PI = 3.14159265359;
 // ----------------------------------------------------------------------------
@@ -440,4 +450,13 @@ void main()
     vec3 color = ambient + Lo;
 
     FragColor = vec4(color, 1.0 - (fresnelValue / 2.0));
+    
+    // @DEBUG: for cloud depth texture sensing!
+    float cloudDepth = texture(cloudDepthTexture, gl_FragCoord.xy * invFullResolution).r;
+    const float cloudDepthDiff = cloudDepth - length(mainCameraPosition - fragPosition);
+    if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
+    {
+        const vec3 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution).rgb;
+        FragColor.rgb = mix(cloudEffectColor, FragColor.rgb, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
+    }
 }
