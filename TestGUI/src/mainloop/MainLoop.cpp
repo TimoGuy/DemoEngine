@@ -90,24 +90,49 @@ MainLoop& MainLoop::getInstance()
 void MainLoop::initialize()
 {
 	// https://www.text-image.com/convert/ascii.html
+	//const char* logoText =
+	//	"    `-`         .`         `.`                                                      `s+               \n"
+	//	"    yNo     .+hmmh sm:  -sdNm+      :+/osyyyys+-    `ss+oyyyyyo/`       ````````````-MN`````````````  \n"
+	//	" ```hMs``` -mNs:.` hMs oNmo-`       mMyso++++sdNh`  /Mmoso+++oymm/    .mmmmmmmmmmmmmNMMmmmmmmmmmmmmmd`\n"
+	//	"+mmmNMNmmm.+Md. .- yMd dMy  -.     `MM-`````  `hMo  oMh``````  .NN-    .........-://oMM///:--........ \n"
+	//	"`...hMy... `sNNdNd.oMN -hNddNy     .MMmmmmmmmy sMy  sMNmmmmmmms yMo        `:oydmddddMMddddmmho:`     \n"
+	//	"    dMs     :NMh:. -MM- +MNy-.     :MN-------. hMo  oMh-------. +Mh       +mNdo:-..`-MN``...:+hNm/    \n"
+	//	"   oMMh.   :NN/`/ms`mMo+Mm- ym/    /MN::::::::/NM.  /Md:::::::::sMh      oMm:`      .MN        -dMo   \n"
+	//	"  oMMMMms- +MN+/sMMs+MmyMh//hMN:   /MNhhhhhhhhhy+   .hyhhhhhhhhhmMh     `NM- ```````-MN```````` -MN`  \n"
+	//	" sMddMyodm-`/yhhyshm:mMooyhhyymh   /Mh        oo`    `+s`       oMy     -MN odddddddmMMdddddddh` NM-  \n"
+	//	"sMh`hMs `.`/++++++os+hMm+++:-dh.   /Md       `sMd-  /mNs`       yMs     .MM``-------/MN-------- .MM.  \n"
+	//	"ss` hMs    shMMmhhhhhhdMMhho`yMh`  /Md     /hhdNMmddNMNdh/      dM+      hMs`       .MN        `yMy   \n"
+	//	"    hMs     +Mm.      `dMo `:-+y.  :Mm     .:::::sMNo::::.      NM-      .hNd+-``   .MN    `.-+dNy`   \n"
+	//	"    hMs    .NMmyo:.    .dMshMy     -MN     `....oNN+.....`     .MM`        :sdmdhhhyhMMyyhhddmds-     \n"
+	//	"    hMs    hMy+shmmy`   -NMMy`     .MM     smmmNMNNNNNmmms     /Mm      ``````-:/++osMMoo+//:.``````  \n"
+	//	"    hMs   :MN`   `::  .omNhNN+`     MM.    `.-hMh.-smMd+.`     sMy     `hddddddddddddMMddddddddddddh` \n"
+	//	"    yMo   sNs         dmo- .yNh`    mM-      :Nd`   `/hm.      dM/      ------------/MN-------------  \n"
+	//	"    .:`   `:`                --     :o`       .`               /o`                  `ys               \n";
+
 	const char* logoText =
-		"    `-`         .`         `.`                                                      `s+               \n"
-		"    yNo     .+hmmh sm:  -sdNm+      :+/osyyyys+-    `ss+oyyyyyo/`       ````````````-MN`````````````  \n"
-		" ```hMs``` -mNs:.` hMs oNmo-`       mMyso++++sdNh`  /Mmoso+++oymm/    .mmmmmmmmmmmmmNMMmmmmmmmmmmmmmd`\n"
-		"+mmmNMNmmm.+Md. .- yMd dMy  -.     `MM-`````  `hMo  oMh``````  .NN-    .........-://oMM///:--........ \n"
-		"`...hMy... `sNNdNd.oMN -hNddNy     .MMmmmmmmmy sMy  sMNmmmmmmms yMo        `:oydmddddMMddddmmho:`     \n"
-		"    dMs     :NMh:. -MM- +MNy-.     :MN-------. hMo  oMh-------. +Mh       +mNdo:-..`-MN``...:+hNm/    \n"
-		"   oMMh.   :NN/`/ms`mMo+Mm- ym/    /MN::::::::/NM.  /Md:::::::::sMh      oMm:`      .MN        -dMo   \n"
-		"  oMMMMms- +MN+/sMMs+MmyMh//hMN:   /MNhhhhhhhhhy+   .hyhhhhhhhhhmMh     `NM- ```````-MN```````` -MN`  \n"
-		" sMddMyodm-`/yhhyshm:mMooyhhyymh   /Mh        oo`    `+s`       oMy     -MN odddddddmMMdddddddh` NM-  \n"
-		"sMh`hMs `.`/++++++os+hMm+++:-dh.   /Md       `sMd-  /mNs`       yMs     .MM``-------/MN-------- .MM.  \n"
-		"ss` hMs    shMMmhhhhhhdMMhho`yMh`  /Md     /hhdNMmddNMNdh/      dM+      hMs`       .MN        `yMy   \n"
-		"    hMs     +Mm.      `dMo `:-+y.  :Mm     .:::::sMNo::::.      NM-      .hNd+-``   .MN    `.-+dNy`   \n"
-		"    hMs    .NMmyo:.    .dMshMy     -MN     `....oNN+.....`     .MM`        :sdmdhhhyhMMyyhhddmds-     \n"
-		"    hMs    hMy+shmmy`   -NMMy`     .MM     smmmNMNNNNNmmms     /Mm      ``````-:/++osMMoo+//:.``````  \n"
-		"    hMs   :MN`   `::  .omNhNN+`     MM.    `.-hMh.-smMd+.`     sMy     `hddddddddddddMMddddddddddddh` \n"
-		"    yMo   sNs         dmo- .yNh`    mM-      :Nd`   `/hm.      dM/      ------------/MN-------------  \n"
-		"    .:`   `:`                --     :o`       .`               /o`                  `ys               \n";
+		"                .^~7?7^                                             !P5PPY7^                       \n"
+		"                .?P#@@@BY!:                                          ~Y#@@@&P:                     \n"
+		"                    G@@@@@5                                            !@@@@@~                     \n"
+		"                    !@@@&!..........:!7!^                              J@@@@7                      \n"
+		"   !^      ..:^~!7?JP@@@&GBBBBBBBBBB#@@@@GJ^                           G@@@P                       \n"
+		"   ~&BPPGBB#&&&#BGP5YJ?7!~^:::::::::::Y@@@@@G^                        .#@@@~                       \n"
+		"   :&@B^~!7!~^:.      ~PBBG5!       .Y@@@@&BB7                        ^@@@G                        \n"
+		"   5@@@:    JGBB57     :#@@@&:     !5P5Y?~:                           J@@@7                        \n"
+		"  Y@@@P     :B@@@&.     B@@@Y      .                                 .#@@&:                        \n"
+		".P@@@&^     7@@@@?     .#@@#.                                        !@@@Y                         \n"
+		"^@@@@!     ?@@@@?       5@@B~:.    .~!~:.                            B@@@7                         \n"
+		" !5Y~    :P@@@#~         ?G&@@&#BBB#@@@@&G^                         J@@@@&Y:                       \n"
+		"       .J&@@&5:            .^!?JY5PPPP5YJ7.                        7@@@&P&@&?                      \n"
+		"     :Y&@&P7.           .:^~75P5YJ!                               !@@@&! :P@@B~                    \n"
+		"   ^YB#5!:~~^^^~!7?JY5PB#@@@&&&&&#B^                             !@@@B:    7#@@5:                  \n"
+		"   ...    :7P#&@@@&##@@@G7^:.....                               7@@@P.      .5@@&5^                \n"
+		"             .:^^:. :&@@@!                                     Y@@@J          7@@@@P~              \n"
+		"                    :&@@G                                    ^B@@B^            ^P@@@@G7.           \n"
+		"                    :&@@J                                   J@@&J                !B@@@@#Y^         \n"
+		"               ..:::7@@@P?JJJJJJJ?77?5GPJ!:               !B@@P^                   7B@@@@@B?^      \n"
+		"  ~!7777?JYPGGB#&&&&&##BBBBBBBBB#&@@@@@@@@&5.           ~P@#Y~                       !B@@@@@@B?^   \n"
+		"  :!YB@@@@@&#GYJ7!~^:.           .:^!J5G#&@#:         ^YGY~.                           !G&@@@@@@BJ:\n"
+		"      :!7?^.                            .:^.         .^:                                 ^?YYYY5PP7\n";
 
 
 	std::cout << logoText << std::endl;
