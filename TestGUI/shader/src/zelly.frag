@@ -54,7 +54,7 @@ uniform float nearPlane;
 uniform float farPlane;
 
 // ext: SSAO
-uniform sampler2D ssaoTexture;      // @NOTE: this is unused. It should just get snuffed out during shader compilation
+//uniform sampler2D ssaoTexture;      // @NOTE: this is unused. It should just get snuffed out during shader compilation
 uniform vec2 invFullResolution;
 
 // ext: cloud_effect
@@ -456,7 +456,7 @@ void main()
     const float cloudDepthDiff = cloudDepth - length(mainCameraPosition - fragPosition);
     if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
     {
-        const vec3 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution).rgb;
-        FragColor.rgb = mix(cloudEffectColor, FragColor.rgb, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
+        const vec4 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution);
+        FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
 }

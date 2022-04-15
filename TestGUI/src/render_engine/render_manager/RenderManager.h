@@ -211,6 +211,7 @@ private:
 	Shader* hdrLuminanceProgramId, *hdrLumAdaptationComputeProgramId;
 	GLuint hdrLumFBO, hdrLumAdaptation1x1;
 	Texture *hdrLumDownsampling, *hdrLumAdaptationPrevious, *hdrLumAdaptationProcessed;
+	float exposure = 0.3f;
 
 	// Volumetric lighting
 	Shader* volumetricProgramId, *blurXProgramId, *blurYProgramId;
@@ -234,7 +235,6 @@ private:
 	// Bloom effect
 	static const uint32_t bloomBufferCount = 7 * 2;			// 7 passes with 2 pingpong buffers each
 	GLuint bloomFBOs[bloomBufferCount], bloomColorBuffers[bloomBufferCount];
-	float exposure = 0.15f;
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises

@@ -506,8 +506,8 @@ void main()
     const float cloudDepthDiff = cloudDepth - length(mainCameraPosition - fragPosition);
     if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
     {
-        const vec3 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution).rgb;
-        FragColor.rgb = mix(cloudEffectColor, FragColor.rgb, exp(cloudDepthDiff * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
+        const vec4 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution);        // @NOTE: the alpha channel is transmittance, not traditional alpha  -Timo
+        FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
 
     //FragColor = vec4(vec3(1) * ao, fadeAlpha);        @DEBUG: for seeing how the ao affects the scene
