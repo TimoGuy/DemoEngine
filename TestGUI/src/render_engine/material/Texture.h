@@ -89,6 +89,22 @@ private:
 };
 
 
+class Texture3DFromFile : public Texture
+{
+public:
+	Texture3DFromFile(const std::vector<ImageFile>& files, GLenum toTexture, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
+
+private:
+	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data);
+
+	const std::vector<ImageFile> files;
+	std::vector<ImageDataLoaded> imageDatasCache;
+	int numImagesLoaded;
+	GLenum toTexture;
+	GLuint minFilter, magFilter, wrapS, wrapT, wrapR;
+};
+
+
 class TextureCubemapFromFile : public Texture
 {
 public:

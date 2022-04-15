@@ -184,6 +184,68 @@ Texture3D::Texture3D(GLsizei width, GLsizei height, GLsizei depth, GLsizei level
 	loaded = true;
 }
 
+Texture3DFromFile::Texture3DFromFile(
+	const std::vector<ImageFile>& files,
+	GLenum toTexture,
+	GLuint minFilter,
+	GLuint magFilter,
+	GLuint wrapS,
+	GLuint wrapT,
+	GLuint wrapR) :
+		files(files),
+		toTexture(toTexture),
+		minFilter(minFilter),
+		magFilter(magFilter),
+		wrapS(wrapS),
+		wrapT(wrapT),
+		wrapR(wrapR)
+{
+	assert(files.size() > 0);
+
+	imageDatasCache.resize(files.size());
+	numImagesLoaded = 0;
+
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		asyncFutures.push_back(std::async(std::launch::async, INTERNALTextureHelper::loadTexture2DAsync, this, files[i], i));
+	}
+
+	// Synchronous loading spinning lock
+	while (Texture::loadSync && !loaded)
+		Texture::INTERNALtriggerCreateGraphicsAPITextureHandles();
+}
+
+void Texture3DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data)
+{
+	if (loaded)		// NOTE: just in case....
+		return;
+
+	imageDatasCache[data.optionalId] = data;
+	numImagesLoaded++;
+
+	if (numImagesLoaded < files.size())
+		return;
+
+	glCreateTextures(GL_TEXTURE_3D, 1, &textureHandle);
+
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_R, wrapR);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTextureStorage3D(textureHandle, 1, data.internalFormat, data.imgWidth, data.imgHeight, (GLsizei)files.size());
+
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		ImageDataLoaded& imgData = imageDatasCache[i];
+		glTextureSubImage3D(textureHandle, 0, 0, 0, i, imgData.imgWidth, imgData.imgHeight, 1, toTexture, imgData.pixelType, imgData.pixels);
+		stbi_image_free(imgData.pixels);
+	}
+
+	loaded = true;
+}
+
 TextureCubemapFromFile::TextureCubemapFromFile(
 	const std::vector<ImageFile>& files,
 	GLenum toTexture,

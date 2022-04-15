@@ -10,6 +10,9 @@
 #include <glm/gtx/scalar_multiplication.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
+#include <filesystem>
+#include <stb/stb_image_write.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -814,6 +817,57 @@ Texture* cloudNoise1Channels[4];
 Texture* cloudNoise2Channels[3];
 void RenderManager::createCloudNoise()
 {
+	constexpr const char* baseNoiseDirectory = "res/_generated/cloud_base_noise";
+	constexpr const char* detailNoiseDirectory = "res/_generated/cloud_detail_noise";
+
+	// PRECHECK: see if should load clouds from textures instead
+	if (std::filesystem::is_directory(baseNoiseDirectory) &&
+		std::filesystem::is_directory(detailNoiseDirectory))
+	{
+		std::cout << "::CLOUD NOISE GENERATOR:: Cache detected. Loading noise texture from cache..." << std::endl;
+		try
+		{
+			// Compile all base noise files together
+			std::vector<ImageFile> baseNoiseFiles;
+			std::vector<ImageFile> detailNoiseFiles;
+
+			for (size_t i = 0; i < cloudNoiseTex1Size; i++)
+			{
+				std::string filename = "/layer" + std::to_string(i) + ".png";
+				if (!std::filesystem::exists(baseNoiseDirectory + filename))
+					throw new std::exception(("File " + std::string(baseNoiseDirectory) + filename + " Does not exist.").c_str());
+
+				baseNoiseFiles.push_back({ baseNoiseDirectory + filename, true, false, false });
+			}
+
+			for (size_t i = 0; i < cloudNoiseTex2Size; i++)
+			{
+				std::string filename = "/layer" + std::to_string(i) + ".png";
+				if (!std::filesystem::exists(detailNoiseDirectory + filename))
+					throw new std::exception(("File " + std::string(detailNoiseDirectory) + filename + " Does not exist.").c_str());
+
+				detailNoiseFiles.push_back({ detailNoiseDirectory + filename, true, false, false });
+			}
+
+			// Load up the textures (@CLOUDS: noise 1 has 4 channels RGBA, and noise2 has 3 channels RGB)
+			Texture::setLoadSync(true);
+			cloudNoise1 = new Texture3DFromFile(baseNoiseFiles, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);
+			cloudNoise2 = new Texture3DFromFile(detailNoiseFiles, GL_RGB, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_REPEAT);
+			Texture::setLoadSync(false);
+
+			std::cout << "::CLOUD NOISE GENERATOR:: Successfully loaded noise cache" << std::endl;
+			return;
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << "::ERROR:: " << e.what() << std::endl;
+			std::cout << "::CLOUD NOISE GENERATOR:: Cache load failed. Falling back to auto-generate." << std::endl;
+		}
+	}
+
+
+	std::cout << "::CLOUD NOISE GENERATOR:: Start" << std::endl;
+
 	//
 	// @Cloud noise 1:
 	//		R: perlin-worley
@@ -870,6 +924,8 @@ void RenderManager::createCloudNoise()
 		std::vector<glm::vec3>(), std::vector<glm::vec3>(), std::vector<glm::vec3>()
 	};
 
+	std::cout << "::CLOUD NOISE GENERATOR:: Generating grid offsets" << std::endl;
+
 	std::random_device randomDevice;
 	std::mt19937 randomEngine(randomDevice());
 	std::uniform_real_distribution<> distribution(0.0, 1.0);
@@ -887,6 +943,8 @@ void RenderManager::createCloudNoise()
 	// @TODO: I think what needs to happen is to generate a texture that contains all the points for a worley map and then use that texture to generate the actual worley map. This look up image can just be a GL_NEAREST filtered 8192x8192 texture I think. That should be big enough, and then delete it after it's not needed anymore.  -Timo
 	//		@RESPONSE: So I think that the current sitation where only 1024 points are inserted and then repeated works just fine actually. This allows for a smaller set of information needed to look thru.  -Timo
 	// @TODO: Also I am noting that there is noise stacking on page 33 of the pdf (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf) FOR SURE!!!!!
+	std::cout << "::CLOUD NOISE GENERATOR:: Rendering base worley noise" << std::endl;
+	
 	GLuint noiseFBO;
 	glCreateFramebuffers(1, &noiseFBO);
 	glViewport(0, 0, cloudNoiseTex1Size, cloudNoiseTex1Size);
@@ -970,6 +1028,25 @@ void RenderManager::createCloudNoise()
 		glBindFramebuffer(GL_FRAMEBUFFER, noiseFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
 		renderQuad();
+
+		// Save the render result for later!		@COPYPASTA
+		static bool first = true;
+		if (first)
+		{
+			first = false;
+			std::filesystem::create_directories(baseNoiseDirectory);
+		}
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, noiseFBO);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		GLubyte* pixels = new GLubyte[4 * cloudNoiseTex1Size * cloudNoiseTex1Size];
+		glReadPixels(0, 0, cloudNoiseTex1Size, cloudNoiseTex1Size, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		stbi_flip_vertically_on_write(true);
+		stbi_write_png((baseNoiseDirectory + std::string("/layer") + std::to_string(i) + ".png").c_str(), cloudNoiseTex1Size, cloudNoiseTex1Size, 4, pixels, 4 * cloudNoiseTex1Size);
+		std::cout << "::CLOUD NOISE GENERATOR:: \tSaved render for base_noise layer " << i << std::endl;
+		delete pixels;
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -1009,6 +1086,8 @@ void RenderManager::createCloudNoise()
 	//};
 
 	// @COPYPASTA: Reinsert/recalculate the randomized points for worley noise
+	std::cout << "::CLOUD NOISE GENERATOR:: Generating detail noise grid offsets" << std::endl;
+
 	for (size_t i = 0; i < 9; i++)
 	{
 		size_t worleyPointCount = channelGridSizes[i] * channelGridSizes[i] * channelGridSizes[i];
@@ -1021,6 +1100,7 @@ void RenderManager::createCloudNoise()
 
 	// Render it out!
 	glViewport(0, 0, cloudNoiseTex2Size, cloudNoiseTex2Size);
+	std::cout << "::CLOUD NOISE GENERATOR:: Rendering detail worley noise" << std::endl;
 
 	// Render noise textures onto 3 different 8 bit textures
 	for (size_t j = 0; j < 3; j++)
@@ -1100,12 +1180,34 @@ void RenderManager::createCloudNoise()
 		glBindFramebuffer(GL_FRAMEBUFFER, noiseFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
 		renderQuad();
+
+		// Save the render result for later!		@COPYPASTA
+		static bool first = true;
+		if (first)
+		{
+			first = false;
+			std::filesystem::create_directories(detailNoiseDirectory);
+		}
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, noiseFBO);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		GLubyte* pixels = new GLubyte[3 * cloudNoiseTex2Size * cloudNoiseTex2Size];
+		glReadPixels(0, 0, cloudNoiseTex2Size, cloudNoiseTex2Size, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		stbi_flip_vertically_on_write(true);
+		stbi_write_png((detailNoiseDirectory + std::string("/layer") + std::to_string(i) + ".png").c_str(), cloudNoiseTex2Size, cloudNoiseTex2Size, 3, pixels, 3 * cloudNoiseTex2Size);
+		std::cout << "::CLOUD NOISE GENERATOR:: \tSaved render for detail_noise layer " << i << std::endl;
+		delete pixels;
+
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	// Cleanup
 	glDeleteFramebuffers(1, &noiseFBO);
 	glDeleteBuffers(1, &cloudNoiseUBO);
+
+
+	std::cout << "::CLOUD NOISE GENERATOR:: Finished" << std::endl;
 }
 
 void RenderManager::destroyCloudNoise()
