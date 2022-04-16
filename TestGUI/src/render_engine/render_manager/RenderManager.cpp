@@ -626,24 +626,28 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create cloud raymarching buffer
 	//
+	constexpr float cloudEffectTextureScale = 1.0f;			// @NOTE: @CLOUDS: This can be used for settings/quality settings. Doing full-size rendering will be default, but half and quarter size should be an option too.
+	cloudEffectTextureWidth = MainLoop::getInstance().camera.width * cloudEffectTextureScale;
+	cloudEffectTextureHeight = MainLoop::getInstance().camera.height * cloudEffectTextureScale;
+
 	cloudEffectTexture =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
 			1,
 			GL_RGBA32F,
 			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
-			GL_NEAREST,
-			GL_NEAREST,
+			GL_LINEAR,
+			GL_LINEAR,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
 	cloudEffectBlurTexture =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
 			1,
 			GL_RGBA32F,
 			GL_RGBA,
@@ -656,8 +660,8 @@ void RenderManager::createHDRBuffer()
 		);
 	cloudEffectDepthTexture =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
 			1,
 			GL_R32F,  //GL_DEPTH_COMPONENT24,
 			GL_RED,  //GL_DEPTH_COMPONENT,
@@ -670,11 +674,25 @@ void RenderManager::createHDRBuffer()
 		);
 	cloudEffectDepthTextureFloodFill =
 		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
 			1,
 			GL_R32F,
 			GL_RED,
+			GL_FLOAT,
+			nullptr,
+			GL_NEAREST,
+			GL_NEAREST,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	cloudEffectApplyTexture =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,
+			(GLsizei)MainLoop::getInstance().camera.height,
+			1,
+			GL_RGBA32F,
+			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
 			GL_NEAREST,
@@ -706,6 +724,11 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectApplyFBO);
+	glNamedFramebufferTexture(cloudEffectApplyFBO, GL_COLOR_ATTACHMENT0, cloudEffectApplyTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectApplyFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect apply Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -718,6 +741,8 @@ void RenderManager::destroyHDRBuffer()
 	delete cloudEffectDepthTextureFloodFill;
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
+	delete cloudEffectApplyTexture;
+	glDeleteFramebuffers(1, &cloudEffectApplyFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1863,7 +1888,7 @@ void RenderManager::renderScene()
 	const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 2, attachments);
 
-	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
+	glViewport(0, 0, (GLsizei)cloudEffectTextureWidth, (GLsizei)cloudEffectTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectShader->use();
@@ -1970,15 +1995,6 @@ void RenderManager::renderScene()
 	//
 	// Render scene normally
 	//
-	glBlitNamedFramebuffer(
-		zPrePassFBO,
-		hdrFBO,
-		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-		GL_DEPTH_BUFFER_BIT,
-		GL_NEAREST
-	);
-
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -2012,7 +2028,8 @@ void RenderManager::renderScene()
 	//
 	// Apply the @Clouds layer
 	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectApplyFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectApplyShader->use();
 	cloudEffectApplyShader->setSampler("hdrColorBuffer", hdrColorBuffer);
@@ -2020,7 +2037,7 @@ void RenderManager::renderScene()
 	renderQuad();
 
 	glBlitNamedFramebuffer(
-		cloudEffectBlurFBO,
+		cloudEffectApplyFBO,
 		hdrFBO,
 		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
 		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,

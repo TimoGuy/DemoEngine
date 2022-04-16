@@ -238,8 +238,9 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;		// @NOTE: this is a framebuffer (full size)
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO, cloudEffectApplyFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill, *cloudEffectApplyTexture;		// @NOTE: to apply the cloud effect I needed a full size framebuffer (cloudEffectApplyTexture)
+	int cloudEffectTextureWidth, cloudEffectTextureHeight;
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
 	Shader* cloudNoiseGenerateShader,
