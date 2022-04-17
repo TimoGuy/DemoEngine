@@ -196,10 +196,6 @@ void main()
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
     );
-
-   // fragColor = vec4(out_Color, 1.0);
-   // return;
-
 	
 	// Apply exposure.
     out_Color = 1.0 - exp(-1.0 * out_Color);
@@ -220,7 +216,4 @@ void main()
 	}
 
     fragColor = vec4(out_Color, 1);
-
-    //if (abs(ray_world.y) < 0.001)
-    //    fragColor = vec4(1, 0, 0, 1);
 }
