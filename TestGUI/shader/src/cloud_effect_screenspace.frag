@@ -47,19 +47,23 @@ uniform sampler2D depthTexture;
 // NOTE: this is my rsi function after reading (https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection)
 vec2 rsi(vec3 r0, vec3 rd, float sr)
 {
-    vec3 L = -r0;
-    float tca = dot(L, rd);
-    if (tca < 0.0 && dot(L, L) > sr * sr)
+    // RSI from https://gamedev.stackexchange.com/questions/96459/fast-ray-sphere-collision-code
+    float b = dot(r0, rd);
+    float c = dot(r0, r0) - sr * sr;
+
+    // Exit if r's origin outside s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0 && b > 0)
         return vec2(1e5, -1e5);
 
-    //float d = sqrt(dot(L, L) - (tca * tca));
-    float d2 = dot(L, L) - (tca * tca);
-    if (d2 < 0.0)
+    float discr = b * b - c;
+
+    // Neg discriminant corresponds to ray missing sphere
+    if (discr < 0.0)
         return vec2(1e5, -1e5);
-        
-    //float thc = sqrt((sr * sr) - (d * d));
-    float thc = sqrt((sr * sr) - d2);
-    return vec2(max(0.0, tca - thc), tca + thc);
+
+    // Ray now found to intersect sphere, compute smallest t value of intersection
+    float discrRoot = sqrt(discr);
+    return vec2(max(0.0, -b - discrRoot), -b + discrRoot);
 }
 
 
@@ -70,7 +74,8 @@ vec2 rsi(vec3 r0, vec3 rd, float sr)
 
 
 
-
+const float cameraBaseHeight = 6376e2;
+const float planetRadius = 6365e2;
 
 
 
@@ -106,9 +111,10 @@ vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 float sampleDensityAtPoint(vec3 point)
 {
     // Sample density cutoff from height below cloud layer
-    float distanceFromCloudY = cloudLayerY - point.y;
+    //float distanceFromCloudY = cloudLayerY - (length(point + vec3(0, cameraBaseHeight, 0)) - cameraBaseHeight);
+    float distanceFromCloudY = cloudLayerY - point.y;     // @NOTE: this is faster, but not as accurate. Doesn't seem like it makes any difference really.
     distanceFromCloudY /= cloudLayerThickness;
-    const float densityMult = 1.0 - pow(2.0 * distanceFromCloudY - 1.0, 2.0);     // https://www.desmos.com/calculator/ltnhmcb1ow
+    const float densityMult = max(0.0, 1.0 - pow(2.0 * distanceFromCloudY - 1.0, 2.0));     // https://www.desmos.com/calculator/ltnhmcb1ow
 
     // Sample density from noise textures
     const float sampleScale = 1.0 / cloudNoiseMainSize;
@@ -182,46 +188,103 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
-
 	// Get WS position based off depth texture
     float z = texture(depthTexture, texCoord).x * 2.0 - 1.0;
     vec4 clipSpacePosition = vec4(texCoord * 2.0 - 1.0, z, 1.0);
     vec4 viewSpacePosition = inverseProjectionMatrix * clipSpacePosition;
     viewSpacePosition /= viewSpacePosition.w;   // Perspective division
     vec3 worldSpaceFragPosition = vec3(inverseViewMatrix * viewSpacePosition);
+    
+    // Find the points to do raymarching
+    vec3 r0 = mainCameraPosition + vec3(0, cameraBaseHeight, 0);
+    vec3 rd = normalize(worldSpaceFragPosition - mainCameraPosition);
 
-    //vec2 coll = rsi(mainCameraPosition + vec3(0, 6372e3, 0), normalize(worldSpaceFragPosition - mainCameraPosition), 6372e3 + cloudLayerY);
-    //if (coll.x < coll.y)
-    //{
-    //    fragmentColor = vec4(1, 0, 0, 1);
-    //    return;
-    //}
-
-    vec3 currentPosition = mainCameraPosition;
-    vec3 projectedDeltaPosition = (worldSpaceFragPosition - mainCameraPosition);
-    projectedDeltaPosition /= abs(projectedDeltaPosition.y);       // @NOTE: This projects this to (0, +-1, 0)... so I guess it technically isn't being normalized though hahaha
-
-    // Find the Y points where the collisions would happen
-    if (mainCameraPosition.y > cloudLayerY ||
-        mainCameraPosition.y < cloudLayerY - cloudLayerThickness)
+    vec2 isect_outer = rsi(r0, rd, cameraBaseHeight + cloudLayerY);
+    if (isect_outer.x > isect_outer.y)
     {
-        float nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
+        // Outer sphere collision failed. Abort clouds
+        fragmentColor = vec4(0, 0, 0, 1.0);
+        calculatedDepthValue = vec4(0.0);
+        return;
+    }
 
-        // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
-        if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
+    vec2 isect_inner = rsi(r0, rd, cameraBaseHeight + cloudLayerY - cloudLayerThickness);
+    vec2 isect_planet = rsi(r0, rd, planetRadius);
+
+    if (isect_planet.x == 0.0)
+    {
+        // Inside planet. Abort clouds
+        fragmentColor = vec4(0, 0, 0, 1.0);
+        calculatedDepthValue = vec4(0.0);
+        return;
+    }
+
+    // FIND t0
+    float t0 = 0.0;
+    float t1 = 0.0;
+    
+    // Inside inner boundary. Set t0 to end of inner sphere.
+    if (isect_inner.x == 0.0)
+    {
+        // Occluded by planet. Abort clouds
+        if (isect_inner.y > isect_planet.x)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
+            calculatedDepthValue = vec4(0.0);
             return;
         }
 
-        // Recalculate the currentPosition
-        currentPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
+        // Not occluded by planet!
+        t0 = isect_inner.y;
+        t1 = isect_outer.y;
     }
+    // Outside outer boundary. Set t0 to start of outer sphere.
+    else if (isect_outer.x > 0.0)
+    {
+        t0 = isect_outer.x;
+        t1 = isect_inner.x;
+    }
+    // t0 is between cloud boundaries. t1 is whichever exiting boundary is closer. (inner.x, outer.y). When collision failed, 1e5 may not be a large enough number????  -Timo
+    else
+        t1 = min(isect_inner.x, isect_outer.y);
 
-    // Calc the raymarch start/end points
-    const float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
-    vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
+
+
+    // Setup raymarching
+    calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
+    
+    vec3 currentPosition = mainCameraPosition + rd * t0;
+    vec3 targetPosition  = mainCameraPosition + rd * t1;
+
+
+
+
+
+
+    ////////////////////////vec3 currentPosition = mainCameraPosition;
+    ////////////////////////vec3 projectedDeltaPosition = (worldSpaceFragPosition - mainCameraPosition);
+    ////////////////////////projectedDeltaPosition /= abs(projectedDeltaPosition.y);       // @NOTE: This projects this to (0, +-1, 0)... so I guess it technically isn't being normalized though hahaha
+    ////////////////////////
+    ////////////////////////// Find the Y points where the collisions would happen
+    ////////////////////////if (mainCameraPosition.y > cloudLayerY ||
+    ////////////////////////    mainCameraPosition.y < cloudLayerY - cloudLayerThickness)
+    ////////////////////////{
+    ////////////////////////    float nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
+    ////////////////////////
+    ////////////////////////    // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
+    ////////////////////////    if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
+    ////////////////////////    {
+    ////////////////////////        fragmentColor = vec4(0, 0, 0, 1.0);
+    ////////////////////////        return;
+    ////////////////////////    }
+    ////////////////////////
+    ////////////////////////    // Recalculate the currentPosition
+    ////////////////////////    currentPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
+    ////////////////////////}
+    ////////////////////////
+    ////////////////////////// Calc the raymarch start/end points
+    ////////////////////////const float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
+    ////////////////////////vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
 
     // Check for depth test
     if (z != 1.0)
@@ -247,12 +310,12 @@ void main()
         }
     }
 
-    // Setup the raymarching magic!!!
-    if (length(currentPosition.xz - mainCameraPosition.xz) > maxCloudscapeRadius)
-    {
-        fragmentColor = vec4(0, 0, 0, 1.0);
-        return;
-    }
+    //// Setup the raymarching magic!!!
+    //if (length(currentPosition.xz - mainCameraPosition.xz) > maxCloudscapeRadius)
+    //{
+    //    fragmentColor = vec4(0, 0, 0, 1.0);
+    //    return;
+    //}
 
     vec3 targetPositionFromCamera = targetPosition - mainCameraPosition;
     const float targetPositionLength = length(targetPositionFromCamera.xz);

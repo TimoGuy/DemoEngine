@@ -185,11 +185,11 @@ void main()
 
     vec3 out_Color = atmosphere(
         ray_world,        	            // normalized ray direction
-        mainCameraPosition + vec3(0, 6372e3, 0),            	// ray origin
+        mainCameraPosition + vec3(0, 6376e2, 0),            	// ray origin
         v_Sun,                  		// position of the sun
         22.0,                           // intensity of the sun
-        6371e3,                         // radius of the planet in meters
-        6471e3,                         // radius of the atmosphere in meters
+        6365e2,                         // radius of the planet in meters
+        6465e2,                         // radius of the atmosphere in meters
         vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
         21e-6,                          // Mie scattering coefficient
         8e3,                            // Rayleigh scale height
