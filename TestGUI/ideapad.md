@@ -5,7 +5,7 @@
 - [x] Clouds
 - [ ] Better atmospheric scattering
 - [ ] Fix raymarching issues with edge of Clouds
-- [ ] 
+- [ ] There's a red 0 in the luminance texture, fyi
 
 
 ## Gameplay

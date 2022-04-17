@@ -3,6 +3,7 @@ out vec4 fragColor;
 
 in vec3 localPos;
 
+uniform vec3 mainCameraPosition;
 uniform vec3 sunOrientation;
 uniform float sunRadius;
 uniform float sunAlpha;
@@ -60,42 +61,40 @@ const vec3 sunBaseColor = vec3(1.0f,0.79f,0.43f);
 #define iSteps 16
 #define jSteps 8
 
-vec2 rsi(vec3 r0, vec3 rd, float sr) {
-    // ray-sphere intersection that assumes
-    // the sphere is centered at the origin.
-    // No intersection when result.x > result.y
-    float a = dot(rd, rd);
-    float b = 2.0 * dot(rd, r0);
-    float c = dot(r0, r0) - (sr * sr);
-    float d = (b*b) - 4.0*a*c;
-    //if (d < 0.0)
-    //    //return vec2(1e5,-1e5);
-    //    return vec2(-1e5,1e5);        // This seemed to work okay... I guess, just try to figure out why for the planet rsi it's detecting both the bottom and top????? Idk why, but it makes me feel like it could be incorrect
-    return vec2(
-        (-b - sqrt(d))/(2.0*a),
-        (-b + sqrt(d))/(2.0*a)
-    );
+vec2 rsi(vec3 r0, vec3 rd, float sr)
+{
+    // RSI from https://gamedev.stackexchange.com/questions/96459/fast-ray-sphere-collision-code
+    float b = dot(r0, rd);
+    float c = dot(r0, r0) - sr * sr;
+
+    // Exit if r's origin outside s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0 && b > 0)
+        return vec2(1e5, -1e5);
+
+    float discr = b * b - c;
+
+    // Neg discriminant corresponds to ray missing sphere
+    if (discr < 0.0)
+        return vec2(1e5, -1e5);
+
+    // Ray now found to intersect sphere, compute smallest t value of intersection
+    float discrRoot = sqrt(discr);
+    return vec2(max(0.0, -b - discrRoot), -b + discrRoot);
 }
 
 vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g)
 {
     // Normalize the sun and view directions.
-    pSun = normalize(pSun);
     r = normalize(r);
+    pSun = normalize(pSun);
 
     // Calculate the step size of the primary ray.
-    vec2 p = rsi(r0, r, rAtmos);
-    if (p.x > p.y)
-        return vec3(0,0,0);
-
-    //if (r.y > 0)
-    //    return vec3(0, 1, 0);
-
+    vec2 p = rsi(r0, r, rAtmos);    
     vec2 o = rsi(r0, r, rPlanet);
+
     p.y = min(p.y, o.x);
+
     float iStepSize = (p.y - p.x) / float(iSteps);
-    //float iStepSize = (o.y - o.x) / float(iSteps);
-    //return vec3(iStepSize);
 
     // Initialize the primary ray time.
     float iTime = 0.0;
@@ -186,7 +185,7 @@ void main()
 
     vec3 out_Color = atmosphere(
         ray_world,        	            // normalized ray direction
-        vec3(0, 6372e3, 0),            	// ray origin
+        mainCameraPosition + vec3(0, 6372e3, 0),            	// ray origin
         v_Sun,                  		// position of the sun
         22.0,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters
@@ -207,7 +206,7 @@ void main()
 
     out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.005;       // TIMO
 	
-	float _sunRadius = length(normalize(ray_world)- normalize(v_Sun));
+	float _sunRadius = length(normalize(ray_world) - normalize(v_Sun));
 	
 	// no sun rendering when scene reflection
 	if(_sunRadius < sunRadius)

@@ -181,6 +181,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 
 	// Convert HDR dynamic skybox to cubemap equivalent
 	skybox_program_id->use();
+	skybox_program_id->setVec3("mainCameraPosition", glm::vec3(0.0f));
 	skybox_program_id->setVec3("sunOrientation", sunOrientation);
 	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
 	skybox_program_id->setFloat("sunAlpha", 0.0f);
@@ -2005,6 +2006,7 @@ void RenderManager::renderScene()
 	glDepthMask(GL_FALSE);
 
 	skybox_program_id->use();
+	skybox_program_id->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 	skybox_program_id->setVec3("sunOrientation", skyboxParams.sunOrientation);
 	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
 	skybox_program_id->setFloat("sunAlpha", skyboxParams.sunAlpha);

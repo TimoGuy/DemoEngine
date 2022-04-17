@@ -36,6 +36,48 @@ uniform vec4 phaseParameters;
 // ext: zBuffer
 uniform sampler2D depthTexture;
 
+
+
+
+
+
+
+
+
+// NOTE: this is my rsi function after reading (https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection)
+vec2 rsi(vec3 r0, vec3 rd, float sr)
+{
+    vec3 L = -r0;
+    float tca = dot(L, rd);
+    if (tca < 0.0 && dot(L, L) > sr * sr)
+        return vec2(1e5, -1e5);
+
+    //float d = sqrt(dot(L, L) - (tca * tca));
+    float d2 = dot(L, L) - (tca * tca);
+    if (d2 < 0.0)
+        return vec2(1e5, -1e5);
+        
+    //float thc = sqrt((sr * sr) - (d * d));
+    float thc = sqrt((sr * sr) - d2);
+    return vec2(max(0.0, tca - thc), tca + thc);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // @NOTE: the NB_RAYMARCH_STEPS value is a base for marching thru,
 // so the number of samples is going to be >64. 64 samples is if the ray
 // is perfectly orthogonal to the cloudLayerThickness (the y thru the cloud layer)
@@ -140,7 +182,6 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    //calculatedDepthValue = vec4(1.0);
     calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
 
 	// Get WS position based off depth texture
@@ -149,6 +190,13 @@ void main()
     vec4 viewSpacePosition = inverseProjectionMatrix * clipSpacePosition;
     viewSpacePosition /= viewSpacePosition.w;   // Perspective division
     vec3 worldSpaceFragPosition = vec3(inverseViewMatrix * viewSpacePosition);
+
+    //vec2 coll = rsi(mainCameraPosition + vec3(0, 6372e3, 0), normalize(worldSpaceFragPosition - mainCameraPosition), 6372e3 + cloudLayerY);
+    //if (coll.x < coll.y)
+    //{
+    //    fragmentColor = vec4(1, 0, 0, 1);
+    //    return;
+    //}
 
     vec3 currentPosition = mainCameraPosition;
     vec3 projectedDeltaPosition = (worldSpaceFragPosition - mainCameraPosition);
