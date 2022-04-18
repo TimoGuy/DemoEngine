@@ -95,6 +95,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 
     // @NOTE: Perhaps we need to do the slicing based rendering method. every frame compute depth and step size (rg32 texture) onto a texture (32x32?) and then iterate thru the max depth. Logorithmically??
     
+    // @NOTE: do the distance you wanna traverse and add onto previous slice (step size? or maybe you need to recalculate with the same 16 step size?)
 
 
 
