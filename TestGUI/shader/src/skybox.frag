@@ -91,8 +91,15 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     // Calculate the step size of the primary ray.
     vec2 p = rsi(r0, r, rAtmos);    
     vec2 o = rsi(r0, r, rPlanet);
+    float rjthegod = texture(depthTexture, gl_FragPosition * invResolution);      // @TODO: start from here to grab the scene depth. Also make sure that the depth test is off.
+
+    // @NOTE: Perhaps we need to do the slicing based rendering method. every frame compute depth and step size (rg32 texture) onto a texture (32x32?) and then iterate thru the max depth. Logorithmically??
+    
+
+
 
     p.y = min(p.y, o.x);
+    p.y = min(p.y, rjthegod);
 
     float iStepSize = (p.y - p.x) / float(iSteps);
 
