@@ -60,6 +60,7 @@ uniform sampler2D cloudEffect;
 uniform float cloudEffectDensity;
 uniform sampler2D cloudDepthTexture;
 uniform vec3 mainCameraPosition;
+uniform sampler3D atmosphericScattering;
 
 // Lights
 const int MAX_LIGHTS = 1024;
@@ -501,12 +502,22 @@ void main()
 
     FragColor = vec4(color, fadeAlpha);
 
-    // @DEBUG: for cloud depth texture sensing!
-    float cloudDepth = texture(cloudDepthTexture, gl_FragCoord.xy * invFullResolution).r;
-    const float cloudDepthDiff = cloudDepth - length(mainCameraPosition - fragPosition);
+    //
+    // @ATMOS: combine atmospheric scattering
+    //
+    const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
+    const float myDepth = length(mainCameraPosition - fragPosition);
+    vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 16000.0));  // 32000.0));  @NOTE: IT'S SUPPOSED TO BE 32km... but I don't feel like it
+    FragColor.rgb = FragColor.rgb * atmosValues.a + atmosValues.rgb;
+
+    //
+    // @CLOUDS: combine clouds
+    //
+    const float cloudDepth = texture(cloudDepthTexture, ssSampleCoord).r;
+    const float cloudDepthDiff = cloudDepth - myDepth;
     if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
     {
-        const vec4 cloudEffectColor = texture(cloudEffect, gl_FragCoord.xy * invFullResolution);        // @NOTE: the alpha channel is transmittance, not traditional alpha  -Timo
+        const vec4 cloudEffectColor = texture(cloudEffect, ssSampleCoord);        // @NOTE: the alpha channel is transmittance, not traditional alpha  -Timo
         FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
 

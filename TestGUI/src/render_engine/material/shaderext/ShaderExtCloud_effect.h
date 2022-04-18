@@ -13,6 +13,7 @@ public:
 
 	static unsigned int cloudEffect;
 	static unsigned int cloudDepthTexture;
+	static unsigned int atmosphericScattering;
 	static glm::vec3 mainCameraPosition;
 	static float cloudEffectDensity;
 };

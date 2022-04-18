@@ -11,6 +11,10 @@ uniform float sunAlpha;
 uniform samplerCube nightSkybox;
 uniform mat3 nightSkyTransform;
 
+// FOR DEPTH-SLICED ATMOSPHERE //
+uniform float depthZFar;
+/////////////////////////////////
+
 // UNUSED //
 uniform vec3 sunColor;
 uniform vec3 skyColor1;
@@ -61,6 +65,7 @@ const vec3 sunBaseColor = vec3(1.0f,0.79f,0.43f);
 #define iSteps 16
 #define jSteps 8
 
+
 vec2 rsi(vec3 r0, vec3 rd, float sr)
 {
     // RSI from https://gamedev.stackexchange.com/questions/96459/fast-ray-sphere-collision-code
@@ -82,28 +87,9 @@ vec2 rsi(vec3 r0, vec3 rd, float sr)
     return vec2(max(0.0, -b - discrRoot), -b + discrRoot);
 }
 
-vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g)
+
+vec4 atmosphereDefineDepth(vec3 r, vec3 r0, float iStepSize, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g)
 {
-    // Normalize the sun and view directions.
-    r = normalize(r);
-    pSun = normalize(pSun);
-
-    // Calculate the step size of the primary ray.
-    vec2 p = rsi(r0, r, rAtmos);    
-    vec2 o = rsi(r0, r, rPlanet);
-    float rjthegod = texture(depthTexture, gl_FragPosition * invResolution);      // @TODO: start from here to grab the scene depth. Also make sure that the depth test is off.
-
-    // @NOTE: Perhaps we need to do the slicing based rendering method. every frame compute depth and step size (rg32 texture) onto a texture (32x32?) and then iterate thru the max depth. Logorithmically??
-    
-    // @NOTE: do the distance you wanna traverse and add onto previous slice (step size? or maybe you need to recalculate with the same 16 step size?)
-
-
-
-    p.y = min(p.y, o.x);
-    p.y = min(p.y, rjthegod);
-
-    float iStepSize = (p.y - p.x) / float(iSteps);
-
     // Initialize the primary ray time.
     float iTime = 0.0;
 
@@ -114,6 +100,10 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     // Initialize optical depth accumulators for the primary ray.
     float iOdRlh = 0.0;
     float iOdMie = 0.0;
+
+    // Initialize transmittance
+    vec3 transmittance = vec3(1.0);
+    const float scaledIStepSize = iStepSize / (rAtmos - rPlanet);
 
     // Calculate the Rayleigh and Mie phases.
     float mu = dot(r, pSun);
@@ -167,7 +157,9 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
         }
 
         // Calculate attenuation.
-        vec3 attn = exp(-(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh)));
+        const vec3 extinction = -(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh));
+        vec3 attn = exp(extinction);
+        transmittance *= exp(extinction * scaledIStepSize);
 
         // Accumulate scattering.
         totalRlh += odStepRlh * attn;
@@ -178,50 +170,98 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     }
 
     // Calculate and return the final color.
-    return iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
+    return vec4(iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie), dot(vec3(0.33333333333), transmittance));  // @NOTE: takes the average of the transmittance (has some tradeoffs according to https://sebh.github.io/publications/egsr2020.pdf)
+}
+
+
+vec3 atmosphere(vec3 r, vec3 r0, vec2 isectPlanet, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g)
+{
+    // Normalize the sun and view directions.
+    r = normalize(r);
+    pSun = normalize(pSun);
+
+    // Calculate the step size of the primary ray.
+    vec2 p = rsi(r0, r, rAtmos);
+    p.y = min(p.y, isectPlanet.x);
+
+    float iStepSize = (p.y - p.x) / float(iSteps);
+    return atmosphereDefineDepth(r, r0, iStepSize, pSun, iSun, rPlanet, rAtmos, kRlh, kMie, shRlh, shMie, g).rgb;
 }
 
 
 void main()
 {
-    vec3 ray_world = normalize(localPos);           // TIMO: Does this work??? I guess so...
-	
-	vec3 out_LightScattering = vec3(0);             // @TODO: see if this is important. Perhaps this is for volumetric lighting?????? We'll see I guess
-	
+    vec3 ray_world = normalize(localPos);           // Does this work??? I guess so...  -Timo
+
     // TIMO
-    vec3 v_Sun = -sunOrientation;// * -2600.0;
+    const vec3 r0 = mainCameraPosition + vec3(0, 6376e2, 0);
+    const float rPlanet = 6365e2;
+    const float rAtmos  = 6465e2;
+    vec3 v_Sun = -sunOrientation;
 
-    vec3 out_Color = atmosphere(
-        ray_world,        	            // normalized ray direction
-        mainCameraPosition + vec3(0, 6376e2, 0),            	// ray origin
-        v_Sun,                  		// position of the sun
-        22.0,                           // intensity of the sun
-        6365e2,                         // radius of the planet in meters
-        6465e2,                         // radius of the atmosphere in meters
-        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
-        21e-6,                          // Mie scattering coefficient
-        8e3,                            // Rayleigh scale height
-        1.2e3,                          // Mie scale height
-        0.758                           // Mie preferred scattering direction
-    );
-	
-	// Apply exposure.
-    out_Color = 1.0 - exp(-1.0 * out_Color);
+    //
+    // If normal skybox render
+    //
+    if (depthZFar < 0.0)
+    {
+        vec2 isectPlanet = rsi(r0, ray_world, rPlanet);
 
-    out_Color += texture(nightSkybox, nightSkyTransform * ray_world).rgb * 0.005;       // TIMO
+        vec3 out_Color = atmosphere(
+            ray_world,        	            // normalized ray direction
+            r0,            	                // ray origin
+            isectPlanet,                    // Intersection with the planet
+            v_Sun,                  		// position of the sun
+            22.0,                           // intensity of the sun
+            rPlanet,                        // radius of the planet in meters
+            rAtmos,                         // radius of the atmosphere in meters
+            vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+            21e-6,                          // Mie scattering coefficient
+            8e3,                            // Rayleigh scale height
+            1.2e3,                          // Mie scale height
+            0.758                           // Mie preferred scattering direction
+        );
 	
-	float _sunRadius = length(normalize(ray_world) - normalize(v_Sun));
-	
-	// no sun rendering when scene reflection
-	if(_sunRadius < sunRadius)
-	{
-		_sunRadius /= sunRadius;
-		float smoothRadius = smoothstep(0,1,0.1f/_sunRadius-0.1f);
-		out_Color = mix(out_Color, sunBaseColor * 4, smoothRadius * sunAlpha);
-		
-		smoothRadius = smoothstep(0,1,0.18f/_sunRadius-0.2f);
-		out_LightScattering = mix(vec3(0), sunBaseColor, smoothRadius);
-	}
+	    // Apply exposure
+        out_Color = 1.0 - exp(-out_Color);
 
-    fragColor = vec4(out_Color, 1);
+        // Apply the night sky texture too (reflect off the planet's ground sphere)  -Timo
+        vec3 nightSkyboxSampleRay = ray_world;
+        if (isectPlanet.x < isectPlanet.y)
+        {
+            vec3 collisionPoint = r0 + ray_world * isectPlanet.x;
+            nightSkyboxSampleRay = reflect(nightSkyboxSampleRay, normalize(collisionPoint));        // @NOTE: sphere.CENTER is 0,0,0 in this case!
+        }
+        out_Color += texture(nightSkybox, nightSkyTransform * nightSkyboxSampleRay).rgb * 0.005;
+	
+	    // Render sun (use sunAlpha to change if sun appears or not)
+	    float _sunRadius = length(normalize(ray_world) - normalize(v_Sun));
+	    if(_sunRadius < sunRadius)
+	    {
+		    _sunRadius /= sunRadius;
+		    float smoothRadius = smoothstep(0,1,0.1f/_sunRadius-0.1f);
+		    out_Color = mix(out_Color, sunBaseColor * 4, smoothRadius * sunAlpha);
+	    }
+
+        fragColor = vec4(out_Color, 1);
+    }
+    //
+    // If sliced depth rendering
+    //
+    else
+    {
+        fragColor = atmosphereDefineDepth(
+            ray_world,        	            // normalized ray direction
+            r0,            	                // ray origin
+            depthZFar / float(iSteps),      // step size (this * iSteps should be the total distance of the ray)
+            v_Sun,                  		// position of the sun
+            22.0,                           // intensity of the sun
+            rPlanet,                        // radius of the planet in meters
+            rAtmos,                         // radius of the atmosphere in meters
+            vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+            21e-6,                          // Mie scattering coefficient
+            8e3,                            // Rayleigh scale height
+            1.2e3,                          // Mie scale height
+            0.758                           // Mie preferred scattering direction
+        );
+    }
 }

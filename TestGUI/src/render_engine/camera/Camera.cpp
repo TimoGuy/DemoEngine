@@ -234,7 +234,7 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 			position += speed * up * MainLoop::getInstance().deltaTime;
 
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-			speed = 100.0f;// 50.0f;
+			speed = 1000.0f;// 50.0f;
 		else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
 			speed = 50.0f;// 15.0f;
 

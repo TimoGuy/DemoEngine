@@ -238,8 +238,8 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO, cloudEffectApplyFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill, *cloudEffectApplyTexture;		// @NOTE: to apply the cloud effect I needed a full size framebuffer (cloudEffectApplyTexture)
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;
 	int cloudEffectTextureWidth, cloudEffectTextureHeight;
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
@@ -256,6 +256,10 @@ private:
 	CloudEffectInformation cloudEffectInfo;
 
 	// Skybox Rendering
+	const static int skyboxDepthSlicedLUTSize = 32;
+	const static int skyboxLowResSize = 256;
+	GLuint skyboxFBO, skyboxBlurFBO, skyboxDepthSlicedLUTFBOs[skyboxDepthSlicedLUTSize];
+	Texture* skyboxLowResTexture, *skyboxLowResBlurTexture, *skyboxDepthSlicedLUT, *nightSkybox;
 	Shader* skybox_program_id;
 	SkyboxParams skyboxParams;
 	static const size_t numSkyMaps = 6;
@@ -264,7 +268,6 @@ private:
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
 	float mapInterpolationAmt;
-	Texture* nightSkybox;
 
 	// UI Notifications
 	float notifPadding = 1.0f;

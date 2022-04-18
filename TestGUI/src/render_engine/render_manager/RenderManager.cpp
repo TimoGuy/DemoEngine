@@ -194,6 +194,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
 	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	skybox_program_id->setFloat("depthZFar", -1.0f);
 	skybox_program_id->setMat4("projection", captureProjection);
 	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
 
@@ -532,6 +533,31 @@ void RenderManager::createHDRBuffer()
 	ShaderExtZBuffer::depthTexture = zPrePassDepthTexture->getHandle();
 
 	//
+	// Create Skybox framebuffer
+	//
+	skyboxLowResTexture = new Texture2D(skyboxLowResSize, skyboxLowResSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	glCreateFramebuffers(1, &skyboxFBO);
+	glNamedFramebufferTexture(skyboxFBO, GL_COLOR_ATTACHMENT0, skyboxLowResTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(skyboxFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Skybox Framebuffer)" << std::endl;
+
+	skyboxLowResBlurTexture = new Texture2D(skyboxLowResSize, skyboxLowResSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	glCreateFramebuffers(1, &skyboxBlurFBO);
+	glNamedFramebufferTexture(skyboxBlurFBO, GL_COLOR_ATTACHMENT0, skyboxLowResBlurTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(skyboxBlurFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Skybox blur Framebuffer)" << std::endl;
+
+	skyboxDepthSlicedLUT = new Texture3D(skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize, 1, GL_RGBA16F, GL_RGBA, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	glCreateFramebuffers(skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTFBOs);
+	for (size_t i = 0; i < skyboxDepthSlicedLUTSize; i++)
+	{
+		glNamedFramebufferTextureLayer(skyboxDepthSlicedLUTFBOs[i], GL_COLOR_ATTACHMENT0, skyboxDepthSlicedLUT->getHandle(), 0, i);
+		if (glCheckNamedFramebufferStatus(skyboxDepthSlicedLUTFBOs[i], GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete! (Skybox depth sliced Framebuffer (#" << i << "))" << std::endl;
+	}
+	ShaderExtCloud_effect::atmosphericScattering = skyboxDepthSlicedLUT->getHandle();
+
+	//
 	// Create SSAO framebuffer
 	//
 	ssaoRotationTexture = (Texture*)Resources::getResource("texture;ssaoRotation");
@@ -687,20 +713,6 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
-	cloudEffectApplyTexture =
-		new Texture2D(
-			(GLsizei)MainLoop::getInstance().camera.width,
-			(GLsizei)MainLoop::getInstance().camera.height,
-			1,
-			GL_RGBA32F,
-			GL_RGBA,
-			GL_FLOAT,
-			nullptr,
-			GL_NEAREST,
-			GL_NEAREST,
-			GL_CLAMP_TO_EDGE,
-			GL_CLAMP_TO_EDGE
-		);
 
 	ShaderExtCloud_effect::cloudEffect = cloudEffectTexture->getHandle();
 	ShaderExtCloud_effect::cloudDepthTexture = cloudEffectDepthTexture->getHandle();
@@ -725,11 +737,6 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
-
-	glCreateFramebuffers(1, &cloudEffectApplyFBO);
-	glNamedFramebufferTexture(cloudEffectApplyFBO, GL_COLOR_ATTACHMENT0, cloudEffectApplyTexture->getHandle(), 0);
-	if (glCheckNamedFramebufferStatus(cloudEffectApplyFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (Cloud Effect apply Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -742,20 +749,24 @@ void RenderManager::destroyHDRBuffer()
 	delete cloudEffectDepthTextureFloodFill;
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
-	delete cloudEffectApplyTexture;
-	glDeleteFramebuffers(1, &cloudEffectApplyFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
 	delete volumetricTexture;
 	glDeleteFramebuffers(1, &volumetricFBO);
 
+	delete skyboxLowResTexture;
+	glDeleteFramebuffers(1, &skyboxFBO);
+	delete skyboxLowResBlurTexture;
+	glDeleteFramebuffers(1, &skyboxBlurFBO);
+	delete skyboxDepthSlicedLUT;
+	glDeleteFramebuffers(skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTFBOs);
+
 	delete ssaoBlurTexture;
 	glDeleteFramebuffers(1, &ssaoBlurFBO);
 	delete ssaoTexture;
 	glDeleteFramebuffers(1, &ssaoFBO);
 
-	//delete ssNormalTexture;		@DEPRECATE
 	delete zPrePassDepthTexture;
 	glDeleteFramebuffers(1, &zPrePassFBO);
 
@@ -1994,15 +2005,12 @@ void RenderManager::renderScene()
 	//
 
 	//
-	// Render scene normally
+	// Draw atmospheric scattering skybox
 	//
-	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	//
-	// Draw skybox
-	//
 	glDepthMask(GL_FALSE);
 
 	skybox_program_id->use();
@@ -2019,35 +2027,54 @@ void RenderManager::renderScene()
 	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
 	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	skybox_program_id->setFloat("depthZFar", -1.0f);
 	skybox_program_id->setMat4("projection", cameraInfo.projection);
 	skybox_program_id->setMat4("view", cameraInfo.view);
 	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
-
-	//perlinTime += MainLoop::getInstance().deltaTime;
-
 	renderCube();
+
+	//
+	// Render the depth-sliced atmospheric scattering LUT
+	//
+	const float zSliceDistance = 32000.0f;		// Supposed to be 32km (see https://sebh.github.io/publications/egsr2020.pdf)		@NOTE: since this could get applied to clouds as well which don't follow the ZFar limit of geometry, it has a possibility of spanning past that 32km range. That's why this value isn't set to the camera's zfar.
+	const float zSliceSize = zSliceDistance / (float)skyboxDepthSlicedLUTSize;
+	glViewport(0, 0, skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize);
+	for (size_t i = 0; i < skyboxDepthSlicedLUTSize; i++)
+	{
+		// @NOTE: skybox_program_id should already be in use right here.
+		// Hence doing this before the blurring pass on the main background atmosphere  -Timo
+		glBindFramebuffer(GL_FRAMEBUFFER, skyboxDepthSlicedLUTFBOs[i]);
+		glClear(GL_COLOR_BUFFER_BIT);
+		skybox_program_id->setFloat("depthZFar", zSliceSize * (float)(i + 1));
+		renderCube();
+	}
+
+	//
+	// Blur the atmospheric scattering skybox (first one)
+	//
+	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurX3ProgramId->use();
+	blurX3ProgramId->setSampler("textureMap", skyboxLowResTexture->getHandle());
+	renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurY3ProgramId->use();
+	blurY3ProgramId->setSampler("textureMap", skyboxLowResBlurTexture->getHandle());
+	renderQuad();
 
 	//
 	// Apply the @Clouds layer
 	//
 	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectApplyFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectApplyShader->use();
-	cloudEffectApplyShader->setSampler("hdrColorBuffer", hdrColorBuffer);
+	cloudEffectApplyShader->setSampler("skyboxTexture", skyboxLowResTexture->getHandle());
 	cloudEffectApplyShader->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	renderQuad();
-
-	glBlitNamedFramebuffer(
-		cloudEffectApplyFBO,
-		hdrFBO,
-		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-		0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST
-	);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
 
 	glDepthMask(GL_TRUE);
 
