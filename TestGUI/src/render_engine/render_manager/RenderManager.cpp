@@ -1894,8 +1894,109 @@ void RenderManager::renderScene()
 	);
 
 	//
+	// Draw atmospheric scattering skybox
+	//
+	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glDepthMask(GL_FALSE);
+
+	skybox_program_id->use();
+	skybox_program_id->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	skybox_program_id->setVec3("sunOrientation", skyboxParams.sunOrientation);
+	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
+	skybox_program_id->setFloat("sunAlpha", skyboxParams.sunAlpha);
+	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
+	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
+	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
+	skybox_program_id->setFloat("sunIntensity", skyboxParams.sunIntensity);
+	skybox_program_id->setFloat("globalExposure", skyboxParams.globalExposure);
+	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
+	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
+	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
+	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	skybox_program_id->setFloat("depthZFar", -1.0f);
+	skybox_program_id->setMat4("projection", cameraInfo.projection);
+	skybox_program_id->setMat4("view", cameraInfo.view);
+	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
+	renderCube();
+
+	//
+	// Render the depth-sliced atmospheric scattering LUT
+	//
+	const float zSliceDistance = 32000.0f;		// Supposed to be 32km (see https://sebh.github.io/publications/egsr2020.pdf)		@NOTE: since this could get applied to clouds as well which don't follow the ZFar limit of geometry, it has a possibility of spanning past that 32km range. That's why this value isn't set to the camera's zfar.
+	// @NOTE: I know that the raymarching goes out 32km, but I ended up doing the camera zFar for the geometry application. Unusual? Maybe. We'll see how it looks when applying this to the clouds as well. I think the clouds should be 32km threshold.  -Timo
+	const float zSliceSize = zSliceDistance / (float)skyboxDepthSlicedLUTSize;
+	glViewport(0, 0, skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize);
+	for (size_t i = 0; i < skyboxDepthSlicedLUTSize; i++)
+	{
+		// @NOTE: skybox_program_id should already be in use right here.
+		// Hence doing this before the blurring pass on the main background atmosphere  -Timo
+		glBindFramebuffer(GL_FRAMEBUFFER, skyboxDepthSlicedLUTFBOs[i]);
+		glClear(GL_COLOR_BUFFER_BIT);
+		skybox_program_id->setFloat("depthZFar", zSliceSize * (float)(i + 1));
+		renderCube();
+	}
+
+	//
+	// Blur the atmospheric scattering skybox (first one)
+	//
+	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurX3ProgramId->use();
+	blurX3ProgramId->setSampler("textureMap", skyboxLowResTexture->getHandle());
+	renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	blurY3ProgramId->use();
+	blurY3ProgramId->setSampler("textureMap", skyboxLowResBlurTexture->getHandle());
+	renderQuad();
+
+	//
 	// Capture z-passed screen for @Clouds
 	// @NOTE: I don't know if this render step should be inside of renderscene() or around where the volumetric lighting occurs...  -Timo
+	// 
+	// 
+	// @TODO: SO ABOUT THESE @CLOUDS
+	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque
+	// (this is the only transparent thing that will probs hinder the experience if it's not faked.
+	//
+	// @TODO: ACTUALLY, I HAVE A REAL IDEA!!!! ABOUT @CLOUDS
+	// 
+	// 			So hear me out: basically it's an extra channel for the clouds where it shows the depth
+	// of the cloud, and then the cloud will be drawn before any opaque objects are drawn (right after
+	// the skybox, so clouds are not post-processing, laid over everything anymore).
+	//			
+	//			This extra channel's depth indication will just have a simple function that things behind
+	// it depth-wise will disappear depending on e^-d and maybe d:=that depth function? NOOOOOO, actually it
+	// should be some kind of other value, such as the area's alpha channel or something like that.
+	// 
+	//			So essentially the same stuff, however, how the stuff blends into the cloud will change.
+	// We'll do a render step where we take the depth map of the clouds and then compare it with the depth
+	// value generated after all opaque and transparent objects are rendered. Then, in a postprocessing step
+	// we compare the cloud's depth with the finished depth map and fade out stuff with that. For even more
+	// detail, maybe I could put the depth map of the transparent objects separate from the depth map of the
+	// opaque stuff and do a calculation from there. This could be bad, however. Or, we could just do the
+	// fading postprocessing step right after the opaque render queue and then right after do transparents.
+	// When we're working with transparent materials, however, the fade out parameter is done right there in
+	// the shader. Well, after thinking about that, we probs can just do the fadeout right then and there.
+	// 
+	// Or maybe not. Maybe not mess with alpha channel stuff, but rather just do a mix() between the cloud
+	// color behind the object and the fadeout value. If that is the case, I guess we'll just have to have
+	// the clouds not pay attention to the depth buffer from the z prepass???? Idk man.
+	// 
+	// 
+	// 
+	// @TODO: So here are my thoughts about the "REAL IDEA"
+	// 
+	//			It's gonna be hard to assign a depth value with this effect bc of the dithering.
+	// I'm thinking that a simple flood-fill algorithm (probs 2x2) will be good enough for the effect.
+	// We'll just do a test where if the 2x2 grid contains more than 50% close depth values, then we just sample
+	// the min (closest) depth in there and call it a day. See RenderDoc if you wanna make this more accurate yo.  -Timo
+	//
 	//
 	const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 2, attachments);
@@ -1922,7 +2023,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
-	cloudEffectShader->setFloat("maxCloudscapeRadius", cloudEffectInfo.maxCloudscapeRadius);
+	cloudEffectShader->setFloat("atmosDistance", zSliceDistance);
+	cloudEffectShader->setSampler("atmosphericScattering", skyboxDepthSlicedLUT->getHandle());
 	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
@@ -1965,105 +2067,6 @@ void RenderManager::renderScene()
 	renderQuad();
 
 	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
-
-	// @TODO: SO ABOUT THESE @CLOUDS
-	//			I think that the best solution is (1) seeing if there is a way to make the bottle opaque
-	// (this is the only transparent thing that will probs hinder the experience if it's not faked.
-	//
-	// @TODO: ACTUALLY, I HAVE A REAL IDEA!!!! ABOUT @CLOUDS
-	// 
-	// 			So hear me out: basically it's an extra channel for the clouds where it shows the depth
-	// of the cloud, and then the cloud will be drawn before any opaque objects are drawn (right after
-	// the skybox, so clouds are not post-processing, laid over everything anymore).
-	//			
-	//			This extra channel's depth indication will just have a simple function that things behind
-	// it depth-wise will disappear depending on e^-d and maybe d:=that depth function? NOOOOOO, actually it
-	// should be some kind of other value, such as the area's alpha channel or something like that.
-	// 
-	//			So essentially the same stuff, however, how the stuff blends into the cloud will change.
-	// We'll do a render step where we take the depth map of the clouds and then compare it with the depth
-	// value generated after all opaque and transparent objects are rendered. Then, in a postprocessing step
-	// we compare the cloud's depth with the finished depth map and fade out stuff with that. For even more
-	// detail, maybe I could put the depth map of the transparent objects separate from the depth map of the
-	// opaque stuff and do a calculation from there. This could be bad, however. Or, we could just do the
-	// fading postprocessing step right after the opaque render queue and then right after do transparents.
-	// When we're working with transparent materials, however, the fade out parameter is done right there in
-	// the shader. Well, after thinking about that, we probs can just do the fadeout right then and there.
-	// 
-	// Or maybe not. Maybe not mess with alpha channel stuff, but rather just do a mix() between the cloud
-	// color behind the object and the fadeout value. If that is the case, I guess we'll just have to have
-	// the clouds not pay attention to the depth buffer from the z prepass???? Idk man.
-	// 
-	// 
-	// 
-	// @TODO: So here are my thoughts about the "REAL IDEA"
-	// 
-	//			It's gonna be hard to assign a depth value with this effect bc of the dithering.
-	// I'm thinking that a simple flood-fill algorithm (probs 2x2) will be good enough for the effect.
-	// We'll just do a test where if the 2x2 grid contains more than 50% close depth values, then we just sample
-	// the min (closest) depth in there and call it a day. See RenderDoc if you wanna make this more accurate yo.  -Timo
-	//
-
-	//
-	// Draw atmospheric scattering skybox
-	//
-	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glDepthMask(GL_FALSE);
-
-	skybox_program_id->use();
-	skybox_program_id->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
-	skybox_program_id->setVec3("sunOrientation", skyboxParams.sunOrientation);
-	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
-	skybox_program_id->setFloat("sunAlpha", skyboxParams.sunAlpha);
-	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
-	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
-	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
-	skybox_program_id->setFloat("sunIntensity", skyboxParams.sunIntensity);
-	skybox_program_id->setFloat("globalExposure", skyboxParams.globalExposure);
-	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
-	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
-	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
-	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
-	skybox_program_id->setFloat("depthZFar", -1.0f);
-	skybox_program_id->setMat4("projection", cameraInfo.projection);
-	skybox_program_id->setMat4("view", cameraInfo.view);
-	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
-	renderCube();
-
-	//
-	// Render the depth-sliced atmospheric scattering LUT
-	//
-	const float zSliceDistance = 32000.0f;		// Supposed to be 32km (see https://sebh.github.io/publications/egsr2020.pdf)		@NOTE: since this could get applied to clouds as well which don't follow the ZFar limit of geometry, it has a possibility of spanning past that 32km range. That's why this value isn't set to the camera's zfar.
-	const float zSliceSize = zSliceDistance / (float)skyboxDepthSlicedLUTSize;
-	glViewport(0, 0, skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize);
-	for (size_t i = 0; i < skyboxDepthSlicedLUTSize; i++)
-	{
-		// @NOTE: skybox_program_id should already be in use right here.
-		// Hence doing this before the blurring pass on the main background atmosphere  -Timo
-		glBindFramebuffer(GL_FRAMEBUFFER, skyboxDepthSlicedLUTFBOs[i]);
-		glClear(GL_COLOR_BUFFER_BIT);
-		skybox_program_id->setFloat("depthZFar", zSliceSize * (float)(i + 1));
-		renderCube();
-	}
-
-	//
-	// Blur the atmospheric scattering skybox (first one)
-	//
-	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
-	glBindFramebuffer(GL_FRAMEBUFFER, skyboxBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurX3ProgramId->use();
-	blurX3ProgramId->setSampler("textureMap", skyboxLowResTexture->getHandle());
-	renderQuad();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, skyboxFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurY3ProgramId->use();
-	blurY3ProgramId->setSampler("textureMap", skyboxLowResBlurTexture->getHandle());
-	renderQuad();
 
 	//
 	// Apply the @Clouds layer
@@ -2943,7 +2946,6 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
-			ImGui::DragFloat("Cloudscape radius", &cloudEffectInfo.maxCloudscapeRadius);
 			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);

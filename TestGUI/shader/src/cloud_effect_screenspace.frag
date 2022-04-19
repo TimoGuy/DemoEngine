@@ -17,6 +17,8 @@ uniform float cloudNoiseDetailSize;
 uniform sampler3D cloudNoiseTexture;
 uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
+uniform float atmosDistance;
+uniform sampler3D atmosphericScattering;
 uniform float maxCloudscapeRadius;
 uniform float maxRaymarchLength;
 
@@ -317,13 +319,13 @@ void main()
     //    return;
     //}
 
-    vec3 targetPositionFromCamera = targetPosition - mainCameraPosition;
-    const float targetPositionLength = length(targetPositionFromCamera.xz);
-    if (targetPositionLength > maxCloudscapeRadius)
-    {
-        targetPositionFromCamera = targetPositionFromCamera * maxCloudscapeRadius / targetPositionLength;
-        targetPosition = mainCameraPosition + targetPositionFromCamera;
-    }
+    /////////////////////////vec3 targetPositionFromCamera = targetPosition - mainCameraPosition;       @nOte: this is the code that limited the xz drawing for clouds
+    /////////////////////////const float targetPositionLength = length(targetPositionFromCamera.xz);
+    /////////////////////////if (targetPositionLength > maxCloudscapeRadius)
+    /////////////////////////{
+    /////////////////////////    targetPositionFromCamera = targetPositionFromCamera * maxCloudscapeRadius / targetPositionLength;
+    /////////////////////////    targetPosition = mainCameraPosition + targetPositionFromCamera;
+    /////////////////////////}
     
     vec3 deltaPosition = targetPosition - currentPosition;
 
@@ -346,6 +348,7 @@ void main()
     float lightEnergy = 0.0;
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
+    vec4 atmosValues = vec4(0.0);
 
     while (distanceTraveled < rayLength)
     {
@@ -360,7 +363,9 @@ void main()
             transmittance = 0.0;
             
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
-            calculatedDepthValue = vec4(vec3(clamp(distanceTraveled, mainCameraZNear, mainCameraZFar)), 1.0);
+            const float distanceTraveledActual = length(currentPosition - mainCameraPosition);
+            calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
+            atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual));
             break;
         }
 
@@ -369,5 +374,5 @@ void main()
         distanceTraveled += RAYMARCH_STEP_SIZE;
     }
 
-    fragmentColor = vec4(lightColor * lightEnergy, transmittance);
+    fragmentColor = vec4(lightColor * lightEnergy * (1.0 - atmosValues.a) + atmosValues.rgb, transmittance); // @ATMOS: combine atmospheric scattering
 }

@@ -12,6 +12,9 @@
   - [ ] The stark and scary look of it should be there for sure. RENDER AT FULL RESOLUTION!
   - [x] Make sure the night sky reflects off the planet **_(this'll be like a glass planet that smoothed out eh!)_**
     - [x] The night sky also runs at 300fps btw lol
+- [ ] Make the clouds actually render with a render distance value where at a certain radius the density just goes to 1 for the clouds. This should speed up the clouds.
+  - [ ] I suppose this is like a fog of war thing. A limit of 15km should be good I think. Maybe even less
+- [ ] OK, so there is a big bug in the clouds. If you go down and look upwards, the clouds get super bright. Some kind of INF bug probably with the fog addition to the clouds. Might have to do that as a postprocessing effect? Idk.
 
 
 ##### Low priority
@@ -36,3 +39,4 @@
 - Use CTRL+\, CTRL+Bkspace to float a window (custom to me)
 - Use CTRL+\, CTRL+\ to make a new vsplit
 - Use CTRL+SHIFT+ALT+(PgUp/PgDn) to move tabs over to different tab groups
+- Use CTRL+TAB to move among the vsplits (bc vs2022 is too dumb to have this functionality. This is the fallback yo)
