@@ -28,3 +28,11 @@
   - Or this: https://kanjialive.com/214-traditional-kanji-radicals/
   - However, a kanji like 無 has to be difficult
 - [ ] What's below the cloud layer?
+
+
+## MISC notes
+
+##### VS2022 Stuff
+- Use CTRL+\, CTRL+Bkspace to float a window (custom to me)
+- Use CTRL+\, CTRL+\ to make a new vsplit
+- Use CTRL+SHIFT+ALT+(PgUp/PgDn) to move tabs over to different tab groups
