@@ -19,8 +19,9 @@
 
 ##### Low priority
 
-- [ ] Hey Janitor, there's a red 0 in the luminance texture, fyi
+- [x] Hey Janitor, there's a red 0 in the luminance texture, fyi
 - [ ] Fix raymarching issues with edge of Clouds
+  - [ ] It's less of an issue with FXAA enabled. Hah. Up to you, future Timo, but I'm not fixing it.
 
 
 ## Gameplay
@@ -37,6 +38,6 @@
 
 ##### VS2022 Stuff
 - Use CTRL+\, CTRL+Bkspace to float a window (custom to me)
-- Use CTRL+\, CTRL+\ to make a new vsplit
-- Use CTRL+SHIFT+ALT+(PgUp/PgDn) to move tabs over to different tab groups
+- Use CTRL+\, CTRL+\ to make a new vsplit (custom to me)
+- Use CTRL+SHIFT+ALT+(PgUp/PgDn) to move tabs over to different tab groups (custom to me)
 - Use CTRL+TAB to move among the vsplits (bc vs2022 is too dumb to have this functionality. This is the fallback yo)
