@@ -113,8 +113,8 @@ vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 float sampleDensityAtPoint(vec3 point)
 {
     // Sample density cutoff from height below cloud layer
-    //float distanceFromCloudY = cloudLayerY - (length(point + vec3(0, cameraBaseHeight, 0)) - cameraBaseHeight);
-    float distanceFromCloudY = cloudLayerY - point.y;     // @NOTE: this is faster, but not as accurate. Doesn't seem like it makes any difference really.
+    float distanceFromCloudY = cloudLayerY - (length(point + vec3(0, cameraBaseHeight, 0)) - cameraBaseHeight);		// @NOTE: switched to this. Due to long distance clouds creating artifacts.
+    //float distanceFromCloudY = cloudLayerY - point.y;     // @NOTE: this is faster, but not as accurate. Doesn't seem like it makes any difference really.
     distanceFromCloudY /= cloudLayerThickness;
     const float densityMult = max(0.0, 1.0 - pow(2.0 * distanceFromCloudY - 1.0, 2.0));     // https://www.desmos.com/calculator/ltnhmcb1ow
 
