@@ -465,6 +465,23 @@ void RenderManager::createHDRBuffer()
 		std::cout << "Framebuffer not complete! (HDR Render Buffer)" << std::endl;
 
 	//
+	// Create HDR FXAA framebuffer
+	// @NOTE: there is no depth buffer for this. Since it's just for postprocessing.
+	//
+	glCreateFramebuffers(1, &hdrFXAAFBO);
+	// Create floating point color buffer
+	glCreateTextures(GL_TEXTURE_2D, 1, &hdrFXAAColorBuffer);
+	glTextureParameteri(hdrFXAAColorBuffer, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hdrFXAAColorBuffer, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTextureParameteri(hdrFXAAColorBuffer, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTextureParameteri(hdrFXAAColorBuffer, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTextureStorage2D(hdrFXAAColorBuffer, 1, GL_RGBA16F, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+	// Attach buffers
+	glNamedFramebufferTexture(hdrFXAAFBO, GL_COLOR_ATTACHMENT0, hdrFXAAColorBuffer, 0);
+	if (glCheckNamedFramebufferStatus(hdrFXAAFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (HDR FXAA Render Buffer)" << std::endl;
+
+	//
 	// Create bloom pingpong buffers
 	//
 	glm::vec2 bufferDimensions(MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
@@ -773,6 +790,9 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteTextures(1, &hdrColorBuffer);
 	glDeleteRenderbuffers(1, &hdrDepthRBO);
 	glDeleteFramebuffers(1, &hdrFBO);
+
+	glDeleteTextures(1, &hdrFXAAColorBuffer);
+	glDeleteFramebuffers(1, &hdrFXAAFBO);
 
 	glDeleteTextures(bloomBufferCount, bloomColorBuffers);
 	glDeleteFramebuffers(bloomBufferCount, bloomFBOs);
@@ -1270,6 +1290,7 @@ void RenderManager::createShaderPrograms()
 	hdrLumAdaptationComputeProgramId = (Shader*)Resources::getResource("shader;computeLuminanceAdaptation");
 	bloom_postprocessing_program_id = (Shader*)Resources::getResource("shader;bloom_postprocessing");
 	postprocessing_program_id = (Shader*)Resources::getResource("shader;postprocessing");
+	fxaaPostProcessingShader = (Shader*)Resources::getResource("shader;fxaa_postprocessing");
 	pbrShaderProgramId = (Shader*)Resources::getResource("shader;pbr");
 	notificationUIProgramId = (Shader*)Resources::getResource("shader;notificationUI");
 	INTERNALzPassShader = (Shader*)Resources::getResource("shader;zPassShader");
@@ -1301,6 +1322,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;computeLuminanceAdaptation");
 	Resources::unloadResource("shader;bloom_postprocessing");
 	Resources::unloadResource("shader;postprocessing");
+	Resources::unloadResource("shader;fxaa_postprocessing");
 	Resources::unloadResource("shader;pbr");
 	Resources::unloadResource("shader;notificationUI");
 	Resources::unloadResource("shader;zPassShader");
@@ -1665,6 +1687,17 @@ void RenderManager::render()
 #endif
 
 	//
+	// Apply @FXAA
+	//
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFXAAFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	fxaaPostProcessingShader->use();
+	fxaaPostProcessingShader->setSampler("hdrColorBuffer", hdrColorBuffer);
+	fxaaPostProcessingShader->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
+	renderQuad();
+
+	//
 	// Render ui
 	// @NOTE: the cameraUBO changes from the normal world space camera to the UI space camera mat4's.
 	// @NOTE: this change does not effect the post processing. Simply just the renderUI contents.
@@ -1687,7 +1720,7 @@ void RenderManager::render()
 			glBindFramebuffer(GL_FRAMEBUFFER, bloomFBOs[bloomFBOIndex]);
 			glClear(GL_COLOR_BUFFER_BIT);
 			bloom_postprocessing_program_id->use();
-			bloom_postprocessing_program_id->setSampler("hdrColorBuffer", firstcopy ? hdrColorBuffer : bloomColorBuffers[colorBufferIndex]);
+			bloom_postprocessing_program_id->setSampler("hdrColorBuffer", firstcopy ? hdrFXAAColorBuffer : bloomColorBuffers[colorBufferIndex]);
 			bloom_postprocessing_program_id->setInt("stage", stageNumber);
 			bloom_postprocessing_program_id->setInt("firstcopy", firstcopy);
 			bloom_postprocessing_program_id->setFloat("downscaledFactor", downscaledFactor);
@@ -1733,10 +1766,11 @@ void RenderManager::render()
 	// Do tonemapping and post-processing
 	// with the fbo and render to a quad
 	//
+	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	postprocessing_program_id->use();
-	postprocessing_program_id->setSampler("hdrColorBuffer", hdrColorBuffer);
+	postprocessing_program_id->setSampler("hdrColorBuffer", hdrFXAAColorBuffer);
 	postprocessing_program_id->setSampler("bloomColorBuffer", bloomColorBuffers[1]);	// 1 is the final color buffer of the reconstructed bloom
 	postprocessing_program_id->setSampler("luminanceProcessed", hdrLumAdaptationProcessed->getHandle());
 	postprocessing_program_id->setSampler("volumetricLighting", volumetricTexture->getHandle());

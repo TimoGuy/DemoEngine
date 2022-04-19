@@ -280,6 +280,7 @@
     <None Include="shader\src\debug_csm.frag" />
     <None Include="shader\src\debug_csm.vert" />
     <None Include="shader\src\debug_picking.frag" />
+    <None Include="shader\src\fxaa_postprocessing.frag" />
     <None Include="shader\src\hdri_equirectangular.frag" />
     <None Include="shader\src\hudUI.frag" />
     <None Include="shader\src\hudUI.vert" />

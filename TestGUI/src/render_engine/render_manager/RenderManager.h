@@ -202,9 +202,9 @@ public:
 	void pushMessage(const std::string& text);
 
 private:
-	Shader* debug_csm_program_id, *debug_cloud_noise_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *pbrShaderProgramId, *notificationUIProgramId;
+	Shader* debug_csm_program_id, *debug_cloud_noise_program_id, *text_program_id, *irradiance_program_id, *prefilter_program_id, *brdf_program_id, *bloom_postprocessing_program_id, *postprocessing_program_id, *fxaaPostProcessingShader, *pbrShaderProgramId, *notificationUIProgramId;
 
-	GLuint hdrFBO, hdrDepthRBO, hdrColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
+	GLuint hdrFBO, hdrFXAAFBO, hdrDepthRBO, hdrColorBuffer, hdrFXAAColorBuffer, hdrPBRGenCaptureFBO, hdrPBRGenCaptureRBO;
 
 	// HDR screen luminance adjustment
 	Shader* hdrLuminanceProgramId, *hdrLumAdaptationComputeProgramId;
