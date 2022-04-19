@@ -1,6 +1,6 @@
 #version 430
 
-// @NOTE: Credits: https://github.com/mattdesl/glsl-fxaa
+// @NOTE: Credits: https://github.com/mattdesl/glsl-fxaa (MIT license)
 
 out vec4 fragColor;
 in vec2 texCoord;
