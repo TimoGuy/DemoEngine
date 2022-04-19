@@ -5,7 +5,6 @@ in vec2 texCoord;
 
 uniform sampler2D hdrColorBuffer;
 uniform sampler2D volumetricLighting;
-uniform sampler2D cloudEffect;
 
 uniform vec3 sunLightColor;
 
@@ -18,12 +17,9 @@ float vignette(vec2 uv, float radius, float smoothness) {
 //----------------------------------------------------------------
 void main()
 {
-	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;
-
-	const float cloudAmount = 0.25;
 	float luminance =
 		dot(vec3(0.2125, 0.7154, 0.0721),
-			texture(hdrColorBuffer, texCoord).rgb * (cloudAmount * cloudEffectColor.a + (1.0 - cloudAmount)) + cloudEffectColor.rgb * cloudAmount +	// @HACK: Multiplying the cloudEffectColor.rgb by 0.5 bc I'm a hoe  -Timo
+			texture(hdrColorBuffer, texCoord).rgb +
 			sunLightColor * texture(volumetricLighting, texCoord).r) *			// NOTE: this is cheap and dirty. It's like a hoe.
 		vignette(texCoord, 0.5, 0.75);
 
