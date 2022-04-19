@@ -507,7 +507,7 @@ void main()
     //
     const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
     const float myDepth = length(mainCameraPosition - fragPosition);
-    vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 10000.0));  // 16000.0));  // 32000.0));  @NOTE: IT'S SUPPOSED TO BE 32km... but I don't feel like it
+    vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0 * 3.2));  // @NOTE: IT'S SUPPOSED TO BE 32km... but I don't feel like it
     FragColor.rgb = FragColor.rgb * atmosValues.a + atmosValues.rgb;
 
     //

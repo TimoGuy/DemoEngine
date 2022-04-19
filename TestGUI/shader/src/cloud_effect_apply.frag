@@ -10,8 +10,7 @@ uniform sampler2D cloudEffect;
 void main()
 {
 	vec4 cloudEffectColor = texture(cloudEffect, texCoord).rgba;
-	const float cloudAmount = 1.0;
 
-	vec3 color = texture(skyboxTexture, texCoord).rgb * (cloudAmount * cloudEffectColor.a + (1.0 - cloudAmount)) + cloudEffectColor.rgb * cloudAmount;
+	vec3 color = texture(skyboxTexture, texCoord).rgb * cloudEffectColor.a + cloudEffectColor.rgb;
 	fragmentColor = vec4(color, 1.0);
 }

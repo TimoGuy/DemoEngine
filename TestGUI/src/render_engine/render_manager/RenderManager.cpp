@@ -2023,8 +2023,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
-	cloudEffectShader->setFloat("atmosDistance", zSliceDistance);
 	cloudEffectShader->setSampler("atmosphericScattering", skyboxDepthSlicedLUT->getHandle());
+	cloudEffectShader->setFloat("cloudMaxDepth", zSliceDistance);
 	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);

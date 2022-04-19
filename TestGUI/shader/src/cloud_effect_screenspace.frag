@@ -17,8 +17,8 @@ uniform float cloudNoiseDetailSize;
 uniform sampler3D cloudNoiseTexture;
 uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
-uniform float atmosDistance;
 uniform sampler3D atmosphericScattering;
+uniform float cloudMaxDepth;
 uniform float maxCloudscapeRadius;
 uniform float maxRaymarchLength;
 
@@ -365,7 +365,7 @@ void main()
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             const float distanceTraveledActual = length(currentPosition - mainCameraPosition);
             calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
-            atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual));
+            atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth * 3.2));
             break;
         }
 
@@ -374,5 +374,13 @@ void main()
         distanceTraveled += RAYMARCH_STEP_SIZE;
     }
 
-    fragmentColor = vec4(lightColor * lightEnergy * (1.0 - atmosValues.a) + atmosValues.rgb, transmittance); // @ATMOS: combine atmospheric scattering
+    fragmentColor =
+        vec4(
+            mix(
+                atmosValues.rgb * (1.0 - transmittance),  // @ATMOS: combine atmospheric scattering
+                lightColor * lightEnergy,
+                atmosValues.a
+            ),
+            transmittance
+        );
 }
