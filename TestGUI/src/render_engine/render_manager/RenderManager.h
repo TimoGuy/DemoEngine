@@ -129,10 +129,12 @@ struct CloudEffectInformation
 	float lightAbsorptionTowardsSun = 0.01f;
 	float lightAbsorptionThroughCloud = 0.2f;
 	float raymarchOffset = 1.0f;
-	glm::vec2 sampleSmoothEdgeNearFar = { 1000.0f, 5000.0f };
-	float maxRaymarchLength = 5000.0f;
+	glm::vec2 sampleSmoothEdgeNearFar = { 5000.0f, 7500.0f };  // @LOW_QUALITY_OPTION: { 1000.0f, 5000.0f };
+	float farRaymarchStepsizeMultiplier = 1.0f;
+	//float maxRaymarchLength = 5000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
+	float cameraPosJitterScale = 1.0f;
 };
 
 
@@ -221,7 +223,7 @@ private:
 	int volumetricTextureWidth, volumetricTextureHeight;
 	float volumetricLightingStrength, volumetricLightingStrengthExternal;
 
-	// SSAO effect		(Uses NVIDIA's HBAO effect)
+	// SSAO effect		(Uses NVIDIA's HBAO effect) (@NOTE: @TODO: I took out the plus (+) from HBAO+... there's no more temporal reprojection bc I didn't understand how it worked lol  -Timo)
 	Shader* ssaoProgramId;
 	GLuint ssaoFBO, ssaoBlurFBO;
 	float ssaoFBOSize = 1024;
@@ -238,8 +240,8 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO, cloudEffectUpdateHistoryFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill, *cloudEffectHistoryBufferTAA;
 	int cloudEffectTextureWidth, cloudEffectTextureHeight;
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
@@ -251,7 +253,8 @@ private:
 		*cloudEffectFloodFillShaderY,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
-		*blurY3ProgramId;
+		*blurY3ProgramId,
+		*cloudHistoryTAAShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
 

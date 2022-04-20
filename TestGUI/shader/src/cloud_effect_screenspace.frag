@@ -17,10 +17,12 @@ uniform float cloudNoiseDetailSize;
 uniform sampler3D cloudNoiseTexture;
 uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
+uniform int raymarchOffsetDitherIndexOffset;
 uniform sampler3D atmosphericScattering;
 uniform float cloudMaxDepth;
 uniform vec2 sampleSmoothEdgeNearFar;
-uniform float maxRaymarchLength;
+uniform float farRaymarchStepsizeMultiplier;
+//uniform float maxRaymarchLength;
 
 uniform float densityOffset;
 uniform float densityMultiplier;
@@ -88,8 +90,19 @@ const float planetRadius = 6361e2;  // 6365e2;
 // @NOTE: the NB_RAYMARCH_STEPS value is a base for marching thru,
 // so the number of samples is going to be >64. 64 samples is if the ray
 // is perfectly orthogonal to the cloudLayerThickness (the y thru the cloud layer)
+
+// @NOTE: NB_RAYMARCH_STEPS could be 16 for low quality.
 #define NB_RAYMARCH_STEPS 64
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
+
+float maxRaymarchLength()       // @NOTE: this is probs best to do cpu side instead of on every pixel, especially since this is using just consts.
+{
+    // Use pythagorean's theorem
+    const float outer_radius = cameraBaseHeight + cloudLayerY;
+    const float inner_radius = cameraBaseHeight + cloudLayerY - cloudLayerThickness;
+    const float t = sqrt(outer_radius * outer_radius - inner_radius * inner_radius);
+    return t;       // @NOTE: This times 2.0 is the max value with the two RSI's... so we need to cut it off at half the amount
+}
 
 vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 {
@@ -144,6 +157,7 @@ float offsetAmount()
         0.9375, 0.4375, 0.8125, 0.3125
     };
     uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
+    //return ditherPattern[(index + raymarchOffsetDitherIndexOffset) % 16] * raymarchOffset;
     return ditherPattern[index] * raymarchOffset;
 }
 
@@ -152,6 +166,8 @@ float inScatterLightMarch(vec3 position)
     vec3 projectedLightDirection = -lightDirection / abs(lightDirection.y);
     vec3 inScatterDeltaPosition = projectedLightDirection * abs(position.y - cloudLayerY);        // @NOTE: this assumes that the lightdirection is always going to be pointing down (sun is above cloud layer)
     vec3 inScatterDeltaStepIncrement = inScatterDeltaPosition / float(NB_IN_SCATTER_RAYMARCH_STEPS);
+
+    //position += inScatterDeltaStepIncrement * offsetAmount;
         
     float inScatterDensity = 0.0;
     float inScatterStepWeight = length(inScatterDeltaStepIncrement) / float(NB_IN_SCATTER_RAYMARCH_STEPS);
@@ -332,11 +348,11 @@ void main()
     const float deltaPositionLength = length(deltaPosition);
 
     const float offsetAmount = offsetAmount();
-    const float rayLength = deltaPositionLength;
+    const float rayLength = min(deltaPositionLength, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
     
     const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
-    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS);
+    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
     float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
     

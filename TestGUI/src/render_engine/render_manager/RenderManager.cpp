@@ -683,8 +683,8 @@ void RenderManager::createHDRBuffer()
 			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
-			GL_LINEAR,
-			GL_LINEAR,
+			GL_NEAREST, //GL_LINEAR,		// @NOTE: @TAA: for clouds to be able to do TAA, I made this texture GL_NEAREST. Keep that in mind for if you change cloudEffectTextureScale in the future!!!!  -Timo
+			GL_NEAREST, //GL_LINEAR,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
@@ -730,6 +730,20 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
+	cloudEffectHistoryBufferTAA =
+		new Texture2D(
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
+			1,
+			GL_RGBA32F,
+			GL_RGBA,
+			GL_FLOAT,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
 
 	ShaderExtCloud_effect::cloudEffect = cloudEffectTexture->getHandle();
 	ShaderExtCloud_effect::cloudDepthTexture = cloudEffectDepthTexture->getHandle();
@@ -754,6 +768,11 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectUpdateHistoryFBO);
+	glNamedFramebufferTexture(cloudEffectUpdateHistoryFBO, GL_COLOR_ATTACHMENT0, cloudEffectHistoryBufferTAA->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectUpdateHistoryFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect Update History Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -766,6 +785,8 @@ void RenderManager::destroyHDRBuffer()
 	delete cloudEffectDepthTextureFloodFill;
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
+	delete cloudEffectHistoryBufferTAA;
+	glDeleteFramebuffers(1, &cloudEffectUpdateHistoryFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1307,6 +1328,7 @@ void RenderManager::createShaderPrograms()
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
+	cloudHistoryTAAShader = (Shader*)Resources::getResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1339,6 +1361,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
 	Resources::unloadResource("shader;cloudEffectApply");
+	Resources::unloadResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::createFonts()
@@ -2035,13 +2058,35 @@ void RenderManager::renderScene()
 	const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 2, attachments);
 
+	////// One time random offsets for @TAA (@POC)
+	////static std::random_device randomDevice;
+	////static std::mt19937 randomEngine(randomDevice());
+	////static std::uniform_real_distribution<> distribution(0.0, 1.0);
+	////static std::vector<glm::vec3> cameraPosOffsets = {
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	////};
+	////static size_t cameraPosOffsetIndex = 0;
+	////cameraPosOffsetIndex = (cameraPosOffsetIndex + 1) % cameraPosOffsets.size();
+	////
+	////// Offset the offset index in the shader!! @POC
+	////static int raymarchOffsetDitherIndexOffset = 0;
+	////raymarchOffsetDitherIndexOffset = (raymarchOffsetDitherIndexOffset + 60413) % 99793;		// @NOTE: there are 16 values in the dither algorithm
+
+	// Draw cloud screen space effect!
 	glViewport(0, 0, (GLsizei)cloudEffectTextureWidth, (GLsizei)cloudEffectTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectShader->use();
 	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
 	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
-	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);  // +cameraPosOffsets[cameraPosOffsetIndex] * cloudEffectInfo.cameraPosJitterScale);  // @TAA @POC
 	cloudEffectShader->setFloat("mainCameraZNear", MainLoop::getInstance().camera.zNear);
 	cloudEffectShader->setFloat("mainCameraZFar", MainLoop::getInstance().camera.zFar);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
@@ -2057,10 +2102,12 @@ void RenderManager::renderScene()
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
+	//cloudEffectShader->setInt("raymarchOffsetDitherIndexOffset", raymarchOffsetDitherIndexOffset);		// @TAA @POC
 	cloudEffectShader->setSampler("atmosphericScattering", skyboxDepthSlicedLUT->getHandle());
 	cloudEffectShader->setFloat("cloudMaxDepth", zSliceDistance);
 	cloudEffectShader->setVec2("sampleSmoothEdgeNearFar", cloudEffectInfo.sampleSmoothEdgeNearFar);
-	cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
+	cloudEffectShader->setFloat("farRaymarchStepsizeMultiplier", cloudEffectInfo.farRaymarchStepsizeMultiplier);
+	//cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
 	cloudEffectShader->setVec3("lightDirection", skyboxParams.sunOrientation);
 	cloudEffectShader->setVec4("phaseParameters", cloudEffectInfo.phaseParameters);
@@ -2085,6 +2132,34 @@ void RenderManager::renderScene()
 		blurY3ProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
 		renderQuad();
 	}
+
+	//
+	// Resolve with @TAA history buffer
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudHistoryTAAShader->use();
+	cloudHistoryTAAShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
+	cloudHistoryTAAShader->setSampler("cloudEffectHistoryBuffer", cloudEffectHistoryBufferTAA->getHandle());
+	renderQuad();
+
+	glBlitNamedFramebuffer(
+		cloudEffectBlurFBO,
+		cloudEffectUpdateHistoryFBO,
+		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		GL_COLOR_BUFFER_BIT,
+		GL_NEAREST
+	);
+
+	glBlitNamedFramebuffer(
+		cloudEffectBlurFBO,
+		cloudEffectFBO,
+		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		GL_COLOR_BUFFER_BIT,
+		GL_NEAREST
+	);
 
 	//
 	// Floodfill @Clouds depth pass
@@ -2982,9 +3057,11 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
 			ImGui::DragFloat2("Cloud near raymarch method distance", &cloudEffectInfo.sampleSmoothEdgeNearFar.x);
-			ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
+			ImGui::DragFloat("Cloud farRaymarchStepsizeMultiplier", &cloudEffectInfo.farRaymarchStepsizeMultiplier, 0.01f, 0.01f);
+			//ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
 			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
+			ImGui::DragFloat("Cloud jitter scale", &cloudEffectInfo.cameraPosJitterScale);
 			ImGui::DragFloat("Cloud apply ss effect density", &ShaderExtCloud_effect::cloudEffectDensity);
 
 			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);

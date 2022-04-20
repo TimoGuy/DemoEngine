@@ -198,6 +198,7 @@
     <None Include="shader\cloudEffectDepthFloodfillX.json" />
     <None Include="shader\cloudEffectDepthFloodfillY.json" />
     <None Include="shader\cloudEffectSS.json" />
+    <None Include="shader\cloudHistoryTAA.json" />
     <None Include="shader\cloudNoiseCombine.json" />
     <None Include="shader\cloudNoiseFractal.json" />
     <None Include="shader\cloudNoiseGenerate.json" />
@@ -268,6 +269,7 @@
     <None Include="shader\src\cloud_effect_depth_floodfill_x.frag" />
     <None Include="shader\src\cloud_effect_depth_floodfill_y.frag" />
     <None Include="shader\src\cloud_effect_screenspace.frag" />
+    <None Include="shader\src\cloud_history_taa.frag" />
     <None Include="shader\src\cloud_noise_combine.frag" />
     <None Include="shader\src\cloud_noise_fractal.frag" />
     <None Include="shader\src\cloud_noise_generate.frag" />
