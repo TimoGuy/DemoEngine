@@ -683,8 +683,8 @@ void RenderManager::createHDRBuffer()
 			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
-			GL_NEAREST, //GL_LINEAR,		// @NOTE: @TAA: for clouds to be able to do TAA, I made this texture GL_NEAREST. Keep that in mind for if you change cloudEffectTextureScale in the future!!!!  -Timo
-			GL_NEAREST, //GL_LINEAR,
+			GL_LINEAR,
+			GL_LINEAR,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
@@ -730,20 +730,6 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
-	cloudEffectHistoryBufferTAA =
-		new Texture2D(
-			(GLsizei)cloudEffectTextureWidth,
-			(GLsizei)cloudEffectTextureHeight,
-			1,
-			GL_RGBA32F,
-			GL_RGBA,
-			GL_FLOAT,
-			nullptr,
-			GL_LINEAR,
-			GL_LINEAR,
-			GL_CLAMP_TO_EDGE,
-			GL_CLAMP_TO_EDGE
-		);
 
 	ShaderExtCloud_effect::cloudEffect = cloudEffectTexture->getHandle();
 	ShaderExtCloud_effect::cloudDepthTexture = cloudEffectDepthTexture->getHandle();
@@ -768,11 +754,6 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
-
-	glCreateFramebuffers(1, &cloudEffectUpdateHistoryFBO);
-	glNamedFramebufferTexture(cloudEffectUpdateHistoryFBO, GL_COLOR_ATTACHMENT0, cloudEffectHistoryBufferTAA->getHandle(), 0);
-	if (glCheckNamedFramebufferStatus(cloudEffectUpdateHistoryFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		std::cout << "Framebuffer not complete! (Cloud Effect Update History Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -785,8 +766,6 @@ void RenderManager::destroyHDRBuffer()
 	delete cloudEffectDepthTextureFloodFill;
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
-	delete cloudEffectHistoryBufferTAA;
-	glDeleteFramebuffers(1, &cloudEffectUpdateHistoryFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1328,7 +1307,6 @@ void RenderManager::createShaderPrograms()
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
-	cloudHistoryTAAShader = (Shader*)Resources::getResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1361,7 +1339,6 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
 	Resources::unloadResource("shader;cloudEffectApply");
-	Resources::unloadResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::createFonts()
@@ -2132,34 +2109,6 @@ void RenderManager::renderScene()
 		blurY3ProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
 		renderQuad();
 	}
-
-	//
-	// Resolve with @TAA history buffer
-	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	cloudHistoryTAAShader->use();
-	cloudHistoryTAAShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
-	cloudHistoryTAAShader->setSampler("cloudEffectHistoryBuffer", cloudEffectHistoryBufferTAA->getHandle());
-	renderQuad();
-
-	glBlitNamedFramebuffer(
-		cloudEffectBlurFBO,
-		cloudEffectUpdateHistoryFBO,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST
-	);
-
-	glBlitNamedFramebuffer(
-		cloudEffectBlurFBO,
-		cloudEffectFBO,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST
-	);
 
 	//
 	// Floodfill @Clouds depth pass

@@ -240,8 +240,8 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO, cloudEffectUpdateHistoryFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill, *cloudEffectHistoryBufferTAA;
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;
 	int cloudEffectTextureWidth, cloudEffectTextureHeight;
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
@@ -253,8 +253,7 @@ private:
 		*cloudEffectFloodFillShaderY,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
-		*blurY3ProgramId,
-		*cloudHistoryTAAShader;
+		*blurY3ProgramId;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
 
