@@ -19,7 +19,7 @@ uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
 uniform sampler3D atmosphericScattering;
 uniform float cloudMaxDepth;
-uniform float maxCloudscapeRadius;
+uniform vec2 sampleSmoothEdgeNearFar;
 uniform float maxRaymarchLength;
 
 uniform float densityOffset;
@@ -77,7 +77,7 @@ vec2 rsi(vec3 r0, vec3 rd, float sr)
 
 
 const float cameraBaseHeight = 6376e2;
-const float planetRadius = 6365e2;
+const float planetRadius = 6361e2;  // 6365e2;
 
 
 
@@ -312,12 +312,12 @@ void main()
         }
     }
 
-    //// Setup the raymarching magic!!!
-    //if (length(currentPosition.xz - mainCameraPosition.xz) > maxCloudscapeRadius)
-    //{
-    //    fragmentColor = vec4(0, 0, 0, 1.0);
-    //    return;
-    //}
+    ////////////////// Setup the raymarching magic!!!
+    ////////////////if (length(currentPosition.xz - mainCameraPosition.xz) > maxCloudscapeRadius)
+    ////////////////{
+    ////////////////    fragmentColor = vec4(0, 0, 0, 1.0);
+    ////////////////    return;
+    ////////////////}
 
     /////////////////////////vec3 targetPositionFromCamera = targetPosition - mainCameraPosition;       @nOte: this is the code that limited the xz drawing for clouds
     /////////////////////////const float targetPositionLength = length(targetPositionFromCamera.xz);
@@ -328,18 +328,25 @@ void main()
     /////////////////////////}
     
     vec3 deltaPosition = targetPosition - currentPosition;
-
-    const float RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);    // @NOTE: this is a good number I think. The problem is that this could lead to too much raymarching, but I think it'll be fine. The transmittance should break the length of time that this calculates.
-    const float rayLength = min(length(deltaPosition), maxRaymarchLength);
-
-    // Fitting starting position to raymarching "grid"
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
-    vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
+    const float deltaPositionLength = length(deltaPosition);
+
     const float offsetAmount = offsetAmount();
-    const float distanceFromCameraToStartingPt = length(mainCameraPosition - currentPosition);
-    const float griddedDistanceFromCameraToStartingPt = distanceFromCameraToStartingPt - mod(distanceFromCameraToStartingPt, RAYMARCH_STEP_SIZE);
-    currentPosition = mainCameraPosition + deltaPositionNormalized * griddedDistanceFromCameraToStartingPt;     // @NOTE: This modulus op is for the top and bottom of the cloud layers to start at the correct position when the camera's position is above/below the cloud area.  -Timo
-    currentPosition += deltaStepIncrement * offsetAmount;     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
+    const float rayLength = deltaPositionLength;
+    float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
+    
+    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
+    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS);
+    float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
+    vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
+    
+    //// Fitting starting position to raymarching "grid"
+    //const float distanceFromCameraToStartingPt = length(mainCameraPosition - currentPosition);
+    //const float griddedDistanceFromCameraToStartingPt = distanceFromCameraToStartingPt - mod(distanceFromCameraToStartingPt, RAYMARCH_STEP_SIZE);
+    //currentPosition = mainCameraPosition + deltaPositionNormalized * griddedDistanceFromCameraToStartingPt;     // @NOTE: This modulus op is for the top and bottom of the cloud layers to start at the correct position when the camera's position is above/below the cloud area.  -Timo
+    
+    //// Offset the starting position
+    //currentPosition += deltaStepIncrement * offsetAmount;     // NOTE: when having this be a normalized and static offset, it really suffered when inside of clouds. Turns out that it didn't really change the look much compared to this method where we use the step incremeent size as the baseline for the offset value. Oh well. Looks like this way is just a little better, so we'll do it this way. When things get really far with far off stuff, I guess I really gotta make the step size shorter or something... and then just have the transmittance value be the limit for this... Idk man it's kinda hilarious. Maybe make some kind of distance endpoint and have the for loop go on forever... Idk.  -Timo
 
     //
     // RAYMARCH!!!
@@ -347,27 +354,33 @@ void main()
     float transmittance = 1.0;
     float lightEnergy = 0.0;
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
-    float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
     vec4 atmosValues = vec4(0.0);
 
     while (distanceTraveled < rayLength)
     {
-        float density = sampleDensityAtPoint(currentPosition);
+        // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
+        const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
+
+        float density = sampleDensityAtPoint(offsetCurrentPosition);
 
         if (density > densityRequirement)
         {
-            float inScatterTransmittance = inScatterLightMarch(currentPosition);
+            float inScatterTransmittance = inScatterLightMarch(offsetCurrentPosition);
 
             float d = density - densityRequirement;
             lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             transmittance = 0.0;
             
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
-            const float distanceTraveledActual = length(currentPosition - mainCameraPosition);
+            const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
             calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
             atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth * 3.2));
             break;
         }
+
+        // Update deltaStepIncrement
+        RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
+        deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
 
         // Advance march
         currentPosition += deltaStepIncrement;

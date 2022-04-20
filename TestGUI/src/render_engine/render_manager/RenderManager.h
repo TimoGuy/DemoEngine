@@ -129,6 +129,7 @@ struct CloudEffectInformation
 	float lightAbsorptionTowardsSun = 0.01f;
 	float lightAbsorptionThroughCloud = 0.2f;
 	float raymarchOffset = 1.0f;
+	glm::vec2 sampleSmoothEdgeNearFar = { 1000.0f, 5000.0f };
 	float maxRaymarchLength = 5000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;

@@ -12,9 +12,11 @@
   - [ ] The stark and scary look of it should be there for sure. RENDER AT FULL RESOLUTION!
   - [x] Make sure the night sky reflects off the planet **_(this'll be like a glass planet that smoothed out eh!)_**
     - [x] The night sky also runs at 300fps btw lol
-- [ ] Make the clouds actually render with a render distance value where at a certain radius the density just goes to 1 for the clouds. This should speed up the clouds.
-  - [ ] I suppose this is like a fog of war thing. A limit of 15km should be good I think. Maybe even less
-- [ ] OK, so there is a big bug in the clouds. If you go down and look upwards, the clouds get super bright. Some kind of INF bug probably with the fog addition to the clouds. Might have to do that as a postprocessing effect? Idk.
+- [ ] ~~Make the clouds actually render with a render distance value where at a certain radius the density just goes to 1 for the clouds. This should speed up the clouds.~~
+  - [ ] ~~I suppose this is like a fog of war thing. A limit of 15km should be good I think. Maybe even less~~
+  - [ ] So what I think we should do instead is have the clouds do a fixed sample size (just 16 samples or something) at a certain distance. This distance should make it very hard to notice flickering from. ~~And then even then it should have a limited raylength~~ We shouldn't need that bc it's a ray-sphere-intersection now. If the ray entered the sphere, it's guaranteed to stop somewhere.
+- [x] OK, so there is a big bug in the clouds. If you go down and look upwards, the clouds get super bright. Some kind of INF bug probably with the fog addition to the clouds. Might have to do that as a postprocessing effect? Idk.
+  - [x] Fixed with the correct atmosphere transmittance formula
 
 
 ##### Low priority
