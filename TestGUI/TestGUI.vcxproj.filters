@@ -316,8 +316,7 @@
     <None Include="shader\cloudEffectApply.json" />
     <None Include="shader\src\cloud_effect_apply.frag" />
     <None Include="shader\src\fxaa_postprocessing.frag" />
-    <None Include="shader\cloudHistoryTAA.json" />
-    <None Include="shader\src\cloud_history_taa.frag" />
+    <None Include="shader\fxaa_postprocessing.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
