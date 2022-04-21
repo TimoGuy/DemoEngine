@@ -28,7 +28,6 @@ uniform float densityOffset;
 uniform float densityMultiplier;
 uniform float densityRequirement;
 
-uniform float darknessThreshold;
 uniform float lightAbsorptionTowardsSun;
 uniform float lightAbsorptionThroughCloud;
 
@@ -179,7 +178,7 @@ float inScatterLightMarch(vec3 position)
     }
 
     float transmittance = exp(-inScatterDensity * lightAbsorptionTowardsSun);
-    return darknessThreshold + transmittance * (1.0 - darknessThreshold);
+    return transmittance;
 }
 
 // Henyey-Greenstein
@@ -271,6 +270,7 @@ void main()
     // Setup raymarching
     calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
+
     vec3 currentPosition = mainCameraPosition + rd * t0;
     vec3 targetPosition  = mainCameraPosition + rd * t1;
 

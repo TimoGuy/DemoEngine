@@ -125,7 +125,7 @@ struct CloudEffectInformation
 	float densityOffset = -0.3f;
 	float densityMultiplier = 300.0f;
 	float densityRequirement = 8.0f;
-	float darknessThreshold = 0.07f;
+	float darknessThreshold = 0.37f;  // 0.07f;
 	float lightAbsorptionTowardsSun = 0.01f;
 	float lightAbsorptionThroughCloud = 0.2f;
 	float raymarchOffset = 1.0f;
@@ -251,6 +251,7 @@ private:
 		*cloudEffectShader,
 		*cloudEffectFloodFillShaderX,
 		*cloudEffectFloodFillShaderY,
+		*cloudAmbientLightShader,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
 		*blurY3ProgramId;

@@ -32,7 +32,7 @@ public:
 	float						dayNightTimeSpeed				= (1.0f / (20.0f * 60.0f));	 // 20 minutes
 	float						dayNightTime					= 0.0f;				// [0-1], and 1 is dusk
 
-	Transformation				currentTransformation			= Transformation::CAT;
+	Transformation				currentTransformation			= Transformation::HUMAN;  // Transformation::CAT;
 	int							human_numJumps					= 2;	// NOTE: 1 is single jump, 2 is double jump (if fall off, then double jump only)
 	
 

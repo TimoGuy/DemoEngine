@@ -53,7 +53,6 @@
 void renderCube();
 void renderQuad();
 
-const unsigned int SHADOW_WIDTH = 2048, SHADOW_HEIGHT = 2048;
 static bool showShadowMapView = false;
 static bool showCloudNoiseView = false;
 bool RenderManager::isWireFrameMode = false;
@@ -276,7 +275,7 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	prefilter_program_id->setMat4("projection", captureProjection);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
-	unsigned int maxMipLevels = 5;
+	unsigned int maxMipLevels = 5;  // glm::floor(glm::log2((float_t)prefilterMapSize)) + 1;
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
 		// Resize to mip level size
@@ -1306,6 +1305,7 @@ void RenderManager::createShaderPrograms()
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
+	cloudAmbientLightShader = (Shader*)Resources::getResource("shader;cloudAmbientLightSS");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
 }
 
@@ -1338,6 +1338,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectSS");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
+	Resources::unloadResource("shader;cloudAmbientLightSS");
 	Resources::unloadResource("shader;cloudEffectApply");
 }
 
@@ -2073,7 +2074,6 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
 	cloudEffectShader->setFloat("densityRequirement", cloudEffectInfo.densityRequirement);
-	cloudEffectShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);
 	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
 	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
@@ -2128,6 +2128,20 @@ void RenderManager::renderScene()
 	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
 
 	//
+	// Render the ambient light for the @Clouds via the floodfilled depth
+	// @NOTE: render this to the cloud blur FBO
+	// @@@@@@TODO: @@@@@NOTE: Bc of the way I'm now doing it, the depth texture isn't needed, and this step can be simply done in the cloud_effect_screenspace.frag shader
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudAmbientLightShader->use();
+	cloudAmbientLightShader->setFloat("mainCameraZFar", MainLoop::getInstance().camera.zFar);
+	cloudAmbientLightShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	cloudAmbientLightShader->setMat4("invCameraProjectionView", glm::inverse(cameraInfo.projectionView));
+	renderQuad();
+
+
+	//
 	// Apply the @Clouds layer
 	//
 	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
@@ -2136,6 +2150,8 @@ void RenderManager::renderScene()
 	cloudEffectApplyShader->use();
 	cloudEffectApplyShader->setSampler("skyboxTexture", skyboxLowResTexture->getHandle());
 	cloudEffectApplyShader->setSampler("cloudEffect", cloudEffectTexture->getHandle());
+	cloudEffectApplyShader->setSampler("cloudAmbientIrradiance", cloudEffectBlurTexture->getHandle());		// @NOTE: the cloudAmbientLightShader uses this FBO to render the irradiance texture
+	cloudEffectApplyShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);
 	renderQuad();
 
 	glDepthMask(GL_TRUE);
