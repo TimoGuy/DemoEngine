@@ -372,15 +372,10 @@ void main()
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
     vec4 atmosValues = vec4(0.0);
 
-
-    // @POC for view space normals
-    vec3 P = mainCameraPosition + deltaPositionNormalized * t1;
-
     while (distanceTraveled < rayLength)
     {
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
-        
 
         float density = sampleDensityAtPoint(offsetCurrentPosition);
 
@@ -395,15 +390,6 @@ void main()
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
             calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
-
-            
-            
-            
-
-
-
-
-
             atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth * 3.2));     // @NOTE: the *3.2 is only stylistic. It really shouldn't get multiplied. I like the style, however.
             break;
         }
@@ -416,18 +402,6 @@ void main()
         currentPosition += deltaStepIncrement;
         distanceTraveled += RAYMARCH_STEP_SIZE;
     }
-
-    // @POC: normals from depth!!!
-    // FJDASKSDJFKJAKSDHKASDGH
-    P = mainCameraPosition + deltaPositionNormalized * distanceTraveled;
-	vec3 N = normalize(cross(dFdx(P), dFdy(P)));
-    fragmentColor = vec4(N, 1.0);
-    return;
-
-
-
-
-
 
     fragmentColor =
         vec4(
