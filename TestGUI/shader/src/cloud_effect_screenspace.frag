@@ -28,6 +28,7 @@ uniform float densityOffset;
 uniform float densityMultiplier;
 uniform float densityRequirement;
 
+uniform float darknessThreshold;
 uniform float lightAbsorptionTowardsSun;
 uniform float lightAbsorptionThroughCloud;
 
@@ -38,6 +39,17 @@ uniform vec4 phaseParameters;
 
 // ext: zBuffer
 uniform sampler2D depthTexture;
+
+
+// ext: PBR daynight cycle
+uniform samplerCube irradianceMap;
+uniform samplerCube irradianceMap2;
+//uniform samplerCube prefilterMap;
+//uniform samplerCube prefilterMap2;
+//uniform sampler2D brdfLUT;
+uniform float mapInterpolationAmt;
+
+uniform mat3 sunSpinAmount;
 
 
 
@@ -370,6 +382,7 @@ void main()
     float transmittance = 1.0;
     float lightEnergy = 0.0;
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
+    vec3 ambientLightEnergy = vec3(0.0);
     vec4 atmosValues = vec4(0.0);
 
     while (distanceTraveled < rayLength)
@@ -391,6 +404,19 @@ void main()
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
             calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
             atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth * 3.2));     // @NOTE: the *3.2 is only stylistic. It really shouldn't get multiplied. I like the style, however.
+            
+            // Calculate Ambient Light Energy (https://shaderbits.com/blog/creating-volumetric-ray-marcher)
+            const vec3 directionFromOrigin = normalize(offsetCurrentPosition + vec3(0, cameraBaseHeight, 0));
+            float shadowDensity = 0.0;
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.05);
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.10);
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.20);
+
+            // Calculate the irradiance in the direction of the ray
+            vec3 N = rd;
+	        vec3 irradiance = mix(texture(irradianceMap, sunSpinAmount * N).rgb, texture(irradianceMap2, sunSpinAmount * N).rgb, mapInterpolationAmt);
+            const float ambientDensity = darknessThreshold;
+            ambientLightEnergy = exp(-shadowDensity * ambientDensity) * d * irradiance;
             break;
         }
 
@@ -407,7 +433,7 @@ void main()
         vec4(
             mix(
                 atmosValues.rgb * (1.0 - transmittance),  // @ATMOS: combine atmospheric scattering
-                lightColor * lightEnergy,
+                lightColor * lightEnergy + ambientLightEnergy,
                 atmosValues.a
             ),
             transmittance

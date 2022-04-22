@@ -194,7 +194,6 @@
     <None Include="shader\blurY.json" />
     <None Include="shader\blurY3.json" />
     <None Include="shader\brdfGeneration.json" />
-    <None Include="shader\cloudAmbientLightSS.json" />
     <None Include="shader\cloudEffectApply.json" />
     <None Include="shader\cloudEffectDepthFloodfillX.json" />
     <None Include="shader\cloudEffectDepthFloodfillY.json" />
@@ -264,7 +263,6 @@
     <None Include="shader\src\blur_y3.frag" />
     <None Include="shader\src\brdf.frag" />
     <None Include="shader\src\brdf.vert" />
-    <None Include="shader\src\cloud_ambient_light_screenspace.frag" />
     <None Include="shader\src\cloud_billboard.frag" />
     <None Include="shader\src\cloud_billboard.vert" />
     <None Include="shader\src\cloud_effect_apply.frag" />

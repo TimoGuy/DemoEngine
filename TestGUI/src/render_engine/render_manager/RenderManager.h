@@ -251,7 +251,6 @@ private:
 		*cloudEffectShader,
 		*cloudEffectFloodFillShaderX,
 		*cloudEffectFloodFillShaderY,
-		*cloudAmbientLightShader,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
 		*blurY3ProgramId;

@@ -7,6 +7,7 @@
     "vec3 diffuseTint"
   ],
   "extensions": [
-    "zBuffer"
+    "zBuffer",
+    "pbr_daynight_cycle"
   ]
 }
