@@ -25,6 +25,7 @@ void main()
 		vec2 coord = vec2(texCoord.x, texCoord.y + gaussFilter[i].x * scale);
 		color += textureLod(textureMap, coord, 0).rgba * gaussFilter[i].y;
 	}
-
-	fragColor = color;
+	
+	// @POC: normalize the "normal map"
+	fragColor = vec4(normalize(color.rgb), color.a);
 }

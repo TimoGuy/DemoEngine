@@ -2130,7 +2130,6 @@ void RenderManager::renderScene()
 	//
 	// Render the ambient light for the @Clouds via the floodfilled depth
 	// @NOTE: render this to the cloud blur FBO
-	// @@@@@@TODO: @@@@@NOTE: Bc of the way I'm now doing it, the depth texture isn't needed, and this step can be simply done in the cloud_effect_screenspace.frag shader
 	//
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
