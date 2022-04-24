@@ -122,6 +122,8 @@ struct CloudEffectInformation
 	float cloudLayerThickness = 1125.0f;		// @TODO: add cloud point saving. This can be done inside of a json file or something for now eh. Eventually into textures ideally eh.
 	float cloudNoiseMainSize = 3721.0f;
 	float cloudNoiseDetailSize = 160.0f;
+	glm::vec3 cloudNoiseDetailOffset = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 cloudNoiseDetailVelocity = { 1.0f, 0.0f, 2.0f };		// @NOTE: good and subtle eh!  -Timo
 	float densityOffset = -0.3f;
 	float densityMultiplier = 300.0f;
 	float densityRequirement = 8.0f;

@@ -2069,6 +2069,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("cloudLayerThickness", cloudEffectInfo.cloudLayerThickness);
 	cloudEffectShader->setFloat("cloudNoiseMainSize", cloudEffectInfo.cloudNoiseMainSize);
 	cloudEffectShader->setFloat("cloudNoiseDetailSize", cloudEffectInfo.cloudNoiseDetailSize);
+	cloudEffectShader->setVec3("cloudNoiseDetailOffset", cloudEffectInfo.cloudNoiseDetailOffset);
 	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
 	cloudEffectShader->setFloat("densityRequirement", cloudEffectInfo.densityRequirement);
@@ -2091,6 +2092,8 @@ void RenderManager::renderScene()
 	renderQuad();
 
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 1, attachments);
+
+	cloudEffectInfo.cloudNoiseDetailOffset += cloudEffectInfo.cloudNoiseDetailVelocity * MainLoop::getInstance().deltaTime;
 
 	//
 	// Blur @Clouds pass
@@ -2998,6 +3001,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
 			ImGui::DragFloat("Cloud layer tile size", &cloudEffectInfo.cloudNoiseMainSize);
 			ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
+			ImGui::DragFloat3("Cloud layer detail tile offset", &cloudEffectInfo.cloudNoiseDetailOffset.x);
+			ImGui::DragFloat3("Cloud layer detail tile velocity", &cloudEffectInfo.cloudNoiseDetailVelocity.x);
 			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
 			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
 			ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);

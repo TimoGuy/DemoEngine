@@ -14,6 +14,7 @@ uniform float cloudLayerY;
 uniform float cloudLayerThickness;
 uniform float cloudNoiseMainSize;
 uniform float cloudNoiseDetailSize;
+uniform vec3 cloudNoiseDetailOffset;
 uniform sampler3D cloudNoiseTexture;
 uniform sampler3D cloudNoiseDetailTexture;
 uniform float raymarchOffset;
@@ -147,7 +148,7 @@ float sampleDensityAtPoint(vec3 point)
     const float sampleScale = 1.0 / cloudNoiseMainSize;
     const float sampleScaleDetailed = 1.0 / cloudNoiseDetailSize;
     vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale * point.xzy);
-    vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * point.xzy);
+    vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * (point + cloudNoiseDetailOffset).xzy);
     float density =
         0.5333333 * noise.r
 		+ 0.2666667 * noise.g
@@ -272,11 +273,15 @@ void main()
     else if (isect_outer.x > 0.0)
     {
         t0 = isect_outer.x;
-        t1 = isect_inner.x;
+        //t1 = isect_inner.x;
+        //t1 = (isect_inner.y > isect_planet.x) ? isect_inner.x : isect_inner.y;        // @TRIPPY
+        t1 = (isect_planet.x < isect_outer.y) ? isect_inner.x : isect_outer.y;      // @NOTE: so this looks so much better, however, it's not perfect. And I think the reason behind it is the raylength being very large, forcing the raymarch in the far area to be sparser
     }
     // t0 is between cloud boundaries. t1 is whichever exiting boundary is closer. (inner.x, outer.y). When collision failed, 1e5 may not be a large enough number????  -Timo
     else
-        t1 = min(isect_inner.x, isect_outer.y);
+        //t1 = min(isect_inner.x, isect_outer.y);
+        //t1 = min((isect_inner.y > isect_planet.x) ? isect_inner.x : isect_inner.y, isect_outer.y);        // @TRIPPY
+        t1 = min((isect_planet.x < isect_outer.y) ? isect_inner.x : isect_outer.y, isect_outer.y);      // @NOTE: so this looks so much better, however, it's not perfect. And I think the reason behind it is the raylength being very large, forcing the raymarch in the far area to be sparser
 
 
 
