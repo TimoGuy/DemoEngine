@@ -256,6 +256,7 @@
     <None Include="shader\postprocessing.json" />
     <None Include="shader\selectionSkinnedWireframe.json" />
     <None Include="shader\skybox.json" />
+    <None Include="shader\skyboxDetails.json" />
     <None Include="shader\src\bloom_postprocessing.frag" />
     <None Include="shader\src\blur_x.frag" />
     <None Include="shader\src\blur_x3.frag" />
@@ -302,6 +303,7 @@
     <None Include="shader\src\prefilter.frag" />
     <None Include="shader\src\csm_shadow.frag" />
     <None Include="shader\src\skybox.frag" />
+    <None Include="shader\src\skybox_details.frag" />
     <None Include="shader\src\ssao_postprocessing.frag" />
     <None Include="shader\src\text.frag" />
     <None Include="shader\src\text.vert" />

@@ -5,9 +5,8 @@ in vec3 localPos;
 
 uniform vec3 mainCameraPosition;
 uniform vec3 sunOrientation;
-uniform float sunRadius;
-uniform float sunAlpha;
 
+uniform bool renderNight;
 uniform samplerCube nightSkybox;
 uniform mat3 nightSkyTransform;
 
@@ -224,23 +223,17 @@ void main()
 	    // Apply exposure
         out_Color = 1.0 - exp(-out_Color);
 
-        // Apply the night sky texture too (reflect off the planet's ground sphere)  -Timo
-        vec3 nightSkyboxSampleRay = ray_world;
-        if (isectPlanet.x < isectPlanet.y)
+        if (renderNight)
         {
-            vec3 collisionPoint = r0 + ray_world * isectPlanet.x;
-            nightSkyboxSampleRay = reflect(nightSkyboxSampleRay, normalize(collisionPoint));        // @NOTE: sphere.CENTER is 0,0,0 in this case!
+            // Apply the night sky texture too (reflect off the planet's ground sphere)  -Timo
+            vec3 nightSkyboxSampleRay = ray_world;
+            if (isectPlanet.x < isectPlanet.y)
+            {
+                vec3 collisionPoint = r0 + ray_world * isectPlanet.x;
+                nightSkyboxSampleRay = reflect(nightSkyboxSampleRay, normalize(collisionPoint));        // @NOTE: sphere.CENTER is 0,0,0 in this case!
+            }
+            out_Color += texture(nightSkybox, nightSkyTransform * nightSkyboxSampleRay).rgb * 0.005;
         }
-        out_Color += texture(nightSkybox, nightSkyTransform * nightSkyboxSampleRay).rgb * 0.005;
-	
-	    // Render sun (use sunAlpha to change if sun appears or not)
-	    float _sunRadius = length(normalize(ray_world) - normalize(v_Sun));
-	    if(_sunRadius < sunRadius)
-	    {
-		    _sunRadius /= sunRadius;
-		    float smoothRadius = smoothstep(0,1,0.1f/_sunRadius-0.1f);
-		    out_Color = mix(out_Color, sunBaseColor * 4, smoothRadius * sunAlpha);
-	    }
 
         fragColor = vec4(out_Color, 1);
     }

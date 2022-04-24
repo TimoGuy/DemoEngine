@@ -263,9 +263,9 @@ private:
 	// Skybox Rendering
 	const static int skyboxDepthSlicedLUTSize = 32;
 	const static int skyboxLowResSize = 256;
-	GLuint skyboxFBO, skyboxBlurFBO, skyboxDepthSlicedLUTFBOs[skyboxDepthSlicedLUTSize];
-	Texture* skyboxLowResTexture, *skyboxLowResBlurTexture, *skyboxDepthSlicedLUT, *nightSkybox;
-	Shader* skybox_program_id;
+	GLuint skyboxFBO, skyboxBlurFBO, skyboxDepthSlicedLUTFBOs[skyboxDepthSlicedLUTSize], skyboxDetailsSSFBO;
+	Texture* skyboxLowResTexture, *skyboxLowResBlurTexture, *skyboxDepthSlicedLUT, *nightSkyboxCubemap, * skyboxDetailsSS;
+	Shader* skybox_program_id, *skyboxDetailsShader;
 	SkyboxParams skyboxParams;
 	static const size_t numSkyMaps = 6;
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];

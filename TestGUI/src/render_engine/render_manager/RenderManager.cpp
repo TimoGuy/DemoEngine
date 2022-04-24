@@ -175,15 +175,13 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 
 	// Get the nightsky texture from disk
 	Texture::setLoadSync(true);
-	nightSkybox = (Texture*)Resources::getResource("texture;nightSkybox");
+	nightSkyboxCubemap = (Texture*)Resources::getResource("texture;nightSkybox");
 	Texture::setLoadSync(false);
 
 	// Convert HDR dynamic skybox to cubemap equivalent
 	skybox_program_id->use();
 	skybox_program_id->setVec3("mainCameraPosition", glm::vec3(0.0f));
 	skybox_program_id->setVec3("sunOrientation", sunOrientation);
-	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
-	skybox_program_id->setFloat("sunAlpha", 0.0f);
 	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
 	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
 	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
@@ -192,10 +190,11 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
 	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
-	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 	skybox_program_id->setFloat("depthZFar", -1.0f);
 	skybox_program_id->setMat4("projection", captureProjection);
-	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
+	skybox_program_id->setInt("renderNight", true);
+	skybox_program_id->setSampler("nightSkybox", nightSkyboxCubemap->getHandle());
+	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 
 	glViewport(0, 0, renderTextureSize, renderTextureSize); // don't forget to configure the viewport to the capture dimensions.
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
@@ -573,6 +572,26 @@ void RenderManager::createHDRBuffer()
 	}
 	ShaderExtCloud_effect::atmosphericScattering = skyboxDepthSlicedLUT->getHandle();
 
+	skyboxDetailsSS =
+		new Texture2D(
+			(GLsizei)MainLoop::getInstance().camera.width,//(GLsizei)ssaoFBOSize,
+			(GLsizei)MainLoop::getInstance().camera.height,//(GLsizei)ssaoFBOSize,
+			1,
+			GL_RGB16F,
+			GL_RGB,
+			GL_FLOAT,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
+	glCreateFramebuffers(1, &skyboxDetailsSSFBO);
+	glNamedFramebufferTexture(skyboxDetailsSSFBO, GL_COLOR_ATTACHMENT0, skyboxDetailsSS->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(skyboxDetailsSSFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Nighttime Skybox Screenspace Framebuffer)" << std::endl;
+
+
 	//
 	// Create SSAO framebuffer
 	//
@@ -777,6 +796,8 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteFramebuffers(1, &skyboxBlurFBO);
 	delete skyboxDepthSlicedLUT;
 	glDeleteFramebuffers(skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTFBOs);
+	delete skyboxDetailsSS;
+	glDeleteFramebuffers(1, &skyboxDetailsSSFBO);
 
 	delete ssaoBlurTexture;
 	glDeleteFramebuffers(1, &ssaoBlurFBO);
@@ -1279,6 +1300,7 @@ void RenderManager::destroyCloudNoise()
 void RenderManager::createShaderPrograms()
 {
 	skybox_program_id = (Shader*)Resources::getResource("shader;skybox");
+	skyboxDetailsShader = (Shader*)Resources::getResource("shader;skyboxDetails");
 	debug_csm_program_id = (Shader*)Resources::getResource("shader;debugCSM");
 	debug_cloud_noise_program_id = (Shader*)Resources::getResource("shader;debugCloudNoise");
 	text_program_id = (Shader*)Resources::getResource("shader;text");
@@ -1311,6 +1333,7 @@ void RenderManager::createShaderPrograms()
 void RenderManager::destroyShaderPrograms()
 {
 	Resources::unloadResource("shader;skybox");
+	Resources::unloadResource("shader;skyboxDetails");
 	Resources::unloadResource("shader;debugCSM");
 	Resources::unloadResource("shader;debugCloudNoise");
 	Resources::unloadResource("shader;text");
@@ -1936,10 +1959,10 @@ void RenderManager::renderScene()
 	glDepthMask(GL_FALSE);
 
 	skybox_program_id->use();
+	skybox_program_id->setMat4("projection", cameraInfo.projection);
+	skybox_program_id->setMat4("view", cameraInfo.view);
 	skybox_program_id->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
 	skybox_program_id->setVec3("sunOrientation", skyboxParams.sunOrientation);
-	skybox_program_id->setFloat("sunRadius", skyboxParams.sunRadius);
-	skybox_program_id->setFloat("sunAlpha", skyboxParams.sunAlpha);
 	skybox_program_id->setVec3("sunColor", skyboxParams.sunColor);
 	skybox_program_id->setVec3("skyColor1", skyboxParams.skyColor1);
 	skybox_program_id->setVec3("groundColor", skyboxParams.groundColor);
@@ -1948,11 +1971,10 @@ void RenderManager::renderScene()
 	skybox_program_id->setFloat("cloudHeight", skyboxParams.cloudHeight);
 	skybox_program_id->setFloat("perlinDim", skyboxParams.perlinDim);
 	skybox_program_id->setFloat("perlinTime", skyboxParams.perlinTime);
-	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 	skybox_program_id->setFloat("depthZFar", -1.0f);
-	skybox_program_id->setMat4("projection", cameraInfo.projection);
-	skybox_program_id->setMat4("view", cameraInfo.view);
-	skybox_program_id->setSampler("nightSkybox", nightSkybox->getHandle());
+	skybox_program_id->setInt("renderNight", false);
+	skybox_program_id->setSampler("nightSkybox", nightSkyboxCubemap->getHandle());
+	skybox_program_id->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
 	renderCube();
 
 	//
@@ -1987,6 +2009,24 @@ void RenderManager::renderScene()
 	blurY3ProgramId->use();
 	blurY3ProgramId->setSampler("textureMap", skyboxLowResBlurTexture->getHandle());
 	renderQuad();
+
+	//
+	// Render the detailed skybox separately (sun and nighttime mainly)
+	//
+	glViewport(0, 0, MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height);
+	glBindFramebuffer(GL_FRAMEBUFFER, skyboxDetailsSSFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	skyboxDetailsShader->use();
+	skyboxDetailsShader->setMat4("projection", cameraInfo.projection);
+	skyboxDetailsShader->setMat4("view", cameraInfo.view);
+	skyboxDetailsShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);
+	skyboxDetailsShader->setVec3("sunOrientation", skyboxParams.sunOrientation);
+	skyboxDetailsShader->setFloat("sunRadius", skyboxParams.sunRadius);
+	skyboxDetailsShader->setFloat("sunAlpha", skyboxParams.sunAlpha);
+	skyboxDetailsShader->setSampler("nightSkybox", nightSkyboxCubemap->getHandle());
+	skyboxDetailsShader->setMat3("nightSkyTransform", skyboxParams.nightSkyTransform);
+	renderCube();
+
 
 	//
 	// Capture z-passed screen for @Clouds
@@ -2055,7 +2095,7 @@ void RenderManager::renderScene()
 	////static int raymarchOffsetDitherIndexOffset = 0;
 	////raymarchOffsetDitherIndexOffset = (raymarchOffsetDitherIndexOffset + 60413) % 99793;		// @NOTE: there are 16 values in the dither algorithm
 
-	// Draw cloud screen space effect!
+	// Draw cloud screen space effect! @CLOUDS
 	glViewport(0, 0, (GLsizei)cloudEffectTextureWidth, (GLsizei)cloudEffectTextureHeight);
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -2138,6 +2178,7 @@ void RenderManager::renderScene()
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectApplyShader->use();
 	cloudEffectApplyShader->setSampler("skyboxTexture", skyboxLowResTexture->getHandle());
+	cloudEffectApplyShader->setSampler("skyboxDetailTexture", skyboxDetailsSS->getHandle());
 	cloudEffectApplyShader->setSampler("cloudEffect", cloudEffectTexture->getHandle());
 	renderQuad();
 
