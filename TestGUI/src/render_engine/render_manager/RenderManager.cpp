@@ -2072,7 +2072,8 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
 	cloudEffectShader->setFloat("densityRequirement", cloudEffectInfo.densityRequirement);
-	cloudEffectShader->setFloat("darknessThreshold", cloudEffectInfo.darknessThreshold);		// @NOTE: play around with this value. (I think 0.4 works well at daytime  -Timo) (Ambient Density in cloud_effect_screenspace.frag)
+	cloudEffectShader->setFloat("ambientDensity", cloudEffectInfo.darknessThreshold);		// @NOTE: play around with this value. (I think 0.4 works well at daytime  -Timo) (Ambient Density in cloud_effect_screenspace.frag)
+	cloudEffectShader->setFloat("irradianceStrength", cloudEffectInfo.irradianceStrength);
 	cloudEffectShader->setFloat("lightAbsorptionTowardsSun", cloudEffectInfo.lightAbsorptionTowardsSun);
 	cloudEffectShader->setFloat("lightAbsorptionThroughCloud", cloudEffectInfo.lightAbsorptionThroughCloud);
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
@@ -2984,7 +2985,7 @@ void RenderManager::renderImGuiContents()
 	}
 
 	//
-	// Scene Properties window
+	// Scene Properties window @PROPS
 	//
 	if (showScenePropterties)
 	{
@@ -3000,7 +3001,8 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
 			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
 			ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);
-			ImGui::DragFloat("Cloud darkness threshold", &cloudEffectInfo.darknessThreshold, 0.01f);
+			ImGui::DragFloat("Cloud Ambient Density", &cloudEffectInfo.darknessThreshold, 0.01f);
+			ImGui::DragFloat("Cloud irradianceStrength", &cloudEffectInfo.irradianceStrength, 0.01f);
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);

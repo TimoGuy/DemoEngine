@@ -249,7 +249,7 @@ void main()
     //
     else
     {
-        fragColor = atmosphereDefineDepth(
+        vec4 out_Color = atmosphereDefineDepth(
             ray_world,        	            // normalized ray direction
             r0,            	                // ray origin
             depthZFar / float(iSteps),      // step size (this * iSteps should be the total distance of the ray)
@@ -263,5 +263,12 @@ void main()
             1.2e3,                          // Mie scale height
             0.758                           // Mie preferred scattering direction
         );
+
+        // Apply exposure (only on the color channels, not the transmittance channel)
+        out_Color.rgb = 1.0 - exp(-out_Color.rgb);
+
+        // @NOTE: Only exposure is applied since the night sky and the rendered sun
+        // are not physically based, bc they don't change depending on the depth slice
+        fragColor = out_Color;
     }
 }

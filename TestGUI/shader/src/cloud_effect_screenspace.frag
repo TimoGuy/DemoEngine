@@ -28,7 +28,8 @@ uniform float densityOffset;
 uniform float densityMultiplier;
 uniform float densityRequirement;
 
-uniform float darknessThreshold;
+uniform float ambientDensity;
+uniform float irradianceStrength;
 uniform float lightAbsorptionTowardsSun;
 uniform float lightAbsorptionThroughCloud;
 
@@ -415,8 +416,7 @@ void main()
             // Calculate the irradiance in the direction of the ray
             vec3 N = rd;
 	        vec3 irradiance = mix(texture(irradianceMap, sunSpinAmount * N).rgb, texture(irradianceMap2, sunSpinAmount * N).rgb, mapInterpolationAmt);
-            const float ambientDensity = darknessThreshold;
-            ambientLightEnergy = exp(-shadowDensity * ambientDensity) * d * irradiance;
+            ambientLightEnergy = exp(-shadowDensity * ambientDensity)/* * d*/ * irradiance * irradianceStrength;
             break;
         }
 
@@ -433,9 +433,9 @@ void main()
         vec4(
             mix(
                 atmosValues.rgb * (1.0 - transmittance),  // @ATMOS: combine atmospheric scattering
-                lightColor * lightEnergy + ambientLightEnergy,
+                lightColor * lightEnergy,
                 atmosValues.a
-            ),
+            ) + ambientLightEnergy,       // NOTE: when there's atmosphericScattering at night, it seems to make the clouds look completely black. Maybe the transmittance isn't allowing any of the clouds to see. @THEREFORE: we made the ambient light term not get affected by the atmosphere values
             transmittance
         );
 }

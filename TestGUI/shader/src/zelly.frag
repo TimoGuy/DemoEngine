@@ -444,21 +444,21 @@ void main()
     vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-    //
-    // Combine the colors with the shading
-    //
-    vec3 ambient = (kD * diffuse + specular);// * ao;
-    vec3 color = ambient + Lo;
-
-    FragColor = vec4(color, 1.0 - (fresnelValue / 2.0));
-
+    vec3 ambient = (kD * diffuse + specular);  // * ao;
+    
     //
     // @ATMOS: combine atmospheric scattering
     //
     const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
     const float myDepth = length(mainCameraPosition - fragPosition);
     vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0 * 3.2));  // @NOTE: IT'S SUPPOSED TO BE 32km... but I don't feel like it
-    FragColor.rgb = FragColor.rgb * atmosValues.a + atmosValues.rgb;
+    vec3 LoAtmos = mix(atmosValues.rgb, Lo, atmosValues.a);
+
+    //
+    // Combine the colors with the shading
+    //
+    vec3 color = ambient + LoAtmos;
+    FragColor = vec4(color, 1.0 - (fresnelValue / 2.0));
 
     //
     // @CLOUDS: combine clouds
