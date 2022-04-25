@@ -118,7 +118,11 @@ vec4 atmosphereDefineDepth(vec3 r, vec3 r0, float iStepSize, vec3 pSun, float iS
         vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
 
         // Calculate the height of the sample.
-        float iHeight = length(iPos) - rPlanet;
+        float iPosLength = length(iPos);
+        if (iPosLength > rAtmos)
+            continue;       // @NOTE: when outside the atmosphere's sphere, this number gets bonkers. Best just to cancel any calculations if this'll happen here.
+
+        float iHeight = iPosLength - rPlanet;
 
         // Calculate the optical depth of the Rayleigh and Mie scattering for this step.
         float odStepRlh = exp(-iHeight / shRlh) * iStepSize;
@@ -182,6 +186,11 @@ vec3 atmosphere(vec3 r, vec3 r0, vec2 isectPlanet, vec3 pSun, float iSun, float 
     // Calculate the step size of the primary ray.
     vec2 p = rsi(r0, r, rAtmos);
     p.y = min(p.y, isectPlanet.x);
+
+    // Get r0 to match up with the atmosphere's edge
+    r0 = r0 + r * p.x;
+	p.y -= p.x;
+	p.x = 0.0;
 
     float iStepSize = (p.y - p.x) / float(iSteps);
     return atmosphereDefineDepth(r, r0, iStepSize, pSun, iSun, rPlanet, rAtmos, kRlh, kMie, shRlh, shMie, g).rgb;

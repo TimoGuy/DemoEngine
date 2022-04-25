@@ -8,9 +8,9 @@
 - [x] Make a fog system. That's physically accurate
   - [x] It uses this: https://sebh.github.io/publications/egsr2020.pdf
   - [x] Essentially slices of rendered skybox with a different transmittance and luminance value. Interpolate among that.
-- [ ] Separate the sun and the night sky into their own render step. That will be full size, so the night sky can be full size like in the nested task here:
-  - [ ] Make the night sky texture be full size (don't render it with the atmospheric scattering. Disable the fog with nighttime too. Also, where the planet would have the "ocean", make it so that the night sky reflects off of that sphere (do an rsi operation and possibly get the reflect normal variable too to sample from the cubemap??? That'd be a good idea I think.))
-    - [ ] The stark and scary look of it should be there for sure. RENDER AT FULL RESOLUTION!
+- [x] Separate the sun and the night sky into their own render step. That will be full size, so the night sky can be full size like in the nested task here:
+  - [x] Make the night sky texture be full size (don't render it with the atmospheric scattering. Disable the fog with nighttime too. Also, where the planet would have the "ocean", make it so that the night sky reflects off of that sphere (do an rsi operation and possibly get the reflect normal variable too to sample from the cubemap??? That'd be a good idea I think.))
+    - [x] The stark and scary look of it should be there for sure. RENDER AT FULL RESOLUTION!
     - [x] Make sure the night sky reflects off the planet **_(this'll be like a glass planet that smoothed out eh!)_**
       - [x] The night sky also runs at 300fps btw lol
 - [x] ~~Make the clouds actually render with a render distance value where at a certain radius the density just goes to 1 for the clouds. This should speed up the clouds.~~

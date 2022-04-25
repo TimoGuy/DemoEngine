@@ -1982,7 +1982,7 @@ void RenderManager::renderScene()
 	//
 	const float zSliceDistance = 32000.0f;		// Supposed to be 32km (see https://sebh.github.io/publications/egsr2020.pdf)		@NOTE: since this could get applied to clouds as well which don't follow the ZFar limit of geometry, it has a possibility of spanning past that 32km range. That's why this value isn't set to the camera's zfar.
 	// @NOTE: I know that the raymarching goes out 32km, but I ended up doing the camera zFar for the geometry application. Unusual? Maybe. We'll see how it looks when applying this to the clouds as well. I think the clouds should be 32km threshold.  -Timo
-	const float zSliceSize = zSliceDistance / (float)skyboxDepthSlicedLUTSize;
+	const float zSliceSize = zSliceDistance / (float)skyboxDepthSlicedLUTSize * 3.2f;  // @NOTE: IT'S SUPPOSED TO BE 32km... but I like the feel of the area getting foggier quicker. And this'll do it for ya
 	glViewport(0, 0, skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTSize);
 	for (size_t i = 0; i < skyboxDepthSlicedLUTSize; i++)
 	{
