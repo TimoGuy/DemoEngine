@@ -42,6 +42,13 @@
 - [ ] What's below the cloud layer?
   - [ ] Glass. A world burnt so bad that there's glass underneath and it's a perfect sphere that reflects the sky. This is true with the night sky if you look closely. You'll see this much better when the cloud layer is removed.
 
+## Performance
+
+- [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
+  - [ ] 2022-04-27 findings:
+    - [ ] 4k current benchmark: avg. 53fps (release)
+    - [ ] 1440p current benchmark: avg. 134fps (release)
+    - [ ] 1080p current benchmark: avg. 230fps (release)
 
 ## MISC notes
 
