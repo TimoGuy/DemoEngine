@@ -49,6 +49,8 @@
     - [ ] 4k current benchmark: avg. 53fps (release)
     - [ ] 1440p current benchmark: avg. 134fps (release)
     - [ ] 1080p current benchmark: avg. 230fps (release)
+    - [ ] NOTE: these results are similar to an rtx 2080 ti on Shadow of the Tomb Raider (4k).
+      - [ ] Well, my numbers are a little lower, bc Shadow of the Tomb Raider is more like avg. 58fps
 
 ## MISC notes
 
