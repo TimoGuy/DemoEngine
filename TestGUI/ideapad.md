@@ -27,6 +27,7 @@
 - [x] Hey Janitor, there's a red 0 in the luminance texture, fyi
 - [ ] Fix raymarching issues with edge of Clouds
   - [ ] It's less of an issue with FXAA enabled. Hah. Up to you, future Timo, but I'm not fixing it.
+  - [x] Okay, so I think the possible cause for this was because the depth-sliced atmospheric LUT got cut off early and so the fringes of the atmosphere just never got included.
 
 
 ## Gameplay
@@ -36,7 +37,10 @@
   - You could try looking at the Japanese app's radical list
   - Or this: https://kanjialive.com/214-traditional-kanji-radicals/
   - However, a kanji like 無 has to be difficult
+  - For every screen/display/crt monitor in the world, have the old language (Japanese) have screen burn-in in the spot when the display turns off or a really bright light shines onto the display at certain angles (at least that's how I think burn-in works... I really don't know though).
+  - Old people (all slime ppl too) have names that are of the old language. When someone recognizes you as Hikaru, this is very apparent.
 - [ ] What's below the cloud layer?
+  - [ ] Glass. A world burnt so bad that there's glass underneath and it's a perfect sphere that reflects the sky. This is true with the night sky if you look closely. You'll see this much better when the cloud layer is removed.
 
 
 ## MISC notes
