@@ -28,6 +28,7 @@
 - [ ] Fix raymarching issues with edge of Clouds
   - [ ] It's less of an issue with FXAA enabled. Hah. Up to you, future Timo, but I'm not fixing it.
   - [x] Okay, so I think the possible cause for this was because the depth-sliced atmospheric LUT got cut off early and so the fringes of the atmosphere just never got included.
+    - [x] Oh yeah, I fixed it btw.
 
 
 ## Gameplay
