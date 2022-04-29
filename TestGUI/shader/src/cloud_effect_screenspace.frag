@@ -364,7 +364,7 @@ void main()
     vec3 deltaPosition = targetPosition - currentPosition;
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     const float deltaPositionLength = length(deltaPosition);
-
+                
     const float offsetAmount = offsetAmount();
     const float rayLength = min(deltaPositionLength, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
