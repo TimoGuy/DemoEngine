@@ -33,6 +33,11 @@
 
 ## Gameplay
 
+- [ ] Doing the spin attack
+  - [ ] See this vid: https://www.youtube.com/watch?v=X6X3-AiAN5k
+    - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)
+  - [ ] So having a `spin` value and a `lean` value would be super good.
+    - [ ] Spin: the y axis angular momentum
 - [ ] Scaling up walls with monster transformation
 - [ ] A cipher to convert Japanese Kanji radicals to a different language
   - You could try looking at the Japanese app's radical list
