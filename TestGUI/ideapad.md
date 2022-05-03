@@ -28,16 +28,26 @@
 - [ ] Fix raymarching issues with edge of Clouds
   - [ ] It's less of an issue with FXAA enabled. Hah. Up to you, future Timo, but I'm not fixing it.
   - [x] Okay, so I think the possible cause for this was because the depth-sliced atmospheric LUT got cut off early and so the fringes of the atmosphere just never got included.
-    - [x] Oh yeah, I fixed it btw.
+    - [x] Oh yeah, I fixed it btw. (Up to a certain distance lol)
 
 
 ## Gameplay
+
+### Physics-based combat system
 
 - [ ] Doing the spin attack
   - [ ] See this vid: https://www.youtube.com/watch?v=X6X3-AiAN5k
     - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)
   - [ ] So having a `spin` value and a `lean` value would be super good.
     - [ ] Spin: the y axis angular momentum
+- [ ] Bang bang vertical slice
+  - [ ] So basically, whatever you hit can propel you in the direction you hit it. (NOTE: really this is for hard materials or bouncy materials only)
+    - [ ] If you do a vertical swing into the ground, it can propel you upwards like a larger jump (esp. with heavy swing and bouncy floor), or if you're doing a midair frontflip swing, it can propel you forward.
+    - [ ] Same is true with the horizontal counterpart. Depending on the distance from the wall you are, you will shoot out perpendicular from the wall or shoot out parallel to the wall.
+
+
+### Transformations?
+
 - [ ] Scaling up walls with monster transformation
 - [ ] A cipher to convert Japanese Kanji radicals to a different language
   - You could try looking at the Japanese app's radical list

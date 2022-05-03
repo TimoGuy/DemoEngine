@@ -558,19 +558,15 @@ void PlayerCharacter::processMovement()
 	useFollowCamera = true;
 	if (lookingInputReturnToDefaultTime >= 1.0f)
 	{
-		// @NOTE: during combat mode, the player cannot control the camera with the right stick anymore.
-		if (!weaponDrawn)
-		{
-			lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
-			lookingInput.x = fmodf(lookingInput.x, 360.0f);
-			lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
+		lookingInput += glm::vec2(InputManager::getInstance().rightStickX, InputManager::getInstance().rightStickY) * lookingSensitivity;
+		lookingInput.x = fmodf(lookingInput.x, 360.0f);
+		lookingInput.y = std::clamp(lookingInput.y, -1.0f, 1.0f);
 
-			if (lookingInput.x < 0.0f)
-				lookingInput.x += 360.0f;
+		if (lookingInput.x < 0.0f)
+			lookingInput.x += 360.0f;
 
-			if (glm::abs(InputManager::getInstance().rightStickX) > 0.001f)
-				useFollowCamera = false;
-		}
+		if (glm::abs(InputManager::getInstance().rightStickX) > 0.001f)
+			useFollowCamera = false;
 
 		// Reset to default if reset camera button pressed
 		if (InputManager::getInstance().on_resetCamPressed)
@@ -822,7 +818,7 @@ void PlayerCharacter::processMovement()
 			human_numJumpsCurrent++;
 			if (human_canJumpAirbourne && glm::length2(movementVector) > 0.1f)
 			{
-				glm::vec2 flatVelocity = glm::normalize(movementVector) * runSpeed;
+				glm::vec2 flatVelocity = glm::normalize(movementVector) * groundRunSpeed;
 				velocity.x = flatVelocity.x;
 				velocity.z = flatVelocity.y;
 
@@ -830,17 +826,17 @@ void PlayerCharacter::processMovement()
 			}
 		}
 
-		static int prevAttackAnim = currentAttackAnim;		// @REFACTOR: fix this up. At least all the bugs below. Have some kind of isAttacking variable would be good I think.
-		weaponDrawn = (currentAttackAnim == -1) ? InputManager::getInstance().attackPressed : true;		// @NOTE: lock weapon as drawn when the player is doing an attack animation, else actually look at the attack button
-		if (InputManager::getInstance().on_attackPressed ||
-			(currentAttackAnim == -1 && !weaponDrawn && InputManager::getInstance().prev_attackPressed) ||		// @NOTE: this is when the player lets go of the attack button (while not doing an attack animation at that moment)
-			(currentAttackAnim == -1 && prevAttackAnim != -1 && !weaponDrawn))		// @NOTE: this is when the animation ends and the player isn't holding down the attack button anymore
-		{
-			// @BUG: @TODO: fix that the animations can get reset while mid-attack or midair if you let go of the R trigger.
-			triggerAnimationStateReset = true;
-			currentAttackAnim = -1;
-		}
-		prevAttackAnim = currentAttackAnim;
+		//static int prevAttackAnim = currentAttackAnim;		// @REFACTOR: fix this up. At least all the bugs below. Have some kind of isAttacking variable would be good I think.
+		weaponDrawn = InputManager::getInstance().attackPressed;
+		//if (InputManager::getInstance().on_attackPressed ||
+		//	(currentAttackAnim == -1 && !weaponDrawn && InputManager::getInstance().prev_attackPressed) ||		// @NOTE: this is when the player lets go of the attack button (while not doing an attack animation at that moment)
+		//	(currentAttackAnim == -1 && prevAttackAnim != -1 && !weaponDrawn))		// @NOTE: this is when the animation ends and the player isn't holding down the attack button anymore
+		//{
+		//	// @BUG: @TODO: fix that the animations can get reset while mid-attack or midair if you let go of the R trigger.
+		//	triggerAnimationStateReset = true;
+		//	currentAttackAnim = -1;
+		//}
+		//prevAttackAnim = currentAttackAnim;
 
 		if (isMoving)
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
@@ -968,6 +964,8 @@ void PlayerCharacter::processMovement()
 
 physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movementVector)
 {
+	const float runSpeed = weaponDrawn ? weaponDrawnRunSpeed : groundRunSpeed;
+
 	//
 	// Update external forces
 	//
@@ -997,13 +995,16 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 			// Skid stop behavior:
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-			if (flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
+			const bool allowFacingDirectionOverride = !weaponDrawn;		// @NOTE: when the weapon is drawn, no immediate turning is allowed. This is only allowed when there is no weapon drawn.
+			if (allowFacingDirectionOverride &&
+				flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
 			{
 				facingDirection = movementVector;
 				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
 			}
 			// Immediate facing direction when moving slowly:
-			else if (flatVelocityMagnitude <= immediateTurningRequiredSpeed)
+			else if (allowFacingDirectionOverride &&
+				flatVelocityMagnitude <= immediateTurningRequiredSpeed)
 			{
 				facingDirection = movementVector;
 			}
@@ -1044,11 +1045,12 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	// Update Running Speed
 	//
 	float targetRunningSpeed = movementVectorLength * runSpeed;
+	const glm::vec2 accelerationDeceleration = weaponDrawn ? weaponDrawnAccelerationDeceleration : groundAccelerationDeceleration;
 
 	currentRunSpeed = PhysicsUtils::moveTowards(
 		currentRunSpeed,
 		targetRunningSpeed,
-		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? groundAcceleration : groundDecceleration) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
+		(currentRunSpeed >= 0.0f && currentRunSpeed < targetRunningSpeed ? accelerationDeceleration.x : accelerationDeceleration.y) *		// NOTE: when doing the turnaround and currentRunSpeed = -currentRunSpeed, the target running speed is technically > currentRunSpeed, so you get the acceleration coefficient, however, we want the deceleration one, bc the player is scooting backwards. It should just be that way.  -Timo
 		MainLoop::getInstance().deltaTime
 	);
 
@@ -1108,7 +1110,7 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	//
 	physx::PxVec3 currentVelocity = ((PlayerPhysics*)getPhysicsComponent())->velocity;
 	glm::vec2 currentFlatVelocity = glm::vec2(currentVelocity.x, currentVelocity.z);
-	glm::vec2 targetFlatVelocity = movementVector * runSpeed;
+	glm::vec2 targetFlatVelocity = movementVector * groundRunSpeed;
 
 	currentFlatVelocity = PhysicsUtils::moveTowardsVec2(currentFlatVelocity, targetFlatVelocity, airAcceleration * MainLoop::getInstance().deltaTime);
 	currentVelocity.x = currentFlatVelocity.x;
@@ -1353,30 +1355,19 @@ void PlayerCharacter::processAnimation()
 	}
 	else if (animationState == 10)
 	{
-		if (animator.isAnimationFinished(currentAttackAnim, MainLoop::getInstance().deltaTime))
+		if (!weaponDrawn)
 		{
-			currentAttackAnim = -1;
 			animationState = 0;
-			triggerAnimationStateReset = true;		// @NOTE: currentAttackAnim could get reset, so the animation state needs to get reset
+			triggerAnimationStateReset = true;
 		}
 	}
 
+	//
 	// Overriding animation states
-	if (playerState == PlayerState::NORMAL && weaponDrawn && currentAttackAnim == -1)
+	//
+	if (playerState == PlayerState::NORMAL && weaponDrawn)
 	{
-		// Attack animations
-		float rsX = InputManager::getInstance().rightStickX;
-		float rsY = InputManager::getInstance().rightStickY;
-		const float deadzone = 0.5f;	// @NOTE: a big square deadzone
-
-		if (glm::abs(rsX) > deadzone || glm::abs(rsY) > deadzone)
-		{
-			animationState = 10;
-			if (glm::abs(rsX) > glm::abs(rsY))
-				currentAttackAnim = (rsX < 0.0f) ? ATTACK_LIGHT_LEFT : ATTACK_LIGHT_RIGHT;
-			else
-				currentAttackAnim = (rsY < 0.0f) ? ATTACK_LIGHT_UP : ATTACK_LIGHT_DOWN;
-		}
+		animationState = 10;
 	}
 
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
@@ -1411,10 +1402,7 @@ void PlayerCharacter::processAnimation()
 		{
 		case 0:
 			// Idle
-			if (weaponDrawn)
-				animator.playAnimation(IDLE_WEAPON, 6.0f, true, true);
-			else
-				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+			animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
 			break;
 
 		case 1:
@@ -1422,7 +1410,7 @@ void PlayerCharacter::processAnimation()
 			animator.playBlendTree(
 				{
 					{ (size_t)WALKING_ANIM, minMvtVectorMagnitude, "walkRunBlendVar" },
-					{ (size_t)RUNNING_ANIM, runSpeed }
+					{ (size_t)RUNNING_ANIM, groundRunSpeed }
 				},
 				6.0f, true
 			);
@@ -1474,8 +1462,8 @@ void PlayerCharacter::processAnimation()
 			break;
 
 		case 10:
-			// Attack animation
-			animator.playAnimation(currentAttackAnim, 6.0f, false, true);
+			// Idle with weapon drawn
+			animator.playAnimation(IDLE_WEAPON, 6.0f, true, true);
 			break;
 
 		default:
@@ -1495,7 +1483,7 @@ void PlayerCharacter::processAnimation()
 		velo.y = 0.0f;
 		float flatSpeed = velo.magnitude();
 
-		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, runSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
+		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
 		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
 	}
@@ -1648,10 +1636,11 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::Text("Movement Properties");
-	ImGui::DragFloat("Running Acceleration", &groundAcceleration, 0.1f);
-	ImGui::DragFloat("Running Decceleration", &groundDecceleration, 0.1f);
+	ImGui::DragFloat2("Running Acceleration/Deceleration", &groundAccelerationDeceleration.x, 0.1f);
+	ImGui::DragFloat2("Weapon Drawn Acceleration/Deceleration", &weaponDrawnAccelerationDeceleration.x, 0.1f);
 	ImGui::DragFloat("Running Acceleration (Air)", &airAcceleration, 0.1f);
-	ImGui::DragFloat("Running Speed", &runSpeed, 0.1f);
+	ImGui::DragFloat("Ground Running Speed", &groundRunSpeed, 0.1f);
+	ImGui::DragFloat("Weapon Drawn Running Speed", &weaponDrawnRunSpeed, 0.1f);
 	ImGui::DragFloat2("Jump Speed", &jumpSpeed[0], 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(facingDirection.x) + ", " + std::to_string(facingDirection.y) + ")").c_str());
 	ImGui::DragFloat("Leaning Lerp Time", &leanLerpTime);
@@ -1671,7 +1660,7 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Text(("Speed: " + std::to_string(flatSpeed)).c_str());
 	ImGui::Text(("Evaluated: " + std::to_string(flatSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 	ImGui::Text(("MIN: " + std::to_string(minMvtVectorMagnitude * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
-	ImGui::Text(("MAX: " + std::to_string(runSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
+	ImGui::Text(("MAX: " + std::to_string(groundRunSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
