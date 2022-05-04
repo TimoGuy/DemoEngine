@@ -192,10 +192,21 @@ public:
 	float leanLerpTime = 10.0f;
 	float leanMultiplier = 0.1f;						// NOTE: this is one over the number of degrees of delta required to get the maximum lean (e.g. 1/90degrees = 0.011f)
 
+	bool isTraditionalTurningSystem = true;				// Traditional mode is the ground/airbourne systems. Non-traditional is the weaponDrawnSpin system below.  -Timo
 	glm::vec2 facingDirection = glm::vec2(0, 1);		// NOTE: this is assumed to always be normalized
 	float groundedFacingTurnSpeed = 400.0f;
 	float airBourneFacingTurnSpeed = 100.0f;			// Much slower than facingTurnSpeed
 
+	// @NOTE: this algorithm will work quite a bit differently than the other facingTurnSpeed values.
+	// This is a value that will spin the facing direction that won't be really overridable. Maybe it might be?
+	// Nah, there will be a mode where this weapon-body-spinning will affect the facing direction. When this
+	// doesn't have its effect anymore, then it'll revert back to the traditional grounded/airBourneFacingTurnSpeed systems.
+	//					-Timo
+	glm::vec2 weaponDrawnSpinSpeedMinMax = { 100.0f, 700.0f };
+	glm::vec2 weaponDrawnSpinAccelDecel = { 0.5f, 0.05f };
+	float weaponDrawnSpinAmount = 0.0f;		// Range is [-1.0, 1.0]. When 0.0, then the mode is switched back to the traditionalTurningSystem, unless if the weapon is still drawn.
+	
+	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;
 	float animationSpeed = 42.0f;
 
