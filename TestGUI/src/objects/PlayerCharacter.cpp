@@ -1057,6 +1057,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		bool accel = true;
 		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 		float spinAmountTarget = 0.0f;
+		float accelMultiplier = 1.0f;
 		if (isMoving)
 		{
 			const float inputDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
@@ -1064,6 +1065,9 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
 			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
+
+
+			//std::cout << "DELTAANGLE: " << deltaFacingDirectionAngle << std::endl;
 
 			// With deltaFacingDirectionAngle being [-180, 180], we can accel or decel
 			if (deltaFacingDirectionAngle == 0.0 ||		// @EDGECASE: I don't think this'll ever happen, but if the deltaFacingDirectionAngle is 0, then just decelerate
@@ -1074,7 +1078,10 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			// @NOTE: only when acceling is the target -1 or 1,
 			// so only set it if the accel is true
 			if (accel)
+			{
 				spinAmountTarget = glm::sign(deltaFacingDirectionAngle);
+				accelMultiplier = 1.0 - glm::abs(glm::dot(movementVector, facingDirection));		// @NOTE: both vec2's should be normalized
+			}
 		}
 		else
 		{
@@ -1082,9 +1089,12 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			accel = false;
 		}
 
+
+		std::cout << "ACCELMULT: " << accelMultiplier << std::endl;
+
 		// Do me right pls
-		std::cout << "ACCEL: " << accel << std::endl;
-		weaponDrawnSpinAmount = PhysicsUtils::moveTowards(weaponDrawnSpinAmount, spinAmountTarget, (accel ? weaponDrawnSpinAccelDecel.x : weaponDrawnSpinAccelDecel.y) * MainLoop::getInstance().deltaTime);
+		//std::cout << "ACCEL: " << spinAmountTarget << std::endl;
+		weaponDrawnSpinAmount = PhysicsUtils::moveTowards(weaponDrawnSpinAmount, spinAmountTarget, accelMultiplier * (accel ? weaponDrawnSpinAccelDecel.x : weaponDrawnSpinAccelDecel.y) * MainLoop::getInstance().deltaTime);
 
 		if (glm::abs(weaponDrawnSpinAmount) > 0.0)
 		{

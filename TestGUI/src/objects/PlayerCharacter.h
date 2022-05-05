@@ -203,7 +203,7 @@ public:
 	// doesn't have its effect anymore, then it'll revert back to the traditional grounded/airBourneFacingTurnSpeed systems.
 	//					-Timo
 	glm::vec2 weaponDrawnSpinSpeedMinMax = { 100.0f, 700.0f };
-	glm::vec2 weaponDrawnSpinAccelDecel = { 1.5f, 0.65f };
+	glm::vec2 weaponDrawnSpinAccelDecel = { 1.5f, 1.5f };
 	float weaponDrawnSpinAmount = 0.0f;		// Range is [-1.0, 1.0]. When 0.0, then the mode is switched back to the traditionalTurningSystem, unless if the weapon is still drawn.
 	
 	// Model Anim stuff I guess
