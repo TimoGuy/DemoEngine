@@ -1043,46 +1043,67 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 						targetCharacterLeanValue = 0.0f;
 				}
 			}
-			else
-			{
-				//
-				// Drawn Weapon mode
-				//
-				const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-				const float inputDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
-				float		deltaFacingDirectionAngle = inputDirectionAngle - facingDirectionAngle;
-
-				if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
-				else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
-
-				// With deltaFacingDirectionAngle being [-180, 180], we can accel or decel
-				bool accel = true;
-				if (deltaFacingDirectionAngle != 0.0 ||		// @EDGECASE: I don't think this'll ever happen, but if the deltaFacingDirectionAngle is 0, then just decelerate
-					(weaponDrawnSpinAmount != 0.0 &&		// @EDGECASE: when weaponDrawnSpinAmount is 0.0, we want to accelerate, not decelerate
-					glm::sign(deltaFacingDirectionAngle) != glm::sign(weaponDrawnSpinAmount)))		// NOTE: both left and right values should be non-zero at this point eh
-					accel = false;	// Going in opposite directions, so decelerate
-
-				weaponDrawnSpinAmount = PhysicsUtils::moveTowards(weaponDrawnSpinAmount, accel ? glm::sign(deltaFacingDirectionAngle) : 0.0, (accel ? weaponDrawnSpinAccelDecel.x : weaponDrawnSpinAccelDecel.y) * MainLoop::getInstance().deltaTime);
-
-				if (glm::abs(weaponDrawnSpinAmount) > 0.0)
-				{
-					// Apply the new facing direction angle
-					const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, weaponDrawnSpinAmount) * MainLoop::getInstance().deltaTime);
-					facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
-				}
-				else
-				{
-					// Exit out of the isTraditionalTurningSystem lock
-					// (Well, only if you don't have the weapon drawn
-					// and you're just not spinning anymore)
-					if (!weaponDrawn)
-						isTraditionalTurningSystem = true;		@NOTE: @TODO: Start here again... for some raon I'm not seeing the desired behavior
-				}
-			}
 		}
 	}
 	else
 		movementVectorLength = 0.0f;
+
+	//
+	// Drawn Weapon Spinning FacingDirection mode
+	//
+	if (!lockFacingDirection &&
+		!isTraditionalTurningSystem)
+	{
+		bool accel = true;
+		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+		float spinAmountTarget = 0.0f;
+		if (isMoving)
+		{
+			const float inputDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+			float		deltaFacingDirectionAngle = inputDirectionAngle - facingDirectionAngle;
+
+			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
+			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
+
+			// With deltaFacingDirectionAngle being [-180, 180], we can accel or decel
+			if (deltaFacingDirectionAngle == 0.0 ||		// @EDGECASE: I don't think this'll ever happen, but if the deltaFacingDirectionAngle is 0, then just decelerate
+				(weaponDrawnSpinAmount != 0.0 &&		// @EDGECASE: when weaponDrawnSpinAmount is 0.0, we want to accelerate, not decelerate
+					glm::sign(deltaFacingDirectionAngle) != glm::sign(weaponDrawnSpinAmount)))		// NOTE: both left and right values should be non-zero at this point eh
+				accel = false;	// Going in opposite directions, so decelerate
+
+			// @NOTE: only when acceling is the target -1 or 1,
+			// so only set it if the accel is true
+			if (accel)
+				spinAmountTarget = glm::sign(deltaFacingDirectionAngle);
+		}
+		else
+		{
+			// Automatically just gonna decelerate
+			accel = false;
+		}
+
+		// Do me right pls
+		std::cout << "ACCEL: " << accel << std::endl;
+		weaponDrawnSpinAmount = PhysicsUtils::moveTowards(weaponDrawnSpinAmount, spinAmountTarget, (accel ? weaponDrawnSpinAccelDecel.x : weaponDrawnSpinAccelDecel.y) * MainLoop::getInstance().deltaTime);
+
+		if (glm::abs(weaponDrawnSpinAmount) > 0.0)
+		{
+			//std::cout << "HELLOOOFDJLSJADLFJASD OBIWAN" << std::endl;
+
+			// Apply the new facing direction angle
+			const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, weaponDrawnSpinAmount) * MainLoop::getInstance().deltaTime);
+			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+		}
+		else
+		{
+			//std::cout << "O JATE LJINES TECH TEIOOS" << std::endl;
+			// Exit out of the isTraditionalTurningSystem lock
+			// (Well, only if you don't have the weapon drawn
+			// and you're just not spinning anymore)
+			if (!weaponDrawn)
+				isTraditionalTurningSystem = true;
+		}
+	}
 
 	//
 	// Update Running Speed
