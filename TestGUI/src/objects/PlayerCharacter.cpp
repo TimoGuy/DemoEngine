@@ -995,125 +995,52 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 			// Skid stop behavior:
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-
-			if (weaponDrawn)
-				isTraditionalTurningSystem = false;		// NOTE: Locking behavior
-
-			if (isTraditionalTurningSystem)
+			if (!weaponDrawn && flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
+			{
+				facingDirection = movementVector;
+				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
+			}
+			// Immediate facing direction when moving slowly:
+			else if (!weaponDrawn && flatVelocityMagnitude <= immediateTurningRequiredSpeed)
+			{
+				facingDirection = movementVector;
+			}
+			// Slowly turn towards your target
+			else
 			{
 				//
-				// Normal/Platformer mode
+				// Slowly face towards the targetfacingdirection
 				//
-				if (flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
-				{
-					facingDirection = movementVector;
-					currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
-				}
-				// Immediate facing direction when moving slowly:
-				else if (flatVelocityMagnitude <= immediateTurningRequiredSpeed)
-				{
-					facingDirection = movementVector;
-				}
-				// Normal facing behavior:
+				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+
+				const float facingTurnSpeed = (weaponDrawn ? weaponDrawnSpinSpeedMinMax.x : groundedFacingTurnSpeed);
+				const float facingTurningAttenuation = glm::clamp(-(flatVelocityMagnitude - runSpeed) / (groundRunSpeedCantTurn - runSpeed) + 1.0f, 0.0f, 1.0f);		// https://www.desmos.com/calculator/fkrhuwn3l4
+				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurningAttenuation * facingTurnSpeed * MainLoop::getInstance().deltaTime));
+
+				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+
+				// @NOTE: So how exactly do we do the spinny spinny? It sounds really difficult now...
+				START EHRE
+
+				//
+				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
+				//
+				float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
+
+				if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
+				else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
+
+				const float deadZoneDeltaAngle = 0.1f;
+				if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
+					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
 				else
-				{
-					//
-					// Slowly face towards the targetfacingdirection
-					//
-					float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-					float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
-
-					float facingTurnSpeedCalculated = glm::clamp(-groundedFacingTurnSpeed / (groundRunSpeedCantTurn - runSpeed) * (flatVelocityMagnitude - runSpeed) + groundedFacingTurnSpeed, 0.0f, groundedFacingTurnSpeed);
-					float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurnSpeedCalculated * MainLoop::getInstance().deltaTime));
-
-					facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
-
-					//
-					// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
-					//
-					float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
-
-					if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
-					else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
-
-					const float deadZoneDeltaAngle = 0.1f;
-					if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
-						targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
-					else
-						targetCharacterLeanValue = 0.0f;
-				}
+					targetCharacterLeanValue = 0.0f;
 			}
 		}
 	}
 	else
 		movementVectorLength = 0.0f;
-
-	//
-	// Drawn Weapon Spinning FacingDirection mode
-	//
-	if (!lockFacingDirection &&
-		!isTraditionalTurningSystem)
-	{
-		bool accel = true;
-		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-		float spinAmountTarget = 0.0f;
-		float accelMultiplier = 1.0f;
-		if (isMoving)
-		{
-			const float inputDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
-			float		deltaFacingDirectionAngle = inputDirectionAngle - facingDirectionAngle;
-
-			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
-			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
-
-
-			//std::cout << "DELTAANGLE: " << deltaFacingDirectionAngle << std::endl;
-
-			// With deltaFacingDirectionAngle being [-180, 180], we can accel or decel
-			if (deltaFacingDirectionAngle == 0.0 ||		// @EDGECASE: I don't think this'll ever happen, but if the deltaFacingDirectionAngle is 0, then just decelerate
-				(weaponDrawnSpinAmount != 0.0 &&		// @EDGECASE: when weaponDrawnSpinAmount is 0.0, we want to accelerate, not decelerate
-					glm::sign(deltaFacingDirectionAngle) != glm::sign(weaponDrawnSpinAmount)))		// NOTE: both left and right values should be non-zero at this point eh
-				accel = false;	// Going in opposite directions, so decelerate
-
-			// @NOTE: only when acceling is the target -1 or 1,
-			// so only set it if the accel is true
-			if (accel)
-			{
-				spinAmountTarget = glm::sign(deltaFacingDirectionAngle);
-				accelMultiplier = 1.0 - glm::abs(glm::dot(movementVector, facingDirection));		// @NOTE: both vec2's should be normalized
-			}
-		}
-		else
-		{
-			// Automatically just gonna decelerate
-			accel = false;
-		}
-
-
-		std::cout << "ACCELMULT: " << accelMultiplier << std::endl;
-
-		// Do me right pls
-		//std::cout << "ACCEL: " << spinAmountTarget << std::endl;
-		weaponDrawnSpinAmount = PhysicsUtils::moveTowards(weaponDrawnSpinAmount, spinAmountTarget, accelMultiplier * (accel ? weaponDrawnSpinAccelDecel.x : weaponDrawnSpinAccelDecel.y) * MainLoop::getInstance().deltaTime);
-
-		if (glm::abs(weaponDrawnSpinAmount) > 0.0)
-		{
-			//std::cout << "HELLOOOFDJLSJADLFJASD OBIWAN" << std::endl;
-
-			// Apply the new facing direction angle
-			const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, weaponDrawnSpinAmount) * MainLoop::getInstance().deltaTime);
-			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
-		}
-		else
-		{
-			//std::cout << "O JATE LJINES TECH TEIOOS" << std::endl;
-			// Exit out of the isTraditionalTurningSystem lock
-			// (Well, only if you don't have the weapon drawn
-			// and you're just not spinning anymore)
-			if (!weaponDrawn)
-				isTraditionalTurningSystem = true;
-		}
-	}
 
 	//
 	// Update Running Speed
@@ -1721,12 +1648,9 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::DragFloat("Lean Multiplier", &leanMultiplier, 0.05f);
 
 	ImGui::Separator();
-	ImGui::Checkbox("Is Traditional Turning System", &isTraditionalTurningSystem);
 	ImGui::DragFloat("Facing Movement Speed", &groundedFacingTurnSpeed, 0.1f);
 	ImGui::DragFloat("Facing Movement Speed (Air)", &airBourneFacingTurnSpeed, 0.1f);
 	ImGui::DragFloat2("Weapon Drawn Spin Speed Min Max", &weaponDrawnSpinSpeedMinMax.x);
-	ImGui::DragFloat2("Weapon Drawn Spin Accel Decel", &weaponDrawnSpinAccelDecel.x, 0.01f);
-	ImGui::DragFloat("Weapon Drawn Spin Amount", &weaponDrawnSpinAmount);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
