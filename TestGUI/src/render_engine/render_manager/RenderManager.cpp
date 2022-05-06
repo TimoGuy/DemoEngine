@@ -2142,14 +2142,14 @@ void RenderManager::renderScene()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		blurXProgramId->use();
-		blurXProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
+		blurX3ProgramId->use();
+		blurX3ProgramId->setSampler("textureMap", cloudEffectTexture->getHandle());
 		renderQuad();
 
 		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
-		blurYProgramId->use();
-		blurYProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+		blurY3ProgramId->use();
+		blurY3ProgramId->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
 		renderQuad();
 	}
 
