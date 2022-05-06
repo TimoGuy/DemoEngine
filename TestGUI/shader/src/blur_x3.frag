@@ -14,6 +14,14 @@ const vec2 gaussFilter[5] = vec2[](
 	vec2( 2.0,  7.0/107.0)
 );
 
+//const vec2 gaussFilter[5] = vec2[](
+//	vec2(-2.0, 1.0/5.0),
+//	vec2(-1.0, 1.0/5.0),
+//	vec2( 0.0, 1.0/5.0),
+//	vec2( 1.0, 1.0/5.0),
+//	vec2( 2.0, 1.0/5.0)
+//);
+
 void main()
 {
 	vec4 color = vec4(0.0);

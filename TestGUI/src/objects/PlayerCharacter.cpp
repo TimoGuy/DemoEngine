@@ -948,11 +948,12 @@ void PlayerCharacter::processMovement()
 		std::cout << "Hello" << std::endl;
 	}
 
-	characterLeanValue = PhysicsUtils::lerp(
-		characterLeanValue,
-		targetCharacterLeanValue,
-		leanLerpTime * MainLoop::getInstance().deltaTime
-	);
+	characterLeanValue = targetCharacterLeanValue;
+	//characterLeanValue = PhysicsUtils::lerp(
+	//	characterLeanValue,
+	//	targetCharacterLeanValue,
+	//	leanLerpTime * MainLoop::getInstance().deltaTime
+	//);
 
 	((PlayerPhysics*)getPhysicsComponent())->velocity = velocity;
 
@@ -1021,7 +1022,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 
 				// @NOTE: So how exactly do we do the spinny spinny? It sounds really difficult now...
-				START EHRE
+				//START EHRE
 
 				//
 				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
