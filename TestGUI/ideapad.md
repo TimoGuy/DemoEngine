@@ -35,6 +35,8 @@
 
 ### Physics-based combat system
 
+NOTE: below are some super secret moves that really you're only supposed to learn inside of special shrines. Or if you look up spoilers eh.
+
 - [ ] Doing the spin attack
   - [ ] See this vid: https://www.youtube.com/watch?v=X6X3-AiAN5k
     - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)

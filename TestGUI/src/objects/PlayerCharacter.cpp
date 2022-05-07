@@ -948,12 +948,12 @@ void PlayerCharacter::processMovement()
 		std::cout << "Hello" << std::endl;
 	}
 
-	characterLeanValue = targetCharacterLeanValue;
-	//characterLeanValue = PhysicsUtils::lerp(
-	//	characterLeanValue,
-	//	targetCharacterLeanValue,
-	//	leanLerpTime * MainLoop::getInstance().deltaTime
-	//);
+	//characterLeanValue = targetCharacterLeanValue;		// @DEBUG: for testing the amount that the character leans
+	characterLeanValue = PhysicsUtils::lerp(
+		characterLeanValue,
+		targetCharacterLeanValue,
+		leanLerpTime * MainLoop::getInstance().deltaTime
+	);
 
 	((PlayerPhysics*)getPhysicsComponent())->velocity = velocity;
 
@@ -1034,7 +1034,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 				const float deadZoneDeltaAngle = 0.1f;
 				if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
-					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier, -1.0f, 1.0f);
+					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier / (60.0f * MainLoop::getInstance().deltaTime), -1.0f, 1.0f);
 				else
 					targetCharacterLeanValue = 0.0f;
 			}
