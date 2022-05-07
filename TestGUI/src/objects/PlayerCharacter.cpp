@@ -1015,7 +1015,8 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
 				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
 
-				const float facingTurnSpeed = (weaponDrawn ? weaponDrawnSpinSpeedMinMax.x : groundedFacingTurnSpeed);
+				const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnPrespinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
+				const float facingTurnSpeed = (weaponDrawn ? PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue) : groundedFacingTurnSpeed);
 				const float facingTurningAttenuation = glm::clamp(-(flatVelocityMagnitude - runSpeed) / (groundRunSpeedCantTurn - runSpeed) + 1.0f, 0.0f, 1.0f);		// https://www.desmos.com/calculator/fkrhuwn3l4
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, facingTurningAttenuation * facingTurnSpeed * MainLoop::getInstance().deltaTime));
 
@@ -1036,8 +1037,8 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 					if (weaponDrawn)
 					{
-						if (glm::sign(weaponDrawnPrespinAccumulated) != glm::sign(deltaFacingDirectionAngle))
-							weaponDrawnPrespinAccumulated = 0.0f;		// Reset when starting to spin in the other direction
+						if (spinSpeedMinMaxLerpValue <= 0.0f && glm::sign(weaponDrawnPrespinAccumulated) != glm::sign(deltaFacingDirectionAngle))
+							weaponDrawnPrespinAccumulated = 0.0f;		// Reset when starting to spin in the other direction (NOTE: only when the spin amount is smaller than the threshold)
 
 						// @SECRET: Add to the weaponDrawnPrespinAccumulated to enter into the spinny spinny mode!
 						weaponDrawnPrespinAccumulated += deltaFacingDirectionAngle * MainLoop::getInstance().deltaTime;
