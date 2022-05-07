@@ -1021,9 +1021,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 
-				// @NOTE: So how exactly do we do the spinny spinny? It sounds really difficult now...
-				//START EHRE
-
 				//
 				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
 				//
@@ -1034,14 +1031,33 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 				const float deadZoneDeltaAngle = 0.1f;
 				if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
+				{
 					targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier / (60.0f * MainLoop::getInstance().deltaTime), -1.0f, 1.0f);
+
+					if (weaponDrawn)
+					{
+						if (glm::sign(weaponDrawnPrespinAccumulated) != glm::sign(deltaFacingDirectionAngle))
+							weaponDrawnPrespinAccumulated = 0.0f;		// Reset when starting to spin in the other direction
+
+						// @SECRET: Add to the weaponDrawnPrespinAccumulated to enter into the spinny spinny mode!
+						weaponDrawnPrespinAccumulated += deltaFacingDirectionAngle * MainLoop::getInstance().deltaTime;
+					}
+				}
 				else
 					targetCharacterLeanValue = 0.0f;
 			}
 		}
 	}
 	else
+	{
 		movementVectorLength = 0.0f;
+		weaponDrawnPrespinAccumulated = 0.0f;	// Reset when there's no movement input
+	}
+
+	if (!weaponDrawn)
+		weaponDrawnPrespinAccumulated = 0.0f;	// Reset when there's no weapon drawn
+
+	std::cout << "SPINNYSPINNY: " << weaponDrawnPrespinAccumulated << std::endl;
 
 	//
 	// Update Running Speed
@@ -1091,6 +1107,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVector)
 {
 	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
+	weaponDrawnPrespinAccumulated = 0.0f;		// Reset when midair
 
 	//
 	// Update facing direction

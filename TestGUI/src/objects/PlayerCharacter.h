@@ -202,6 +202,9 @@ public:
 	// doesn't have its effect anymore, then it'll revert back to the traditional grounded/airBourneFacingTurnSpeed systems.
 	//					-Timo
 	glm::vec2 weaponDrawnSpinSpeedMinMax = { 200.0f, -1.0f };
+	float weaponDrawnPrespinAccumulated = 0.0f;
+	float weaponDrawnSpinAmountThreshold = 150.0f;		// @NOTE: this is the threshold for the prespin to go into the real spinny spinny mode
+	float weaponDrawnAccumulatedSpinAmount = 0.0f;
 	
 	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;
