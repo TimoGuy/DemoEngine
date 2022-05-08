@@ -1018,13 +1018,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 	else
 		velocity.y = ((PlayerPhysics*)getPhysicsComponent())->velocity.y;
 
-
-
-
-
-
-
-
 	//
 	// Update the facing direction (if moving)
 	//
@@ -1136,118 +1129,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 		std::cout << "SPINNYSPINNY: " << weaponDrawnSpinAccumulated << std::endl;
 	}
-
-
-
-
-
-
-
-	///// OLD STUFF RGHT HERE wtf are you doing visual studio!!
-	//if (movementVectorLength > 0.001f)
-	//{
-	//	//
-	//	// Update facing direction
-	//	//
-	//	if (!lockFacingDirection)
-	//	{
-	//		physx::PxVec3 velocityCopy = ((PlayerPhysics*)getPhysicsComponent())->velocity;
-	//		velocityCopy.y = 0.0f;
-	//		float flatVelocityMagnitude = velocityCopy.magnitude();
-	//
-	//		// Skid stop behavior:
-	//		float mvtDotFacing = glm::dot(movementVector, facingDirection);
-	//		if (!weaponDrawn && flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)
-	//		{
-	//			facingDirection = movementVector;
-	//			currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
-	//		}
-	//		// Immediate facing direction when moving slowly:
-	//		else if (!weaponDrawn && flatVelocityMagnitude <= immediateTurningRequiredSpeed)
-	//		{
-	//			facingDirection = movementVector;
-	//		}
-	//		// Slowly turn towards your target
-	//		else
-	//		{
-	//			//
-	//			// Slowly face towards the targetfacingdirection
-	//			//
-	//			float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-	//			float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
-	//
-	//			const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnPrespinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
-	//			const float facingTurnSpeed = (weaponDrawn ? PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue) : groundedFacingTurnSpeed);
-	//			const float facingTurningAttenuation = glm::clamp(-(flatVelocityMagnitude - runSpeed) / (groundRunSpeedCantTurn - runSpeed) + 1.0f, 0.0f, 1.0f);		// https://www.desmos.com/calculator/fkrhuwn3l4
-	//			const float maxTurnSpeed = facingTurningAttenuation * facingTurnSpeed * MainLoop::getInstance().deltaTime;
-	//			float newFacingDirectionAngle = glm::radians(
-	//				(spinSpeedMinMaxLerpValue <= 0.0f ?
-	//					PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, maxTurnSpeed) :
-	//					facingDirectionAngle + maxTurnSpeed * glm::sign(weaponDrawnPrespinAccumulated))
-	//			);
-	//
-	//			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
-	//
-	//			//
-	//			// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
-	//			//
-	//			float deltaFacingDirectionAngle = targetDirectionAngle - facingDirectionAngle;
-	//
-	//			if (deltaFacingDirectionAngle < -180.0f)			deltaFacingDirectionAngle += 360.0f;
-	//			else if (deltaFacingDirectionAngle > 180.0f)		deltaFacingDirectionAngle -= 360.0f;
-	//
-	//			// Spin accumulator (when weapon is drawn)
-	//			if (weaponDrawn)
-	//			{
-	//				if (spinSpeedMinMaxLerpValue <= 0.0f && glm::sign(weaponDrawnPrespinAccumulated) != glm::sign(deltaFacingDirectionAngle))
-	//					weaponDrawnPrespinAccumulated = 0.0f;		// Reset when starting to spin in the other direction (NOTE: only when the spin amount is smaller than the threshold)
-	//
-	//				// @SECRET: Add to the weaponDrawnPrespinAccumulated to enter into the spinny spinny mode!
-	//				weaponDrawnPrespinAccumulated += deltaFacingDirectionAngle * MainLoop::getInstance().deltaTime;
-	//			}
-	//
-	//			// Lean amount
-	//			const float deadZoneDeltaAngle = 0.1f;
-	//			if (weaponDrawn && spinSpeedMinMaxLerpValue > 0.0f)
-	//				targetCharacterLeanValue = -glm::sign(weaponDrawnPrespinAccumulated);		// @NOTE: the range for this is [-1, 1] so using glm::sign() is a-okay
-	//			else if (std::abs(deltaFacingDirectionAngle) > deadZoneDeltaAngle)
-	//			{
-	//				targetCharacterLeanValue = std::clamp(-deltaFacingDirectionAngle * leanMultiplier / (60.0f * MainLoop::getInstance().deltaTime), -1.0f, 1.0f);
-	//			}
-	//			else
-	//				targetCharacterLeanValue = 0.0f;
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	//	if (glm::abs(weaponDrawnPrespinAccumulated) < weaponDrawnSpinAmountThreshold)
-	//		weaponDrawnPrespinAccumulated = 0.0f;	// Reset when there's no movement input (and under the spinny spinny threshold)
-	//}
-	//
-	//if (!weaponDrawn)
-	//	weaponDrawnPrespinAccumulated = 0.0f;	// Reset when there's no weapon drawn
-	//
-	//std::cout << "SPINNYSPINNY: " << weaponDrawnPrespinAccumulated << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	// Final package: Reset coyote time timer
 	jumpCoyoteTimer = jumpCoyoteTime;
