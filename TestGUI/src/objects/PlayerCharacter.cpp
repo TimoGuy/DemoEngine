@@ -1096,6 +1096,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 			// Accumulate the spinny!
 			weaponDrawnSpinAccumulated += deltaDirectionAngle * MainLoop::getInstance().deltaTime;
+			weaponDrawnSpinAccumulated = glm::clamp(weaponDrawnSpinAccumulated, -weaponDrawnSpinBuildupAmount, weaponDrawnSpinBuildupAmount);
 		}
 
 		//
