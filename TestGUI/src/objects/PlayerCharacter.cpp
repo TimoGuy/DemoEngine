@@ -329,7 +329,7 @@ void PlayerPhysics::physicsUpdate()
 						newRunSpeed *= -1.0f;
 					}
 
-					((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection;		// ; TODO: figger out turning speed problems!!! (MAYBE: just have there be an exponential function on turn speed. If moving a certain speed, make turn speed move towards 0 like asymptote)
+					((PlayerCharacter*)baseObject)->facingDirection = idealFacingDirection;		// TODO: figger out turning speed problems!!! (MAYBE: just have there be an exponential function on turn speed. If moving a certain speed, make turn speed move towards 0 like asymptote)
 					((PlayerCharacter*)baseObject)->currentRunSpeed = newRunSpeed;
 				}
 			}
@@ -1033,7 +1033,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			// Skid stop behavior: essentially the character will quickly do
 			// a 180 and then the velocity is retained when turning around.
 			float mvtDotFacing = glm::dot(movementVector, facingDirection);
-			if (flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)		// @NOTE: actually, after some asai thinking, I think the turnaround from the dot product should be allowed with the weapon drawn.  -Timo
+			if (!weaponDrawn && flatVelocityMagnitude > immediateTurningRequiredSpeed && mvtDotFacing < -0.707106781f)		// @RE:@NOTE: So after testing this, I decided that this shouldn't be allowed to work bc it makes starting up the spinny spinny much harder.  -Timo          ~~@NOTE: actually, after some asai thinking, I think the turnaround from the dot product should be allowed with the weapon drawn.  -Timo~~
 			{
 				facingDirection = movementVector;
 				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
@@ -1101,18 +1101,21 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		//
 		// Friction the Spinny Amount
 		//
-		if (!isSpinnySpinny && !isMoving)
+		if (!weaponDrawn || !isMoving)
 		{
-			weaponDrawnSpinAccumulated = 0.0f;
-		}
-		else if (isSpinnySpinny && (!weaponDrawn || !isMoving))
-		{
-			weaponDrawnSpinAccumulated =
-				PhysicsUtils::moveTowards(
-					weaponDrawnSpinAccumulated,
-					0.0f,
-					weaponDrawnAccelerationDeceleration.y * MainLoop::getInstance().deltaTime
-				);
+			if (!isSpinnySpinny)
+			{
+				weaponDrawnSpinAccumulated = 0.0f;
+			}
+			else
+			{
+				weaponDrawnSpinAccumulated =
+					PhysicsUtils::moveTowards(
+						weaponDrawnSpinAccumulated,
+						0.0f,
+						weaponDrawnSpinDeceleration * MainLoop::getInstance().deltaTime
+					);
+			}
 		}
 
 		//
@@ -1701,7 +1704,12 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Separator();
 	ImGui::DragFloat("Facing Movement Speed", &groundedFacingTurnSpeed, 0.1f);
 	ImGui::DragFloat("Facing Movement Speed (Air)", &airBourneFacingTurnSpeed, 0.1f);
+	ImGui::Checkbox("Is Weapon Drawn", &weaponDrawn);
 	ImGui::DragFloat2("Weapon Drawn Spin Speed Min Max", &weaponDrawnSpinSpeedMinMax.x);
+	ImGui::DragFloat("Weapon Drawn Spin Accumulated", &weaponDrawnSpinAccumulated);
+	ImGui::DragFloat("Weapon Drawn Spin Amount Threshold", &weaponDrawnSpinAmountThreshold);
+	ImGui::DragFloat("Weapon Drawn Spin Deceleration", &weaponDrawnSpinDeceleration);
+	ImGui::DragFloat("Weapon Drawn Spin Buildup Amount", &weaponDrawnSpinBuildupAmount);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
