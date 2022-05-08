@@ -201,8 +201,9 @@ public:
 	// Nah, there will be a mode where this weapon-body-spinning will affect the facing direction. When this
 	// doesn't have its effect anymore, then it'll revert back to the traditional grounded/airBourneFacingTurnSpeed systems.
 	//					-Timo
+	bool weaponDrawn = false;
 	glm::vec2 weaponDrawnSpinSpeedMinMax = { 200.0f, 1000.0f };
-	float weaponDrawnPrespinAccumulated = 0.0f;  // @TODO: Make this accumulated spin amount keep going even after the player lets go of the weaponDrawn button!!!! (unless if they used the spin amount for an attack eh!)
+	float weaponDrawnSpinAccumulated = 0.0f;			// @TODO: Make this accumulated spin amount keep going even after the player lets go of the weaponDrawn button!!!! (unless if they used the spin amount for an attack eh!)
 	float weaponDrawnSpinAmountThreshold = 150.0f;		// @NOTE: this is the threshold for the prespin to go into the real spinny spinny mode
 	float weaponDrawnSpinBuildupAmount = 1000.0f;		// @NOTE: this is used in the calculation for the spinSpeedMinMaxLerpValue
 	
@@ -230,10 +231,6 @@ private:
 	float indoorOverlapCheckRadius = 0.75f;
 	float indoorOverlapCheckHeight = 17.5f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
 	float indoorOverlapCheckOffY = 20.0f;
-
-	// Combat
-	bool weaponDrawn = false;
-	//int currentAttackAnim = -1;
 
 	//
 	// Animation Variables
