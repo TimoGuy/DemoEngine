@@ -1144,7 +1144,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVector)
 {
 	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
-	weaponDrawnSpinAccumulated = 0.0f;		// Reset when midair
 
 	//
 	// Update facing direction
@@ -1159,6 +1158,20 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
 
 		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+	}
+
+	//
+	// Actually take over changing the facingDirection if Spinny spinny		@COPYPASTA with the grounded movement system.
+	// @NOTE: with this, there is no resetting of the spinny spinny amount while midair. In fact, it doesn't get diminished while midair  -Timo
+	//
+	const bool isSpinnySpinny = glm::abs(weaponDrawnSpinAccumulated) > weaponDrawnSpinAmountThreshold;
+	if (isSpinnySpinny)
+	{
+		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+		const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnSpinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
+		const float facingTurnSpeed = PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue);
+		const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + facingTurnSpeed * glm::sign(weaponDrawnSpinAccumulated) * MainLoop::getInstance().deltaTime);
+		facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 	}
 
 	//

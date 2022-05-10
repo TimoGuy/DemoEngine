@@ -2,6 +2,13 @@
 
 ## Rendering
 
+
+- [ ] Clouds Optimizations
+  - [ ] There could be instead of worley noise, a pre-combined distance from the edge so that we could do classic raymarching where it takes in a signed distance algorithm
+    - [ ] We'd really have to experiment how adding the detail noise would affect that however, and also having blocking objects for this.
+
+
+
 - [x] Clouds
 - [x] Better atmospheric scattering
   - [x] Fixed the unusual clamping issue and fixes the rsi. Can't go to space yet unfortunately...
@@ -40,12 +47,16 @@ NOTE: below are some super secret moves that really you're only supposed to lear
 - [ ] Doing the spin attack
   - [ ] See this vid: https://www.youtube.com/watch?v=X6X3-AiAN5k
     - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)
-  - [ ] So having a `spin` value and a `lean` value would be super good.
-    - [ ] Spin: the y axis angular momentum
+  - [x] So having a `spin` value and a `lean` value would be super good.
+    - [x] Spin: the y axis angular momentum
 - [ ] Bang bang vertical slice
   - [ ] So basically, whatever you hit can propel you in the direction you hit it. (NOTE: really this is for hard materials or bouncy materials only)
     - [ ] If you do a vertical swing into the ground, it can propel you upwards like a larger jump (esp. with heavy swing and bouncy floor), or if you're doing a midair frontflip swing, it can propel you forward.
     - [ ] Same is true with the horizontal counterpart. Depending on the distance from the wall you are, you will shoot out perpendicular from the wall or shoot out parallel to the wall.
+- [ ] Light and Heavy modes
+  - [ ] A light transformation (Human, Slime) could hit hard, sturdy objects and launch self to somewhere!
+  - [ ] Heavy transformations (Monster, Lava) could hit the same hard, sturdy object and send them flying, simply bc of the weight difference.
+  - [ ] 
 
 
 ### Transformations?
@@ -58,7 +69,7 @@ NOTE: below are some super secret moves that really you're only supposed to lear
   - For every screen/display/crt monitor in the world, have the old language (Japanese) have screen burn-in in the spot when the display turns off or a really bright light shines onto the display at certain angles (at least that's how I think burn-in works... I really don't know though).
   - Old people (all slime ppl too) have names that are of the old language. When someone recognizes you as Hikaru, this is very apparent.
 - [ ] What's below the cloud layer?
-  - [ ] Glass. A world burnt so bad that there's glass underneath and it's a perfect sphere that reflects the sky. This is true with the night sky if you look closely. You'll see this much better when the cloud layer is removed.
+  - [ ] Glass. A world heated so much and cured of so much impurity that it's a perfect sphere that reflects the sky. ~~A world burnt so bad that there's glass underneath and it's a perfect sphere that reflects the sky. This is true with the night sky if you look closely. You'll see this much better when the cloud layer is removed.~~
 
 ## Performance
 
@@ -69,6 +80,21 @@ NOTE: below are some super secret moves that really you're only supposed to lear
     - [ ] 1080p current benchmark: avg. 230fps (release)
     - [ ] NOTE: these results are similar to an rtx 2080 ti on Shadow of the Tomb Raider (4k).
       - [ ] Well, my numbers are a little lower, bc Shadow of the Tomb Raider is more like avg. 58fps
+
+### Things that could improve
+
+- [ ] Cloud rendering (duh...)
+  - [ ] If you were okay with a cloudscape that never changed density, you could render out a distance function for the clouds
+
+- [ ] Shadows
+  - [ ] All the static objects could be the only ones with shadow and then all the dynamic objects could just have a shadow for a certain distance.
+    - [ ] That way can minimize (ofc opening doors would have to be a part of the dynamic shadow map) the shadows being rendered for the main light.
+
+- [ ] Forward rendering better
+  - [ ] NOTE: I don't really know what the bottleneck is honestly.
+  - [ ] Could look into how to do indirect rendering? Or instanced rendering.
+  - [ ] Could render the z-prepass front-to-back instead of random
+  - [ ] Could make this be a clustered forward shading system.
 
 ## MISC notes
 
