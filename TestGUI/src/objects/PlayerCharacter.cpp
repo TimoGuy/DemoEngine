@@ -1131,7 +1131,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
 		}
 
-		std::cout << "SPINNYSPINNY: " << weaponDrawnSpinAccumulated << std::endl;
+		//std::cout << "SPINNYSPINNY: " << weaponDrawnSpinAccumulated << std::endl;
 	}
 
 	// Final package: Reset coyote time timer

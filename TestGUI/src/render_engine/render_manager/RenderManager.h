@@ -263,16 +263,21 @@ private:
 	// Skybox Rendering
 	const static int skyboxDepthSlicedLUTSize = 32;
 	const static int skyboxLowResSize = 256;
+	const static int irradianceMapSize = 32;
+	const static int prefilterMapSize = 128;
+	const static unsigned int maxMipLevels = 5;  // glm::floor(glm::log2((float_t)prefilterMapSize)) + 1;
 	GLuint skyboxFBO, skyboxBlurFBO, skyboxDepthSlicedLUTFBOs[skyboxDepthSlicedLUTSize], skyboxDetailsSSFBO;
 	Texture* skyboxLowResTexture, *skyboxLowResBlurTexture, *skyboxDepthSlicedLUT, *nightSkyboxCubemap, * skyboxDetailsSS;
 	Shader* skybox_program_id, *skyboxDetailsShader;
 	SkyboxParams skyboxParams;
 	static const size_t numSkyMaps = 6;
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
+	Texture* irradianceMapInterpolated, *prefilterMapInterpolated;
+	GLuint irradianceMapInterpolatedFBO, prefilterMapInterpolatedFBO;
 	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f, -30.0f };			// NOTE: these values must be listed in descending order
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;
-	float mapInterpolationAmt;
+	float mapInterpolationAmt;		// @NOTE: this is here only for viewing the value in imgui property panel
 
 	// UI Notifications
 	float notifPadding = 1.0f;

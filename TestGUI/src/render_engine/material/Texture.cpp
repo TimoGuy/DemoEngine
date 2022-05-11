@@ -246,6 +246,24 @@ void Texture3DFromFile::INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLo
 	loaded = true;
 }
 
+TextureCubemap::TextureCubemap(GLsizei width, GLsizei height, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR)
+{
+	glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &textureHandle);
+	
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_S, wrapS);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_T, wrapT);
+	glTextureParameteri(textureHandle, GL_TEXTURE_WRAP_R, wrapR);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MIN_FILTER, minFilter);
+	glTextureParameteri(textureHandle, GL_TEXTURE_MAG_FILTER, magFilter);
+
+	glTextureStorage2D(textureHandle, levels, internalFormat, width, height);
+
+	if (pixels != nullptr)
+		glTextureSubImage3D(textureHandle, 0, 0, 0, 0, width, height, 1, format, pixelType, pixels);		// @NOTE: this is totally broken. @Unfinished: PLEASE DO NOT INSERT PIXELS HERE BC IT'S NOT FINISHED (NOTE: NO INTENTION TO FIX BTW)
+
+	loaded = true;
+}
+
 TextureCubemapFromFile::TextureCubemapFromFile(
 	const std::vector<ImageFile>& files,
 	GLenum toTexture,

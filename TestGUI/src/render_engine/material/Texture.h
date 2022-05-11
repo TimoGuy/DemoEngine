@@ -105,6 +105,16 @@ private:
 };
 
 
+class TextureCubemap : public Texture
+{
+public:
+	TextureCubemap(GLsizei width, GLsizei height, GLsizei levels, GLenum internalFormat, GLenum format, GLenum pixelType, const void* pixels, GLuint minFilter, GLuint magFilter, GLuint wrapS, GLuint wrapT, GLuint wrapR);
+
+private:
+	void INTERNALgenerateGraphicsAPITextureHandleSync(ImageDataLoaded& data) { }
+};
+
+
 class TextureCubemapFromFile : public Texture
 {
 public:

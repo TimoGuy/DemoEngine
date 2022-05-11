@@ -117,6 +117,19 @@ RenderManager::~RenderManager()
 #endif
 }
 
+
+const glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+const glm::mat4 captureViews[] =
+{
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+	glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+};
+
+
 void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& sunOrientation)
 {
 	const int renderTextureSize = 512;
@@ -162,16 +175,6 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	//
 	// Render out the hdr skybox to the framebuffer
 	//
-	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-	glm::mat4 captureViews[] =
-	{
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-	};
 
 	// Get the nightsky texture from disk
 	Texture::setLoadSync(true);
@@ -211,8 +214,6 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	//
 	// Create Irradiance Map
 	//
-	const int irradianceMapSize = 32;
-
 	glGenTextures(1, &irradianceMap[index]);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap[index]);
 	for (unsigned int i = 0; i < 6; i++)
@@ -249,8 +250,6 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	//
 	// Create prefilter map for specular roughness
 	//
-	const int prefilterMapSize = 128;
-
 	glGenTextures(1, &prefilterMap[index]);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap[index]);
 	for (unsigned int i = 0; i < 6; i++)
@@ -274,12 +273,11 @@ void RenderManager::createHDRSkybox(bool first, size_t index, const glm::vec3& s
 	prefilter_program_id->setMat4("projection", captureProjection);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrPBRGenCaptureFBO);
-	unsigned int maxMipLevels = 5;  // glm::floor(glm::log2((float_t)prefilterMapSize)) + 1;
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
 		// Resize to mip level size
-		unsigned int mipWidth = (unsigned int)(128.0 * std::pow(0.5, mip));
-		unsigned int mipHeight = (unsigned int)(128.0 * std::pow(0.5, mip));
+		unsigned int mipWidth = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
+		unsigned int mipHeight = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
 		glBindRenderbuffer(GL_RENDERBUFFER, hdrPBRGenCaptureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -591,6 +589,14 @@ void RenderManager::createHDRBuffer()
 	if (glCheckNamedFramebufferStatus(skyboxDetailsSSFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Nighttime Skybox Screenspace Framebuffer)" << std::endl;
 
+	irradianceMapInterpolated = new TextureCubemap(irradianceMapSize, irradianceMapSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	glCreateFramebuffers(1, &irradianceMapInterpolatedFBO);
+	prefilterMapInterpolated = new TextureCubemap(prefilterMapSize, prefilterMapSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	glCreateFramebuffers(1, &prefilterMapInterpolatedFBO);
+
+	ShaderExtPBR_daynight_cycle::irradianceMap = irradianceMapInterpolated->getHandle();
+	ShaderExtPBR_daynight_cycle::prefilterMap = prefilterMapInterpolated->getHandle();
+
 
 	//
 	// Create SSAO framebuffer
@@ -798,6 +804,10 @@ void RenderManager::destroyHDRBuffer()
 	glDeleteFramebuffers(skyboxDepthSlicedLUTSize, skyboxDepthSlicedLUTFBOs);
 	delete skyboxDetailsSS;
 	glDeleteFramebuffers(1, &skyboxDetailsSSFBO);
+	delete irradianceMapInterpolated;
+	glDeleteFramebuffers(1, &irradianceMapInterpolatedFBO);
+	delete prefilterMapInterpolated;
+	glDeleteFramebuffers(1, &prefilterMapInterpolatedFBO);
 
 	delete ssaoBlurTexture;
 	glDeleteFramebuffers(1, &ssaoBlurFBO);
@@ -1950,6 +1960,71 @@ void RenderManager::renderScene()
 	);
 
 	//
+	// Generate the irradiance and prefilter maps from interpolating and spinning the prebaked ones
+	//
+	for (int i = (int)numSkyMaps - 1; i >= 0; i--)
+	{
+		if (-skyboxParams.sunOrientation.y < std::sinf(glm::radians(preBakedSkyMapAngles[i])))
+		{
+			whichMap = i;
+
+			if (i + 1 >= numSkyMaps)
+				mapInterpolationAmt = 0;
+			else
+			{
+				mapInterpolationAmt =
+					1 -
+					(-skyboxParams.sunOrientation.y - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1]))) /
+					(std::sinf(glm::radians(preBakedSkyMapAngles[i])) - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1])));
+			}
+
+			break;
+		}
+	}
+
+	glm::vec3 flatSunOrientation = skyboxParams.sunOrientation;
+	flatSunOrientation.y = 0;
+	flatSunOrientation = glm::normalize(flatSunOrientation);
+	sunSpinAmount = glm::toMat3(glm::quat(flatSunOrientation, glm::vec3(1, 0, 0)));
+
+	// Render it out!
+	// Irradiance map
+	environmentMapMixerShader->use();		// Cubemap.vert & EnvMapMixer.frag
+	environmentMapMixerShader->setMat4("projection", captureProjection);
+	environmentMapMixerShader->setFloat("mapInterpolationAmt", mapInterpolationAmt);
+	environmentMapMixerShader->setMat3("sunSpinAmount", sunSpinAmount);
+	environmentMapMixerShader->setSampler("Texture1", irradianceMap[whichMap]);
+	environmentMapMixerShader->setSampler("Texture2", irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
+	glViewport(0, 0, irradianceMapSize, irradianceMapSize);
+	glBindFramebuffer(GL_FRAMEBUFFER, irradianceMapInterpolatedFBO);
+	for (unsigned int i = 0; i < 6; i++)
+	{
+		environmentMapMixerShader->setMat4("view", captureViews[i]);
+		glNamedFramebufferTextureLayer(irradianceMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, irradianceMapInterpolated->getHandle(), 0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+		glClear(GL_COLOR_BUFFER_BIT);
+		renderCube();
+	}
+
+	// Prefilter map
+	environmentMapMixerShader->setSampler("Texture1", prefilterMap[whichMap]);
+	environmentMapMixerShader->setSampler("Texture2", prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
+	glBindFramebuffer(GL_FRAMEBUFFER, prefilterMapInterpolatedFBO);
+	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+	{
+		unsigned int mipWidth = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
+		unsigned int mipHeight = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
+		glViewport(0, 0, mipWidth, mipHeight);
+
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			environmentMapMixerShader->setMat4("view", captureViews[i]);
+			glNamedFramebufferTextureLayer(prefilterMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, prefilterMapInterpolated->getHandle(), mip, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			glClear(GL_COLOR_BUFFER_BIT);
+			renderCube();
+		}
+	}
+
+	//
 	// Draw atmospheric scattering skybox
 	//
 	glViewport(0, 0, (GLsizei)skyboxLowResSize, (GLsizei)skyboxLowResSize);
@@ -2184,45 +2259,6 @@ void RenderManager::renderScene()
 
 	glDepthMask(GL_TRUE);
 
-	//
-	// Choose which prefilter and irradiance maps to use
-	//
-	for (int i = (int)numSkyMaps - 1; i >= 0; i--)
-	{
-		if (-skyboxParams.sunOrientation.y < std::sinf(glm::radians(preBakedSkyMapAngles[i])))
-		{
-			whichMap = i;
-
-			if (i + 1 >= numSkyMaps)
-				mapInterpolationAmt = 0;
-			else
-			{
-				mapInterpolationAmt =
-					1 -
-					(-skyboxParams.sunOrientation.y - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1]))) /
-					(std::sinf(glm::radians(preBakedSkyMapAngles[i])) - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1])));
-			}
-
-			break;
-		}
-	}
-
-	ShaderExtPBR_daynight_cycle::irradianceMap = irradianceMap[whichMap];
-	ShaderExtPBR_daynight_cycle::irradianceMap2 = irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
-	ShaderExtPBR_daynight_cycle::prefilterMap = prefilterMap[whichMap];
-	ShaderExtPBR_daynight_cycle::prefilterMap2 = prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)];
-	ShaderExtPBR_daynight_cycle::mapInterpolationAmt = mapInterpolationAmt;
-
-	//
-	// Compute how much the prefilter and irradiance maps need to spin their input vectors
-	//
-	glm::vec3 flatSunOrientation = skyboxParams.sunOrientation;
-	flatSunOrientation.y = 0;
-	flatSunOrientation = glm::normalize(flatSunOrientation);
-	sunSpinAmount = glm::toMat3(glm::quat(flatSunOrientation, glm::vec3(1, 0, 0)));
-
-	ShaderExtPBR_daynight_cycle::sunSpinAmount = sunSpinAmount;
-
 	////
 	//// @Remember: this is how to: Draw Text
 	////
@@ -2234,9 +2270,6 @@ void RenderManager::renderScene()
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
 
-	// Reset materials at the start of every frame
-	this->repopulateAnimationUBO = true;
-
 	//// Start of main render queues: turn on face culling
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
@@ -2245,6 +2278,7 @@ void RenderManager::renderScene()
 	//
 	// OPAQUE RENDER QUEUE
 	//
+	this->repopulateAnimationUBO = true;	// Reset materials at the start of every frame
 	glDepthFunc(GL_EQUAL);		// NOTE: this is so that the Z prepass gets used and only fragments that are actually visible will get rendered
 	for (size_t i = 0; i < opaqueRQ.meshesToRender.size(); i++)
 	{
@@ -2283,6 +2317,7 @@ void RenderManager::renderScene()
 	//
 	// TRANSPARENT RENDER QUEUE
 	//
+	this->repopulateAnimationUBO = true;	// @NOTE: For @Intel GPUs (and likely AMD too), the UBO needs to be repopulated at the beginning of the transparent render queue or else one thing lacks the skeletal animation weirdly  -Timo
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
