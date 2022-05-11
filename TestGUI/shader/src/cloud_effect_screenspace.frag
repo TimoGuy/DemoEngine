@@ -51,7 +51,7 @@ uniform samplerCube irradianceMap2;
 //uniform sampler2D brdfLUT;
 uniform float mapInterpolationAmt;
 
-uniform mat3 sunSpinAmount;
+//uniform mat3 sunSpinAmount;
 
 
 
@@ -419,8 +419,8 @@ void main()
             shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.20);
 
             // Calculate the irradiance in the direction of the ray
-            vec3 N = rd;
-	        vec3 irradiance = mix(texture(irradianceMap, sunSpinAmount * N).rgb, texture(irradianceMap2, sunSpinAmount * N).rgb, mapInterpolationAmt);
+            const vec3 sampleDirection = vec3(0, -1, 0);  // @NOTE: the sampleDirection was changed from the view direction to straight down bc ambient light reflecting off the ground would be in the straight down view direction.
+	        vec3 irradiance = mix(texture(irradianceMap, sampleDirection).rgb, texture(irradianceMap2, sampleDirection).rgb, mapInterpolationAmt);
             ambientLightEnergy = exp(-shadowDensity * ambientDensity)/* * d*/ * irradiance * irradianceStrength;
             break;
         }

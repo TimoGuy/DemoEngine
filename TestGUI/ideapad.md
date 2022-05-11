@@ -12,6 +12,7 @@
 - [x] Clouds
 - [x] Better atmospheric scattering
   - [x] Fixed the unusual clamping issue and fixes the rsi. Can't go to space yet unfortunately...
+
 - [x] Make a fog system. That's physically accurate
   - [x] It uses this: https://sebh.github.io/publications/egsr2020.pdf
   - [x] Essentially slices of rendered skybox with a different transmittance and luminance value. Interpolate among that.
@@ -33,6 +34,7 @@
 
 - [x] Hey Janitor, there's a red 0 in the luminance texture, fyi
 - [ ] Fix raymarching issues with edge of Clouds
+  - [ ] This article's cloud rendering was interesting: https://blog.thomaspoulet.fr/dcs-frame/
   - [ ] It's less of an issue with FXAA enabled. Hah. Up to you, future Timo, but I'm not fixing it.
   - [x] Okay, so I think the possible cause for this was because the depth-sliced atmospheric LUT got cut off early and so the fringes of the atmosphere just never got included.
     - [x] Oh yeah, I fixed it btw. (Up to a certain distance lol)
@@ -49,14 +51,18 @@ NOTE: below are some super secret moves that really you're only supposed to lear
     - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)
   - [x] So having a `spin` value and a `lean` value would be super good.
     - [x] Spin: the y axis angular momentum
+
 - [ ] Bang bang vertical slice
-  - [ ] So basically, whatever you hit can propel you in the direction you hit it. (NOTE: really this is for hard materials or bouncy materials only)
+  - [ ] Charge a vertical over-the-head slice (tilt L stick and hold RT), then right after you press X to launch the attack, press A to get your feet off the ground so you can detach yourself/launch yourself off of what you hit.
+  - [ ] So basically, whatever you hit can propel you in the direction you hit it. (NOTE: really this is for hard materials or bouncy materials only. NOTE: This is only if you're a light class transformation.)
     - [ ] If you do a vertical swing into the ground, it can propel you upwards like a larger jump (esp. with heavy swing and bouncy floor), or if you're doing a midair frontflip swing, it can propel you forward.
     - [ ] Same is true with the horizontal counterpart. Depending on the distance from the wall you are, you will shoot out perpendicular from the wall or shoot out parallel to the wall.
+
 - [ ] Light and Heavy modes
   - [ ] A light transformation (Human, Slime) could hit hard, sturdy objects and launch self to somewhere!
   - [ ] Heavy transformations (Monster, Lava) could hit the same hard, sturdy object and send them flying, simply bc of the weight difference.
-  - [ ] 
+  - [ ] EXAMPLES
+    - [ ] So with the light transformations, something like a helicopter would be effective, but with the heavy transformations, you'd wanna go in the reverse spinny spinny direction to do a drill/ground-pound (reverse of the helicopter bc it pushed you downwards). With the added weight, the pound onto the ground is greater.
 
 
 ### Transformations?
