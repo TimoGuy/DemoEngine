@@ -80,6 +80,8 @@ NOTE: below are some super secret moves that really you're only supposed to lear
 ## Performance
 
 - [x] Get there to be a rendering step before any pbr related rendering happens where the irradiance and prefilter textures are rendered.
+  - NOTE: here's how the performance stacks up:
+    - *BEFORE*: Screen space (1920x1080): 2073600 pixel lookups and mix() operations
 
 
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.

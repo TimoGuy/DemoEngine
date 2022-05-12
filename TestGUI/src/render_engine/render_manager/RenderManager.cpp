@@ -1997,6 +1997,7 @@ void RenderManager::renderScene()
 	environmentMapMixerShader->setMat3("sunSpinAmount", sunSpinAmount);
 	environmentMapMixerShader->setSampler("texture1", irradianceMap[whichMap]);
 	environmentMapMixerShader->setSampler("texture2", irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
+	environmentMapMixerShader->setFloat("lod", 0.0f);
 	glViewport(0, 0, irradianceMapSize, irradianceMapSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, irradianceMapInterpolatedFBO);
 	for (unsigned int i = 0; i < 6; i++)
@@ -2013,6 +2014,8 @@ void RenderManager::renderScene()
 	glBindFramebuffer(GL_FRAMEBUFFER, prefilterMapInterpolatedFBO);
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
+		environmentMapMixerShader->setFloat("lod", (float)mip);
+
 		unsigned int mipWidth = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
 		unsigned int mipHeight = (unsigned int)(prefilterMapSize * std::pow(0.5, mip));
 		glViewport(0, 0, mipWidth, mipHeight);
