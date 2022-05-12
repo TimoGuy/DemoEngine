@@ -10,13 +10,8 @@ uniform mat4 invCameraProjectionView;
 
 // ext: PBR daynight cycle
 uniform samplerCube irradianceMap;
-uniform samplerCube irradianceMap2;
 //uniform samplerCube prefilterMap;
-//uniform samplerCube prefilterMap2;
 //uniform sampler2D brdfLUT;
-uniform float mapInterpolationAmt;
-
-uniform mat3 sunSpinAmount;
 
 
 vec3 getRayDirection()
@@ -43,8 +38,6 @@ void main()
 	//vec3 N = normalize(cross(dFdx(P), dFdy(P)));
 
 	vec3 N = getRayDirection();
-
-	vec3 irradiance = mix(texture(irradianceMap, sunSpinAmount * N).rgb, texture(irradianceMap2, sunSpinAmount * N).rgb, mapInterpolationAmt);
-
+	vec3 irradiance = texture(irradianceMap, N).rgb;
 	fragmentColor = vec4(irradiance, 1.0);
 }

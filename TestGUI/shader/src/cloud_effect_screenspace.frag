@@ -45,13 +45,8 @@ uniform sampler2D depthTexture;
 
 // ext: PBR daynight cycle
 uniform samplerCube irradianceMap;
-uniform samplerCube irradianceMap2;
 //uniform samplerCube prefilterMap;
-//uniform samplerCube prefilterMap2;
 //uniform sampler2D brdfLUT;
-uniform float mapInterpolationAmt;
-
-//uniform mat3 sunSpinAmount;
 
 
 
@@ -420,7 +415,7 @@ void main()
 
             // Calculate the irradiance in the direction of the ray
             const vec3 sampleDirection = vec3(0, -1, 0);  // @NOTE: the sampleDirection was changed from the view direction to straight down bc ambient light reflecting off the ground would be in the straight down view direction.
-	        vec3 irradiance = mix(texture(irradianceMap, sampleDirection).rgb, texture(irradianceMap2, sampleDirection).rgb, mapInterpolationAmt);
+	        vec3 irradiance = texture(irradianceMap, sampleDirection).rgb;
             ambientLightEnergy = exp(-shadowDensity * ambientDensity)/* * d*/ * irradiance * irradianceStrength;
             break;
         }

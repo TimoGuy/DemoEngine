@@ -319,6 +319,8 @@
     <None Include="shader\fxaa_postprocessing.json" />
     <None Include="shader\skyboxDetails.json" />
     <None Include="shader\src\skybox_details.frag" />
+    <None Include="shader\environmentMapMixer.json" />
+    <None Include="shader\src\environment_map_mixer.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">

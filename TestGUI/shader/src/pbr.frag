@@ -32,13 +32,8 @@ uniform vec2 invFullResolution;
 
 // ext: PBR daynight cycle
 uniform samplerCube irradianceMap;
-uniform samplerCube irradianceMap2;
 uniform samplerCube prefilterMap;
-uniform samplerCube prefilterMap2;
 uniform sampler2D brdfLUT;
-uniform float mapInterpolationAmt;
-
-uniform mat3 sunSpinAmount;
 
 // ext: Shadow
 const int MAX_SHADOWS = 8;
@@ -483,14 +478,14 @@ void main()
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
 
-    vec3 irradiance = mix(texture(irradianceMap, sunSpinAmount * N).rgb, texture(irradianceMap2, sunSpinAmount * N).rgb, mapInterpolationAmt);
+    vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse = irradiance * albedo;
 
     //
     // Sample pre-filter map and BRDF LUT to combine via split-sum approximation to get specular ibl
     //
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = mix(textureLod(prefilterMap, sunSpinAmount * R, roughness * MAX_REFLECTION_LOD).rgb, textureLod(prefilterMap2, sunSpinAmount * R, roughness * MAX_REFLECTION_LOD).rgb, mapInterpolationAmt);
+    vec3 prefilteredColor = textureLod(prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 

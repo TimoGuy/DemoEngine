@@ -274,6 +274,7 @@ private:
 	GLuint envCubemap, brdfLUTTexture, irradianceMap[numSkyMaps], prefilterMap[numSkyMaps];
 	Texture* irradianceMapInterpolated, *prefilterMapInterpolated;
 	GLuint irradianceMapInterpolatedFBO, prefilterMapInterpolatedFBO;
+	Shader* environmentMapMixerShader;
 	float_t preBakedSkyMapAngles[numSkyMaps] = { 90.0f, 10.0f, 5.0f, 0.0f, -10.0f, -30.0f };			// NOTE: these values must be listed in descending order
 	size_t whichMap = 0;
 	glm::mat3 sunSpinAmount;

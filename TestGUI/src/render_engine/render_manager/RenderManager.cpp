@@ -591,7 +591,7 @@ void RenderManager::createHDRBuffer()
 
 	irradianceMapInterpolated = new TextureCubemap(irradianceMapSize, irradianceMapSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	glCreateFramebuffers(1, &irradianceMapInterpolatedFBO);
-	prefilterMapInterpolated = new TextureCubemap(prefilterMapSize, prefilterMapSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	prefilterMapInterpolated = new TextureCubemap(prefilterMapSize, prefilterMapSize, maxMipLevels, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	glCreateFramebuffers(1, &prefilterMapInterpolatedFBO);
 
 	ShaderExtPBR_daynight_cycle::irradianceMap = irradianceMapInterpolated->getHandle();
@@ -1317,6 +1317,7 @@ void RenderManager::createShaderPrograms()
 	irradiance_program_id = (Shader*)Resources::getResource("shader;irradianceGeneration");
 	prefilter_program_id = (Shader*)Resources::getResource("shader;pbrPrefilterGeneration");
 	brdf_program_id = (Shader*)Resources::getResource("shader;brdfGeneration");
+	environmentMapMixerShader = (Shader*)Resources::getResource("shader;environmentMapMixer");
 	hdrLuminanceProgramId = (Shader*)Resources::getResource("shader;luminance_postprocessing");
 	hdrLumAdaptationComputeProgramId = (Shader*)Resources::getResource("shader;computeLuminanceAdaptation");
 	bloom_postprocessing_program_id = (Shader*)Resources::getResource("shader;bloom_postprocessing");
@@ -1350,6 +1351,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;irradianceGeneration");
 	Resources::unloadResource("shader;pbrPrefilterGeneration");
 	Resources::unloadResource("shader;brdfGeneration");
+	Resources::unloadResource("shader;environmentMapMixer");
 	Resources::unloadResource("shader;luminance_postprocessing");
 	Resources::unloadResource("shader;computeLuminanceAdaptation");
 	Resources::unloadResource("shader;bloom_postprocessing");
@@ -1993,21 +1995,21 @@ void RenderManager::renderScene()
 	environmentMapMixerShader->setMat4("projection", captureProjection);
 	environmentMapMixerShader->setFloat("mapInterpolationAmt", mapInterpolationAmt);
 	environmentMapMixerShader->setMat3("sunSpinAmount", sunSpinAmount);
-	environmentMapMixerShader->setSampler("Texture1", irradianceMap[whichMap]);
-	environmentMapMixerShader->setSampler("Texture2", irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
+	environmentMapMixerShader->setSampler("texture1", irradianceMap[whichMap]);
+	environmentMapMixerShader->setSampler("texture2", irradianceMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
 	glViewport(0, 0, irradianceMapSize, irradianceMapSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, irradianceMapInterpolatedFBO);
 	for (unsigned int i = 0; i < 6; i++)
 	{
 		environmentMapMixerShader->setMat4("view", captureViews[i]);
-		glNamedFramebufferTextureLayer(irradianceMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, irradianceMapInterpolated->getHandle(), 0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+		glNamedFramebufferTextureLayer(irradianceMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, irradianceMapInterpolated->getHandle(), 0, i);
 		glClear(GL_COLOR_BUFFER_BIT);
 		renderCube();
 	}
 
 	// Prefilter map
-	environmentMapMixerShader->setSampler("Texture1", prefilterMap[whichMap]);
-	environmentMapMixerShader->setSampler("Texture2", prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
+	environmentMapMixerShader->setSampler("texture1", prefilterMap[whichMap]);
+	environmentMapMixerShader->setSampler("texture2", prefilterMap[std::clamp(whichMap + 1, (size_t)0, numSkyMaps - 1)]);
 	glBindFramebuffer(GL_FRAMEBUFFER, prefilterMapInterpolatedFBO);
 	for (unsigned int mip = 0; mip < maxMipLevels; mip++)
 	{
@@ -2018,7 +2020,7 @@ void RenderManager::renderScene()
 		for (unsigned int i = 0; i < 6; i++)
 		{
 			environmentMapMixerShader->setMat4("view", captureViews[i]);
-			glNamedFramebufferTextureLayer(prefilterMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, prefilterMapInterpolated->getHandle(), mip, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+			glNamedFramebufferTextureLayer(prefilterMapInterpolatedFBO, GL_COLOR_ATTACHMENT0, prefilterMapInterpolated->getHandle(), mip, i);
 			glClear(GL_COLOR_BUFFER_BIT);
 			renderCube();
 		}

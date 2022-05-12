@@ -79,6 +79,9 @@ NOTE: below are some super secret moves that really you're only supposed to lear
 
 ## Performance
 
+- [x] Get there to be a rendering step before any pbr related rendering happens where the irradiance and prefilter textures are rendered.
+
+
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
   - [ ] 2022-04-27 findings:
     - [ ] 4k current benchmark: avg. 53fps (release)
@@ -86,6 +89,7 @@ NOTE: below are some super secret moves that really you're only supposed to lear
     - [ ] 1080p current benchmark: avg. 230fps (release)
     - [ ] NOTE: these results are similar to an rtx 2080 ti on Shadow of the Tomb Raider (4k).
       - [ ] Well, my numbers are a little lower, bc Shadow of the Tomb Raider is more like avg. 58fps
+
 
 ### Things that could improve
 

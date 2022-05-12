@@ -206,6 +206,7 @@
     <None Include="shader\csmShadowPass.json" />
     <None Include="shader\debugCloudNoise.json" />
     <None Include="shader\debugCSM.json" />
+    <None Include="shader\environmentMapMixer.json" />
     <None Include="shader\fxaa_postprocessing.json" />
     <None Include="shader\hdriGeneration.json" />
     <None Include="shader\hudUI.json" />
@@ -282,6 +283,7 @@
     <None Include="shader\src\debug_csm.frag" />
     <None Include="shader\src\debug_csm.vert" />
     <None Include="shader\src\debug_picking.frag" />
+    <None Include="shader\src\environment_map_mixer.frag" />
     <None Include="shader\src\fxaa_postprocessing.frag" />
     <None Include="shader\src\hdri_equirectangular.frag" />
     <None Include="shader\src\hudUI.frag" />

@@ -10,10 +10,6 @@ public:
 	void setupExtension();
 
 	static unsigned int irradianceMap,
-		//irradianceMap2,
 		prefilterMap,
-		//prefilterMap2,
 		brdfLUT;
-	//static float mapInterpolationAmt;
-	//static glm::mat3 sunSpinAmount;
 };
