@@ -2543,7 +2543,7 @@ void RenderManager::renderUI()
 	// Render Message boxes UI
 	//
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFXAAFBO);		// @NOTE: Switched from hdrFBO bc the fxaa postprocessing step happens right before this, so kinda need to do this at this time.
 		glViewport(0, 0, camWidth, camHeight);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_BLEND);
@@ -2585,8 +2585,7 @@ void RenderManager::renderUI()
 			const glm::vec3 translation(currentPosition + notifHidingOffset * scale, 0.0f);
 			const glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), translation) * glm::scale(glm::mat4(1.0f), glm::vec3(notifExtents, 1.0f));
 			notificationUIProgramId->setMat4("modelMatrix", modelMatrix);
-
-			notificationUIProgramId->use();
+			notificationUIProgramId->use();		// @NOTE: the reason why this is here instead of somewhere else is bc when renderText() gets called, the shader changes, so I need to make sure to change it back to this shader for every box that needs to get rendered  -Timo
 			renderQuad();
 
 			TextRenderer tr =
