@@ -370,11 +370,11 @@ void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const s
 	}
 }
 
-void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color)
+void* loadZellyMaterial(const std::string& materialName, bool isUnloading, glm::vec3 color, glm::vec3 color2)
 {
 	if (!isUnloading)
 	{
-		Material* material = new ZellyMaterial(color);
+		Material* material = new ZellyMaterial(color, color2);
 		return material;
 	}
 	else
@@ -507,9 +507,9 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeBeltAccentMetalness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Metalness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeBeltAccentRoughness")			return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Metal007/1K-JPG/Metal007_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;pbrSlimeBody")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0, 0, .5));
+	if (resourceName == "material;pbrSlimeBody")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0.779, 0.825, 1.0), glm::vec3(0.340, 0.340, .666));
 
-	if (resourceName == "material;pbrSlimeHair")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0.5, 0.5, 1));
+	if (resourceName == "material;pbrSlimeHair")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0.771, 0.913, 1.0), glm::vec3(0.177, 0.305, 0.445));
 
 	if (resourceName == "material;pbrSlimeEyebrow")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeEyebrowAlbedo", "texture;pbrDefaultNormal", "texture;pbr0Value", "texture;pbr0Value", 0.99f);
 	if (resourceName == "texture;pbrSlimeEyebrowAlbedo")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/princess_eyebrow.png", GL_RGBA, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT, false, false);
@@ -566,7 +566,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
-	if (resourceName == "material;containedWater")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0, 0, .5));
+	if (resourceName == "material;containedWater")						return loadZellyMaterial(resourceName, isUnloading, glm::vec3(0, 0, .5), glm::vec3(0, 0, .5));
 
 	// Out of luck, bud. Try the custom resources yo
 	std::cout << "ERROR:: Resource \"" << resourceName << "\" was not found." << std::endl;

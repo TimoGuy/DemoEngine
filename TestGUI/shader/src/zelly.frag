@@ -7,6 +7,7 @@ in vec3 normalVector;
 
 // material parameters
 uniform vec3 zellyColor;
+uniform vec3 zellyColor2;
 uniform float ditherAlpha;
 
 // Camera
@@ -335,8 +336,10 @@ void main()
 
     vec3 N = normalVector;//getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);
-    float fresnelValue = fresnelSchlick(max(dot(N, V), 0.0), vec3(0.0), 3).r;
-    vec3 albedo = pow(mix(zellyColor, vec3(1, 1, 1), fresnelValue), vec3(2.2));
+    //float fresnelValue = fresnelSchlick(max(dot(N, V), 0.0), vec3(0.0), 3).r;
+    //vec3 albedo = pow(mix(zellyColor, vec3(1, 1, 1), fresnelValue), vec3(2.2));
+    float mixValue = pow(max(dot(N, V), 0.0), 2.0);
+    vec3 albedo = pow(mix(zellyColor, zellyColor2, mixValue), vec3(2.2));
 
     float metallic      = 0;
     

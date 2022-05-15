@@ -82,6 +82,9 @@ NOTE: below are some super secret moves that really you're only supposed to lear
 - [x] Get there to be a rendering step before any pbr related rendering happens where the irradiance and prefilter textures are rendered.
   - NOTE: here's how the performance stacks up:
     - *BEFORE*: Screen space (1920x1080): 2073600 pixel lookups and mix() operations
+    - *AFTER*: 6 * (128^2 + 64^2 + 32^2 + 16^2 + 8^2 + 32^2) = 137088 pixels
+      - AFTER is significantly fewer pixels than 1080p. I'd say it's worth it, bc it's 7% of the pixels as 1080p.
+      - NOTE: It does not make a difference if <7% of the screen has pixels in it eh!
 
 
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.

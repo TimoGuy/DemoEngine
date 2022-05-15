@@ -66,16 +66,18 @@ Texture* PBRMaterial::getMainTexture()
 // fresnel has already taken over and it's a reflection instead. Dang nabbit.
 // 		-Timo
 //
-ZellyMaterial::ZellyMaterial(glm::vec3 color) :
+ZellyMaterial::ZellyMaterial(glm::vec3 color, glm::vec3 color2) :
 	Material((Shader*)Resources::getResource("shader;zelly"), 1.0f, 1.0f, false)
 {
 	ZellyMaterial::color = color;
+	ZellyMaterial::color2 = color2;
 }
 
 void ZellyMaterial::applyTextureUniforms(nlohmann::json injection)
 {
 	myShader->use();
 	myShader->setVec3("zellyColor", color);
+	myShader->setVec3("zellyColor2", color2);
 	myShader->setFloat("ditherAlpha", ditherAlpha);
 }
 

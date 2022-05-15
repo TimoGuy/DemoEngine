@@ -59,14 +59,15 @@ private:
 class ZellyMaterial : public Material
 {
 public:
-	ZellyMaterial(glm::vec3 color);
+	ZellyMaterial(glm::vec3 color, glm::vec3 color2);
 
 	void applyTextureUniforms(nlohmann::json injection = nullptr);
 	Texture* getMainTexture();
 	inline glm::vec3& getColor() { return color; }
+	inline glm::vec3& getColor2() { return color2; }
 
 private:
-	glm::vec3 color;
+	glm::vec3 color, color2;
 };
 
 

@@ -1741,7 +1741,9 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Body Zelly Color2", &((ZellyMaterial*)materials["Body"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	ImGui::ColorPicker3("Hair Zelly Color2", &((ZellyMaterial*)materials["Hair"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);
