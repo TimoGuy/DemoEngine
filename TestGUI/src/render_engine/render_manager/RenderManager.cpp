@@ -591,7 +591,7 @@ void RenderManager::createHDRBuffer()
 
 	irradianceMapInterpolated = new TextureCubemap(irradianceMapSize, irradianceMapSize, 1, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	glCreateFramebuffers(1, &irradianceMapInterpolatedFBO);
-	prefilterMapInterpolated = new TextureCubemap(prefilterMapSize, prefilterMapSize, maxMipLevels, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+	prefilterMapInterpolated = new TextureCubemap(prefilterMapSize, prefilterMapSize, maxMipLevels, GL_RGB16F, GL_RGB, GL_FLOAT, nullptr, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 	glCreateFramebuffers(1, &prefilterMapInterpolatedFBO);
 
 	ShaderExtPBR_daynight_cycle::irradianceMap = irradianceMapInterpolated->getHandle();
@@ -1720,6 +1720,9 @@ void RenderManager::render()
 	}
 #endif
 
+	// Check to make sure the luminance adaptation compute shader is fimished
+	glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
+
 	//
 	// Apply @FXAA
 	//
@@ -1728,6 +1731,8 @@ void RenderManager::render()
 	glClear(GL_COLOR_BUFFER_BIT);
 	fxaaPostProcessingShader->use();
 	fxaaPostProcessingShader->setSampler("hdrColorBuffer", hdrColorBuffer);
+	fxaaPostProcessingShader->setSampler("luminanceProcessed", hdrLumAdaptationProcessed->getHandle());
+	fxaaPostProcessingShader->setFloat("exposure", exposure);
 	fxaaPostProcessingShader->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
 	renderQuad();
 
@@ -1792,9 +1797,6 @@ void RenderManager::render()
 
 		firstReconstruction = false;
 	}
-
-	// Check to make sure the luminance adaptation compute shader is fimished
-	glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT);
 
 	//
 	// Do tonemapping and post-processing
@@ -3423,11 +3425,11 @@ void RenderManager::renderImGuiContents()
 			INTERNALselectionSystemAveragePosition = averagePosition;
 			INTERNALselectionSystemLatestOrientation = latestOrientation;
 		}
-
 	}
 	tempDisableImGuizmoManipulateForOneFrame = false;
 
-	ImGuizmo::ViewManipulate(glm::value_ptr(cameraInfo.view), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
+	glm::mat4 cameraViewCopy = cameraInfo.view;
+	ImGuizmo::ViewManipulate(glm::value_ptr(cameraViewCopy), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
 }
 #endif
 

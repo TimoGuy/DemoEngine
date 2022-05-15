@@ -6,7 +6,9 @@ out vec4 fragColor;
 in vec2 texCoord;
 
 uniform sampler2D hdrColorBuffer;
+uniform sampler2D luminanceProcessed;
 uniform vec2 invFullResolution;
+uniform float exposure;
 
 
 #ifndef FXAA_REDUCE_MIN
@@ -20,18 +22,18 @@ uniform vec2 invFullResolution;
 #endif
 
 
-vec4 fxaa(sampler2D tex, vec2 fragCoord,
+vec4 fxaa(sampler2D tex, vec2 fragCoord, float luminance,
             vec2 v_rgbNW, vec2 v_rgbNE, 
             vec2 v_rgbSW, vec2 v_rgbSE, 
             vec2 v_rgbM)
 {
     vec4 color;
-    vec3 rgbNW = texture2D(tex, v_rgbNW).xyz;
-    vec3 rgbNE = texture2D(tex, v_rgbNE).xyz;
-    vec3 rgbSW = texture2D(tex, v_rgbSW).xyz;
-    vec3 rgbSE = texture2D(tex, v_rgbSE).xyz;
+    vec3 rgbNW = texture2D(tex, v_rgbNW).xyz * luminance;
+    vec3 rgbNE = texture2D(tex, v_rgbNE).xyz * luminance;
+    vec3 rgbSW = texture2D(tex, v_rgbSW).xyz * luminance;
+    vec3 rgbSE = texture2D(tex, v_rgbSE).xyz * luminance;
     vec4 texColor = texture2D(tex, v_rgbM);
-    vec3 rgbM  = texColor.xyz;
+    vec3 rgbM  = texColor.xyz * luminance;
     vec3 luma = vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(rgbNW, luma);
     float lumaNE = dot(rgbNE, luma);
@@ -89,6 +91,7 @@ void main()
 	mediump vec2 v_rgbSE;
 	mediump vec2 v_rgbM;
 
+	float avgLuminance = texture(luminanceProcessed, vec2(0.5, 0.5)).r;
 	texcoords(gl_FragCoord.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);
-	fragColor = fxaa(hdrColorBuffer, gl_FragCoord.xy, v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);
+	fragColor = fxaa(hdrColorBuffer, gl_FragCoord.xy, exposure * 0.5 / (avgLuminance + 0.001), v_rgbNW, v_rgbNE, v_rgbSW, v_rgbSE, v_rgbM);
 }
