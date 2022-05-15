@@ -453,7 +453,7 @@ void main()
     // Combine the colors with the shading
     //
     vec3 color = ambient + LoAtmos;
-    FragColor = vec4(color, 1.0 - (fresnelValue / 2.0));
+    FragColor = vec4(color, 1.0);  // - (fresnelValue / 2.0));
 
     //
     // @CLOUDS: combine clouds

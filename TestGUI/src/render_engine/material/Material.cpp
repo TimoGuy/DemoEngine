@@ -60,8 +60,14 @@ Texture* PBRMaterial::getMainTexture()
 //
 // ZellyMaterial
 //
+// @NOTE: The zelly material is opaque now bc of a decision I made with all the issues with the zelly material.
+// Turns out that it'd be easier to do a subsurface scattering thing, bc look at the lack of transparency with this:
+// https://www.youtube.com/shorts/dDZ9Mbf1GNo. Seems like by the time the faked subsurface scattering should be transparent,
+// fresnel has already taken over and it's a reflection instead. Dang nabbit.
+// 		-Timo
+//
 ZellyMaterial::ZellyMaterial(glm::vec3 color) :
-	Material((Shader*)Resources::getResource("shader;zelly"), 1.0f, 0.0f, true)
+	Material((Shader*)Resources::getResource("shader;zelly"), 1.0f, 1.0f, false)
 {
 	ZellyMaterial::color = color;
 }
