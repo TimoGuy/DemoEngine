@@ -8,7 +8,7 @@
 //			OpenGL 4.5 support (Minimum GTX 600 series and Radeon HD 7000 series)
 //			https://www.reddit.com/r/opengl/comments/edw1sh/graphics_card_that_supports_opengl_45/
 // 
-//			Intel® HD Graphics 520/530 or Intel® Iris® Plus Graphics 540/550/580
+//			Intel HD Graphics 520/530 or Intel Iris Plus Graphics 540/550/580
 //			https://www.intel.com/content/www/us/en/support/articles/000005524/graphics.html
 // 
 //		RECOMMENDED:
