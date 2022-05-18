@@ -23,7 +23,7 @@ Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata anima
 	assert(animation != nullptr);
 
 	duration = (float)animation->mDuration;
-	ticksPerSecond = (int)animation->mTicksPerSecond;
+	ticksPerSecond = (int)animation->mTicksPerSecond * animationMetadata.timestampSpeed;
 
 	aiMatrix4x4 globalTransformation = scene->mRootNode->mTransformation;
 	globalTransformation = globalTransformation.Inverse();

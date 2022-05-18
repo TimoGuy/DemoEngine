@@ -24,6 +24,7 @@ struct AnimationMetadata
 {
 	std::string animationName;
 	bool trackXZRootMotion;
+	float timestampSpeed = 1.0f;
 };
 
 class Model

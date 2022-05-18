@@ -202,6 +202,8 @@ public:
 	// doesn't have its effect anymore, then it'll revert back to the traditional grounded/airBourneFacingTurnSpeed systems.
 	//					-Timo
 	bool weaponDrawn = false;
+	bool weaponDrawnPrevIsGrounded = false;
+	int weaponDrawnStyle = 0;		// @NOTE: see @WEAPON_DRAWN_STYLE
 	glm::vec2 weaponDrawnSpinSpeedMinMax = { 200.0f, 1000.0f };
 	float weaponDrawnSpinAccumulated = 0.0f;			// @TODO: Make this accumulated spin amount keep going even after the player lets go of the weaponDrawn button!!!! (unless if they used the spin amount for an attack eh!)
 	float weaponDrawnSpinAmountThreshold = 150.0f;		// @NOTE: this is the threshold for the prespin to go into the real spinny spinny mode

@@ -34,7 +34,8 @@ void InputManager::resetInputs()
 	rightStickY = 0;
 
 	prev_jumpPressed = jumpPressed;
-	prev_attackPressed = attackPressed;
+	prev_attackWindupPressed = attackWindupPressed;
+	prev_attackUnleashPressed = attackUnleashPressed;
 	prev_interactPressed = interactPressed;
 	prev_useItemPressed = useItemPressed;
 	prev_transformPressed = transformPressed;
@@ -44,7 +45,8 @@ void InputManager::resetInputs()
 
 
 	jumpPressed = false;
-	attackPressed = false;
+	attackWindupPressed = false;
+	attackUnleashPressed = false;
 	interactPressed = false;
 	useItemPressed = false;
 	transformPressed = false;
@@ -106,7 +108,8 @@ void InputManager::updateInputState()
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state) == GLFW_TRUE)
 		{
 			jumpPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_A];
-			attackPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f);  // (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			attackWindupPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f);  // (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			attackUnleashPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
 			interactPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_B];
 			useItemPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_Y];
 			transformPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
@@ -169,7 +172,8 @@ void InputManager::updateInputState()
 
 		// KEYBOARD buttons
 		jumpPressed |= isKeyPressed(window, GLFW_KEY_SPACE);
-		attackPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
+		attackWindupPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
+		attackUnleashPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
 		interactPressed |= isKeyPressed(window, GLFW_KEY_E);
 		useItemPressed |= isKeyPressed(window, GLFW_KEY_F);
 		transformPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -200,7 +204,8 @@ void InputManager::updateInputState()
 
 	// Update the on_ variables
 	on_jumpPressed = (jumpPressed && !prev_jumpPressed);
-	on_attackPressed = (attackPressed && !prev_attackPressed);
+	on_attackWindupPressed = (attackWindupPressed && !prev_attackWindupPressed);
+	on_attackUnleashPressed = (attackUnleashPressed && !prev_attackUnleashPressed);
 	on_interactPressed = (interactPressed && !prev_interactPressed);
 	on_useItemPressed = (useItemPressed && !prev_useItemPressed);
 	on_transformPressed = (transformPressed && !prev_transformPressed);

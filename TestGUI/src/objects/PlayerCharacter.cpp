@@ -826,17 +826,12 @@ void PlayerCharacter::processMovement()
 			}
 		}
 
-		//static int prevAttackAnim = currentAttackAnim;		// @REFACTOR: fix this up. At least all the bugs below. Have some kind of isAttacking variable would be good I think.
-		weaponDrawn = InputManager::getInstance().attackPressed;
-		//if (InputManager::getInstance().on_attackPressed ||
-		//	(currentAttackAnim == -1 && !weaponDrawn && InputManager::getInstance().prev_attackPressed) ||		// @NOTE: this is when the player lets go of the attack button (while not doing an attack animation at that moment)
-		//	(currentAttackAnim == -1 && prevAttackAnim != -1 && !weaponDrawn))		// @NOTE: this is when the animation ends and the player isn't holding down the attack button anymore
-		//{
-		//	// @BUG: @TODO: fix that the animations can get reset while mid-attack or midair if you let go of the R trigger.
-		//	triggerAnimationStateReset = true;
-		//	currentAttackAnim = -1;
-		//}
-		//prevAttackAnim = currentAttackAnim;
+		if (InputManager::getInstance().on_attackWindupPressed)
+		{
+			weaponDrawn = true;
+			weaponDrawnPrevIsGrounded = false;		// Just resetting this flag so you can brandish midair
+			weaponDrawnStyle = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() ? (isMoving ? 2 : 1) : 3;	// @NOTE: @WEAPON_DRAWN_STYLE: 1: Horizontal; 2: Vertical; 3: Midair;
+		}
 
 		if (isMoving)
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::MOVE, MainLoop::getInstance().deltaTime);
@@ -1293,22 +1288,22 @@ float speedAnimRunningMult = 1.3f;			// @Debug
 float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
 {
-	constexpr int IDLE_ANIM				= 0;
-	constexpr int WALKING_ANIM			= 1;
-	constexpr int RUNNING_ANIM			= 2;
-	constexpr int JUMP_ANIM				= 3;
-	constexpr int LAND_ANIM				= 6;
-	constexpr int DRAW_WATER_ANIM		= 10;
-	constexpr int DRINK_WATER_ANIM		= 11;
-	constexpr int SHEATH_BOTTLE_ANIM	= 12;
-	constexpr int WRITE_IN_JOURNAL_ANIM	= 13;
-	constexpr int HUMAN_SPEC_WALL_CLIMB	= 14;
-	constexpr int HUMAN_SPEC_WALL_HANG	= 15;
-	constexpr int IDLE_WEAPON			= 16;
-	constexpr int ATTACK_LIGHT_UP		= 17;
-	constexpr int ATTACK_LIGHT_DOWN		= 18;
-	constexpr int ATTACK_LIGHT_LEFT		= 19;
-	constexpr int ATTACK_LIGHT_RIGHT	= 20;
+	constexpr int IDLE_ANIM					= 0;
+	constexpr int WALKING_ANIM				= 1;
+	constexpr int RUNNING_ANIM				= 2;
+	constexpr int JUMP_ANIM					= 3;
+	constexpr int LAND_ANIM					= 6;
+	constexpr int DRAW_WATER_ANIM			= 10;
+	constexpr int DRINK_WATER_ANIM			= 11;
+	constexpr int SHEATH_BOTTLE_ANIM		= 12;
+	constexpr int WRITE_IN_JOURNAL_ANIM		= 13;
+	constexpr int HUMAN_SPEC_WALL_CLIMB		= 14;
+	constexpr int HUMAN_SPEC_WALL_HANG		= 15;
+	constexpr int IDLE_WEAPON_HORIZONTAL	= 16;
+	constexpr int IDLE_WEAPON_VERTICAL		= 17;
+	constexpr int ATTACK_LIGHT_HORIZONTAL	= 18;
+	constexpr int ATTACK_LIGHT_VERTICAL		= 19;
+	constexpr int ATTACK_MIDAIR				= 20;
 
 	//
 	// Process movement into animationstates
@@ -1424,19 +1419,53 @@ void PlayerCharacter::processAnimation()
 	}
 	else if (animationState == 10)
 	{
-		if (!weaponDrawn)
+		bool isGrounded = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded();
+
+		if (isGrounded && weaponDrawnStyle == 3)
+			weaponDrawnStyle = 2;		// Revert back to the Vertical swing (if didn't unleash the swing while midair)
+
+		if (!InputManager::getInstance().attackWindupPressed)
 		{
+			// Stopped drawing the weapon
+			weaponDrawn = false;
 			animationState = 0;
 			triggerAnimationStateReset = true;
 		}
+		else if (weaponDrawnPrevIsGrounded && !isGrounded)
+			// Jump
+			animationState = 2;
+		else if (InputManager::getInstance().on_attackUnleashPressed)
+			// Unleash attack
+			animationState = 11;
+
+		weaponDrawnPrevIsGrounded = isGrounded;
+	}
+	else if (animationState == 11)
+	{
+		bool isFinished = false;
+		if (weaponDrawnStyle == 1)
+			isFinished = animator.isAnimationFinished(ATTACK_LIGHT_HORIZONTAL, MainLoop::getInstance().deltaTime);
+		else if (weaponDrawnStyle == 2)
+			isFinished = animator.isAnimationFinished(ATTACK_LIGHT_VERTICAL, MainLoop::getInstance().deltaTime);
+		else if (weaponDrawnStyle == 3)
+			isFinished = animator.isAnimationFinished(ATTACK_MIDAIR, MainLoop::getInstance().deltaTime);
+
+		if (isFinished)
+			// Go back to having the weaponDrawn
+			animationState = 10;
 	}
 
 	//
 	// Overriding animation states
 	//
-	if (playerState == PlayerState::NORMAL && weaponDrawn)
+	if (playerState == PlayerState::NORMAL && InputManager::getInstance().on_attackWindupPressed /*&& ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded()*/)
 	{
-		animationState = 10;
+		animationState = 10;		// @NOTE: this simply *starts* the weapon holding animation
+	}
+
+	if (animationState != 10 && animationState != 11)
+	{
+		weaponDrawn = false;		// @NOTE: this forces weaponDrawn to be false when the animation state changes. You have to do RT/LClick again to get weaponDrawn=true
 	}
 
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
@@ -1532,7 +1561,31 @@ void PlayerCharacter::processAnimation()
 
 		case 10:
 			// Idle with weapon drawn
-			animator.playAnimation(IDLE_WEAPON, 6.0f, true, true);
+			// @IDEA: @TODO: have different circumstances to start in different weapon stances
+			// 				Like, with vertical overhead stance, you need to move, but what if you brandished your weapon
+			//				right as you landed? That'd probably be a very low stance to take the shock of the land, and you're
+			//				all ready to swing the weapon high and up.
+			// @RESPONSE: So I like this idea. Perhaps after a little bit, if you don't use the stance, it reverts back
+			//				to the IDLE_WEAPON_HORIZONTAL stance? That'd be interesting. Especially with the landing-low-stance
+			//				one, bc you're literally using the force of landing to explode upwards in a swing. Also, this explosive
+			//				swing should be much faster than the default horizontal one. It just seems to make sense to me.
+			//				The vertical stance you get if you get into stance while moving makes sense bc you want the weapon
+			//				away from your legs if you're moving. Idk if this vertical move should be faster or more powerful
+			//				in any way, but we shall see eh!  -Timo
+			if (weaponDrawnStyle == 1)
+				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true, true);
+			else if (weaponDrawnStyle == 2 || weaponDrawnStyle == 3)
+				animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true, true);
+			break;
+
+		case 11:
+			// Unleash the weapon stance
+			if (weaponDrawnStyle == 1)
+				animator.playAnimation(ATTACK_LIGHT_HORIZONTAL, 6.0f, false, true);
+			else if (weaponDrawnStyle == 2)
+				animator.playAnimation(ATTACK_LIGHT_VERTICAL, 6.0f, false, true);
+			else if (weaponDrawnStyle == 3)
+				animator.playAnimation(ATTACK_MIDAIR, 3.0f, false, true);
 			break;
 
 		default:

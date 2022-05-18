@@ -15,14 +15,15 @@ public:
 	//
 	float leftStickX, leftStickY;
 	float rightStickX, rightStickY;
-	bool jumpPressed,		prev_jumpPressed,		on_jumpPressed,
-		attackPressed,		prev_attackPressed,		on_attackPressed,
-		interactPressed,	prev_interactPressed,	on_interactPressed,
-		useItemPressed,		prev_useItemPressed,	on_useItemPressed,
-		transformPressed,	prev_transformPressed,	on_transformPressed,
-		resetCamPressed,	prev_resetCamPressed,	on_resetCamPressed,
-		inventoryPressed,	prev_inventoryPressed,	on_inventoryPressed,
-		pausePressed,		prev_pausePressed,		on_pausePressed;
+	bool jumpPressed,			prev_jumpPressed,			on_jumpPressed,
+		attackWindupPressed,	prev_attackWindupPressed,	on_attackWindupPressed,
+		attackUnleashPressed,	prev_attackUnleashPressed,	on_attackUnleashPressed,
+		interactPressed,		prev_interactPressed,		on_interactPressed,
+		useItemPressed,			prev_useItemPressed,		on_useItemPressed,
+		transformPressed,		prev_transformPressed,		on_transformPressed,
+		resetCamPressed,		prev_resetCamPressed,		on_resetCamPressed,
+		inventoryPressed,		prev_inventoryPressed,		on_inventoryPressed,
+		pausePressed,			prev_pausePressed,			on_pausePressed;
 
 	void INTERNALSetIJ1CAIG(bool flag);
 
@@ -45,10 +46,11 @@ private:
 ///			WASD 		/		leftstick		- move
 ///			movemouse	/		rightstick		- adjust camera / (when weapon is out, attack)
 ///			space		/		A				- jump
-///			leftclick	/		X				- brandish/sheath weapon
+///			leftclick	/		RightTrigger	- (hold)brandish/(release)sheath weapon
+///			rightclick	/		X				- unleash attack (If weapon brandished)
 ///			E			/		B				- interact
 ///			F			/		Y				- use item (usually drink water)
-///			rightclick	/		RightBumper		- transform
+///			rightclick	/		RightBumper		- transform (If weapon sheathed)
 ///			middleclick /		lefttrigger		- reset camera
 ///			tab			/		backbtn			- open inventory(does not pause)
 ///			esc			/		start			- pause(only option is to exit game)
