@@ -255,7 +255,7 @@ private:
 	//
 	// Rope Simulations
 	//
-	RopeSimulation leftSideburn, rightSideburn, backAttachment;
+	RopeSimulation leftSideburn, rightSideburn;
 
 	//
 	// HUMAN transformation

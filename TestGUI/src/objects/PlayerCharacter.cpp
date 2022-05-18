@@ -1623,7 +1623,7 @@ void PlayerCharacter::processAnimation()
 	{
 		const glm::mat4 globalTransform = getTransform() * model->localTransform;
 
-		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime || backAttachment.isFirstTime)
+		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime)
 		{
 			//
 			// Setup Rope simulations
@@ -1643,15 +1643,8 @@ void PlayerCharacter::processAnimation()
 			leftSideburnPoints.push_back(globalTransform * animator.getBoneTransformation("Hair Sideburn4.L").globalTransformation * neutralPosition);
 			leftSideburn.initializePoints(leftSideburnPoints);
 
-			std::vector<glm::vec3> backAttachmentPoints;
-			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
-			backAttachmentPoints.push_back(globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * (neutralPosition + glm::vec4(0, -10, 0, 0)));
-			backAttachment.initializePoints(backAttachmentPoints);
-			backAttachment.limitTo45degrees = true;
-
 			rightSideburn.isFirstTime = false;
 			leftSideburn.isFirstTime = false;
-			backAttachment.isFirstTime = false;
 		}
 		else
 		{
@@ -1661,11 +1654,9 @@ void PlayerCharacter::processAnimation()
 			static const glm::vec4 neutralPosition(0, 0, 0, 1);
 			leftSideburn.setPointPosition(0, 0.05f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.L").globalTransformation * neutralPosition);
 			rightSideburn.setPointPosition(0, 0.05f, globalTransform * animator.getBoneTransformation("Hair Sideburn1.R").globalTransformation * neutralPosition);
-			backAttachment.setPointPosition(0, 0.025f, globalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * neutralPosition);
 
 			leftSideburn.simulateRope(hairWeightMult);
 			rightSideburn.simulateRope(hairWeightMult);
-			backAttachment.simulateRope(hairWeightMult * 25.0f);
 
 			//
 			// Do ik calculations for sideburns
@@ -1681,9 +1672,6 @@ void PlayerCharacter::processAnimation()
 			const glm::vec3 l1 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(1), 1);
 			const glm::vec3 l2 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(2), 1);
 			const glm::vec3 l3 = inverseRenderTransform * glm::vec4(leftSideburn.getPoint(3), 1);
-
-			const glm::vec3 b0 = inverseRenderTransform * glm::vec4(backAttachment.getPoint(0), 1);
-			const glm::vec3 b1 = inverseRenderTransform * glm::vec4(backAttachment.getPoint(1), 1);
 
 			const glm::quat rotation180(glm::radians(glm::vec3(180, 0, 0)));
 
@@ -1703,9 +1691,6 @@ void PlayerCharacter::processAnimation()
 			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(l3 - l2));
 			animator.setBoneTransformation("Hair Sideburn3.L", glm::translate(glm::mat4(1.0f), l2) * glm::toMat4(rotation * rotation180));
 			animator.setBoneTransformation("Hair Sideburn4.L", glm::translate(glm::mat4(1.0f), l3) * glm::toMat4(rotation * rotation180));
-
-			rotation = glm::quat(glm::vec3(0, -1, 0), glm::normalize(b1 - b0));
-			animator.setBoneTransformation("Back Attachment", glm::translate(glm::mat4(1.0f), b0) * glm::toMat4(rotation * rotation180));
 		}
 
 		//
