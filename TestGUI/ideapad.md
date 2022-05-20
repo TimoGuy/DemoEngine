@@ -95,6 +95,14 @@ NOTE: below are some super secret moves that really you're only supposed to lear
       - NOTE: It does not make a difference if <7% of the screen has pixels in it eh!
 
 
+
+- [ ] Clouds using signed distance fields
+  - [ ] The clouds system steps thru the volume at a logarithmic rate, however, this doesn't help performance bc of the non-constant stepping as well as the kinda weird system of 
+  - [ ] Results (NOTE: these are while recroding on obs):
+    - BEFORE: 160fps (6.2~ms per frame)
+    - 
+
+
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
   - [ ] 2022-04-27 findings:
     - [ ] 4k current benchmark: avg. 53fps (release)

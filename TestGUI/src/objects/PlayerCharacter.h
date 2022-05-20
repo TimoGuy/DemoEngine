@@ -207,7 +207,7 @@ public:
 	glm::vec2 weaponDrawnSpinSpeedMinMax = { 200.0f, 1000.0f };
 	float weaponDrawnSpinAccumulated = 0.0f;			// @TODO: Make this accumulated spin amount keep going even after the player lets go of the weaponDrawn button!!!! (unless if they used the spin amount for an attack eh!)
 	float weaponDrawnSpinAmountThreshold = 150.0f;		// @NOTE: this is the threshold for the prespin to go into the real spinny spinny mode
-	float weaponDrawnSpinDeceleration = 200.0f;
+	float weaponDrawnSpinDeceleration = 100.0f;
 	float weaponDrawnSpinBuildupAmount = 1000.0f;		// @NOTE: this is used in the calculation for the spinSpeedMinMaxLerpValue
 	bool prevIsSpinnySpinny = false;					// @FIXME: This likely won't do much good??? Idk. This isn't the right spot for it for sure. @REFACTOR
 	
