@@ -35,6 +35,9 @@
   - [x] Fixed with the correct atmosphere transmittance formula
 
 
+- **NOTE: DO NOT USE TAA, STAY WITH FXAA AND THEN WHEN FSR2.0 COMES OUT, PORT THIS SUCKER TO VULKAN AND USE ITS TAA**
+
+
 ##### Low priority
 
 - [x] Hey Janitor, there's a red 0 in the luminance texture, fyi
