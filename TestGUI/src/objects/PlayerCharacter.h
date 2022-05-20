@@ -209,6 +209,7 @@ public:
 	float weaponDrawnSpinAmountThreshold = 150.0f;		// @NOTE: this is the threshold for the prespin to go into the real spinny spinny mode
 	float weaponDrawnSpinDeceleration = 200.0f;
 	float weaponDrawnSpinBuildupAmount = 1000.0f;		// @NOTE: this is used in the calculation for the spinSpeedMinMaxLerpValue
+	bool prevIsSpinnySpinny = false;					// @FIXME: This likely won't do much good??? Idk. This isn't the right spot for it for sure. @REFACTOR
 	
 	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;

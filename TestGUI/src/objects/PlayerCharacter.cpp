@@ -1304,6 +1304,9 @@ void PlayerCharacter::processAnimation()
 	constexpr int ATTACK_LIGHT_HORIZONTAL	= 18;
 	constexpr int ATTACK_LIGHT_VERTICAL		= 19;
 	constexpr int ATTACK_MIDAIR				= 20;
+	constexpr int SPINNY_SPINNY_ANIM		= 21;
+	constexpr int IDLE_SPINNY_LEFT_ANIM		= 22;
+	constexpr int IDLE_SPINNY_RIGHT_ANIM	= 23;
 
 	//
 	// Process movement into animationstates
@@ -1491,6 +1494,11 @@ void PlayerCharacter::processAnimation()
 	//
 	// Update Animation State
 	//
+	const bool isSpinnySpinny = glm::abs(weaponDrawnSpinAccumulated) > weaponDrawnSpinAmountThreshold;
+	if (prevIsSpinnySpinny != isSpinnySpinny)
+		triggerAnimationStateReset = true;
+	prevIsSpinnySpinny = isSpinnySpinny;
+
 	if (triggerAnimationStateReset ||
 		prevAnimState != animationState)
 	{
@@ -1500,18 +1508,25 @@ void PlayerCharacter::processAnimation()
 		{
 		case 0:
 			// Idle
-			animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+			if (isSpinnySpinny)
+				animator.playAnimation(weaponDrawnSpinAccumulated > 0.0f ? IDLE_SPINNY_LEFT_ANIM : IDLE_SPINNY_RIGHT_ANIM, 6.0f, false, true);
+			else
+				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+
 			break;
 
 		case 1:
 			// Move
-			animator.playBlendTree(
-				{
-					{ (size_t)WALKING_ANIM, minMvtVectorMagnitude, "walkRunBlendVar" },
-					{ (size_t)RUNNING_ANIM, groundRunSpeed }
-				},
-				6.0f, true
-			);
+			if (isSpinnySpinny)
+				animator.playAnimation(IDLE_SPINNY_LEFT_ANIM, 6.0f, false, true);
+			else
+				animator.playBlendTree(
+					{
+						{ (size_t)WALKING_ANIM, minMvtVectorMagnitude, "walkRunBlendVar" },
+						{ (size_t)RUNNING_ANIM, groundRunSpeed }
+					},
+					6.0f, true
+				);
 			break;
 
 		case 2:
@@ -1560,6 +1575,12 @@ void PlayerCharacter::processAnimation()
 			break;
 
 		case 10:
+			if (isSpinnySpinny)
+			{
+				animator.playAnimation(SPINNY_SPINNY_ANIM, 6.0f, false, true);
+				break;		// Break early if figured out that I'm a spinny spinny!
+			}	
+
 			// Idle with weapon drawn
 			// @IDEA: @TODO: have different circumstances to start in different weapon stances
 			// 				Like, with vertical overhead stance, you need to move, but what if you brandished your weapon
