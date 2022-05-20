@@ -100,7 +100,9 @@ NOTE: below are some super secret moves that really you're only supposed to lear
   - [ ] The clouds system steps thru the volume at a logarithmic rate, however, this doesn't help performance bc of the non-constant stepping as well as the kinda weird system of 
   - [ ] Results (NOTE: these are while recroding on obs):
     - BEFORE: 160fps (6.2~ms per frame)
-    - 
+    - AFTER: 40-160fps (very bad. If looking at the horizon, very bad)
+    - [ ] I want you to try: going back to the accumulation of transmittance algorithm and see how that looks.
+      - It may be that I gotta do this and apply this to all opaque objects and just do the transparent objects as their own post-processing effect. 
 
 
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
