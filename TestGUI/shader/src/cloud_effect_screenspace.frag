@@ -360,7 +360,7 @@ void main()
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     const float deltaPositionLength = length(deltaPosition);
                 
-    const float offsetAmount = 0.0;  // offsetAmount();
+    const float offsetAmount = offsetAmount();
     const float rayLength = min(deltaPositionLength, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
     
@@ -380,29 +380,30 @@ void main()
     //
     // RAYMARCH!!!
     //
+    // @NOTE: These are the moments when the clouds went from the old method to the new method.
+    //      https://github.com/TimoGuy/DemoEngine/commit/0ca87fbcf02253911a86fa585003b35a6161e272
+    //      https://github.com/TimoGuy/DemoEngine/commit/c23da6c18c33c25c5f05dab5b41948facda1e6e7
+    //
+    // @NOTE: Reverted from the new method of signed distance fields. The performance just wasn't as good.
+    //
     float transmittance = 1.0;
     float lightEnergy = 0.0;
     float phaseValue = phase(dot(deltaPositionNormalized, -lightDirection));
     vec3 ambientLightEnergy = vec3(0.0);
     vec4 atmosValues = vec4(0.0);
 
-    int numTimes = 0;
-    float signedDistanceMultiplier = farRaymarchStepsizeMultiplier;        // @TODO: @TEMP: Use this metric to dictate the step size of the ray. Start at 50? Or 100?  -Timo
-
     while (distanceTraveled < rayLength)
     {
-        numTimes++;
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
         float density = sampleDensityAtPoint(offsetCurrentPosition);
-        float signedDistance = densityRequirement - density;
 
-        //if (abs(signedDistance) < raymarchOffset)        // @TODO: @TEMP: make a proper epsilon threshold for the raymarching!!!  -Timo
-        if (signedDistance < raymarchOffset)
+        if (density > densityRequirement)
         {
             float inScatterTransmittance = inScatterLightMarch(offsetCurrentPosition);
 
+            float d = density - densityRequirement;
             lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
             transmittance = 0.0;
             
@@ -421,28 +422,18 @@ void main()
             // Calculate the irradiance in the direction of the ray
             const vec3 sampleDirection = vec3(0, -1, 0);  // @NOTE: the sampleDirection was changed from the view direction to straight down bc ambient light reflecting off the ground would be in the straight down view direction.
 	        vec3 irradiance = texture(irradianceMap, sampleDirection).rgb;
-            ambientLightEnergy = exp(-shadowDensity * ambientDensity) * irradiance * irradianceStrength;
+            ambientLightEnergy = exp(-shadowDensity * ambientDensity)/* * d*/ * irradiance * irradianceStrength;
             break;
         }
 
-        //// Do a binary search-like back and forth multiplying by 0.5 here!
-        //if ((signedDistanceMultiplier > 0.0 && signedDistance < raymarchOffset) ||
-        //    (signedDistanceMultiplier < 0.0 && signedDistance > raymarchOffset))
-        //    signedDistanceMultiplier *= -0.25;
-
         // Update deltaStepIncrement
-        //RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
-        RAYMARCH_STEP_SIZE = signedDistance * signedDistanceMultiplier;
+        RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
         deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
 
         // Advance march
         currentPosition += deltaStepIncrement;
         distanceTraveled += RAYMARCH_STEP_SIZE;
     }
-
-    //fragmentColor = vec4(vec3(float(numTimes)), 0.0);
-    //return;
-
 
     fragmentColor =
         vec4(
