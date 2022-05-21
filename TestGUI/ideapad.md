@@ -1,6 +1,26 @@
 ﻿# Solanine Ideapad
 
-## Rendering
+## Engine Tech
+
+### Music and SFX
+
+- [ ] Implement FMOD into the game
+
+
+
+
+
+
+### Migration to Vulkan to use DLSS 2.4 and FSR 2.0
+
+- [ ] Velocity Buffer is needed too yo
+
+
+
+
+
+
+### Rendering
 
 
 - [ ] Clouds Optimizations
@@ -9,14 +29,11 @@
 
 
 
-
-
-
-
-
 - [x] Clouds
 - [x] Better atmospheric scattering
   - [x] Fixed the unusual clamping issue and fixes the rsi. Can't go to space yet unfortunately...
+
+
 
 - [x] Make a fog system. That's physically accurate
   - [x] It uses this: https://sebh.github.io/publications/egsr2020.pdf
@@ -38,7 +55,9 @@
 - **NOTE: DO NOT USE TAA, STAY WITH FXAA AND THEN WHEN FSR2.0 COMES OUT, PORT THIS SUCKER TO VULKAN AND USE ITS TAA**
 
 
-##### Low priority
+
+
+#### Low priority
 
 - [x] Hey Janitor, there's a red 0 in the luminance texture, fyi
 - [ ] Fix raymarching issues with edge of Clouds
@@ -47,6 +66,82 @@
   - [x] Okay, so I think the possible cause for this was because the depth-sliced atmospheric LUT got cut off early and so the fringes of the atmosphere just never got included.
     - [x] Oh yeah, I fixed it btw. (Up to a certain distance lol)
 
+
+
+
+
+### Performance
+
+- [x] Get there to be a rendering step before any pbr related rendering happens where the irradiance and prefilter textures are rendered.
+  - NOTE: here's how the performance stacks up:
+    - *BEFORE*: Screen space (1920x1080): 2073600 pixel lookups and mix() operations
+    - *AFTER*: 6 * (128^2 + 64^2 + 32^2 + 16^2 + 8^2 + 32^2) = 137088 pixels
+      - AFTER is significantly fewer pixels than 1080p. I'd say it's worth it, bc it's 7% of the pixels as 1080p.
+      - NOTE: It does not make a difference if <7% of the screen has pixels in it eh!
+
+
+
+- [ ] Clouds using signed distance fields
+  - [ ] The clouds system steps thru the volume at a logarithmic rate, however, this doesn't help performance bc of the non-constant stepping as well as the kinda weird system of 
+  - [ ] Results (NOTE: these are while recroding on obs):
+    - BEFORE: 160fps (6.2~ms per frame)
+    - AFTER: 40-160fps (very bad. If looking at the horizon, very bad)
+    - [ ] I want you to try: going back to the accumulation of transmittance algorithm and see how that looks.
+      - It may be that I gotta do this and apply this to all opaque objects and just do the transparent objects as their own post-processing effect.
+
+
+- [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
+  - [ ] 2022-04-27 findings:
+    - [ ] 4k current benchmark: avg. 53fps (release)
+    - [ ] 1440p current benchmark: avg. 134fps (release)
+    - [ ] 1080p current benchmark: avg. 230fps (release)
+    - [ ] NOTE: these results are similar to an rtx 2080 ti on Shadow of the Tomb Raider (4k).
+      - [ ] Well, my numbers are a little lower, bc Shadow of the Tomb Raider is more like avg. 58fps
+
+
+
+
+
+### Things that could improve
+
+- [ ] Cloud rendering (duh...)
+  - [ ] If you were okay with a cloudscape that never changed density, you could render out a distance function for the clouds
+
+- [ ] Shadows
+  - [ ] All the static objects could be the only ones with shadow and then all the dynamic objects could just have a shadow for a certain distance.
+    - [ ] That way can minimize (ofc opening doors would have to be a part of the dynamic shadow map) the shadows being rendered for the main light.
+
+- [ ] Forward rendering better
+  - [ ] NOTE: I don't really know what the bottleneck is honestly.
+  - [ ] Could look into how to do indirect rendering? Or instanced rendering.
+  - [ ] Could render the z-prepass front-to-back instead of random
+  - [ ] Could make this be a clustered forward shading system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------
 
 ## Gameplay
 
@@ -73,6 +168,8 @@ NOTE: below are some super secret moves that really you're only supposed to lear
     - [ ] So with the light transformations, something like a helicopter would be effective, but with the heavy transformations, you'd wanna go in the reverse spinny spinny direction to do a drill/ground-pound (reverse of the helicopter bc it pushed you downwards). With the added weight, the pound onto the ground is greater.
 
 
+
+
 ### Transformations?
 
 - [ ] Scaling up walls with monster transformation
@@ -85,53 +182,50 @@ NOTE: below are some super secret moves that really you're only supposed to lear
 - [ ] What's below the cloud layer?
   - [ ] Glass. A world heated so much and cured of so much impurity that it's a perfect sphere that reflects the sky. ~~A world burnt so bad that there's glass underneath and it's a perfect sphere that reflects the sky. This is true with the night sky if you look closely. You'll see this much better when the cloud layer is removed.~~
 
-## Performance
-
-- [x] Get there to be a rendering step before any pbr related rendering happens where the irradiance and prefilter textures are rendered.
-  - NOTE: here's how the performance stacks up:
-    - *BEFORE*: Screen space (1920x1080): 2073600 pixel lookups and mix() operations
-    - *AFTER*: 6 * (128^2 + 64^2 + 32^2 + 16^2 + 8^2 + 32^2) = 137088 pixels
-      - AFTER is significantly fewer pixels than 1080p. I'd say it's worth it, bc it's 7% of the pixels as 1080p.
-      - NOTE: It does not make a difference if <7% of the screen has pixels in it eh!
 
 
 
-- [ ] Clouds using signed distance fields
-  - [ ] The clouds system steps thru the volume at a logarithmic rate, however, this doesn't help performance bc of the non-constant stepping as well as the kinda weird system of 
-  - [ ] Results (NOTE: these are while recroding on obs):
-    - BEFORE: 160fps (6.2~ms per frame)
-    - AFTER: 40-160fps (very bad. If looking at the horizon, very bad)
-    - [ ] I want you to try: going back to the accumulation of transmittance algorithm and see how that looks.
-      - It may be that I gotta do this and apply this to all opaque objects and just do the transparent objects as their own post-processing effect. 
 
 
-- [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
-  - [ ] 2022-04-27 findings:
-    - [ ] 4k current benchmark: avg. 53fps (release)
-    - [ ] 1440p current benchmark: avg. 134fps (release)
-    - [ ] 1080p current benchmark: avg. 230fps (release)
-    - [ ] NOTE: these results are similar to an rtx 2080 ti on Shadow of the Tomb Raider (4k).
-      - [ ] Well, my numbers are a little lower, bc Shadow of the Tomb Raider is more like avg. 58fps
 
 
-### Things that could improve
 
-- [ ] Cloud rendering (duh...)
-  - [ ] If you were okay with a cloudscape that never changed density, you could render out a distance function for the clouds
 
-- [ ] Shadows
-  - [ ] All the static objects could be the only ones with shadow and then all the dynamic objects could just have a shadow for a certain distance.
-    - [ ] That way can minimize (ofc opening doors would have to be a part of the dynamic shadow map) the shadows being rendered for the main light.
 
-- [ ] Forward rendering better
-  - [ ] NOTE: I don't really know what the bottleneck is honestly.
-  - [ ] Could look into how to do indirect rendering? Or instanced rendering.
-  - [ ] Could render the z-prepass front-to-back instead of random
-  - [ ] Could make this be a clustered forward shading system.
+---------
+
+## Story
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------
+
+## 
+
+
+
+
+
+
+
+
+
+
+---------
 
 ## MISC notes
 
-##### VS2022 Stuff
+### VS2022 Keyboard shortcuts
 - Use CTRL+\, CTRL+Bkspace to float a window (custom to me)
 - Use CTRL+\, CTRL+\ to make a new vsplit (custom to me)
 - Use CTRL+SHIFT+ALT+(PgUp/PgDn) to move tabs over to different tab groups (custom to me)
