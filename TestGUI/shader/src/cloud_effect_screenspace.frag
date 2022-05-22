@@ -114,20 +114,8 @@ float maxRaymarchLength()       // @NOTE: this is probs best to do cpu side inst
 
 vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
 {
-    //float zInterpolation = mod(abs(str.z), 1.0);
-    //str.xy = mod(str.xy, 1.0);
-    //
-    //vec4 color =
-    //    mix(
-    //        texture(tex, vec3(str.xy, mod(floor(zInterpolation * numTexLayers - 1.0), numTexLayers))).rgba,
-    //        texture(tex, vec3(str.xy, floor(zInterpolation * numTexLayers))).rgba,
-    //        zInterpolation
-    //    );
-
     // SAMPLER3D method
     vec4 color = texture(tex, str).rgba;
-
-    //return (color + densityOffset) * densityMultiplier;
     return color;
 }
 
@@ -392,8 +380,11 @@ void main()
     vec3 ambientLightEnergy = vec3(0.0);
     vec4 atmosValues = vec4(0.0);
 
+    int count = 0;
+
     while (distanceTraveled < rayLength)
     {
+        count++;
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
@@ -434,6 +425,10 @@ void main()
         currentPosition += deltaStepIncrement;
         distanceTraveled += RAYMARCH_STEP_SIZE;
     }
+
+    // @DEBUG: See how many times a cloud's textures were calculated
+    // fragmentColor = vec4(vec3(float(count)), 1.0);
+    // return;
 
     fragmentColor =
         vec4(

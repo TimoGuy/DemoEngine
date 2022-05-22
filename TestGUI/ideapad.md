@@ -89,6 +89,7 @@
     - [x] I want you to try: going back to the accumulation of transmittance algorithm and see how that looks.
       - It may be that I gotta do this and apply this to all opaque objects and just do the transparent objects as their own post-processing effect.
       - Okay, it's not great. I got 140fps or so. Go back to the before. That way's the best.
+  - [x] reverted to 291ef1e89d445971b1df49677a2f6a520ffa35d4 version (old version that ran at 160fps)
 
 
 - [ ] The idea is to get a similar performance metric to a AAA game in 1080p and 4k.
