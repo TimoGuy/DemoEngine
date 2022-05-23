@@ -172,8 +172,8 @@ void InputManager::updateInputState()
 
 		// KEYBOARD buttons
 		jumpPressed |= isKeyPressed(window, GLFW_KEY_SPACE);
-		attackWindupPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
-		attackUnleashPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
+		attackWindupPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
+		attackUnleashPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
 		interactPressed |= isKeyPressed(window, GLFW_KEY_E);
 		useItemPressed |= isKeyPressed(window, GLFW_KEY_F);
 		transformPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
