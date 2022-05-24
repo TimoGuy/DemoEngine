@@ -17,15 +17,15 @@ Calm down. Calm down. Perhaps she's just taking awhile. Let's just wait another 
 
 Footsteps sound, sluggishly treading towards the front of the door. A shadow peeks under, blocking the light that was making it thru underneath the doorway.
 The footsteps are slow, however. Is this Jojette? A large sigh followed by heavy, slow panting is heard outside.
-Slowly, almost fearful by what was on Jojo's side, the doorknob is turned and the door is slowly opened until about a quarter of the way. It stops.
-Then, a kick is heard as the door flies open, revealing a silhouette blocking the evening sun. It's Jojette standing in the doorway, eyes wide open
-fearful for what she might have to see in Jojo's bed.
+Slowly, almost fearful by what was on Jojo's side, the person behind the door cracks it open and the door is slowly opened
+until about a quarter of the way. It stops. A sigh is heard. Then suddenly, a kick flies the door open, revealing a silhouette
+blocking the evening sun. It's Jojette standing in the doorway, eyes wide open fearful for what she might have to see in Jojo's bed.
 
 Jojo, realizing that it's his sister, allows his face to relax from his tense expression ready to face disappointment.
 Jojo gives himself a moment, then allows himself a smile his strength would allow. What a joyous moment. Water is here.
 Jojo was thinking he was abandoned, but now he's thinking he will get to live for some time longer.
 
-Jojette proudly turns around to grab the large canteen of water. The canteen was designed to be strapped to one's back,
+Jojette smiles brightly and proudly turns around to grab the large canteen of water. The canteen was designed to be strapped to one's back,
 however, likely due to Jojette's own weakness, had opted to drag it on the ground. Jojette grabs the canteen and shows Jojo
 with a thumbs up how much water she was able to save for Jojo. Jojo's heart sank. The amount accumulated inside of the bottle was
 a mere puddle's worth. Why was there so little water in this world???
@@ -35,21 +35,21 @@ light. Come to think of it, has Jojette not even drank any of this water while s
 tiny amount of water in that canteen with Jojette?? The proposition was getting more and more bleak for Jojo as he spiraled into
 the reality he found himself in.
 
-A loud thud sounded, with an audible crack. Jojo's eyes shoot to the bottle. The bottle had cracked! The water had started
+A loud thud sounded, accompanied by an audible crack. Jojo's eyes shoot to the bottle. The bottle had cracked! Water had started
 spilling out of the bottle and Jojette was already face down on the ground drinking it all up! In a moment of fury and fear of
-all this precious water slipping between the cracks in the floorboard, Jojo lifts his sheets and hops out of his bed, eager to slurp
+all this precious water slipping between the cracks in the floorboard, Jojo lifts his sheets and hops out of his bed, desparate to slurp
 up as much of this water as he could.
 
 How many months had it been for Jojo being in the bed, unable to leave? This question rang into Jojo's mind as he hurled himself
 out of his bed. Another audible crack sounds as Jojo's left side makes contact with the floor. Jojo's pain in his leg grows to near-unbearable
 levels. The cool water that the left side of his head managed to land into was bliss. Jojo licks the water and enjoys as much as
-he can in the short moment before the water had fully been soaked up by the thirsty floorboards.
+he can in the short moment as the lion's share of the water had been claimed by the thirsty floorboards.
 
 Jojo looks across at his sister's expression to see what she thought of his response to her selfish act. Jojette's eyes were
-wide, face straight towards the ground, her whole body quivering. That audible crack was actually Jojette, not the bottle.
-Upon realizing Jojo's grave mistake and how he had just taken all of the water for both of them, his heart sinks and the pain
-of his broken leg really starts setting in. Panicking, he tries lifting his arm to give Jojette some water but the pain is
-unbearable at this point. He succumbs and passes out.
+wide, face straight towards the ground, her whole body quivering. Something was wrong. Upon realizing that that audible crack was actually
+Jojette, not the bottle, Jojo's heart sinks, realizing he had just taken all of the water that was meant for both of them. Almost by cue, the pain
+of his broken leg really starts setting in. Filled with guilt, Jojo notices a small pool of leftover water on a divet in the floorboards,
+so he tries lifting his arm to give Jojette some water. However, the pain is unbearable at this point. He succumbs to it and passes out.
 
 
 ### Part 2
@@ -102,7 +102,7 @@ bottle again."
 > NOTE: the bottle is Jojo's companion. It cannot be separated, except if Jojo wills it to come into his hands for things
 > like attacking or drawing water. As he puts his hands into position, the bottle will release itself and fly into his hands.
 >
-> DUBBLE NOTE: So later on, Jojo will learn to will himself to his bottle, and with this technique, he can throw the bottle
+> <sub>DUBBLE</sub>NOTE: So later on, Jojo will learn to will himself to his bottle, and with this technique, he can throw the bottle
 > somewhere and end up where the bottle is. The relationship with his bottle is very important.
 
 
@@ -117,7 +117,7 @@ bottle again."
 > however, they will guard it with their life. To use the tool functionally, you will need to kill them.
 
 
-
+### Part 3
 
 
 
