@@ -545,17 +545,6 @@ void PlayerCharacter::refreshResources()
 		bottleModel->setMaterials(bottleModelMaterials);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// @HACK: @HAX: Make Water render before SeeThruRubber. This is of course NG and I should never ship a game with this technique in it lol  -Timo
-		
-		// @NOTE: Hopefully this doesn't segfault lol  -Timo
-		std::vector<Mesh>& bottleModelMeshes = bottleModel->getMeshes();
-		for (size_t i = 0; i < bottleModelMeshes.size(); i++)
-		{
-			if (bottleModelMeshes[i].getMaterialName() == "Water")
-			{
-				bottleModelWaterMesh = &bottleModelMeshes[i];
-				break;
-			}
-		}
 	}
 }
 
@@ -1730,14 +1719,28 @@ void PlayerCharacter::processAnimation()
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		// Calculate the fit AABB for just the water mesh inside the bottle
-		RenderAABB cookedBounds =
-			PhysicsUtils::fitAABB(
-				bottleModelWaterMesh->bounds,
-				getTransform() * bottleModel->localTransform
-			);
+		bool first = true;
+		glm::vec2 topAndBottom;
+		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
+		{
+			glm::vec3 origin = getTransform() * bottleModel->localTransform * glm::vec4(aabbConstructionBalls[i].origin, 1.0f);
+			const float top = origin.y + aabbConstructionBalls[i].radius;
+			const float bottom = origin.y - aabbConstructionBalls[i].radius;
+
+			if (first)
+			{
+				first = false;
+				topAndBottom = { top, bottom };
+			}
+			else
+			{
+				topAndBottom.x = glm::max(topAndBottom.x, top);
+				topAndBottom.y = glm::min(topAndBottom.y, bottom);
+			}
+		}
 		BottledWaterBobbingMaterial::getInstance().setTopAndBottomYWorldSpace(
-			cookedBounds.center.y + cookedBounds.extents.y,
-			cookedBounds.center.y - cookedBounds.extents.y
+			topAndBottom.x,
+			topAndBottom.y
 		);
 	}
 }
@@ -1845,6 +1848,18 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::DragFloat2("LG holdLedge Offset", &ps_ledgeGrabHumanData.holdLedgeOffset.x);
 	ImGui::DragFloat("LG jumpspeed", &ps_ledgeGrabHumanData.jumpSpeed);
 
+	ImGui::Separator();
+	static int aabbConstructionBallsCount = (int)aabbConstructionBalls.size();
+	ImGui::Checkbox("Show Debug AABB Construction Balls", &showDebugAABBConstructionBalls);
+	if (ImGui::InputInt("AABB Construction Balls Count", &aabbConstructionBallsCount, 1.0f, 0, 100))
+	{
+		aabbConstructionBalls.resize((size_t)aabbConstructionBallsCount);
+	}
+	for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
+	{
+		ImGui::DragFloat3(("Construction Ball #" + std::to_string(i) + " ORIGIN").c_str(), &aabbConstructionBalls[i].origin.x, 0.01f);
+		ImGui::DragFloat(("Construction Ball #" + std::to_string(i) + " RADIUS").c_str(), &aabbConstructionBalls[i].radius, 0.01f);
+	}
 	
 	
 	// @Tune: these will mess up the matrices bc of how the imguiTransformMatrixProps() func works
@@ -1881,6 +1896,14 @@ void PlayerCharacter::imguiRender()
 		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(0, -ps_ledgeGrabHumanData.checkLedgeRayDistance, 0), ImColor(0.67f, 0.87f, 0.247f));
 		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(facingDirection.x, 0.0f, facingDirection.y) * ps_ledgeGrabHumanData.checkLedgeTuckin, ImColor(0.2f, 0.254f, 0.941f));
 		PhysicsUtils::imguiRenderRay(ledgeGrabOrigin, glm::vec3(0, ps_ledgeGrabHumanData.checkLedgeCreviceHeightMin, 0), ImColor(0.87f, 0.247f, 0.819f));
+	}
+
+	if (showDebugAABBConstructionBalls)
+	{
+		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
+		{
+			PhysicsUtils::imguiRenderSphereCollider(getTransform() * bottleModel->localTransform * glm::translate(glm::mat4(1.0f), aabbConstructionBalls[i].origin), aabbConstructionBalls[i].radius);
+		}
 	}
 }
 #endif

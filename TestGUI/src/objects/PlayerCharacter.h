@@ -31,6 +31,13 @@ private:
 };
 
 
+struct SimpleSphere
+{
+	glm::vec3 origin;
+	float radius;
+};
+
+
 enum class PlayerState
 {
 	NORMAL,
@@ -214,7 +221,6 @@ public:
 	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;
 	float animationSpeed = 42.0f;
-	Mesh* bottleModelWaterMesh = nullptr;
 
 private:
 	void refreshResources();
@@ -260,7 +266,19 @@ private:
 	RopeSimulation leftSideburn, rightSideburn;
 
 	//
-	// HUMAN transformation
+	// Bottle AABB Construction Balls
+	// https://www.gamedev.net/forums/topic/347234-quickest-way-to-compute-a-new-aabb-from-an-aabb-transform/
+	//
+	std::vector<SimpleSphere> aabbConstructionBalls = {		// @HARDCODED: this seemed like enough to give a much better representation of how much "stamina" is left  -Timo
+		SimpleSphere{ glm::vec3(0.0f, 2.710f, 0.0f), 0.420f },
+		SimpleSphere{ glm::vec3(0.0f, 0.840f, 0.0f), 0.420f }
+	};
+#ifdef _DEVELOP
+	bool showDebugAABBConstructionBalls = false;
+#endif
+
+	//
+	// @HUMAN transformation
 	//
 	int human_numJumpsCurrent = 0;
 };
