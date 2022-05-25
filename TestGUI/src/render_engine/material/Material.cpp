@@ -10,7 +10,7 @@
 #include "../../utils/GameState.h"
 
 
-Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool backsideRender, bool ignoreDepth) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent), backsideRender(backsideRender), ignoreDepth(ignoreDepth) {}
+Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool renderBackThenFront) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent), renderBackThenFront(renderBackThenFront) {}
 
 
 //
@@ -164,11 +164,11 @@ BottledWaterBobbingMaterial& BottledWaterBobbingMaterial::getInstance()
 }
 
 BottledWaterBobbingMaterial::BottledWaterBobbingMaterial() :
-	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true, true)
+	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true)
 {
 }
 
-void BottledWaterBobbingMaterial::applyTextureUniforms(nlohmann::json injection)
+void BottledWaterBobbingMaterial::applyTextureUniformsBacksidePass(nlohmann::json injection)
 {
 	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
 	const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
@@ -180,6 +180,12 @@ void BottledWaterBobbingMaterial::applyTextureUniforms(nlohmann::json injection)
 	myShader->setFloat("fillLevel", staminaAmountFilled);
 	myShader->setFloat("ditherAlpha", ditherAlpha);
 	myShader->setFloat("fadeAlpha", fadeAlpha);
+	myShader->setBool("backsideRenderPass", true);
+}
+
+void BottledWaterBobbingMaterial::applyTextureUniforms(nlohmann::json injection)
+{
+	myShader->setBool("backsideRenderPass", false);
 }
 
 Texture* BottledWaterBobbingMaterial::getMainTexture()

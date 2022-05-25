@@ -85,7 +85,10 @@ void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const st
     {
         if (material != nullptr)
         {
-            material->applyTextureUniforms(materialInjections);
+            if (material->renderBackThenFront)
+                material->applyTextureUniformsBacksidePass(materialInjections);
+            else
+                material->applyTextureUniforms(materialInjections);
             shaderOverride = material->getShader();
         }
     }
@@ -123,19 +126,20 @@ void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const st
         MainLoop::getInstance().renderManager->INTERNALupdateSkeletalBonesUBO(boneTransforms);
 
     // Draw the mesh
-    if (material->backsideRender)
+    if (material != nullptr && material->renderBackThenFront)
         glCullFace(GL_FRONT);
-    if (material->ignoreDepth)
-        glDisable(GL_DEPTH_TEST);
-
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
 
-    if (material->backsideRender)
+    if (material != nullptr && material->renderBackThenFront)
+    {
+        material->applyTextureUniforms(materialInjections);
         glCullFace(GL_BACK);
-    if (material->ignoreDepth)
-        glEnable(GL_DEPTH_TEST);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
+        glBindVertexArray(0);
+    }
 }
 
 void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)

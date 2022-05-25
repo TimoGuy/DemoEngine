@@ -12,8 +12,9 @@ class Shader;
 class Material
 {
 public:
-	Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool backsideRender = false, bool ignoreDepth = false);
+	Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool renderBackThenFront = false);
 
+	virtual void applyTextureUniformsBacksidePass(nlohmann::json injection = nullptr) {}		// @NOTE: Optional. And it's gonna be done first if enabled
 	virtual void applyTextureUniforms(nlohmann::json injection = nullptr) = 0;
 	virtual Texture* getMainTexture() = 0;
 	Shader* getShader() { return myShader; }
@@ -21,8 +22,7 @@ public:
 	float ditherAlpha;
 	float fadeAlpha;
 	bool isTransparent;
-	bool backsideRender;
-	bool ignoreDepth;
+	bool renderBackThenFront;
 
 protected:
 	Shader* myShader;
@@ -117,6 +117,7 @@ public:
 private:
 	BottledWaterBobbingMaterial();
 public:
+	void applyTextureUniformsBacksidePass(nlohmann::json injection = nullptr);
 	void applyTextureUniforms(nlohmann::json injection = nullptr);
 	Texture* getMainTexture();
 

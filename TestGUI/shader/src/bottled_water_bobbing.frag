@@ -12,6 +12,7 @@ uniform float fillLevel;
 uniform vec2 topAndBottomYWorldSpace;
 uniform float ditherAlpha;
 uniform float fadeAlpha;
+uniform bool backsideRenderPass;
 /////////////////////////////////////
 
 
@@ -346,18 +347,42 @@ float ditherTransparency(float transparency)   // https://docs.unity3d.com/Packa
 // ----------------------------------------------------------------------------
 void main()
 {
+    gl_FragDepth = gl_FragCoord.z;
+
     //
     // TRY TO SEE IF SHOULD DISCARD PIXEL
     //
     if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
         discard;
 
-    if (gl_FragCoord.z > textureLod(depthTexture, gl_FragCoord.xy * invFullResolution, 0).r)
-        discard;
+    if (backsideRenderPass)
+        return;     // Short circuit this sucker so we can get just the depth map
+
+    //
+    // SINCE FRONT FACING RENDER PASS, TRY TO RAYMARCH INTO THE RIGHT SPOT
+    //
+    vec3 newFragPosition = fragPosition;
+    vec3 V = normalize(viewPosition.xyz - newFragPosition);
+    vec3 N = normalVector;
 
     const float waterLevelExtent = (topAndBottomYWorldSpace.x - topAndBottomYWorldSpace.y) * fillLevel;
     if (fragPosition.y > topAndBottomYWorldSpace.y + waterLevelExtent)
-        discard;
+    {
+        if (-V.y < 0.0)
+        {
+            // Do the raymarching, bc you could be seeing the top of the water level
+            const vec3 resizedV = -V / V.y;  // NOTE: this makes the y value of resizedV +-1
+            newFragPosition = fragPosition + resizedV * (fragPosition.y - (topAndBottomYWorldSpace.y + waterLevelExtent));
+            vec4 newDepth = cameraProjectionView * vec4(newFragPosition, 1.0);
+			newDepth = (newDepth + vec4(0, 0, nearPlane, 0)) / newDepth.w;
+            gl_FragDepth = newDepth.z;
+
+            N = vec3(0, 1, 0);  // Top of water should be up vector
+        }
+        else
+            discard;    // Discard this pixel if it's gonna be impossible to see the top of the water
+    }
+
     
     //
     // REGULAR MATERIAL STUFF FROM HERE ON OUT
@@ -365,12 +390,8 @@ void main()
     vec3 albedo         = color;
     float metallic      = 0;
     float roughness     = 0;
-    vec3 N = normalVector;//getNormalFromMap();
 
-    ///////////////////////////////////////////////////////if (isBacksideRender)
-    ///////////////////////////////////////////////////////    N = vec3(0, 1, 0);      // Normal is straight up if backside render
-
-    vec3 V = normalize(viewPosition.xyz - fragPosition);
+    V = normalize(viewPosition.xyz - newFragPosition);
     vec3 R = reflect(-V, N);
 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
@@ -391,14 +412,14 @@ void main()
         {
             // Point light
             const float lightAttenuationThreshold = 0.025;
-            L = normalize(lightPositions[i].xyz - fragPosition);
+            L = normalize(lightPositions[i].xyz - newFragPosition);
             H = normalize(V + L);
-            float distanceToLight = length(lightPositions[i].xyz - fragPosition);
+            float distanceToLight = length(lightPositions[i].xyz - newFragPosition);
             attenuation = 1.0 / (distanceToLight * distanceToLight);
             radiance = max(lightColors[i].xyz * attenuation - lightAttenuationThreshold, 0.0);
 
             if (lightDirections[i].a == 1)
-                shadow = shadowCalculationPoint(i, shadowIndex, fragPosition);
+                shadow = shadowCalculationPoint(i, shadowIndex, newFragPosition);
 
             shadowIndex++;  // Bump up if shadow was used
         }
@@ -411,7 +432,7 @@ void main()
             radiance = lightColors[i].xyz * attenuation;
 
 	        if (lightDirections[i].a == 1)
-                shadow = shadowCalculationCSM(-L, fragPosition);
+                shadow = shadowCalculationCSM(-L, newFragPosition);
 
             // NOTE: no shadowIndex++ here bc the CSM is its own entity
         }
@@ -472,7 +493,7 @@ void main()
     // @ATMOS: combine atmospheric scattering
     //
     const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
-    const float myDepth = length(mainCameraPosition - fragPosition);
+    const float myDepth = length(mainCameraPosition - newFragPosition);
     vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0));
     vec3 LoAtmos = mix(atmosValues.rgb, Lo, atmosValues.a);
 
