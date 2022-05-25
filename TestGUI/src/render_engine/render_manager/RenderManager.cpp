@@ -2334,8 +2334,11 @@ void RenderManager::renderScene()
 		transparentRQ.commandingIndices.end(),
 		[this](const size_t& index1, const size_t& index2)
 		{
-			if (transparentRQ.distancesToCamera[index1] == transparentRQ.distancesToCamera[index2])
-				return transparentRQ.meshesToRender[index1]->getDepthPriority() > transparentRQ.meshesToRender[index2]->getDepthPriority();
+			const float depthPriority1 = transparentRQ.meshesToRender[index1]->getDepthPriority();
+			const float depthPriority2 = transparentRQ.meshesToRender[index2]->getDepthPriority();
+
+			if (depthPriority1 != depthPriority2)
+				return depthPriority1 > depthPriority2;
 			return transparentRQ.distancesToCamera[index1] > transparentRQ.distancesToCamera[index2];
 		}
 	);
@@ -3176,6 +3179,11 @@ void RenderManager::renderImGuiContents()
 
 			ImGui::DragInt("Which ibl map", (int*)&whichMap, 1.0f, 0, 4);
 			ImGui::DragFloat("Map Interpolation amount", &mapInterpolationAmt);
+
+			ImGui::Separator();
+			ImGui::Text("Player Stamina Properties");
+			ImGui::DragInt("Stamina Max", &GameState::getInstance().maxPlayerStaminaAmount);
+			ImGui::DragFloat("Stamina Current", &GameState::getInstance().currentPlayerStaminaAmount);
 		}
 		ImGui::End();
 	}

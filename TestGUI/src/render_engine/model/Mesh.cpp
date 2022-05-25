@@ -126,6 +126,21 @@ void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const st
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
     glBindVertexArray(0);
+
+    //
+    // Do backside render?
+    //
+    if (material != nullptr && material->doFrontRenderThenBackRender)
+    {
+        material->applyTextureUniformsBackRender(materialInjections);
+
+        // Draw the mesh again
+        glCullFace(GL_FRONT);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, (GLsizei)indices.size(), GL_UNSIGNED_INT, (void*)0);
+        glBindVertexArray(0);
+        glCullFace(GL_BACK);
+    }
 }
 
 void Mesh::pickFromMaterialList(std::map<std::string, Material*> materialMap)

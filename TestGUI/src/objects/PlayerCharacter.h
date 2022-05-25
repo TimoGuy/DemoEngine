@@ -214,6 +214,7 @@ public:
 	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;
 	float animationSpeed = 42.0f;
+	Mesh* bottleModelWaterMesh = nullptr;
 
 private:
 	void refreshResources();

@@ -10,7 +10,7 @@
 #include "../../utils/GameState.h"
 
 
-Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent) {}
+Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool doFrontRenderThenBackRender) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent), doFrontRenderThenBackRender(doFrontRenderThenBackRender) {}
 
 
 //
@@ -151,4 +151,49 @@ void StaminaMeterMaterial::applyTextureUniforms(nlohmann::json injection)
 Texture* StaminaMeterMaterial::getMainTexture()
 {
 	return nullptr;
+}
+
+
+//
+// BottledWaterBobbingMaterial
+//
+BottledWaterBobbingMaterial& BottledWaterBobbingMaterial::getInstance()
+{
+	static BottledWaterBobbingMaterial instance;
+	return instance;
+}
+
+BottledWaterBobbingMaterial::BottledWaterBobbingMaterial() :
+	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true)
+{
+}
+
+void BottledWaterBobbingMaterial::applyTextureUniforms(nlohmann::json injection)
+{
+	float staminaAmountFilled = (float)GameState::getInstance().currentPlayerStaminaAmount / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	const float staminaDepleteChaser = (float)GameState::getInstance().playerStaminaDepleteChaser / (float)GameState::getInstance().maxPlayerStaminaAmount;
+	staminaAmountFilled = glm::min(staminaAmountFilled, staminaDepleteChaser);		// @NOTE: This just creates a little animation as the stamina bar refills. It's just for effect.  -Timo
+
+	myShader->use();
+	myShader->setVec3("color", glm::vec3(0.5f, 0.5f, 1.0f));
+	myShader->setVec2("topAndBottomYWorldSpace", topAndBottomYWorldSpace);
+	myShader->setFloat("fillLevel", staminaAmountFilled);
+	myShader->setFloat("ditherAlpha", ditherAlpha);
+	myShader->setFloat("fadeAlpha", fadeAlpha);
+	myShader->setBool("isBacksideRender", false);
+}
+
+void BottledWaterBobbingMaterial::applyTextureUniformsBackRender(nlohmann::json injection)
+{
+	myShader->setBool("isBacksideRender", true);
+}
+
+Texture* BottledWaterBobbingMaterial::getMainTexture()
+{
+	return nullptr;
+}
+
+void BottledWaterBobbingMaterial::setTopAndBottomYWorldSpace(float topY, float bottomY)
+{
+	topAndBottomYWorldSpace = glm::vec2(topY, bottomY);
 }

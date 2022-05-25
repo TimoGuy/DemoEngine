@@ -119,7 +119,12 @@ bottle again."
 
 ### Part 3
 
+Jojo finds himself out in this weird world, and now he's healthy and strong in it. He knows he's gonna need a lot of water, especially
+since looking up, the tallest mountain is not even visible due to it being so high up. The underside of the floating
+island that it's sitting upon is the only thing visible, though it is looming high up there.
 
+As he steps outside for the first day of his adventure, he is greeted with the first clue to get up to the top: the trail
+that his sister left while dragging the bottle on the ground. Let's just follow that, Jojo.
 
-    
-
+> NOTE: since the relationship of the game and the story is kinda free-form, I don't really know exactly everything that
+> will happen, however this BEGINNING section is satisfactory to me for now.

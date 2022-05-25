@@ -539,13 +539,23 @@ void PlayerCharacter::refreshResources()
 		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrBottleBody");
 		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
 		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-		bottleModelMaterials["Water"] = (Material*)Resources::getResource("material;containedWater");
+		bottleModelMaterials["Water"] = &BottledWaterBobbingMaterial::getInstance();
 		bottleModelMaterials["StaminaMeter"] = &StaminaMeterMaterial::getInstance();
 
 		bottleModel->setMaterials(bottleModelMaterials);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);
-		//bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// Make Water render before SeeThruRubber
-		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
+		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// @HACK: @HAX: Make Water render before SeeThruRubber. This is of course NG and I should never ship a game with this technique in it lol  -Timo
+		
+		// @NOTE: Hopefully this doesn't segfault lol  -Timo
+		std::vector<Mesh>& bottleModelMeshes = bottleModel->getMeshes();
+		for (size_t i = 0; i < bottleModelMeshes.size(); i++)
+		{
+			if (bottleModelMeshes[i].getMaterialName() == "Water")
+			{
+				bottleModelWaterMesh = &bottleModelMeshes[i];
+				break;
+			}
+		}
 	}
 }
 
@@ -1721,6 +1731,17 @@ void PlayerCharacter::processAnimation()
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+
+		// Calculate the fit AABB for just the water mesh inside the bottle
+		RenderAABB cookedBounds =
+			PhysicsUtils::fitAABB(
+				bottleModelWaterMesh->bounds,
+				getTransform() * bottleModel->localTransform
+			);
+		BottledWaterBobbingMaterial::getInstance().setTopAndBottomYWorldSpace(
+			cookedBounds.center.y + cookedBounds.extents.y,
+			cookedBounds.center.y - cookedBounds.extents.y
+		);
 	}
 }
 

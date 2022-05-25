@@ -12,15 +12,17 @@ class Shader;
 class Material
 {
 public:
-	Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent);
+	Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool doFrontRenderThenBackRender = false);
 
 	virtual void applyTextureUniforms(nlohmann::json injection = nullptr) = 0;
+	virtual void applyTextureUniformsBackRender(nlohmann::json injection = nullptr) {}
 	virtual Texture* getMainTexture() = 0;
 	Shader* getShader() { return myShader; }
 
 	float ditherAlpha;
 	float fadeAlpha;
 	bool isTransparent;
+	bool doFrontRenderThenBackRender;
 
 protected:
 	Shader* myShader;
@@ -105,4 +107,22 @@ private:
 	glm::vec3 staminaBarColor3{ 0.1686, 0.4275, 0.1922 };
 	glm::vec3 staminaBarColor4{ 0.5804, 0.05098, 0.05098 };
 	float staminaBarDepleteColorIntensity = 1024.0f;		// Looks like a lightsaber
+};
+
+
+class BottledWaterBobbingMaterial : public Material
+{
+public:
+	static BottledWaterBobbingMaterial& getInstance();
+private:
+	BottledWaterBobbingMaterial();
+public:
+	void applyTextureUniforms(nlohmann::json injection = nullptr);
+	void applyTextureUniformsBackRender(nlohmann::json injection = nullptr);
+	Texture* getMainTexture();
+
+	void setTopAndBottomYWorldSpace(float topY, float bottomY);
+
+private:
+	glm::vec2 topAndBottomYWorldSpace;		// @NOTE: this value needs to get filled in before drawing. It should get calculated with the bounds of the bottle
 };
