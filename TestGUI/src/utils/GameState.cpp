@@ -55,9 +55,7 @@ physx::PxRigidActor* GameState::getCurrentTriggerHold()
 
 void GameState::inputStaminaEvent(StaminaEvent staminaEvent, float deltaTime)
 {
-	float staminaDepletionMultiplier = 1.0f;
-	if (playerIsHoldingWater)
-		staminaDepletionMultiplier = 2.0f;
+	float staminaDepletionMultiplier = 0.2f;
 
 	switch (staminaEvent)
 	{
@@ -84,7 +82,7 @@ void GameState::updateStaminaDepletionChaser(float deltaTime)
 	//
 	// Calculate the depletion speed (visual effect)
 	//
-	float lerpSpeed = std::abs(playerStaminaDepleteChaser - currentPlayerStaminaAmount) * 0.1f;
+	float lerpSpeed = std::abs(playerStaminaDepleteChaser - currentPlayerStaminaAmount) * 0.02f;
 	float speedingUpSpeed = staminaDepletionSpeed + staminaDepletionAccel * deltaTime;
 	staminaDepletionSpeed = std::min(lerpSpeed, speedingUpSpeed);
 

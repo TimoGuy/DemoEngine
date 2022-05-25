@@ -816,7 +816,7 @@ void PlayerCharacter::processMovement()
 		{
 			jumpInputDebounceTimer = -1.0f;
 			jumpCoyoteTimer = -1.0f;
-			velocity.y = jumpSpeed[GameState::getInstance().playerIsHoldingWater];
+			velocity.y = jumpSpeed;
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 			((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
@@ -1148,8 +1148,6 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 
 physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVector)
 {
-	bool isCarryingWater = GameState::getInstance().playerIsHoldingWater;
-
 	//
 	// Update facing direction
 	//
@@ -1281,16 +1279,17 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 
 void PlayerCharacter::processActions()
 {
-	if (GameState::getInstance().playerIsHoldingWater &&
-		InputManager::getInstance().on_useItemPressed)
-	{
-		// Drink the water
-		GameState::getInstance().playerIsHoldingWater = false;
-		GameState::getInstance().currentPlayerStaminaAmount =
-			(float)GameState::getInstance().maxPlayerStaminaAmount;
-
-		triggerDrinkWaterAnimation = true;
-	}
+	// @DEPRECATE: @TODO: remove this animation and make it an unused animation. (See the ideapad.md. The bottle on the back is now an ancient weapon; a conduit to receive health and strength... and of course it is powered by water.)
+	//if (GameState::getInstance().playerIsHoldingWater &&
+	//	InputManager::getInstance().on_useItemPressed)
+	//{
+	//	// Drink the water
+	//	GameState::getInstance().playerIsHoldingWater = false;
+	//	GameState::getInstance().currentPlayerStaminaAmount =
+	//		(float)GameState::getInstance().maxPlayerStaminaAmount;
+	//
+	//	triggerDrinkWaterAnimation = true;
+	//}
 }
 
 float hairWeightMult = 25.0f;				// @Debug
@@ -1788,7 +1787,7 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::DragFloat("Running Acceleration (Air)", &airAcceleration, 0.1f);
 	ImGui::DragFloat("Ground Running Speed", &groundRunSpeed, 0.1f);
 	ImGui::DragFloat("Weapon Drawn Running Speed", &weaponDrawnRunSpeed, 0.1f);
-	ImGui::DragFloat2("Jump Speed", &jumpSpeed[0], 0.1f);
+	ImGui::DragFloat("Jump Speed", &jumpSpeed, 0.1f);
 	ImGui::Text(("Facing Direction: (" + std::to_string(facingDirection.x) + ", " + std::to_string(facingDirection.y) + ")").c_str());
 	ImGui::DragFloat("Leaning Lerp Time", &leanLerpTime);
 	ImGui::DragFloat("Lean Multiplier", &leanMultiplier, 0.05f);

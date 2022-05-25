@@ -80,7 +80,7 @@ void WaterPuddle::collectWaterPuddle()
 	MainLoop::getInstance().renderManager->pushMessage("Hello Notif");
 
 	// Event!!!
-	if (GameState::getInstance().playerIsHoldingWater)
+	if (numWaterServings == 0)
 	{
 		// @NOTE: This below should be a case of "if numWaterServings >= maxWaterholding" then prevent from filling in more water
 		//if (numWaterServings > 0 && GameState::getInstance().playerIsHoldingWater)
@@ -90,13 +90,21 @@ void WaterPuddle::collectWaterPuddle()
 		//}
 
 		// Drop off the water into the hole
-		Messages::getInstance().postMessage("PlayerCollectWater");
-		GameState::getInstance().playerIsHoldingWater = false;
-		GameState::getInstance().removePuddleGUID(guid);
-		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+		if (GameState::getInstance().currentPlayerStaminaAmount - GameState::getInstance().playerStaminaOneServingAmount > 0.0f)
+		{
+			GameState::getInstance().currentPlayerStaminaAmount -= GameState::getInstance().playerStaminaOneServingAmount;
 
-		std::cout << "Dropped water off into Puddle!!!!" << std::endl;
-		numWaterServings++;
+			Messages::getInstance().postMessage("PlayerCollectWater");
+			GameState::getInstance().removePuddleGUID(guid);
+			//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
+
+			std::cout << "Dropped water off into Puddle!!!!" << std::endl;
+			numWaterServings++;
+		}
+		else
+		{
+			std::cout << "aborted dopping off water. Not enough water in there." << std::endl;
+		}
 	}
 	else
 	{
@@ -107,8 +115,11 @@ void WaterPuddle::collectWaterPuddle()
 		}
 
 		// Collect and log the puddle
+		GameState::getInstance().currentPlayerStaminaAmount += GameState::getInstance().playerStaminaOneServingAmount;
+		GameState::getInstance().currentPlayerStaminaAmount =
+			glm::min(GameState::getInstance().currentPlayerStaminaAmount, (float)GameState::getInstance().maxPlayerStaminaAmount);
+
 		Messages::getInstance().postMessage("PlayerCollectWater");
-		GameState::getInstance().playerIsHoldingWater = true;
 		GameState::getInstance().addPuddleGUID(guid);
 		//GameState::getInstance().requestTriggerRelease(physicsComponent->getActor());
 

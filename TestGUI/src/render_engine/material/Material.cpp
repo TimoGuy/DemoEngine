@@ -164,7 +164,7 @@ BottledWaterBobbingMaterial& BottledWaterBobbingMaterial::getInstance()
 }
 
 BottledWaterBobbingMaterial::BottledWaterBobbingMaterial() :
-	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true)
+	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 0.45f, true, true)
 {
 }
 
