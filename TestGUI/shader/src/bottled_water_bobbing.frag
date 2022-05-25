@@ -12,7 +12,6 @@ uniform float fillLevel;
 uniform vec2 topAndBottomYWorldSpace;
 uniform float ditherAlpha;
 uniform float fadeAlpha;
-uniform bool isBacksideRender;
 /////////////////////////////////////
 
 
@@ -23,6 +22,9 @@ layout (std140, binding = 3) uniform CameraInformation
 	mat4 cameraView;
 	mat4 cameraProjectionView;
 };
+
+// ext: zBuffer
+uniform sampler2D depthTexture;
 
 // ext: SSAO
 //uniform sampler2D ssaoTexture;
@@ -350,6 +352,9 @@ void main()
     if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
         discard;
 
+    if (gl_FragCoord.z > textureLod(depthTexture, gl_FragCoord.xy * invFullResolution, 0).r)
+        discard;
+
     const float waterLevelExtent = (topAndBottomYWorldSpace.x - topAndBottomYWorldSpace.y) * fillLevel;
     if (fragPosition.y > topAndBottomYWorldSpace.y + waterLevelExtent)
         discard;
@@ -362,8 +367,8 @@ void main()
     float roughness     = 0;
     vec3 N = normalVector;//getNormalFromMap();
 
-    if (isBacksideRender)
-        N = vec3(0, 1, 0);      // Normal is straight up if backside render
+    ///////////////////////////////////////////////////////if (isBacksideRender)
+    ///////////////////////////////////////////////////////    N = vec3(0, 1, 0);      // Normal is straight up if backside render
 
     vec3 V = normalize(viewPosition.xyz - fragPosition);
     vec3 R = reflect(-V, N);

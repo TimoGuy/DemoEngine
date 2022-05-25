@@ -10,7 +10,7 @@
 #include "../../utils/GameState.h"
 
 
-Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool doFrontRenderThenBackRender) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent), doFrontRenderThenBackRender(doFrontRenderThenBackRender) {}
+Material::Material(Shader* myShader, float ditherAlpha, float fadeAlpha, bool isTransparent, bool backsideRender, bool ignoreDepth) : myShader(myShader), ditherAlpha(ditherAlpha), fadeAlpha(fadeAlpha), isTransparent(isTransparent), backsideRender(backsideRender), ignoreDepth(ignoreDepth) {}
 
 
 //
@@ -164,7 +164,7 @@ BottledWaterBobbingMaterial& BottledWaterBobbingMaterial::getInstance()
 }
 
 BottledWaterBobbingMaterial::BottledWaterBobbingMaterial() :
-	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true)
+	Material((Shader*)Resources::getResource("shader;bottledWaterBobbing"), 1.0f, 1.0f, true, true, true)
 {
 }
 
@@ -180,12 +180,6 @@ void BottledWaterBobbingMaterial::applyTextureUniforms(nlohmann::json injection)
 	myShader->setFloat("fillLevel", staminaAmountFilled);
 	myShader->setFloat("ditherAlpha", ditherAlpha);
 	myShader->setFloat("fadeAlpha", fadeAlpha);
-	myShader->setBool("isBacksideRender", false);
-}
-
-void BottledWaterBobbingMaterial::applyTextureUniformsBackRender(nlohmann::json injection)
-{
-	myShader->setBool("isBacksideRender", true);
 }
 
 Texture* BottledWaterBobbingMaterial::getMainTexture()

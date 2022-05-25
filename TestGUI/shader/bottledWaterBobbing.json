@@ -14,6 +14,7 @@
   ],
   "extensions": [
     "ssao",
+    "zBuffer",
     "pbr_daynight_cycle",
     "shadow",
     "csm_shadow",
