@@ -234,7 +234,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    -0.047761984169483185,
+                    -0.04776200279593468,
                     0.0
                 ],
                 "scale": [
@@ -353,7 +353,7 @@
                     1.0
                 ]
             },
-            "num_water_servings": 0,
+            "num_water_servings": 1,
             "type": "water_puddle"
         },
         {

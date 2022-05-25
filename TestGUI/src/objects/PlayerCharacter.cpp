@@ -1555,13 +1555,11 @@ void PlayerCharacter::processAnimation()
 		case 4:
 			// Draw water
 			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false, true);
-			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 5:
 			// Drink water
 			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false, true);
-			bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", (GameState::getInstance().playerIsHoldingWater ? 1.0f : -1.0f));		// @HACK: shouldn't be using transparency ordering hax like this
 			break;
 
 		case 6:
