@@ -331,10 +331,11 @@ float ditherTransparency(float transparency)   // https://docs.unity3d.com/Packa
 // ----------------------------------------------------------------------------
 void main()
 {
+    vec3 N = normalVector;//getNormalFromMap();
+
     if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
         discard;
 
-    vec3 N = normalVector;//getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);
     //float fresnelValue = fresnelSchlick(max(dot(N, V), 0.0), vec3(0.0), 3).r;
     //vec3 albedo = pow(mix(zellyColor, vec3(1, 1, 1), fresnelValue), vec3(2.2));

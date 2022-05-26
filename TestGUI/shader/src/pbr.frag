@@ -369,6 +369,8 @@ float ditherTransparency(float transparency)   // https://docs.unity3d.com/Packa
 // ----------------------------------------------------------------------------
 void main()
 {
+    vec3 N = getNormalFromMap();
+
     if (ditherTransparency(ditherAlpha * 2.0) < 0.5)
         discard;
 
@@ -392,7 +394,6 @@ void main()
     //float ao          = textureLod(aoMap, adjustedTexCoord, mipmapLevel).r;
     float ao            = texture(ssaoTexture, gl_FragCoord.xy * invFullResolution).r;
 
-    vec3 N = getNormalFromMap();
     vec3 V = normalize(viewPosition.xyz - fragPosition);
     vec3 R = reflect(-V, N);
 
