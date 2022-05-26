@@ -106,8 +106,9 @@
 
 ### Things that could improve
 
-- [ ] Cloud rendering (duh...)
-  - [ ] If you were okay with a cloudscape that never changed density, you could render out a distance function for the clouds
+- [ ] ~~Cloud rendering (duh...)~~
+  - [ ] ~~If you were okay with a cloudscape that never changed density, you could render out a distance function for the clouds~~
+    - NOTE: turns out that raymarching with the signed distance field idea was not that great. It ran super slow
 
 - [ ] Shadows
   - [ ] All the static objects could be the only ones with shadow and then all the dynamic objects could just have a shadow for a certain distance.
@@ -156,6 +157,8 @@ NOTE: below are some super secret moves that really you're only supposed to lear
     - [ ] @5:45 (NOTE: hammer throw, the ball is 16lbs, and the cable is <=1.22m)
   - [x] So having a `spin` value and a `lean` value would be super good.
     - [x] Spin: the y axis angular momentum
+  - [ ] So doing the helicopter would be great, yes, however, pressing X while spinning to *throw* the bottle away would be great too
+    - [ ] Meant to be in line with "willing yourself to the bottle" bc it's supposed to will itself into your hands or onto your body
 
 - [ ] Bang bang vertical slice
   - [ ] Charge a vertical over-the-head slice (tilt L stick and hold RT), then right after you press X to launch the attack, press A to get your feet off the ground so you can detach yourself/launch yourself off of what you hit.
