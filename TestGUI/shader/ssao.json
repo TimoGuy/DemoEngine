@@ -1,0 +1,20 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "ssao_postprocessing.frag",
+  "props": [
+    "sampler2D rotationTexture",
+    "vec2 fullResolution",
+    "vec2 invFullResolution",
+    "float cameraFOV",
+    "float zNear",
+    "float zFar",
+    "float powExponent",
+    "float radius",
+    "float bias",
+    "vec4 projInfo"
+  ],
+  "extensions": [
+    "zBuffer"
+  ]
+}

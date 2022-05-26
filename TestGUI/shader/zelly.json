@@ -1,0 +1,16 @@
+{
+  "type": "VF",
+  "V": "pbr.vert",
+  "F": "zelly.frag",
+  "props": [
+    "vec3 zellyColor",
+    "float ditherAlpha"
+  ],
+  "extensions": [
+    "pbr_daynight_cycle",
+    "shadow",
+    "csm_shadow",
+    "ssao",
+    "cloud_effect"
+  ]
+}

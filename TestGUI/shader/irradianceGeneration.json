@@ -1,0 +1,8 @@
+{
+  "type": "VF",
+  "V": "cubemap.vert",
+  "F": "irradiance_convolution.frag",
+  "props": [
+    "sampler2D environmentMap"
+  ]
+}

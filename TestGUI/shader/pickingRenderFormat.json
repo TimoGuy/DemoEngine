@@ -1,0 +1,8 @@
+{
+  "type": "VF",
+  "V": "pbr.vert",
+  "F": "debug_picking.frag",
+  "props": [
+    "uint objectID"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "type": "VF",
+  "V": "pbr.vert",
+  "F": "pbr.frag",
+  "props": [
+    "sampler2D albedoMap",
+    "vec3 color",
+    "sampler2D normalMap",
+    "sampler2D metallicMap",
+    "sampler2D roughnessMap",
+    "float ditherAlpha",
+    "float fadeAlpha",
+    "vec4 tilingAndOffset"
+  ],
+  "extensions": [
+    "ssao",
+    "pbr_daynight_cycle",
+    "shadow",
+    "csm_shadow",
+    "cloud_effect"
+  ]
+}

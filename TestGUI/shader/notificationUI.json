@@ -1,0 +1,15 @@
+{
+  "type": "VF",
+  "V": "notificationUI.vert",
+  "F": "notificationUI.frag",
+  "props": [
+    "float padding",
+    "float staminaAmountFilled[16]",
+    "float staminaDepleteChaser[16]",
+    "vec3 staminaBarColor1",
+    "vec3 staminaBarColor2",
+    "vec3 staminaBarColor3",
+    "vec3 staminaBarColor4",
+    "float staminaBarDepleteColorIntensity"
+  ]
+}

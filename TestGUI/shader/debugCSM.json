@@ -1,0 +1,11 @@
+{
+  "type": "VF",
+  "V": "debug_csm.vert",
+  "F": "debug_csm.frag",
+  "props": [
+    "sampler2DArray depthMap",
+    "float near_plane",
+    "float far_plane",
+    "int layer"
+  ]
+}

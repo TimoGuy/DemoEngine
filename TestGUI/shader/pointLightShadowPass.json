@@ -1,0 +1,12 @@
+{
+  "type": "VGF",
+  "V": "point_shadow.vert",
+  "G": "point_shadow.geom",
+  "F": "point_shadow.frag",
+  "props": [
+    "mat4 shadowMatrices[6]",
+    "sampler2D ubauTexture",
+    "vec3 lightPosition",
+    "float farPlane"
+  ]
+}

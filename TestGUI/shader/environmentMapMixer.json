@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "cubemap.vert",
+  "F": "environment_map_mixer.frag",
+  "props": [
+    "sampler2D environmentMap",
+    "float roughness"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "type": "VF",
+  "V": "lvlGrid.vert",
+  "F": "lvlGrid.frag",
+  "props": [
+    "vec3 gridColor",
+    "vec4 tilingAndOffset",
+    "sampler2D gridTexture"
+  ]
+}

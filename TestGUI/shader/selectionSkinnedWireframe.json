@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "pbr.vert",
+  "F": "color.frag",
+  "props": [
+    "vec4 color",
+    "float colorIntensity"
+  ]
+}

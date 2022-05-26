@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "pbr.vert",
+  "F": "z_prepass.frag",
+  "props": [
+    "sampler2D ubauTexture",
+    "float ditherAlpha"
+  ]
+}

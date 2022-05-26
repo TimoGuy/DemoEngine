@@ -1,0 +1,6 @@
+{
+  "type": "VF",
+  "V": "brdf.vert",
+  "F": "brdf.frag",
+  "props": []
+}

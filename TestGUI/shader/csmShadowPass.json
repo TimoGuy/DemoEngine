@@ -1,0 +1,9 @@
+{
+  "type": "VGF",
+  "V": "csm_shadow.vert",
+  "G": "csm_shadow.geom",
+  "F": "csm_shadow.frag",
+  "props": [
+    "sampler2D ubauTexture"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "fxaa_postprocessing.frag",
+  "props": [
+    "sampler2D hdrColorBuffer",
+    "sampler2D smallerReconstructHDRColorBuffer",
+    "int stage",
+    "bool firstcopy",
+    "float downscaledFactor"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "volumetric_postprocessing.frag",
+  "props": [
+    "vec3 mainlightDirection"
+  ],
+  "extensions": [
+    "zBuffer",
+    "csm_shadow"
+  ]
+}

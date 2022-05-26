@@ -1,0 +1,9 @@
+{
+  "type": "VF",
+  "V": "text.vert",
+  "F": "text.frag",
+  "props": [
+    "sampler2D textTexture",
+    "vec3 diffuseTint"
+  ]
+}

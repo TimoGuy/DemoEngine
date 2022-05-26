@@ -1,0 +1,12 @@
+{
+  "type": "VF",
+  "V": "cubemap.vert",
+  "F": "skybox_details.frag",
+  "props": [
+    "vec3 sunOrientation",
+    "float sunRadius",
+    "float sunAlpha",
+    "samplerCube nightSkybox",
+    "mat3 nightSkyTransform"
+  ]
+}

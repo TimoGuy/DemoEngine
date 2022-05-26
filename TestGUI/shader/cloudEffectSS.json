@@ -1,0 +1,13 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "cloud_effect_screenspace.frag",
+  "props": [
+    "sampler2D textTexture",
+    "vec3 diffuseTint"
+  ],
+  "extensions": [
+    "zBuffer",
+    "pbr_daynight_cycle"
+  ]
+}

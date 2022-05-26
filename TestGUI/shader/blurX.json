@@ -1,0 +1,8 @@
+{
+  "type": "VF",
+  "V": "postprocessing.vert",
+  "F": "blur_x.frag",
+  "props": [
+    "sampler2D textureMap"
+  ]
+}

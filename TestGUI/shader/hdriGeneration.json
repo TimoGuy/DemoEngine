@@ -1,0 +1,8 @@
+{
+  "type": "VF",
+  "V": "cubemap.vert",
+  "F": "hdri_equirectangular.frag",
+  "props": [
+    "sampler2D equirectangularMap"
+  ]
+}

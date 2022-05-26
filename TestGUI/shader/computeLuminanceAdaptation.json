@@ -1,0 +1,7 @@
+{
+  "type": "C",
+  "C": "luminance_adaptation.comp",
+  "props": [
+    "vec2 adaptationSpeed"
+  ]
+}
