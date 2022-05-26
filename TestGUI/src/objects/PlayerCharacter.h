@@ -270,8 +270,12 @@ private:
 	// https://www.gamedev.net/forums/topic/347234-quickest-way-to-compute-a-new-aabb-from-an-aabb-transform/
 	//
 	std::vector<SimpleSphere> aabbConstructionBalls = {		// @HARDCODED: this seemed like enough to give a much better representation of how much "stamina" is left  -Timo
-		SimpleSphere{ glm::vec3(0.0f, 2.710f, 0.0f), 0.420f },
-		SimpleSphere{ glm::vec3(0.0f, 0.840f, 0.0f), 0.420f }
+		SimpleSphere{ glm::vec3( 0.0f,  2.710f, 0.0f), 0.420f },
+		SimpleSphere{ glm::vec3( 0.0f,  0.840f, 0.0f), 0.420f },
+		SimpleSphere{ glm::vec3(-0.49f, 2.760f, 0.0f), 0.20f },
+		SimpleSphere{ glm::vec3( 0.49f, 2.760f, 0.0f), 0.20f },
+		SimpleSphere{ glm::vec3(-0.49f, 0.760f, 0.0f), 0.20f },
+		SimpleSphere{ glm::vec3( 0.49f, 0.760f, 0.0f), 0.20f },
 	};
 #ifdef _DEVELOP
 	bool showDebugAABBConstructionBalls = false;
