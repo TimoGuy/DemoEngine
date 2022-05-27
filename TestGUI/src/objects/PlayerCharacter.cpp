@@ -1449,7 +1449,16 @@ void PlayerCharacter::processAnimation()
 		else if (weaponDrawnStyle == 2)
 			isFinished = animator.isAnimationFinished(ATTACK_LIGHT_VERTICAL, MainLoop::getInstance().deltaTime);
 		else if (weaponDrawnStyle == 3)
+		{
+			// @HACK: @TODO: I really need some kind of animation-to-event system where I can write code that
+			// will get triggered by the animation so that I can just have some kind of easy jump thru it instead
+			// of a super hacky solution like this.  -Timo
+			physx::PxVec3 v = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+			v.y = 0.0f;
+			((PlayerPhysics*)getPhysicsComponent())->velocity = v;
+
 			isFinished = animator.isAnimationFinished(ATTACK_MIDAIR, MainLoop::getInstance().deltaTime);
+		}
 
 		if (isFinished)
 			// Go back to having the weaponDrawn
