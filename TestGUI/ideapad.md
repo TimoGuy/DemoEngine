@@ -150,7 +150,11 @@
 
 ### Physics-based combat system
 
-NOTE: below are some super secret moves that really you're only supposed to learn inside of special shrines. Or if you look up spoilers eh.
+> ~~NOTE: below are some super secret moves that really you're only supposed to learn inside of special shrines. Or if you look up spoilers eh.~~
+>
+> NOTE: I think just having this in libraries in the old language, and the old language can be learned in special shrines would be really good.
+> In the beginning, it could be really good just to have an old man teach you how to stance and attack, and then tells you that the library over there
+> teaches you it. And then if you go over to the library you'll discover that old language. Go to a shrine and you can figure out some bits of words
 
 - [ ] Doing the spin attack
   - [ ] See this vid: https://www.youtube.com/watch?v=X6X3-AiAN5k
