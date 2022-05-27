@@ -173,7 +173,24 @@ vec4 atmosphereDefineDepth(vec3 r, vec3 r0, float iStepSize, vec3 pSun, float iS
     }
 
     // Calculate and return the final color.
-    return vec4(iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie), dot(vec3(0.33333333333), transmittance));  // @NOTE: takes the average of the transmittance (has some tradeoffs according to https://sebh.github.io/publications/egsr2020.pdf)
+    vec3 finalColor = iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
+    const vec3 luma = vec3(0.299, 0.587, 0.114);
+
+    // Calculate and return the transmittance.
+    //
+    // @NOTE: this probably isn't mathematically/physically correct, however due
+    // to all sources of local lights (point lights etc.) getting cut out bc of
+    // this transmittance equation going to 0 when it's nighttime (makes sense
+    // bc transmittance should be how much light from the 'sun' (atmosphere) is
+    // getting to the view pixel), I decided that if the luma of the sky pixel is
+    // gonna be 0, then the transmittance (this time meaning from your eye to the
+    // point where the pixel is on the screen) algorithm should change to reflect
+    // the light that *can possibly transmit from the pixel on screen into your eye*
+    // ... Which I know is technically incorrect, however hey, it fixed the problem
+    // so what I can I say. If you wanna argue with me, email me dawg.  -Timo
+    float transmittanceLuma = dot(transmittance, luma);  // @NOTE: takes the average of the transmittance (has some tradeoffs according to https://sebh.github.io/publications/egsr2020.pdf)
+    float finalColorLuma = dot(finalColor, luma);
+    return vec4(finalColor, max(1.0 - 3.0 * finalColorLuma, transmittanceLuma));
 }
 
 

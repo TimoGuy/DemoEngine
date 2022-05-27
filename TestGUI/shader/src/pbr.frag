@@ -470,7 +470,7 @@ void main()
 
         // add to outgoing radiance Lo
         Lo += (kD * albedo / PI + specular) * radiance * NdotL * (1.0 - shadow * NdotL);  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
-    }   
+    }
     
     // ambient lighting (Using the IBL tex as the ambient)
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);

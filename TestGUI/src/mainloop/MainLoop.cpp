@@ -209,7 +209,7 @@ void MainLoop::initialize()
 	// Load up the audio engine
 	//
 	AudioEngine::getInstance().initialize();
-	const std::string fname = "res/music/neko_hacker_pictures.wav";
+	const std::string fname = "res/music/neko_hacker_pictures.ogg";
 	AudioEngine::getInstance().loadSound(fname, false, false, false);
 	AudioEngine::getInstance().playSound(fname);
 
