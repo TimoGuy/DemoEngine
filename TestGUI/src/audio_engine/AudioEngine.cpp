@@ -248,9 +248,9 @@ AudioAdapter_FMOD::AudioAdapter_FMOD()
     fmodSystem = nullptr;
 
     ERRCHECK(FMOD::Studio::System::create(&fmodStudioSystem));
-    ERRCHECK(fmodStudioSystem->initialize(32, FMOD_STUDIO_INIT_LIVEUPDATE, FMOD_INIT_PROFILE_ENABLE, nullptr));        // @NOTE: this may be a problem with the FMOD_STUDIO_INIT_LIVEUPDATE when doing a release build
     ERRCHECK(fmodStudioSystem->getCoreSystem(&fmodSystem));
     ERRCHECK(fmodSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_5POINT1, 0));
+    ERRCHECK(fmodStudioSystem->initialize(32, FMOD_STUDIO_INIT_LIVEUPDATE, FMOD_INIT_PROFILE_ENABLE, nullptr));        // @NOTE: this may be a problem with the FMOD_STUDIO_INIT_LIVEUPDATE when doing a release build      // @NOTE: Hey, so in the examples the max number of channels was 1024... maybe want to rethink the capacity??  -Timo
 }
 
 AudioAdapter_FMOD::~AudioAdapter_FMOD()

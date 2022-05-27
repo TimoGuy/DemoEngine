@@ -8,6 +8,8 @@
 #include "../render_engine/material/Texture.h"
 #include "../render_engine/camera/Camera.h"
 
+#include "../audio_engine/AudioEngine.h"
+
 #ifdef _DEVELOP
 #include "../imgui/imgui.h"
 #include "../imgui/imgui_impl_glfw.h"
@@ -170,8 +172,8 @@ void MainLoop::initialize()
 	std::cout << "GL_MAX_ARRAY_TEXTURE_LAYERS:\t\t" << maxArrayLayers << std::endl;
 	std::cout << "GL_MAX_3D_TEXTURE_SIZE:\t\t\t" << max3DTexSize << std::endl;
 	std::cout << "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:\t" << maxTexUnits << std::endl;
-	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE:\t\t{ " << workGroupSizes[0] << ", " << workGroupSizes[1] << ", " << workGroupSizes[2] << "}" << std::endl;
-	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT:\t{ " << workGroupCounts[0] << ", " << workGroupCounts[1] << ", " << workGroupCounts[2] << "}" << std::endl;
+	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_SIZE:\t\t{ " << workGroupSizes[0] << ", " << workGroupSizes[1] << ", " << workGroupSizes[2] << " }" << std::endl;
+	std::cout << "GL_MAX_COMPUTE_WORK_GROUP_COUNT:\t{ " << workGroupCounts[0] << ", " << workGroupCounts[1] << ", " << workGroupCounts[2] << " }" << std::endl;
 	std::cout << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
@@ -202,6 +204,14 @@ void MainLoop::initialize()
 	glFrontFace(GL_CCW);*/										// NOTE: skybox doesn't render with this on... needs some work.
 
 	renderManager = new RenderManager();
+
+	//
+	// Load up the audio engine
+	//
+	AudioEngine::getInstance().initialize();
+	const std::string fname = "res/music/neko_hacker_pictures.wav";
+	AudioEngine::getInstance().loadSound(fname, false, false, false);
+	AudioEngine::getInstance().playSound(fname);
 
 	//
 	// Once loading of all the internals happens, now we can load in the level
@@ -351,6 +361,9 @@ void MainLoop::run()
 		// Update camera after all other updates
 		camera.updateToVirtualCameras();
 
+		// Update audio engine
+		AudioEngine::getInstance().update();
+
 		//
 		// Render out the rendermanager
 		//
@@ -372,6 +385,8 @@ void MainLoop::run()
 
 void MainLoop::cleanup()
 {
+	AudioEngine::getInstance().cleanup();
+
 	delete renderManager;
 
 #ifdef _DEVELOP
