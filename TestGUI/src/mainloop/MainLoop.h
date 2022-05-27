@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <PxPhysicsAPI.h>
+#include <fmod.hpp>
 
 #include "../objects/BaseObject.h"
 #include "../render_engine/camera/Camera.h"
@@ -29,6 +30,7 @@ public:
 
 	RenderManager* renderManager;
 
+	// Physics System
 	physx::PxScene* physicsScene;
 	physx::PxPhysics* physicsPhysics;
 	physx::PxCooking* physicsCooking;
@@ -38,6 +40,9 @@ public:
 	float deltaTime;			// To only be used on the rendering thread
 	float physicsDeltaTime;		// To only be used on the physics thread
 	float physicsCalcTimeAnchor;
+
+	// Sound System
+
 
 #ifdef _DEVELOP
 	bool playMode = false;
