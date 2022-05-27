@@ -85,7 +85,7 @@ Of course, you don't need to accept this deal. Because of my protection that you
 you accept it. Although, if you do not report to me in *338 days*<sup>1</sup>, I will assume that you are leading me on
 and in fact do not accept this deal, at which point I will withdraw my condition of the deal, which is my protection.
 
-On top of this, if you or your companion fall into the void below, I will take that cue and understand you do not want
+On top of this, if you or your companion fall into the void below<sup>2</sup>, I will take that cue and understand you do not want
 to help my people. I will take away my protection and find another who can help me.
 
 I will continue to give protection, but the conduit, your ancient weapon, will need to be refilled or else its function
@@ -97,6 +97,19 @@ bottle again."
 >
 > NOTE: about NOTE 1 (7-segment displays on the paper), the 'days' one will count down and the 'months' one will keep counting up.
 > (Months will keep counting up just to show that maybe this guy just ain't too high and mighty as he puts himself to be.)
+
+> 2: Make this "fall into the clouds below" so that you don't ever get to see what's underneath the clouds, bc you pass out
+> if you fall into the clouds. So once you get the lava transformation, you *Meet the Person Behind the Letter* who has
+> been picking you up and lifting you out of the clouds back to safety if you fall down. This time, you want to be made up
+> of stone/lava so that they have no way of picking you up again; you can use this loophole to get past the cloud layer.
+>
+> NOTE: also, by this time you have figured out that the bottle is the actual supplier (not the conduit) of the "protection"
+> that the guy behind the letter was so adamantly claiming he was giving you. This way you know that if you could escape the
+> grasp of the guy behind the letter, you should.
+>
+> NOTE2: Also by this time you find that the "ancient weapon" is indeed bound to you and your sister. It chose Jojo as the companion
+> because of the rest that Jojette deserves. However, bc of the two of them inheriting this "ancient weapon" thru family generations,
+> its protection acts upon both of them. Also, the protection was to ward off the guy behind the letter.
 
 
 > NOTE: the bottle is Jojo's companion. It cannot be separated, except if Jojo wills it to come into his hands for things
@@ -128,3 +141,8 @@ that his sister left while dragging the bottle on the ground. Let's just follow 
 
 > NOTE: since the relationship of the game and the story is kinda free-form, I don't really know exactly everything that
 > will happen, however this BEGINNING section is satisfactory to me for now.
+
+
+## Meet the Person Behind the Letter
+
+### Act of Rebellion

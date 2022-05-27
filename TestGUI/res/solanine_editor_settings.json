@@ -1,13 +1,13 @@
 {
     "level_editor_camera_orientation": [
-        0.03517906367778778,
-        -0.2866904139518738,
-        0.9573771953582764
+        0.7066910266876221,
+        -0.25458359718322754,
+        -0.6601298451423645
     ],
     "level_editor_camera_pos": [
-        -23.345457077026367,
-        18.950714111328125,
-        -96.30426025390625
+        -51.01049041748047,
+        14.799604415893555,
+        -41.3045539855957
     ],
-    "startup_level": "res\\level\\lvl_r2_h_jojo.hsfs"
+    "startup_level": "res\\level\\dill_hard_on_gpu_40p_cpu_6p_lots_of_lights_95fps.hsfs"
 }
