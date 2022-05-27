@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <PxPhysicsAPI.h>
-#include <fmod.hpp>
 
 #include "../objects/BaseObject.h"
 #include "../render_engine/camera/Camera.h"
@@ -37,12 +36,9 @@ public:
 	physx::PxControllerManager* physicsControllerManager;
 	physx::PxMaterial* defaultPhysicsMaterial;
 
-	float deltaTime;			// To only be used on the rendering thread
-	float physicsDeltaTime;		// To only be used on the physics thread
+	float deltaTime;				// To only be used on the rendering thread
+	float physicsDeltaTime;			// To only be used on the physics thread
 	float physicsCalcTimeAnchor;
-
-	// Sound System
-
 
 #ifdef _DEVELOP
 	bool playMode = false;
