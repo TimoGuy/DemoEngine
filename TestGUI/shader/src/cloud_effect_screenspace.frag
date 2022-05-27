@@ -271,6 +271,11 @@ void main()
     // Setup raymarching
     calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
+    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
+    
+    // Redo currentPosition to line up with NEAR_RAYMARCH_STEP_SIZE
+    if (t0 < sampleSmoothEdgeNearFar.x)
+        t0 = floor(t0 / NEAR_RAYMARCH_STEP_SIZE) * NEAR_RAYMARCH_STEP_SIZE;
 
     vec3 currentPosition = mainCameraPosition + rd * t0;
     vec3 targetPosition  = mainCameraPosition + rd * t1;
@@ -352,7 +357,6 @@ void main()
     const float rayLength = min(deltaPositionLength, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
     
-    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
     const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
     float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
