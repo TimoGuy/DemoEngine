@@ -6,13 +6,13 @@ in vec2 texCoord;
 
 uniform sampler2D textureMap;
 
-//const vec2 gaussFilter[5] = vec2[](
-//	vec2(-2.0,  7.0/107.0),
-//	vec2(-1.0, 26.0/107.0),
-//	vec2( 0.0, 41.0/107.0),
-//	vec2( 1.0, 26.0/107.0),
-//	vec2( 2.0,  7.0/107.0)
-//);
+const vec2 gaussFilter[5] = vec2[](
+	vec2(-2.0,  7.0/107.0),
+	vec2(-1.0, 26.0/107.0),
+	vec2( 0.0, 41.0/107.0),
+	vec2( 1.0, 26.0/107.0),
+	vec2( 2.0,  7.0/107.0)
+);
 
 //const vec2 gaussFilter[5] = vec2[](
 //	vec2(-2.0, 1.0/5.0),
@@ -32,17 +32,17 @@ uniform sampler2D textureMap;
 //	vec2( 3.0,   2.0/401.0)
 //);
 
-const vec2 gaussFilter[9] = vec2[](		// https://www.desmos.com/calculator/35drzjks21
-	vec2(-4.0, 0.01100),
-	vec2(-3.0, 0.04318),
-	vec2(-2.0, 0.11464),
-	vec2(-1.0, 0.20598),
-	vec2( 0.0, 0.25040),
-	vec2( 1.0, 0.20598),
-	vec2( 2.0, 0.11464),
-	vec2( 3.0, 0.04318),
-	vec2( 4.0, 0.01100)
-);
+//const vec2 gaussFilter[9] = vec2[](		// https://www.desmos.com/calculator/35drzjks21
+//	vec2(-4.0, 0.01100),
+//	vec2(-3.0, 0.04318),
+//	vec2(-2.0, 0.11464),
+//	vec2(-1.0, 0.20598),
+//	vec2( 0.0, 0.25040),
+//	vec2( 1.0, 0.20598),
+//	vec2( 2.0, 0.11464),
+//	vec2( 3.0, 0.04318),
+//	vec2( 4.0, 0.01100)
+//);
 
 void main()
 {
@@ -50,7 +50,7 @@ void main()
 
 	float scale = 1.0 / textureSize(textureMap, 0).y;
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		vec2 coord = vec2(texCoord.x, texCoord.y + gaussFilter[i].x * scale);
 		color += textureLod(textureMap, coord, 0).rgba * gaussFilter[i].y;

@@ -2258,16 +2258,42 @@ void RenderManager::renderScene()
 	}
 
 	//
+	// Floodfill @Clouds depth pass
+	//
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillXFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectFloodFillShaderX->use();
+	cloudEffectFloodFillShaderX->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	renderQuad();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillYFBO);
+	glClear(GL_COLOR_BUFFER_BIT);
+	cloudEffectFloodFillShaderY->use();
+	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
+	renderQuad();
+
+	//
 	// @TAA @POC Resolve and Copy history of TAA for @Clouds
 	//
-	// @NOTE: so about this @TAA system, seems like it adds about 0.45ms so far to the gpu render time... that's kinda slow eh?
+	// @NOTE: so about this @TAA system, seems like it adds about 0.45ms so far to the gpu render time... that's kinda slow eh? Idk really.
+	// @NOTE: Based off: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
 	//
+	static glm::mat4 prevCameraProjectionView = cameraInfo.projectionView;
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);		// Sorry blur FBO! Gotta use ya for this D:
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectTAAHistoryShader->use();
 	cloudEffectTAAHistoryShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
 	cloudEffectTAAHistoryShader->setSampler("cloudEffectHistoryBuffer", cloudEffectTAAHistoryTexture->getHandle());
+	cloudEffectTAAHistoryShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+	cloudEffectTAAHistoryShader->setVec2("invFullResolution", { 1.0f / (float)cloudEffectTextureWidth, 1.0f / (float)cloudEffectTextureHeight });
+	cloudEffectTAAHistoryShader->setFloat("cameraZNear", MainLoop::getInstance().camera.zNear);
+	cloudEffectTAAHistoryShader->setFloat("cameraZFar", MainLoop::getInstance().camera.zFar);
+	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraProjection", glm::inverse(cameraInfo.projection));
+	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraView", glm::inverse(cameraInfo.view));
+	cloudEffectTAAHistoryShader->setMat4("prevCameraProjectionView", prevCameraProjectionView);
 	renderQuad();
+
+	prevCameraProjectionView = cameraInfo.projectionView;
 
 	// Copy the resolved buffer to the history buffer
 	glBlitNamedFramebuffer(
@@ -2288,21 +2314,6 @@ void RenderManager::renderScene()
 		GL_COLOR_BUFFER_BIT,
 		GL_NEAREST
 	);
-
-	//
-	// Floodfill @Clouds depth pass
-	//
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillXFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	cloudEffectFloodFillShaderX->use();
-	cloudEffectFloodFillShaderX->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
-	renderQuad();
-
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectDepthFloodFillYFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	cloudEffectFloodFillShaderY->use();
-	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
-	renderQuad();
 
 	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
 
@@ -3163,6 +3174,12 @@ void RenderManager::renderImGuiContents()
 			{
 				ImGui::InputInt("Cloud noise channel", &debugCloudNoiseChannel);
 				ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
+			}
+
+			static bool cloudHistoryTAAVelocityBufferTemp = true;
+			if (cloudHistoryTAAVelocityBufferTemp)
+			{
+				ImGui::Image((void*)(intptr_t)cloudEffectBlurTexture->getHandle(), ImVec2(1024, 576));
 			}
 
 			static bool showLuminanceTextures = false;
