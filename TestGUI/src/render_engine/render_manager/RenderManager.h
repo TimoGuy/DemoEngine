@@ -137,7 +137,7 @@ struct CloudEffectInformation
 	//float maxRaymarchLength = 5000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
-	float cameraPosJitterScale = 1.0f;
+	float cameraPosJitterScale = 0.2f;
 };
 
 
