@@ -10,7 +10,7 @@ uniform vec2 invFullResolution;
 
 uniform float cameraZNear;
 uniform float cameraZFar;
-uniform vec3 cameraDeltaPosition;	@TODO: I'm TRIPPING THE COMPILATION OF THIS
+uniform highp vec3 cameraDeltaPosition;
 uniform mat4 currentInverseCameraProjection;
 uniform mat4 currentInverseCameraView;
 uniform mat4 prevCameraProjectionView;
@@ -27,24 +27,35 @@ void main()
 		fragmentColor = vec4(0, 0, 0, 1);
 		return;
 	}
-	z = (z - cameraZNear) / (cameraZFar - cameraZNear);		// Transform into [-1,1)
+	z = (z - cameraZNear) / (cameraZFar - cameraZNear) * 2.0 - 1.0;		// Transform into [-1,1)
 
-    vec4 clipSpacePosition = vec4(texCoord * 2.0 - 1.0, z, 1.0);
-    vec4 viewSpacePosition = currentInverseCameraProjection * clipSpacePosition;
+    highp vec4 clipSpacePosition = vec4(texCoord * 2.0 - 1.0, z, 1.0);
+    highp vec4 viewSpacePosition = currentInverseCameraProjection * clipSpacePosition;
 
     viewSpacePosition /= viewSpacePosition.w;   // Perspective division
-    vec3 currentWorldSpaceFragPosition = vec3(currentInverseCameraView * viewSpacePosition);
-	vec4 prevPosition = prevCameraProjectionView * vec4(currentWorldSpaceFragPosition - cameraDeltaPosition, 1.0);
+    highp vec3 currentWorldSpaceFragPosition = vec3(currentInverseCameraView * viewSpacePosition);
+	highp vec4 prevPosition = prevCameraProjectionView * vec4(currentWorldSpaceFragPosition - cameraDeltaPosition, 1.0);
 
-	vec2 a = clipSpacePosition.xy / clipSpacePosition.w;
-	vec2 b = prevPosition.xy / prevPosition.w;
+	highp vec2 a = clipSpacePosition.xy / clipSpacePosition.w;
+	highp vec2 b = prevPosition.xy / prevPosition.w;
 	vec2 velocity = vec2(a - b);		// This would be on the velocity buffer if we had one for the clouds lol
+
+	//fragmentColor = vec4(velocity * 100, 0, 1);
+	//return;
+
 
 	//
 	// Sample the @TAA buffers
 	//
 	vec4 cloudEffectColor = texture(cloudEffectBuffer, texCoord).rgba;				// GL_NEAREST
-	vec4 cloudEffectHistory = texture(cloudEffectHistoryBuffer, texCoord - velocity * 0.5).rgba;		// GL_LINEAR
+
+	vec2 historyBufferTexCoord = texCoord - velocity * 0.5;
+	if (historyBufferTexCoord.x >= 0.0 && historyBufferTexCoord.y >= 0.0 &&
+		historyBufferTexCoord.x <= 1.0 && historyBufferTexCoord.y <= 1.0)
+	{
+		vec4 cloudEffectHistory = texture(cloudEffectHistoryBuffer, historyBufferTexCoord).rgba;		// GL_LINEAR
+		cloudEffectColor = mix(cloudEffectColor, cloudEffectHistory, 0.9);
+	}
 	
 	//// Apply clamping on the history color.		@NOTE: this looks like the S word with 'dog' in front of it.
     //vec3 nearColor0 = texture(cloudEffectBuffer, texCoord + vec2( 1.0,  0.0) * invFullResolution).rgb;
@@ -56,9 +67,6 @@ void main()
     //vec3 boxMax = max(cloudEffectColor.rgb, max(nearColor0, max(nearColor1, max(nearColor2, nearColor3))));
     //
     //cloudEffectHistory.rgb = clamp(cloudEffectHistory.rgb, boxMin, boxMax);
-	
-	// Mix in with the history buffer
-	const float modulationFactor = 0.9;
-	//const float modulationFactor = 0.0;
-	fragmentColor = mix(cloudEffectColor, cloudEffectHistory, modulationFactor);
+
+	fragmentColor = cloudEffectColor;
 }

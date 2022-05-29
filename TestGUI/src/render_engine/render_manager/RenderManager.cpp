@@ -2279,6 +2279,8 @@ void RenderManager::renderScene()
 	// @NOTE: Based off: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
 	//
 	static glm::mat4 prevCameraProjectionView = cameraInfo.projectionView;
+	static glm::vec3 prevCameraPosition = MainLoop::getInstance().camera.position;
+	const glm::vec3 deltaCameraPosition = MainLoop::getInstance().camera.position - prevCameraPosition;
 	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);		// Sorry blur FBO! Gotta use ya for this D:
 	glClear(GL_COLOR_BUFFER_BIT);
 	cloudEffectTAAHistoryShader->use();
@@ -2288,12 +2290,16 @@ void RenderManager::renderScene()
 	cloudEffectTAAHistoryShader->setVec2("invFullResolution", { 1.0f / (float)cloudEffectTextureWidth, 1.0f / (float)cloudEffectTextureHeight });
 	cloudEffectTAAHistoryShader->setFloat("cameraZNear", MainLoop::getInstance().camera.zNear);
 	cloudEffectTAAHistoryShader->setFloat("cameraZFar", MainLoop::getInstance().camera.zFar);
+	cloudEffectTAAHistoryShader->setVec3("cameraDeltaPosition", deltaCameraPosition);
 	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraProjection", glm::inverse(cameraInfo.projection));
 	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraView", glm::inverse(cameraInfo.view));
 	cloudEffectTAAHistoryShader->setMat4("prevCameraProjectionView", prevCameraProjectionView);
 	renderQuad();
 
+	std::cout << deltaCameraPosition.x << ",\t" << deltaCameraPosition.y << ",\t" << deltaCameraPosition.z << std::endl;
+
 	prevCameraProjectionView = cameraInfo.projectionView;
+	prevCameraPosition = MainLoop::getInstance().camera.position;
 
 	// Copy the resolved buffer to the history buffer
 	glBlitNamedFramebuffer(
