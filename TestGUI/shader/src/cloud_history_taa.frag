@@ -10,6 +10,7 @@ uniform vec2 invFullResolution;
 
 uniform float cameraZNear;
 uniform float cameraZFar;
+uniform vec3 cameraDeltaPosition;	@TODO: I'm TRIPPING THE COMPILATION OF THIS
 uniform mat4 currentInverseCameraProjection;
 uniform mat4 currentInverseCameraView;
 uniform mat4 prevCameraProjectionView;
@@ -33,7 +34,7 @@ void main()
 
     viewSpacePosition /= viewSpacePosition.w;   // Perspective division
     vec3 currentWorldSpaceFragPosition = vec3(currentInverseCameraView * viewSpacePosition);
-	vec4 prevPosition = prevCameraProjectionView * vec4(currentWorldSpaceFragPosition, 1.0);
+	vec4 prevPosition = prevCameraProjectionView * vec4(currentWorldSpaceFragPosition - cameraDeltaPosition, 1.0);
 
 	vec2 a = clipSpacePosition.xy / clipSpacePosition.w;
 	vec2 b = prevPosition.xy / prevPosition.w;
