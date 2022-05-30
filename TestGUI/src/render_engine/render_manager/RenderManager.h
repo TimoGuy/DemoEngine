@@ -254,12 +254,16 @@ private:
 		*cloudEffectShader,
 		*cloudEffectFloodFillShaderX,
 		*cloudEffectFloodFillShaderY,
+		*cloudEffectColorFloodFillShaderX,
+		*cloudEffectColorFloodFillShaderY,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
 		*blurY3ProgramId,
 		*cloudEffectTAAHistoryShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
+	bool doCloudHistoryTAA = true;
+	bool doCloudColorFloodFill = false;
 
 	// Skybox Rendering
 	const static int skyboxDepthSlicedLUTSize = 32;

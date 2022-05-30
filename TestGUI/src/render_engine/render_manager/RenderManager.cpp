@@ -1359,6 +1359,8 @@ void RenderManager::createShaderPrograms()
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
+	cloudEffectColorFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillX");
+	cloudEffectColorFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillY");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
 	cloudEffectTAAHistoryShader = (Shader*)Resources::getResource("shader;cloudHistoryTAA");
 }
@@ -1394,6 +1396,8 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectSS");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
+	Resources::unloadResource("shader;cloudEffectColorFloodfillX");
+	Resources::unloadResource("shader;cloudEffectColorFloodfillY");
 	Resources::unloadResource("shader;cloudEffectApply");
 	Resources::unloadResource("shader;cloudHistoryTAA");
 }
@@ -2197,7 +2201,7 @@ void RenderManager::renderScene()
 	
 	// Offset the offset index in the shader!! @POC
 	static int raymarchOffsetDitherIndexOffset = 0;
-	raymarchOffsetDitherIndexOffset = (raymarchOffsetDitherIndexOffset + 1) % 16;	// @NOTE: there are 16 values in the dither algorithm
+	raymarchOffsetDitherIndexOffset = doCloudHistoryTAA ? (raymarchOffsetDitherIndexOffset + 1) % 16 : 0;	// @NOTE: there are 16 values in the dither algorithm
 
 	// Draw cloud screen space effect! @CLOUDS
 	glViewport(0, 0, (GLsizei)cloudEffectTextureWidth, (GLsizei)cloudEffectTextureHeight);
@@ -2206,7 +2210,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->use();
 	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
 	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
-	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position +cameraPosOffsets[cameraPosOffsetIndex] * cloudEffectInfo.cameraPosJitterScale);  // @TAA @POC
+	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position + (doCloudHistoryTAA ? cameraPosOffsets[cameraPosOffsetIndex] * cloudEffectInfo.cameraPosJitterScale : glm::vec3(0.0f)));  // @TAA @POC
 	cloudEffectShader->setFloat("mainCameraZNear", MainLoop::getInstance().camera.zNear);
 	cloudEffectShader->setFloat("mainCameraZFar", MainLoop::getInstance().camera.zFar);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
@@ -2238,6 +2242,24 @@ void RenderManager::renderScene()
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 1, attachments);
 
 	cloudEffectInfo.cloudNoiseDetailOffset += cloudEffectInfo.cloudNoiseDetailVelocity * MainLoop::getInstance().deltaTime;
+
+	//
+	// @Clouds color floodfill pass
+	//
+	if (!doCloudHistoryTAA && doCloudColorFloodFill)		// @NOTE: cloud @TAA must be disabled
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectColorFloodFillShaderX->use();
+		cloudEffectColorFloodFillShaderX->setSampler("textureMap", cloudEffectTexture->getHandle());
+		renderQuad();
+
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectColorFloodFillShaderY->use();
+		cloudEffectColorFloodFillShaderY->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+		renderQuad();
+	}
 
 	//
 	// Blur @Clouds pass
@@ -2272,54 +2294,57 @@ void RenderManager::renderScene()
 	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
 	renderQuad();
 
-	//
-	// @TAA @POC Resolve and Copy history of TAA for @Clouds
-	//
-	// @NOTE: so about this @TAA system, seems like it adds about 0.45ms so far to the gpu render time... that's kinda slow eh? Idk really.
-	// @NOTE: Based off: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
-	//
-	static glm::mat4 prevCameraProjectionView = cameraInfo.projectionView;
-	static glm::vec3 prevCameraPosition = MainLoop::getInstance().camera.position;
-	const glm::vec3 deltaCameraPosition = MainLoop::getInstance().camera.position - prevCameraPosition;
-	glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);		// Sorry blur FBO! Gotta use ya for this D:
-	glClear(GL_COLOR_BUFFER_BIT);
-	cloudEffectTAAHistoryShader->use();
-	cloudEffectTAAHistoryShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
-	cloudEffectTAAHistoryShader->setSampler("cloudEffectHistoryBuffer", cloudEffectTAAHistoryTexture->getHandle());
-	cloudEffectTAAHistoryShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
-	cloudEffectTAAHistoryShader->setVec2("invFullResolution", { 1.0f / (float)cloudEffectTextureWidth, 1.0f / (float)cloudEffectTextureHeight });
-	cloudEffectTAAHistoryShader->setFloat("cameraZNear", MainLoop::getInstance().camera.zNear);
-	cloudEffectTAAHistoryShader->setFloat("cameraZFar", MainLoop::getInstance().camera.zFar);
-	cloudEffectTAAHistoryShader->setVec3("cameraDeltaPosition", deltaCameraPosition);
-	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraProjection", glm::inverse(cameraInfo.projection));
-	cloudEffectTAAHistoryShader->setMat4("currentInverseCameraView", glm::inverse(cameraInfo.view));
-	cloudEffectTAAHistoryShader->setMat4("prevCameraProjectionView", prevCameraProjectionView);
-	renderQuad();
+	if (doCloudHistoryTAA)
+	{
+		//
+		// @TAA @POC Resolve and Copy history of TAA for @Clouds
+		//
+		// @NOTE: so about this @TAA system, seems like it adds about 0.45ms so far to the gpu render time... that's kinda slow eh? Idk really.
+		// @NOTE: Based off: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
+		//
+		static glm::mat4 prevCameraProjectionView = cameraInfo.projectionView;
+		static glm::vec3 prevCameraPosition = MainLoop::getInstance().camera.position;
+		const glm::vec3 deltaCameraPosition = MainLoop::getInstance().camera.position - prevCameraPosition;
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);		// Sorry blur FBO! Gotta use ya for this D:
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectTAAHistoryShader->use();
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectHistoryBuffer", cloudEffectTAAHistoryTexture->getHandle());
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+		cloudEffectTAAHistoryShader->setVec2("invFullResolution", { 1.0f / (float)cloudEffectTextureWidth, 1.0f / (float)cloudEffectTextureHeight });
+		cloudEffectTAAHistoryShader->setFloat("cameraZNear", MainLoop::getInstance().camera.zNear);
+		cloudEffectTAAHistoryShader->setFloat("cameraZFar", MainLoop::getInstance().camera.zFar);
+		cloudEffectTAAHistoryShader->setVec3("cameraDeltaPosition", deltaCameraPosition);
+		cloudEffectTAAHistoryShader->setMat4("currentInverseCameraProjection", glm::inverse(cameraInfo.projection));
+		cloudEffectTAAHistoryShader->setMat4("currentInverseCameraView", glm::inverse(cameraInfo.view));
+		cloudEffectTAAHistoryShader->setMat4("prevCameraProjectionView", prevCameraProjectionView);
+		renderQuad();
 
-	std::cout << deltaCameraPosition.x << ",\t" << deltaCameraPosition.y << ",\t" << deltaCameraPosition.z << std::endl;
+		//std::cout << deltaCameraPosition.x << ",\t" << deltaCameraPosition.y << ",\t" << deltaCameraPosition.z << std::endl;
 
-	prevCameraProjectionView = cameraInfo.projectionView;
-	prevCameraPosition = MainLoop::getInstance().camera.position;
+		prevCameraProjectionView = cameraInfo.projectionView;
+		prevCameraPosition = MainLoop::getInstance().camera.position;
 
-	// Copy the resolved buffer to the history buffer
-	glBlitNamedFramebuffer(
-		cloudEffectBlurFBO,
-		cloudEffectTAAHistoryFBO,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST
-	);
+		// Copy the resolved buffer to the history buffer
+		glBlitNamedFramebuffer(
+			cloudEffectBlurFBO,
+			cloudEffectTAAHistoryFBO,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			GL_COLOR_BUFFER_BIT,
+			GL_NEAREST
+		);
 
-	// Arrrgh, since we can't do ping pong, we just have to blit the result over to here too :(  -Timo
-	glBlitNamedFramebuffer(
-		cloudEffectBlurFBO,
-		cloudEffectFBO,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
-		GL_COLOR_BUFFER_BIT,
-		GL_NEAREST
-	);
+		// Arrrgh, since we can't do ping pong, we just have to blit the result over to here too :(  -Timo
+		glBlitNamedFramebuffer(
+			cloudEffectBlurFBO,
+			cloudEffectFBO,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			GL_COLOR_BUFFER_BIT,
+			GL_NEAREST
+		);
+	}
 
 	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
 
@@ -3182,7 +3207,14 @@ void RenderManager::renderImGuiContents()
 				ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
 			}
 
-			static bool cloudHistoryTAAVelocityBufferTemp = true;
+			ImGui::Checkbox("Toggle Cloud TAA", &doCloudHistoryTAA);
+			if (!doCloudHistoryTAA)
+				ImGui::Checkbox("Toggle Cloud Color Floodfill", &doCloudColorFloodFill);
+			else
+				ImGui::Text("*NOTE: to show option for cloud color floodfill, disable cloud taa");
+
+			static bool cloudHistoryTAAVelocityBufferTemp = false;
+			ImGui::Checkbox("Show Cloud History TAA Buffer", &cloudHistoryTAAVelocityBufferTemp);
 			if (cloudHistoryTAAVelocityBufferTemp)
 			{
 				ImGui::Image((void*)(intptr_t)cloudEffectBlurTexture->getHandle(), ImVec2(1024, 576));

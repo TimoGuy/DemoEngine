@@ -324,6 +324,14 @@
     <None Include="shader\src\skybox_details.frag" />
     <None Include="shader\environmentMapMixer.json" />
     <None Include="shader\src\environment_map_mixer.frag" />
+    <None Include="shader\cloudHistoryTAA.json" />
+    <None Include="shader\src\cloud_history_taa.frag" />
+    <None Include="shader\src\cloud_effect_color_floodfill_y.frag" />
+    <None Include="shader\src\cloud_effect_color_floodfill_x.frag" />
+    <None Include="shader\src\bottled_water_bobbing.frag" />
+    <None Include="shader\bottledWaterBobbing.json" />
+    <None Include="shader\cloudEffectColorFloodfillX.json" />
+    <None Include="shader\cloudEffectColorFloodfillY.json" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
