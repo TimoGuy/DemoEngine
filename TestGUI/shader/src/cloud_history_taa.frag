@@ -18,6 +18,14 @@ uniform mat4 prevCameraProjectionView;
 
 void main()
 {
+	vec4 cloudEffectColor = texture(cloudEffectBuffer, texCoord).rgba;				// GL_NEAREST
+	if (dot(cameraDeltaPosition, cameraDeltaPosition) > 0.0)
+	{
+		// Short circuit if camera moved
+		fragmentColor = cloudEffectColor;
+		return;
+	}
+
 	//
 	// Calculate velocity from the clouds depth buffer
 	//
@@ -51,8 +59,6 @@ void main()
 	//
 	// Sample the @TAA buffers
 	//
-	vec4 cloudEffectColor = texture(cloudEffectBuffer, texCoord).rgba;				// GL_NEAREST
-
 	vec2 historyBufferTexCoord = texCoord - velocity;
 	if (historyBufferTexCoord.x >= 0.0 && historyBufferTexCoord.y >= 0.0 &&
 		historyBufferTexCoord.x <= 1.0 && historyBufferTexCoord.y <= 1.0)
@@ -60,16 +66,16 @@ void main()
 		vec4 cloudEffectHistory = texture(cloudEffectHistoryBuffer, historyBufferTexCoord).rgba;		// GL_LINEAR
 		cloudEffectColor = mix(cloudEffectColor, cloudEffectHistory, 0.9);
 	
-		// Apply clamping on the history color.		@NOTE: this looks like the S word with 'dog' in front of it.
-		vec3 nearColor0 = texture(cloudEffectBuffer, texCoord + vec2( 1.0,  0.0) * invFullResolution).rgb;
-		vec3 nearColor1 = texture(cloudEffectBuffer, texCoord + vec2( 0.0,  1.0) * invFullResolution).rgb;
-		vec3 nearColor2 = texture(cloudEffectBuffer, texCoord + vec2(-1.0,  0.0) * invFullResolution).rgb;
-		vec3 nearColor3 = texture(cloudEffectBuffer, texCoord + vec2( 0.0, -1.0) * invFullResolution).rgb;
-		
-		vec3 boxMin = min(cloudEffectColor.rgb, min(nearColor0, min(nearColor1, min(nearColor2, nearColor3))));
-		vec3 boxMax = max(cloudEffectColor.rgb, max(nearColor0, max(nearColor1, max(nearColor2, nearColor3))));
-		
-		cloudEffectHistory.rgb = clamp(cloudEffectHistory.rgb, boxMin, boxMax);
+		//// Apply clamping on the history color.		@NOTE: this looks like the S word with 'dog' in front of it.
+		//vec3 nearColor0 = texture(cloudEffectBuffer, texCoord + vec2( 1.0,  0.0) * invFullResolution).rgb;
+		//vec3 nearColor1 = texture(cloudEffectBuffer, texCoord + vec2( 0.0,  1.0) * invFullResolution).rgb;
+		//vec3 nearColor2 = texture(cloudEffectBuffer, texCoord + vec2(-1.0,  0.0) * invFullResolution).rgb;
+		//vec3 nearColor3 = texture(cloudEffectBuffer, texCoord + vec2( 0.0, -1.0) * invFullResolution).rgb;
+		//
+		//vec3 boxMin = min(cloudEffectColor.rgb, min(nearColor0, min(nearColor1, min(nearColor2, nearColor3))));
+		//vec3 boxMax = max(cloudEffectColor.rgb, max(nearColor0, max(nearColor1, max(nearColor2, nearColor3))));
+		//
+		//cloudEffectHistory.rgb = clamp(cloudEffectHistory.rgb, boxMin, boxMax);
 	}
 
 	fragmentColor = cloudEffectColor;
