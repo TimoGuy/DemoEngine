@@ -137,7 +137,7 @@ struct CloudEffectInformation
 	//float maxRaymarchLength = 5000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = true;
-	float cameraPosJitterScale = 1.0f;
+	float cameraPosJitterScale = 0.2f;
 };
 
 
@@ -243,8 +243,8 @@ private:
 	float bloomIntensity = 0.005f;
 
 	// Cloud noises
-	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO;
-	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill;
+	GLuint cloudEffectFBO, cloudEffectBlurFBO, cloudEffectDepthFloodFillXFBO, cloudEffectDepthFloodFillYFBO, cloudEffectTAAHistoryFBO;
+	Texture* cloudEffectTexture, *cloudEffectBlurTexture, *cloudEffectDepthTexture, *cloudEffectDepthTextureFloodFill, *cloudEffectTAAHistoryTexture;
 	int cloudEffectTextureWidth, cloudEffectTextureHeight;
 	Texture* cloudNoise1;
 	Texture* cloudNoise2;
@@ -254,11 +254,16 @@ private:
 		*cloudEffectShader,
 		*cloudEffectFloodFillShaderX,
 		*cloudEffectFloodFillShaderY,
+		*cloudEffectColorFloodFillShaderX,
+		*cloudEffectColorFloodFillShaderY,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
-		*blurY3ProgramId;
+		*blurY3ProgramId,
+		*cloudEffectTAAHistoryShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
+	bool doCloudHistoryTAA = true;
+	bool doCloudColorFloodFill = false;
 
 	// Skybox Rendering
 	const static int skyboxDepthSlicedLUTSize = 32;

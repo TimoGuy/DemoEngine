@@ -707,8 +707,8 @@ void RenderManager::createHDRBuffer()
 			GL_RGBA,
 			GL_FLOAT,
 			nullptr,
-			GL_LINEAR,
-			GL_LINEAR,
+			GL_NEAREST,
+			GL_NEAREST,
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
@@ -754,6 +754,20 @@ void RenderManager::createHDRBuffer()
 			GL_CLAMP_TO_EDGE,
 			GL_CLAMP_TO_EDGE
 		);
+	cloudEffectTAAHistoryTexture =
+		new Texture2D(
+			(GLsizei)cloudEffectTextureWidth,
+			(GLsizei)cloudEffectTextureHeight,
+			1,
+			GL_RGBA32F,
+			GL_RGBA,
+			GL_FLOAT,
+			nullptr,
+			GL_LINEAR,
+			GL_LINEAR,
+			GL_CLAMP_TO_EDGE,
+			GL_CLAMP_TO_EDGE
+		);
 
 	ShaderExtCloud_effect::cloudEffect = cloudEffectTexture->getHandle();
 	ShaderExtCloud_effect::cloudDepthTexture = cloudEffectDepthTexture->getHandle();
@@ -778,6 +792,11 @@ void RenderManager::createHDRBuffer()
 	glNamedFramebufferTexture(cloudEffectDepthFloodFillYFBO, GL_COLOR_ATTACHMENT0, cloudEffectDepthTexture->getHandle(), 0);
 	if (glCheckNamedFramebufferStatus(cloudEffectDepthFloodFillYFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "Framebuffer not complete! (Cloud Effect Depth Floodfill Y Screenspace Framebuffer)" << std::endl;
+
+	glCreateFramebuffers(1, &cloudEffectTAAHistoryFBO);
+	glNamedFramebufferTexture(cloudEffectTAAHistoryFBO, GL_COLOR_ATTACHMENT0, cloudEffectTAAHistoryTexture->getHandle(), 0);
+	if (glCheckNamedFramebufferStatus(cloudEffectTAAHistoryFBO, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "Framebuffer not complete! (Cloud Effect TAA History Framebuffer)" << std::endl;
 }
 
 void RenderManager::destroyHDRBuffer()
@@ -790,6 +809,8 @@ void RenderManager::destroyHDRBuffer()
 	delete cloudEffectDepthTextureFloodFill;
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillXFBO);
 	glDeleteFramebuffers(1, &cloudEffectDepthFloodFillYFBO);
+	delete cloudEffectTAAHistoryTexture;
+	glDeleteFramebuffers(1, &cloudEffectTAAHistoryFBO);
 
 	delete volumetricBlurTexture;
 	glDeleteFramebuffers(1, &volumetricBlurFBO);
@@ -1338,7 +1359,10 @@ void RenderManager::createShaderPrograms()
 	cloudEffectShader = (Shader*)Resources::getResource("shader;cloudEffectSS");
 	cloudEffectFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillX");
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
+	cloudEffectColorFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillX");
+	cloudEffectColorFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillY");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
+	cloudEffectTAAHistoryShader = (Shader*)Resources::getResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::destroyShaderPrograms()
@@ -1372,7 +1396,10 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectSS");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillX");
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
+	Resources::unloadResource("shader;cloudEffectColorFloodfillX");
+	Resources::unloadResource("shader;cloudEffectColorFloodfillY");
 	Resources::unloadResource("shader;cloudEffectApply");
+	Resources::unloadResource("shader;cloudHistoryTAA");
 }
 
 void RenderManager::createFonts()
@@ -2153,29 +2180,28 @@ void RenderManager::renderScene()
 	// the min (closest) depth in there and call it a day. See RenderDoc if you wanna make this more accurate yo.  -Timo
 	//
 	//
-	const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	static const GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 2, attachments);
 
-	////// One time random offsets for @TAA (@POC)
-	////static std::random_device randomDevice;
-	////static std::mt19937 randomEngine(randomDevice());
-	////static std::uniform_real_distribution<> distribution(0.0, 1.0);
-	////static std::vector<glm::vec3> cameraPosOffsets = {
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////	glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
-	////};
-	////static size_t cameraPosOffsetIndex = 0;
-	////cameraPosOffsetIndex = (cameraPosOffsetIndex + 1) % cameraPosOffsets.size();
-	////
-	////// Offset the offset index in the shader!! @POC
-	////static int raymarchOffsetDitherIndexOffset = 0;
-	////raymarchOffsetDitherIndexOffset = (raymarchOffsetDitherIndexOffset + 60413) % 99793;		// @NOTE: there are 16 values in the dither algorithm
+	// One time random offsets for @TAA (@POC)
+	static std::random_device randomDevice;
+	static std::mt19937 randomEngine(randomDevice());
+	static std::uniform_real_distribution<> distribution(0.0, 1.0);
+	static std::vector<glm::vec3> cameraPosOffsets = {
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+		glm::vec3(distribution(randomEngine), distribution(randomEngine), distribution(randomEngine)),
+	};
+	static size_t cameraPosOffsetIndex = 0;
+	cameraPosOffsetIndex = (cameraPosOffsetIndex + 1) % cameraPosOffsets.size();
+	
+	// Offset the offset index in the shader!! @POC
+	static int raymarchOffsetDitherIndexOffset = 0;
+	raymarchOffsetDitherIndexOffset = doCloudHistoryTAA ? (raymarchOffsetDitherIndexOffset + 1) % 16 : 0;	// @NOTE: there are 16 values in the dither algorithm
 
 	// Draw cloud screen space effect! @CLOUDS
 	glViewport(0, 0, (GLsizei)cloudEffectTextureWidth, (GLsizei)cloudEffectTextureHeight);
@@ -2184,7 +2210,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->use();
 	cloudEffectShader->setMat4("inverseProjectionMatrix", glm::inverse(cameraInfo.projection));
 	cloudEffectShader->setMat4("inverseViewMatrix", glm::inverse(cameraInfo.view));
-	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position);  // +cameraPosOffsets[cameraPosOffsetIndex] * cloudEffectInfo.cameraPosJitterScale);  // @TAA @POC
+	cloudEffectShader->setVec3("mainCameraPosition", MainLoop::getInstance().camera.position + (doCloudHistoryTAA ? cameraPosOffsets[cameraPosOffsetIndex] * cloudEffectInfo.cameraPosJitterScale : glm::vec3(0.0f)));  // @TAA @POC
 	cloudEffectShader->setFloat("mainCameraZNear", MainLoop::getInstance().camera.zNear);
 	cloudEffectShader->setFloat("mainCameraZFar", MainLoop::getInstance().camera.zFar);
 	cloudEffectShader->setFloat("cloudLayerY", cloudEffectInfo.cloudLayerY);
@@ -2202,7 +2228,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setSampler("cloudNoiseTexture", cloudNoise1->getHandle());
 	cloudEffectShader->setSampler("cloudNoiseDetailTexture", cloudNoise2->getHandle());
 	cloudEffectShader->setFloat("raymarchOffset", cloudEffectInfo.raymarchOffset);
-	//cloudEffectShader->setInt("raymarchOffsetDitherIndexOffset", raymarchOffsetDitherIndexOffset);		// @TAA @POC
+	cloudEffectShader->setInt("raymarchOffsetDitherIndexOffset", raymarchOffsetDitherIndexOffset);		// @TAA @POC
 	cloudEffectShader->setSampler("atmosphericScattering", skyboxDepthSlicedLUT->getHandle());
 	cloudEffectShader->setFloat("cloudMaxDepth", zSliceDistance);
 	cloudEffectShader->setVec2("sampleSmoothEdgeNearFar", cloudEffectInfo.sampleSmoothEdgeNearFar);
@@ -2216,6 +2242,24 @@ void RenderManager::renderScene()
 	glNamedFramebufferDrawBuffers(cloudEffectFBO, 1, attachments);
 
 	cloudEffectInfo.cloudNoiseDetailOffset += cloudEffectInfo.cloudNoiseDetailVelocity * MainLoop::getInstance().deltaTime;
+
+	//
+	// @Clouds color floodfill pass
+	//
+	if (!doCloudHistoryTAA && doCloudColorFloodFill)		// @NOTE: cloud @TAA must be disabled
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectColorFloodFillShaderX->use();
+		cloudEffectColorFloodFillShaderX->setSampler("textureMap", cloudEffectTexture->getHandle());
+		renderQuad();
+
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectColorFloodFillShaderY->use();
+		cloudEffectColorFloodFillShaderY->setSampler("textureMap", cloudEffectBlurTexture->getHandle());
+		renderQuad();
+	}
 
 	//
 	// Blur @Clouds pass
@@ -2249,6 +2293,58 @@ void RenderManager::renderScene()
 	cloudEffectFloodFillShaderY->use();
 	cloudEffectFloodFillShaderY->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTextureFloodFill->getHandle());
 	renderQuad();
+
+	if (doCloudHistoryTAA)
+	{
+		//
+		// @TAA @POC Resolve and Copy history of TAA for @Clouds
+		//
+		// @NOTE: so about this @TAA system, seems like it adds about 0.45ms so far to the gpu render time... that's kinda slow eh? Idk really.
+		// @NOTE: Based off: https://sugulee.wordpress.com/2021/06/21/temporal-anti-aliasingtaa-tutorial/
+		//
+		static glm::mat4 prevCameraProjectionView = cameraInfo.projectionView;
+		static glm::vec3 prevCameraPosition = MainLoop::getInstance().camera.position;
+		const glm::vec3 deltaCameraPosition = MainLoop::getInstance().camera.position - prevCameraPosition;
+		glBindFramebuffer(GL_FRAMEBUFFER, cloudEffectBlurFBO);		// Sorry blur FBO! Gotta use ya for this D:
+		glClear(GL_COLOR_BUFFER_BIT);
+		cloudEffectTAAHistoryShader->use();
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectBuffer", cloudEffectTexture->getHandle());
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectHistoryBuffer", cloudEffectTAAHistoryTexture->getHandle());
+		cloudEffectTAAHistoryShader->setSampler("cloudEffectDepthBuffer", cloudEffectDepthTexture->getHandle());
+		cloudEffectTAAHistoryShader->setVec2("invFullResolution", { 1.0f / (float)cloudEffectTextureWidth, 1.0f / (float)cloudEffectTextureHeight });
+		cloudEffectTAAHistoryShader->setFloat("cameraZNear", MainLoop::getInstance().camera.zNear);
+		cloudEffectTAAHistoryShader->setFloat("cameraZFar", MainLoop::getInstance().camera.zFar);
+		cloudEffectTAAHistoryShader->setVec3("cameraDeltaPosition", deltaCameraPosition);
+		cloudEffectTAAHistoryShader->setMat4("currentInverseCameraProjection", glm::inverse(cameraInfo.projection));
+		cloudEffectTAAHistoryShader->setMat4("currentInverseCameraView", glm::inverse(cameraInfo.view));
+		cloudEffectTAAHistoryShader->setMat4("prevCameraProjectionView", prevCameraProjectionView);
+		renderQuad();
+
+		//std::cout << deltaCameraPosition.x << ",\t" << deltaCameraPosition.y << ",\t" << deltaCameraPosition.z << std::endl;
+
+		prevCameraProjectionView = cameraInfo.projectionView;
+		prevCameraPosition = MainLoop::getInstance().camera.position;
+
+		// Copy the resolved buffer to the history buffer
+		glBlitNamedFramebuffer(
+			cloudEffectBlurFBO,
+			cloudEffectTAAHistoryFBO,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			GL_COLOR_BUFFER_BIT,
+			GL_NEAREST
+		);
+
+		// Arrrgh, since we can't do ping pong, we just have to blit the result over to here too :(  -Timo
+		glBlitNamedFramebuffer(
+			cloudEffectBlurFBO,
+			cloudEffectFBO,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+			GL_COLOR_BUFFER_BIT,
+			GL_NEAREST
+		);
+	}
 
 	ShaderExtCloud_effect::mainCameraPosition = MainLoop::getInstance().camera.position;
 
@@ -3109,6 +3205,19 @@ void RenderManager::renderImGuiContents()
 			{
 				ImGui::InputInt("Cloud noise channel", &debugCloudNoiseChannel);
 				ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
+			}
+
+			ImGui::Checkbox("Toggle Cloud TAA", &doCloudHistoryTAA);
+			if (!doCloudHistoryTAA)
+				ImGui::Checkbox("Toggle Cloud Color Floodfill", &doCloudColorFloodFill);
+			else
+				ImGui::Text("*NOTE: to show option for cloud color floodfill, disable cloud taa");
+
+			static bool cloudHistoryTAAVelocityBufferTemp = false;
+			ImGui::Checkbox("Show Cloud History TAA Buffer", &cloudHistoryTAAVelocityBufferTemp);
+			if (cloudHistoryTAAVelocityBufferTemp)
+			{
+				ImGui::Image((void*)(intptr_t)cloudEffectBlurTexture->getHandle(), ImVec2(1024, 576));
 			}
 
 			static bool showLuminanceTextures = false;

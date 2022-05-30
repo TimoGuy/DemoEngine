@@ -153,8 +153,8 @@ float offsetAmount()
         0.9375, 0.4375, 0.8125, 0.3125
     };
     uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
-    //return ditherPattern[(index + raymarchOffsetDitherIndexOffset) % 16] * raymarchOffset;
-    return ditherPattern[index] * raymarchOffset;
+    return ditherPattern[(index + raymarchOffsetDitherIndexOffset) % 16] * raymarchOffset;
+    //return ditherPattern[index] * raymarchOffset;
 }
 
 float inScatterLightMarch(vec3 position)
@@ -271,12 +271,16 @@ void main()
     // Setup raymarching
     calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
-    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
-    
-    // Redo currentPosition to line up with NEAR_RAYMARCH_STEP_SIZE
-    if (t0 < sampleSmoothEdgeNearFar.x)
-        t0 = floor(t0 / NEAR_RAYMARCH_STEP_SIZE) * NEAR_RAYMARCH_STEP_SIZE;
+    const float offsetAmount = offsetAmount();
+    const float rayLength = min(t1 - t0, maxRaymarchLength());
+    float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
+    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
+    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
+    float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
+
+    // Resize t0 to line up with the view space orientation
+    t0 = floor(t0 / RAYMARCH_STEP_SIZE) * RAYMARCH_STEP_SIZE;
     vec3 currentPosition = mainCameraPosition + rd * t0;
     vec3 targetPosition  = mainCameraPosition + rd * t1;
 
@@ -351,14 +355,6 @@ void main()
     
     vec3 deltaPosition = targetPosition - currentPosition;
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
-    const float deltaPositionLength = length(deltaPosition);
-                
-    const float offsetAmount = offsetAmount();
-    const float rayLength = min(deltaPositionLength, maxRaymarchLength());
-    float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
-    
-    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
-    float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
     
     //// Fitting starting position to raymarching "grid"

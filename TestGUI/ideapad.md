@@ -23,13 +23,19 @@
 ### Rendering
 
 
-- [ ] Clouds Optimizations
-  - [ ] There could be instead of worley noise, a pre-combined distance from the edge so that we could do classic raymarching where it takes in a signed distance algorithm
-    - [ ] We'd really have to experiment how adding the detail noise would affect that however, and also having blocking objects for this.
+- [ ] ~~Clouds Optimizations~~
+  - [ ] ~~There could be instead of worley noise, a pre-combined distance from the edge so that we could do classic raymarching where it takes in a signed distance algorithm~~
+    - [ ] ~~We'd really have to experiment how adding the detail noise would affect that however, and also having blocking objects for this.~~
 
 
 
 - [x] Clouds
+  - [x] Try TAA again and set up the velocity buffer
+>   - The thing I discovered (see branch `timo/graphics/another_run_on_the_clouds_taa`), is that bc of doing raymarching, the fringes being noisy can mess with good TAA.
+>   - I'm thinking that multiple steps to reduce the noise on the edge is needed (non-temporal algorithm)
+>     - [x] Okay... I tried out doing a floodfill, and it looks like trash.... so yeah. It would seem like some kind of mipmap then upscale trick would have to be done?
+
+
 - [x] Better atmospheric scattering
   - [x] Fixed the unusual clamping issue and fixes the rsi. Can't go to space yet unfortunately...
 

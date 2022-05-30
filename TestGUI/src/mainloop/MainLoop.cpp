@@ -209,9 +209,10 @@ void MainLoop::initialize()
 	// Load up the audio engine
 	//
 	AudioEngine::getInstance().initialize();
-	const std::string fname = "res/music/neko_hacker_pictures.ogg";
-	AudioEngine::getInstance().loadSound(fname, false, false, false);
-	AudioEngine::getInstance().playSound(fname);
+	// const std::string fname = "res/music/neko_hacker_pictures.ogg";
+	//const std::string fname = "res/music/neko_hacker_sleep_tight.wav";
+	//AudioEngine::getInstance().loadSound(fname, false, false, false);
+	//AudioEngine::getInstance().playSound(fname);
 
 	//
 	// Once loading of all the internals happens, now we can load in the level
