@@ -100,7 +100,8 @@ const float planetRadius = 6361e2;  // 6365e2;
 // is perfectly orthogonal to the cloudLayerThickness (the y thru the cloud layer)
 
 // @NOTE: NB_RAYMARCH_STEPS could be 16 for low quality.
-#define NB_RAYMARCH_STEPS 64
+// @NOTE: NB_RAYMARCH_STEPS was set to 64 and then I changed it to 32... looks pretty fine to me eh!
+#define NB_RAYMARCH_STEPS 32
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
 float maxRaymarchLength()       // @NOTE: this is probs best to do cpu side instead of on every pixel, especially since this is using just consts.
