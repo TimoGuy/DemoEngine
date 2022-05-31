@@ -37,21 +37,30 @@ private:
 
 
 ///
-///			=========================================
-///			==============          =================
-///			============    LEGEND    ===============
-///			==============          =================
-///			=========================================
-/// 
-///			WASD 		/		leftstick		- move
-///			movemouse	/		rightstick		- adjust camera / (when weapon is out, attack)
-///			space		/		A				- jump
-///			leftclick	/		RightTrigger	- (hold)brandish/(release)sheath weapon
-///			rightclick	/		X				- unleash attack (If weapon brandished)
-///			E			/		B				- interact
-///			F			/		Y				- use item (usually drink water)
-///			rightclick	/		RightBumper		- transform (If weapon sheathed)
-///			middleclick /		lefttrigger		- reset camera
-///			tab			/		backbtn			- open inventory(does not pause)
-///			esc			/		start			- pause(only option is to exit game)
+///		=========================================
+///		==============          =================
+///		============   CONTROLS   ===============
+///		==============          =================
+///		=========================================
+///
+///		NOTE: Bumpers and Triggers are lumped together (i.e. Left Trigger == Left Bumper)
+///
+///		esc			/		start						- pause(only option is to exit game)
+///		tab			/		backbtn						- open inventory(does not pause)
+///		space		/		A							- jump
+///		E			/		B							- interact
+///		F			/		Y							- use item (NOTE: currently unused)
+///		WASD 		/		leftstick					- move
+///		movemouse	/		rightstick					- adjust camera
+///		leftshift 	/		lefttrigger					- focus (reset camera / target enemy)
+///
+///		(WEAPON SHEATHED)
+///		???			/ 		lefttrigger & righttrigger	- will/brandish weapon out
+///		leftclick	/		X							- run
+///		rightclick	/		righttrigger				- bring up transformation menu (and then you can transform)
+///
+///		(WEAPON BRANDISHED)
+///		???			/ 		lefttrigger & righttrigger	- will/sheath weapon back away
+///		leftclick	/		X							- attack (press while holding righttrigger to unleash heavy attack)
+///		rightclick	/		righttrigger				- charge heavy attack
 /// 

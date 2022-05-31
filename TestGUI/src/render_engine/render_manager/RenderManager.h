@@ -262,7 +262,7 @@ private:
 		*cloudEffectTAAHistoryShader;
 	CloudNoiseInformation cloudNoiseInfo;
 	CloudEffectInformation cloudEffectInfo;
-	bool doCloudHistoryTAA = true;
+	bool doCloudHistoryTAA = false;
 	bool doCloudColorFloodFill = false;
 
 	// Skybox Rendering

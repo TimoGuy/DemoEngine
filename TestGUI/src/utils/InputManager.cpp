@@ -177,7 +177,7 @@ void InputManager::updateInputState()
 		interactPressed |= isKeyPressed(window, GLFW_KEY_E);
 		useItemPressed |= isKeyPressed(window, GLFW_KEY_F);
 		transformPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
-		resetCamPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_MIDDLE);
+		resetCamPressed |= isKeyPressed(window, GLFW_KEY_LEFT_SHIFT);  // isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_MIDDLE);
 		inventoryPressed |= isKeyPressed(window, GLFW_KEY_TAB);
 		pausePressed |= isKeyPressed(window, GLFW_KEY_ESCAPE);
 
