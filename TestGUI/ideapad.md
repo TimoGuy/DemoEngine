@@ -1,9 +1,6 @@
 ﻿# Solanine Ideapad
 
 
-
-
-
 ## Engine Tech
 
   ### World builder
@@ -13,7 +10,7 @@
   - [ ] Save the world chunks in the regular `.hsfs` files
     - Things to change for this file format:
       - [ ] Include a `"world_bounds"` array of 2 vec3's that will indicate the AABB that surrounds the world. (This will give a better representation of the world for the world builder)
-  
+
   
   - [ ] Create a new file format `.hsshoroku`
     
@@ -38,6 +35,17 @@
 
   *This is gonna be similar to Unity's Timeline feature. It will be usable for animation/skinned meshes and cutscenes bc then you'll be able to align sounds or movements with this system.*
 
+  - [ ] Create a state machine
+    - [ ] It'll just be animations floating around and a place to put parameters to control when these animations get put in.
+    - [ ] Make sure there's error checking (i.e. if two animation states have the same exact variables)
+
+  - [ ] State machine tester
+    - [ ] NOTE: you should be able to set different blend times depending on the previous animation you're coming from
+
+  - [ ] Ability to create blendtrees
+
+  - [ ] *When this is finished*, please rewrite the animation system for PlayerCharacter.cpp so that it uses this animation system instead of the hardcoded system that's in there.
+    - [ ] Omake (i.e. nokoshitakedo kore sae areba motto kono implementation ga kantan ni naru hazu): charged attacks should set player flatvelocity to 0
 
 
 
