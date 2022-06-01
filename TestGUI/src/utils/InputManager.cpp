@@ -33,26 +33,30 @@ void InputManager::resetInputs()
 	rightStickX = 0;
 	rightStickY = 0;
 
+	prev_pausePressed = pausePressed;
+	prev_inventoryPressed = inventoryPressed;
 	prev_jumpPressed = jumpPressed;
-	prev_attackWindupPressed = attackWindupPressed;
-	prev_attackUnleashPressed = attackUnleashPressed;
 	prev_interactPressed = interactPressed;
 	prev_useItemPressed = useItemPressed;
+	prev_focusPressed = focusPressed;
+	prev_willWeaponPressed = willWeaponPressed;
+	prev_dashPressed = focusPressed;
 	prev_transformPressed = transformPressed;
-	prev_resetCamPressed = resetCamPressed;
-	prev_inventoryPressed = inventoryPressed;
-	prev_pausePressed = pausePressed;
+	prev_attackPressed = attackPressed;
+	prev_chargeHeavyAttackPressed = chargeHeavyAttackPressed;
 
 
+	pausePressed = false;
+	inventoryPressed = false;
 	jumpPressed = false;
-	attackWindupPressed = false;
-	attackUnleashPressed = false;
 	interactPressed = false;
 	useItemPressed = false;
+	focusPressed = false;
+	willWeaponPressed = false;
+	dashPressed = false;
 	transformPressed = false;
-	resetCamPressed = false;
-	inventoryPressed = false;
-	pausePressed = false;
+	attackPressed = false;
+	chargeHeavyAttackPressed = false;
 }
 
 void joystickCallback(int jid, int event)
@@ -107,15 +111,17 @@ void InputManager::updateInputState()
 		GLFWgamepadstate state;
 		if (glfwGetGamepadState(GLFW_JOYSTICK_1, &state) == GLFW_TRUE)
 		{
+			pausePressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_START];
+			inventoryPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_BACK];
 			jumpPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_A];
-			attackWindupPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f);  // (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
-			attackUnleashPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
 			interactPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_B];
 			useItemPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_Y];
-			transformPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
-			resetCamPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f);
-			inventoryPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_BACK];
-			pausePressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_START];
+			focusPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f) || (bool)state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER];
+			willWeaponPressed |= ((bool)(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > 0.5f) || (bool)state.buttons[GLFW_GAMEPAD_BUTTON_LEFT_BUMPER]) && ((bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f) || (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER]);
+			dashPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			transformPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f) || (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
+			attackPressed |= (bool)state.buttons[GLFW_GAMEPAD_BUTTON_X];
+			chargeHeavyAttackPressed |= (bool)(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.5f) || (bool)state.buttons[GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER];
 
 			float _tempLeftStickX = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
 			float _tempLeftStickY = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
@@ -171,15 +177,17 @@ void InputManager::updateInputState()
 		rightStickY += (float)deltaY;
 
 		// KEYBOARD buttons
+		pausePressed |= isKeyPressed(window, GLFW_KEY_ESCAPE);
+		inventoryPressed |= isKeyPressed(window, GLFW_KEY_TAB);
 		jumpPressed |= isKeyPressed(window, GLFW_KEY_SPACE);
-		attackWindupPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
-		attackUnleashPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
 		interactPressed |= isKeyPressed(window, GLFW_KEY_E);
 		useItemPressed |= isKeyPressed(window, GLFW_KEY_F);
+		focusPressed |= isKeyPressed(window, GLFW_KEY_LEFT_SHIFT);
+		willWeaponPressed |= isKeyPressed(window, GLFW_KEY_LEFT_SHIFT) && isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
+		dashPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
 		transformPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
-		resetCamPressed |= isKeyPressed(window, GLFW_KEY_LEFT_SHIFT);  // isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_MIDDLE);
-		inventoryPressed |= isKeyPressed(window, GLFW_KEY_TAB);
-		pausePressed |= isKeyPressed(window, GLFW_KEY_ESCAPE);
+		attackPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_LEFT);
+		chargeHeavyAttackPressed |= isMouseButtonPressed(window, GLFW_MOUSE_BUTTON_RIGHT);
 
 		//
 		// See if should lock cursor
@@ -203,13 +211,15 @@ void InputManager::updateInputState()
 	}
 
 	// Update the on_ variables
+	on_pausePressed = (pausePressed && !prev_pausePressed);
+	on_inventoryPressed = (inventoryPressed && !prev_inventoryPressed);
 	on_jumpPressed = (jumpPressed && !prev_jumpPressed);
-	on_attackWindupPressed = (attackWindupPressed && !prev_attackWindupPressed);
-	on_attackUnleashPressed = (attackUnleashPressed && !prev_attackUnleashPressed);
 	on_interactPressed = (interactPressed && !prev_interactPressed);
 	on_useItemPressed = (useItemPressed && !prev_useItemPressed);
+	on_focusPressed = (focusPressed && !prev_focusPressed);
+	on_willWeaponPressed = (willWeaponPressed && !prev_willWeaponPressed);
+	on_dashPressed = (dashPressed && !prev_dashPressed);
 	on_transformPressed = (transformPressed && !prev_transformPressed);
-	on_resetCamPressed = (resetCamPressed && !prev_resetCamPressed);
-	on_inventoryPressed = (inventoryPressed && !prev_inventoryPressed);
-	on_pausePressed = (pausePressed && !prev_pausePressed);
+	on_attackPressed = (attackPressed && !prev_attackPressed);
+	on_chargeHeavyAttackPressed = (chargeHeavyAttackPressed && !prev_chargeHeavyAttackPressed);
 }

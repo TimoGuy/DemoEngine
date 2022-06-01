@@ -568,7 +568,7 @@ void PlayerCharacter::processMovement()
 			useFollowCamera = false;
 
 		// Reset to default if reset camera button pressed
-		if (InputManager::getInstance().on_resetCamPressed)
+		if (InputManager::getInstance().on_focusPressed)
 		{
 			lookingInputReturnToDefaultTime = 0.0f;
 			lookingInputReturnToDefaultCachedFromInput = lookingInput;
@@ -586,7 +586,7 @@ void PlayerCharacter::processMovement()
 		lookingInputReturnToDefaultTime += 8.0f * MainLoop::getInstance().deltaTime;
 
 		// Keep in this state if still holding cam button
-		if (InputManager::getInstance().resetCamPressed)
+		if (InputManager::getInstance().focusPressed)
 		{
 			lookingInputReturnToDefaultTime = glm::min(lookingInputReturnToDefaultTime, 0.999f);
 		}
