@@ -568,7 +568,7 @@ void PlayerCharacter::processMovement()
 			useFollowCamera = false;
 
 		// Reset to default if reset camera button pressed
-		if (InputManager::getInstance().on_resetCamPressed)
+		if (InputManager::getInstance().on_focusPressed)
 		{
 			lookingInputReturnToDefaultTime = 0.0f;
 			lookingInputReturnToDefaultCachedFromInput = lookingInput;
@@ -586,7 +586,7 @@ void PlayerCharacter::processMovement()
 		lookingInputReturnToDefaultTime += 8.0f * MainLoop::getInstance().deltaTime;
 
 		// Keep in this state if still holding cam button
-		if (InputManager::getInstance().resetCamPressed)
+		if (InputManager::getInstance().focusPressed)
 		{
 			lookingInputReturnToDefaultTime = glm::min(lookingInputReturnToDefaultTime, 0.999f);
 		}
@@ -825,11 +825,12 @@ void PlayerCharacter::processMovement()
 			}
 		}
 
-		if (InputManager::getInstance().on_attackWindupPressed)
+#ifdef _DEVELOP
+		if (MainLoop::getInstance().playMode)
+#endif
+		if (InputManager::getInstance().on_willWeaponPressed)
 		{
-			weaponDrawn = true;
-			weaponDrawnPrevIsGrounded = false;		// Just resetting this flag so you can brandish midair
-			weaponDrawnStyle = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() ? (isMoving ? 2 : 1) : 3;	// @NOTE: @WEAPON_DRAWN_STYLE: 1: Horizontal; 2: Vertical; 3: Midair;
+			weaponDrawn = !weaponDrawn;
 		}
 
 		if (isMoving)
@@ -1421,25 +1422,20 @@ void PlayerCharacter::processAnimation()
 	else if (animationState == 10)
 	{
 		bool isGrounded = ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded();
+		weaponDrawnStyle = isGrounded ? (isMoving ? 2 : 1) : 3;		// @NOTE: @WEAPON_DRAWN_STYLE: 1: Horizontal; 2: Vertical; 3: Midair;
 
-		if (isGrounded && weaponDrawnStyle == 3)
-			weaponDrawnStyle = 2;		// Revert back to the Vertical swing (if didn't unleash the swing while midair)
-
-		if (!InputManager::getInstance().attackWindupPressed)
+		if (!weaponDrawn)
 		{
 			// Stopped drawing the weapon
-			weaponDrawn = false;
 			animationState = 0;
 			triggerAnimationStateReset = true;
 		}
-		else if (weaponDrawnPrevIsGrounded && !isGrounded)
-			// Jump
-			animationState = 2;
-		else if (InputManager::getInstance().on_attackUnleashPressed)
+		//else if (weaponDrawnPrevIsGrounded && !isGrounded)
+		//	// Jump
+		//	animationState = 2;
+		else if (InputManager::getInstance().on_attackPressed)
 			// Unleash attack
 			animationState = 11;
-
-		weaponDrawnPrevIsGrounded = isGrounded;
 	}
 	else if (animationState == 11)
 	{
@@ -1468,14 +1464,9 @@ void PlayerCharacter::processAnimation()
 	//
 	// Overriding animation states
 	//
-	if (playerState == PlayerState::NORMAL && InputManager::getInstance().on_attackWindupPressed /*&& ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded()*/)
+	if (playerState == PlayerState::NORMAL && InputManager::getInstance().on_willWeaponPressed && weaponDrawn)
 	{
 		animationState = 10;		// @NOTE: this simply *starts* the weapon holding animation
-	}
-
-	if (animationState != 10 && animationState != 11)
-	{
-		weaponDrawn = false;		// @NOTE: this forces weaponDrawn to be false when the animation state changes. You have to do RT/LClick again to get weaponDrawn=true
 	}
 
 	if (Messages::getInstance().checkForMessage("PlayerCollectWater"))
@@ -1598,10 +1589,11 @@ void PlayerCharacter::processAnimation()
 			//				The vertical stance you get if you get into stance while moving makes sense bc you want the weapon
 			//				away from your legs if you're moving. Idk if this vertical move should be faster or more powerful
 			//				in any way, but we shall see eh!  -Timo
-			if (weaponDrawnStyle == 1)
+			
+			//if (weaponDrawnStyle == 1)
 				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true, true);
-			else if (weaponDrawnStyle == 2 || weaponDrawnStyle == 3)
-				animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true, true);
+			//else if (weaponDrawnStyle == 2 || weaponDrawnStyle == 3)
+			//	animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true, true);
 			break;
 
 		case 11:
