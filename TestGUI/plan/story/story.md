@@ -1,5 +1,8 @@
 # Solanine Story
 
+> *NOTE: This is the story*
+
+
 ## Beginning
 
 Characters

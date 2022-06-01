@@ -220,7 +220,7 @@ void main()
 
     // TIMO
     const vec3 r0 = mainCameraPosition + vec3(0, 6376e2, 0);
-    const float rPlanet = 6361e2;  // 6365e2;
+    const float rPlanet = 6351e2;  // 6361e2;  // 6365e2;
     const float rAtmos  = 6465e2;
     vec3 v_Sun = -sunOrientation;
 

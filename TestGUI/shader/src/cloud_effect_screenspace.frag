@@ -21,7 +21,7 @@ uniform float raymarchOffset;
 uniform int raymarchOffsetDitherIndexOffset;
 uniform sampler3D atmosphericScattering;
 uniform float cloudMaxDepth;
-uniform vec2 sampleSmoothEdgeNearFar;
+uniform vec2 raymarchCascadeLevels;
 uniform float farRaymarchStepsizeMultiplier;
 //uniform float maxRaymarchLength;
 
@@ -87,7 +87,7 @@ vec2 rsi(vec3 r0, vec3 rd, float sr)
 
 
 const float cameraBaseHeight = 6376e2;
-const float planetRadius = 6361e2;  // 6365e2;
+const float planetRadius = 6351e2;  // 6361e2;  // 6365e2;
 
 
 
@@ -100,7 +100,9 @@ const float planetRadius = 6361e2;  // 6365e2;
 // is perfectly orthogonal to the cloudLayerThickness (the y thru the cloud layer)
 
 // @NOTE: NB_RAYMARCH_STEPS could be 16 for low quality.
-#define NB_RAYMARCH_STEPS 64
+// @NOTE: NB_RAYMARCH_STEPS was set to 64 and then I changed it to 32... looks pretty fine to me eh!
+#define NB_RAYMARCH_STEPS_SUPER_CLOSE 256
+#define NB_RAYMARCH_STEPS 32
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
 float maxRaymarchLength()       // @NOTE: this is probs best to do cpu side instead of on every pixel, especially since this is using just consts.
@@ -275,9 +277,11 @@ void main()
     const float rayLength = min(t1 - t0, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
+    const float SUPER_CLOSE_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS_SUPER_CLOSE);
     const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
     const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
-    float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
+    //float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(raymarchCascadeLevels.x, raymarchCascadeLevels.y, t0 + distanceTraveled));
+    float RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : t0 + distanceTraveled > raymarchCascadeLevels.x ? NEAR_RAYMARCH_STEP_SIZE : SUPER_CLOSE_RAYMARCH_STEP_SIZE;
 
     // Resize t0 to line up with the view space orientation
     t0 = floor(t0 / RAYMARCH_STEP_SIZE) * RAYMARCH_STEP_SIZE;
@@ -418,7 +422,8 @@ void main()
         }
 
         // Update deltaStepIncrement
-        RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(sampleSmoothEdgeNearFar.x, sampleSmoothEdgeNearFar.y, t0 + distanceTraveled));
+        //RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(raymarchCascadeLevels.x, raymarchCascadeLevels.y, t0 + distanceTraveled));
+        RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : t0 + distanceTraveled > raymarchCascadeLevels.x ? NEAR_RAYMARCH_STEP_SIZE : SUPER_CLOSE_RAYMARCH_STEP_SIZE;
         deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
 
         // Advance march
