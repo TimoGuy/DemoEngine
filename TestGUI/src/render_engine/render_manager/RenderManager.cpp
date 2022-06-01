@@ -1361,6 +1361,7 @@ void RenderManager::createShaderPrograms()
 	cloudEffectFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectDepthFloodfillY");
 	cloudEffectColorFloodFillShaderX = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillX");
 	cloudEffectColorFloodFillShaderY = (Shader*)Resources::getResource("shader;cloudEffectColorFloodfillY");
+	simpleDenoiseShader = (Shader*)Resources::getResource("shader;sirBirdDenoise");
 	cloudEffectApplyShader = (Shader*)Resources::getResource("shader;cloudEffectApply");
 	cloudEffectTAAHistoryShader = (Shader*)Resources::getResource("shader;cloudHistoryTAA");
 }
@@ -1398,6 +1399,7 @@ void RenderManager::destroyShaderPrograms()
 	Resources::unloadResource("shader;cloudEffectDepthFloodfillY");
 	Resources::unloadResource("shader;cloudEffectColorFloodfillX");
 	Resources::unloadResource("shader;cloudEffectColorFloodfillY");
+	Resources::unloadResource("shader;sirBirdDenoise");
 	Resources::unloadResource("shader;cloudEffectApply");
 	Resources::unloadResource("shader;cloudHistoryTAA");
 }
@@ -1830,7 +1832,7 @@ void RenderManager::render()
 	// with the fbo and render to a quad
 	//
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, doCloudDenoiseNontemporal ? hdrFBO : 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	postprocessing_program_id->use();
 	postprocessing_program_id->setSampler("hdrColorBuffer", hdrFXAAColorBuffer);
@@ -1841,6 +1843,26 @@ void RenderManager::render()
 	postprocessing_program_id->setFloat("exposure", exposure);
 	postprocessing_program_id->setFloat("bloomIntensity", bloomIntensity);
 	renderQuad();
+
+	// @HACK: Oh so hack lol hahahahaha  -Timo
+	if (doCloudDenoiseNontemporal)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);		// Sorry blur FBO! Gotta use ya for this D:
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		simpleDenoiseShader->use();
+		simpleDenoiseShader->setSampler("textureMap", hdrColorBuffer);
+		renderQuad();
+
+		// Arrrgh, since we can't do ping pong, we just have to blit the result over to here too :(  -Timo
+		//glBlitNamedFramebuffer(
+		//	cloudEffectBlurFBO,
+		//	cloudEffectFBO,
+		//	0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		//	0, 0, cloudEffectTextureWidth, cloudEffectTextureHeight,
+		//	GL_COLOR_BUFFER_BIT,
+		//	GL_NEAREST
+		//);
+	}
 
 	// Swap the hdrLumAdaptation ping-pong textures
 	std::swap(hdrLumAdaptationPrevious, hdrLumAdaptationProcessed);
@@ -2231,7 +2253,7 @@ void RenderManager::renderScene()
 	cloudEffectShader->setInt("raymarchOffsetDitherIndexOffset", raymarchOffsetDitherIndexOffset);		// @TAA @POC
 	cloudEffectShader->setSampler("atmosphericScattering", skyboxDepthSlicedLUT->getHandle());
 	cloudEffectShader->setFloat("cloudMaxDepth", zSliceDistance);
-	cloudEffectShader->setVec2("sampleSmoothEdgeNearFar", cloudEffectInfo.sampleSmoothEdgeNearFar);
+	cloudEffectShader->setVec2("raymarchCascadeLevels", cloudEffectInfo.raymarchCascadeLevels);
 	cloudEffectShader->setFloat("farRaymarchStepsizeMultiplier", cloudEffectInfo.farRaymarchStepsizeMultiplier);
 	//cloudEffectShader->setFloat("maxRaymarchLength", cloudEffectInfo.maxRaymarchLength);
 	cloudEffectShader->setVec3("lightColor", sunColorForClouds);
@@ -3192,7 +3214,7 @@ void RenderManager::renderImGuiContents()
 			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
 			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
 			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
-			ImGui::DragFloat2("Cloud near raymarch method distance", &cloudEffectInfo.sampleSmoothEdgeNearFar.x);
+			ImGui::DragFloat2("Cloud near raymarch method distance", &cloudEffectInfo.raymarchCascadeLevels.x);
 			ImGui::DragFloat("Cloud farRaymarchStepsizeMultiplier", &cloudEffectInfo.farRaymarchStepsizeMultiplier, 0.01f, 0.01f);
 			//ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
 			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
@@ -3212,6 +3234,7 @@ void RenderManager::renderImGuiContents()
 				ImGui::Checkbox("Toggle Cloud Color Floodfill", &doCloudColorFloodFill);
 			else
 				ImGui::Text("*NOTE: to show option for cloud color floodfill, disable cloud taa");
+			ImGui::Checkbox("Toggle Cloud Denoise (non-temporal method)", &doCloudDenoiseNontemporal);
 
 			static bool cloudHistoryTAAVelocityBufferTemp = false;
 			ImGui::Checkbox("Show Cloud History TAA Buffer", &cloudHistoryTAAVelocityBufferTemp);

@@ -132,7 +132,7 @@ struct CloudEffectInformation
 	float lightAbsorptionTowardsSun = 0.01f;
 	float lightAbsorptionThroughCloud = 0.2f;
 	float raymarchOffset = 1.0f;
-	glm::vec2 sampleSmoothEdgeNearFar = { 5000.0f, 7500.0f };  // @LOW_QUALITY_OPTION: { 1000.0f, 5000.0f };
+	glm::vec2 raymarchCascadeLevels = { 275.0f, 6000.0f };
 	float farRaymarchStepsizeMultiplier = 1.0f;
 	//float maxRaymarchLength = 5000.0f;
 	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
@@ -256,6 +256,7 @@ private:
 		*cloudEffectFloodFillShaderY,
 		*cloudEffectColorFloodFillShaderX,
 		*cloudEffectColorFloodFillShaderY,
+		*simpleDenoiseShader,
 		*cloudEffectApplyShader,
 		*blurX3ProgramId,
 		*blurY3ProgramId,
@@ -264,6 +265,7 @@ private:
 	CloudEffectInformation cloudEffectInfo;
 	bool doCloudHistoryTAA = false;
 	bool doCloudColorFloodFill = false;
+	bool doCloudDenoiseNontemporal = false;
 
 	// Skybox Rendering
 	const static int skyboxDepthSlicedLUTSize = 32;

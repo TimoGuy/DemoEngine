@@ -261,6 +261,7 @@
     <None Include="shader\pointLightShadowPass.json" />
     <None Include="shader\postprocessing.json" />
     <None Include="shader\selectionSkinnedWireframe.json" />
+    <None Include="shader\sirBirdDenoise.json" />
     <None Include="shader\skybox.json" />
     <None Include="shader\skyboxDetails.json" />
     <None Include="shader\src\bloom_postprocessing.frag" />
@@ -313,6 +314,7 @@
     <None Include="shader\src\postprocessing.vert" />
     <None Include="shader\src\prefilter.frag" />
     <None Include="shader\src\csm_shadow.frag" />
+    <None Include="shader\src\sir_bird_denoise.frag" />
     <None Include="shader\src\skybox.frag" />
     <None Include="shader\src\skybox_details.frag" />
     <None Include="shader\src\ssao_postprocessing.frag" />

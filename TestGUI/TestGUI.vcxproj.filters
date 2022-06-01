@@ -332,6 +332,8 @@
     <None Include="shader\bottledWaterBobbing.json" />
     <None Include="shader\cloudEffectColorFloodfillX.json" />
     <None Include="shader\cloudEffectColorFloodfillY.json" />
+    <None Include="shader\sirBirdDenoise.json" />
+    <None Include="shader\src\sir_bird_denoise.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h">
