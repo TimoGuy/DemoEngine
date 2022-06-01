@@ -45,22 +45,22 @@ private:
 ///
 ///		NOTE: Bumpers and Triggers are lumped together (i.e. Left Trigger == Left Bumper)
 ///
-///		esc			/		start						- pause(only option is to exit game)
-///		tab			/		backbtn						- open inventory(does not pause)
-///		space		/		A							- jump
-///		E			/		B							- interact
-///		F			/		Y							- use item (NOTE: currently unused)
-///		WASD 		/		leftstick					- move
-///		movemouse	/		rightstick					- adjust camera
-///		leftshift 	/		lefttrigger					- focus (reset camera / target enemy)
+///		esc						/		start						- pause(only option is to exit game)
+///		tab						/		backbtn						- open inventory(does not pause)
+///		space					/		A							- jump
+///		E						/		B							- interact
+///		F						/		Y							- use item (NOTE: currently unused)
+///		WASD 					/		leftstick					- move
+///		movemouse				/		rightstick					- adjust camera
+///		leftshift 				/		lefttrigger					- focus (reset camera / target enemy)
 ///
-///		(WEAPON SHEATHED)
-///		???			/ 		lefttrigger & righttrigger	- will/brandish weapon out
-///		leftclick	/		X							- run
-///		rightclick	/		righttrigger				- bring up transformation menu (and then you can transform)
+///		**WEAPON SHEATHED**
+///		leftshift & rightclick	/ 		lefttrigger & righttrigger	- will/brandish weapon out
+///		leftclick				/		X							- run
+///		rightclick				/		righttrigger				- bring up transformation menu (and then you can transform)
 ///
-///		(WEAPON BRANDISHED)
-///		???			/ 		lefttrigger & righttrigger	- will/sheath weapon back away
-///		leftclick	/		X							- attack (press while holding righttrigger to unleash heavy attack)
-///		rightclick	/		righttrigger				- charge heavy attack
+///		**WEAPON BRANDISHED**
+///		leftshift & rightclick	/ 		lefttrigger & righttrigger	- will/sheath weapon back away
+///		leftclick				/		X							- attack (press while holding righttrigger to unleash heavy attack)
+///		rightclick				/		righttrigger				- charge heavy attack
 /// 

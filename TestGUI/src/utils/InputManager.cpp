@@ -212,5 +212,4 @@ void InputManager::updateInputState()
 	on_resetCamPressed = (resetCamPressed && !prev_resetCamPressed);
 	on_inventoryPressed = (inventoryPressed && !prev_inventoryPressed);
 	on_pausePressed = (pausePressed && !prev_pausePressed);
-
 }
