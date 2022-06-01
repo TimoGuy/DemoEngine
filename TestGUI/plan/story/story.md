@@ -9,7 +9,10 @@ Characters
 - Jojo (Main/Playable Character)
 - Jojette (Jojo sister)
 
+
+
 ### Part 1
+
 Both Jojo and Jojette have been weak and starving in a world that had no more water. Him and his sister, Jojette, have been looking for water for ages. Jojo had been sick,
 and due to not being able to get up being sick and weak, his muscles have atrophied to a stage where he is simply not
 able to stand anymore. Thus, it's up to Jojette to look for water for her and Jojo.
@@ -55,7 +58,9 @@ of his broken leg really starts setting in. Filled with guilt, Jojo notices a sm
 so he tries lifting his arm to give Jojette some water. However, the pain is unbearable at this point. He succumbs to it and passes out.
 
 
+
 ### Part 2
+
 Jojo wakes up on his side, facing the window that sits left of his bed. It's morning. It must have been a bad dream, Jojo.
 He tries rolling over to get into a position where he can prop himself up onto the headboard to sit up, but he can't. He feels
 sad that his muscles have atrophied to this point. With a deep breath, he tries mustering up all of his strength to roll over
@@ -133,6 +138,7 @@ bottle again."
 > however, they will guard it with their life. To use the tool functionally, you will need to kill them.
 
 
+
 ### Part 3
 
 Jojo finds himself out in this weird world, and now he's healthy and strong in it. He knows he's gonna need a lot of water, especially
@@ -144,6 +150,28 @@ that his sister left while dragging the bottle on the ground. Let's just follow 
 
 > NOTE: since the relationship of the game and the story is kinda free-form, I don't really know exactly everything that
 > will happen, however this BEGINNING section is satisfactory to me for now.
+
+
+#### Exploring the Land, Jojo finds:
+
+- How to will the bottle on his back to his hands to use as a weapon
+- Caves where small bits of advice and information is stored on notes
+- A map of the first floor with 2 7-segement displays that show the player's position on the map (A1 to G7... so like a position grid)
+- A transportation system that hasn't been used in an extremely long time. (Allows for him to venture beyond where he's gone his whole life, and also travel to different places quickly)
+
+
+
+#### Mysterious Old Man (MOM)
+
+- Jojo also finds a MOM who asks if Jojo is getting pulled along by someone who's leaving notes and needs you to go up and help them.
+    - That MOM tells him about his experience where his family was close to dying from a landslide when one day they were all miraculously healed. Then these notes started coming out where he needed to help save the mysterious person's people or else his family's protection would end.
+    - MOM, one day decided to test whether this person was actually watching, and did not perform a really small duty. This ended up with him receiving a note one day that that day's duty was not accomplished when anokata came and checked. Anokata said "I highly recommend you make sure you don't miss finishing this task again."
+    - Thinking that anokata was just keeping tabs every once in awhile, MOM decided to run away with his family. Not that many days later, everybody started falling ill. They all had to return home to recover. However, the sickness never ended, and one day while MOM was trying to find more materials for his family, he returned to a note and no family.
+        - The note read: "I have found another suitor. I am very sorry about your family. You are not required to perform your duties, however, I advise you do."
+    - MOM does not know where the rest of his family went, but he assumes that they decided to jump off the edge.
+    - To this day, MOM suffers from his illness and also grief for his family. (NOTE: the illness feels similar to being inside the landslide... the weight and inability to move)
+    - MOM tells Jojo that Jojo needs to find anokata and destroy them. And make sure not to let them know anything you're planning, bc they could drive you to misery & pain the moment you do not fulfill their commands.
+    > SPOILER: Anokata gave both MOM's family and Jojo's family unconditional protection, bc it's their talent and gift to heal. However, there are odd requirements in order for the people to still experience the healed state, or else they will revert to an odd half-healed state and suffer similar injuries until they fulfill these odd requirements. Anokata will simply know these requirements, and not be able to help the ppl they heal, bc they are not an omnipotent being. Consistently fulfilling these requirements (e.g. keeping the bottle attached to your back filled) is important bc reverting to the half-healed state can possibly render you unable to complete the original requirements. Anokata simply hopes that somebody will take the healing and want to say thank you by trying to help their people as well. Anokata's wording is very bad, however, but Anokata doesn't understand if the letters/wording is effective or not, bc nobody's actually answered them with helping out their people.
 
 
 ## Meet the Person Behind the Letter

@@ -197,9 +197,21 @@
 
 -------------------------------------------------------------------------------------------------------------------------
 
-## Gameplay
+## Game Design
 
-  ### 
+  ### Combat
+
+  - [ ] Create "villager" type "enemy"
+    - They essentially spot Jojo's nice, healthy body and chase and demand Jojo's food and water
+    - If left to run too long, they just die, however, they will actually grab and shove you.
+      - If you get attacked this way, you'll spill some water, and then they'll start chasing after you once they slurp up the water on the ground.
+
+  - [ ] Create a "water splash" particle effect
+    - The bottle will crack the more you get hit (the bottle's wear is supposed to indicate your poise. If it gets completely broken, then you're left vulnerable for a couple moments.)
+    - This of course is supposed to really look like blood effects hahaha. Don't think about it too much yo!
+
+
+
 
   ### Physics-based combat system
 
