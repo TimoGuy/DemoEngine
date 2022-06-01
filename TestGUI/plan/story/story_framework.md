@@ -30,6 +30,8 @@
 
 ## Finding Out Exactly What Anokata Wants
 
+> NOTE: after finding out that Anokata wants the Solanine, the mission becomes finding out who Anokata is and how to capture them.
+
 
 ## The Child Statue and the Mother Statue
 
@@ -40,3 +42,20 @@
     - Since these statues are the size of Daibutsu, the Mother Statue slowly turns around 180 (no leg movmeent), and upon stopping, a loud thud is heard.
     - And then, the Mother Statue picks up their right leg, gets ready for getting into criss cross apple sauce (being still supported by their left leg), and then picks up their left leg to do criss cross apple sauce, as they slowly fall. They make it into criss cross apple sauce halfway to falling to the ground.
     - And then the whole statue thuds upon hitting the ground, and the island visibly lurches downward, unable to hold all this weight, however, after a bit, it stabilizes and returns back to its original position.
+
+
+## What did the Child Statue Offer?
+
+
+## Realization of the True Meaning Behind What Anokata Wants
+
+
+## Break Into Anokata's Prison to Bust up the Glass Planet
+
+
+## The Calling of the Lava Prophet is Passed on
+
+
+## Finale (Busting the Glass Planet... What do you do now?)
+
+*As soon as you bust the glass planet, everything starts leaving, including the clouds and the people.*

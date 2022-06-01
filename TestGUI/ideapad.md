@@ -58,6 +58,16 @@
 
 
 
+  ### ~~Prebaked GI with all of the static lights in the world~~ (Maybe out of scope? Or may not mesh well with the realtime lighting?)
+
+  *There should be a GI bake pass when doing a heavy release of the game where you can take all of the static world pieces and bake them with static point lights and then load the irradiances into probes that can be used for all of the dynamic objects.*
+
+  - [ ] There should be 
+
+
+
+
+
   ### Migration to Vulkan to use DLSS 2.4 and FSR 2.0
 
   - [ ] Velocity Buffer is needed too yo

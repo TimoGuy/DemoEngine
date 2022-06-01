@@ -100,6 +100,7 @@ I will continue to give protection, but the conduit, your ancient weapon, will n
 as a conduit will permanently be lost and it will return to its state before I activated it; it will become just a water
 bottle again."
 
+# TODO: FIND CONTRADICTIONS (NOTE: story_framework.md is MASTER TRUTH NOW)
 
 > 1: This label will be a couple of 7-segment displays with "months" or "days" written after the number displays
 >
