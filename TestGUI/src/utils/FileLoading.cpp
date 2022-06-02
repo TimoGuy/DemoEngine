@@ -27,17 +27,33 @@ FileLoading& FileLoading::getInstance()
 	return instance;
 }
 
+nlohmann::json FileLoading::loadJsonFile(std::string fname)
+{
+	nlohmann::json j;
+	std::ifstream i(fname);
+	if (i.is_open())
+	{
+		i >> j;
+		std::cout << "FILEIO:: File \"" << fname << "\" Successfully loaded (JSON)." << std::endl;
+	}
+	return j;
+}
+
+void FileLoading::saveJsonFile(std::string fname, nlohmann::json& object)
+{
+	std::ofstream o("res\\solanine_editor_settings.json");
+	o << std::setw(4) << object << std::endl;
+	std::cout << "FILEIO:: File \"" << fname << "\" Successfully saved (JSON)." << std::endl;
+}
+
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
 	// Load all info of the level
 	std::string fname;
 	{
-		std::ifstream i("res\\solanine_editor_settings.json");		// @TODO: This kinda bothers me. There's no way to guarantee the user has this file touched. At the very least there should be a "if file doesn't exist, touch it real quick" at the beginning of the program... dango bango yoooo.
-		if (i.is_open())
+		nlohmann::json j = loadJsonFile("res\\solanine_editor_settings.json");		// @TODO: This kinda bothers me. There's no way to guarantee the user has this file touched. At the very least there should be a "if file doesn't exist, touch it real quick" at the beginning of the program... dango bango yoooo.
+		if (!j.empty())
 		{
-			nlohmann::json j;
-			i >> j;
-
 			if (j.contains("startup_level"))
 			{
 				fname = j["startup_level"];
@@ -106,9 +122,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	currentWorkingPath = fname;
 
 	// Load all info of the level
-	std::ifstream i(currentWorkingPath);
-	nlohmann::json j;
-	i >> j;
+	nlohmann::json j = loadJsonFile(currentWorkingPath);
 
 	//
 	// Start working with the retrieved filename
@@ -204,19 +218,14 @@ void FileLoading::saveCameraPosition()
 {
 	nlohmann::json j;
 	{
-		std::ifstream i("res\\solanine_editor_settings.json");
-		if (i.is_open())
-		{
-			i >> j;
+		j = loadJsonFile("res\\solanine_editor_settings.json");
 
-			// Append the camera information to this
-			Camera& cam = MainLoop::getInstance().camera;
-			j["level_editor_camera_pos"] = { cam.position.x, cam.position.y, cam.position.z };
-			j["level_editor_camera_orientation"] = { cam.orientation.x, cam.orientation.y, cam.orientation.z };
-		}
+		// Append the camera information to this
+		Camera& cam = MainLoop::getInstance().camera;
+		j["level_editor_camera_pos"] = { cam.position.x, cam.position.y, cam.position.z };
+		j["level_editor_camera_orientation"] = { cam.orientation.x, cam.orientation.y, cam.orientation.z };
 	}
 
-	std::ofstream o("res\\solanine_editor_settings.json");
-	o << std::setw(4) << j << std::endl;
+	saveJsonFile("res\\solanine_editor_settings.json", j);
 }
 #endif

@@ -323,6 +323,9 @@ void MainLoop::run()
 			deltaTime = 0.1f;		// Clamp it if it's too big! (10 fps btw) (1/10 = 0.1)
 		lastFrame = currentFrame;
 
+		// Update time of day
+		GameState::getInstance().updateDayNightTime(deltaTime);
+
 		//
 		// Run Physics intermittently
 		// 
@@ -348,9 +351,6 @@ void MainLoop::run()
 			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
 
-		// Update time of day
-		GameState::getInstance().updateDayNightTime(deltaTime);
-
 		//
 		// Do all pre-render updates
 		//
@@ -369,6 +369,7 @@ void MainLoop::run()
 		// Render out the rendermanager
 		//
 		renderManager->render();
+
 
 		//
 		// Delete all objects that were marked for deletion
@@ -545,6 +546,7 @@ void setupImGui()
 	style.WindowTitleAlign.x = 0.5f;
 	style.WindowMenuButtonPosition = 1;		// Right side of menu
 	style.WindowRounding = 0;
+	style.Alpha = 1.0f;
 
 	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");

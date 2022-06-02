@@ -11,6 +11,8 @@ class FileLoading
 {
 public:
 	static FileLoading& getInstance();
+	static nlohmann::json loadJsonFile(std::string fname);
+	static void saveJsonFile(std::string fname, nlohmann::json& object);
 
 	bool isCurrentPathValid() { return !currentWorkingPath.empty(); }
 	void loadFileWithPrompt(bool withPrompt);

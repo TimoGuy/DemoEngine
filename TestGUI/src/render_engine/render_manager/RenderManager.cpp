@@ -61,6 +61,11 @@ bool RenderManager::renderMeshRenderAABB = false;
 
 #ifdef _DEVELOP
 ImGuizmo::OPERATION transOperation;
+
+nlohmann::json modelReferencesFile = FileLoading::loadJsonFile("res/solanine_editor_model_references.json");
+bool timelineViewerMode = false;		// This is when editing cutscenes or animations (can add events too)
+RenderComponent* modelForTimelineViewer = nullptr;
+Animator* animatorForModelForTimelineViewer = nullptr;
 #endif
 
 
@@ -1562,11 +1567,12 @@ void RenderManager::render()
 
 	setupSceneShadows();
 
+	
 #ifdef _DEVELOP
 	//
 	// Render Picking texture
 	//
-	if (DEBUGdoPicking)
+	if (!timelineViewerMode && DEBUGdoPicking)
 	{
 		if (!MainLoop::getInstance().playMode)		// NOTE: no reason in particular for making this !playmode only
 		{
@@ -1956,6 +1962,15 @@ void RenderManager::renderScene()
 
 	INTERNALzPassShader->use();
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
+	
+#ifdef _DEVELOP
+	if (timelineViewerMode && modelForTimelineViewer != nullptr)
+	{
+		// Render just the single renderObject for the animation viewer
+		modelForTimelineViewer->render(&cookedViewFrustum, INTERNALzPassShader);
+	}
+	else
+#endif
 	for (unsigned int i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
 	{
 		// NOTE: viewfrustum culling is handled at the mesh level with some magic. Peek in if ya wanna. -Timo
@@ -2622,6 +2637,14 @@ void RenderManager::INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const gl
 
 void RenderManager::renderSceneShadowPass(Shader* shader)
 {
+#ifdef _DEVELOP
+	if (timelineViewerMode && modelForTimelineViewer != nullptr)
+	{
+		// Render just the single selected object when in timelineviewermode
+		modelForTimelineViewer->renderShadow(shader);
+	}
+	else
+#endif
 	//
 	// Render everything
 	//
@@ -2738,11 +2761,6 @@ void RenderManager::renderUI()
 	glDepthMask(GL_TRUE);
 }
 
-// TODO: REMEMBER THIS!!!!
-//if (ImGui::GetIO().WantCaptureMouse ||
-//	ImGuizmo::IsOver() ||
-//	ImGuizmo::IsUsing())
-//	return;
 
 #ifdef _DEVELOP
 void RenderManager::renderImGuiPass()
@@ -2766,11 +2784,12 @@ void RenderManager::renderImGuiPass()
 void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
-	static bool showScenePropterties = true;
+	static bool showDemoWindow = true;
+	static bool showSceneProperties = true;
 	static bool showObjectSelectionWindow = true;
 	static bool showLoadedResourcesWindow = true;
 	static bool showMaterialsManager = true;
-	static bool showDemoWindow = true;
+	static bool showTimelineEditorWindow = true;
 
 	static bool showShadowMap = false;
 
@@ -2875,9 +2894,11 @@ void RenderManager::renderImGuiContents()
 			if (ImGui::BeginMenu("Windows"))
 			{
 				if (ImGui::MenuItem("Analytics Overlay", NULL, &showAnalyticsOverlay)) {}
-				if (ImGui::MenuItem("Scene Properties", NULL, &showScenePropterties)) {}
+				if (ImGui::MenuItem("Scene Properties", NULL, &showSceneProperties)) {}
 				if (ImGui::MenuItem("Object Selection", NULL, &showObjectSelectionWindow)) {}
 				if (ImGui::MenuItem("Loaded Resources", NULL, &showLoadedResourcesWindow)) {}
+				if (ImGui::MenuItem("Materials", NULL, &showMaterialsManager)) {}
+				if (ImGui::MenuItem("Timeline Editor", NULL, &showTimelineEditorWindow)) {}
 				if (ImGui::MenuItem("ImGui Demo Window", NULL, &showDemoWindow)) {}
 
 				ImGui::EndMenu();
@@ -3026,10 +3047,15 @@ void RenderManager::renderImGuiContents()
 	//
 	if (renderMeshRenderAABB)
 	{
-		for (size_t i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+		if (timelineViewerMode && modelForTimelineViewer != nullptr)
 		{
-			MainLoop::getInstance().renderObjects[i]->TEMPrenderImguiModelBounds();
+			modelForTimelineViewer->TEMPrenderImguiModelBounds();
 		}
+		else
+			for (size_t i = 0; i < MainLoop::getInstance().renderObjects.size(); i++)
+			{
+				MainLoop::getInstance().renderObjects[i]->TEMPrenderImguiModelBounds();
+			}
 	}
 #endif
 
@@ -3193,9 +3219,9 @@ void RenderManager::renderImGuiContents()
 	//
 	// Scene Properties window @PROPS
 	//
-	if (showScenePropterties)
+	if (showSceneProperties)
 	{
-		if (ImGui::Begin("Scene Properties", &showScenePropterties))
+		if (ImGui::Begin("Scene Properties", &showSceneProperties))
 		{
 			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
@@ -3486,6 +3512,72 @@ void RenderManager::renderImGuiContents()
 		//}
 		//ImGui::End();
 	}
+
+	//
+	// Timeline editor window
+	//
+	if (showTimelineEditorWindow)
+	{
+		if (ImGui::Begin("Timeline Editor", &showTimelineEditorWindow))
+		{
+			if (timelineViewerMode)
+			{
+				if (ImGui::Button("Exit Timeline Viewer Mode"))
+				{
+					delete modelForTimelineViewer->baseObject;
+					delete modelForTimelineViewer;
+					modelForTimelineViewer = nullptr;
+					delete animatorForModelForTimelineViewer;
+					animatorForModelForTimelineViewer = nullptr;
+
+					timelineViewerMode = false;
+				}
+
+				ImGui::Separator();
+				ImGui::Text("YOU ARE IN TIMELINE VIEWER MODE");
+			}
+			else
+			{
+				static int selectedIndex = -1;
+				std::vector<std::string> modelRefsPaths = modelReferencesFile["paths"];
+				if (ImGui::BeginListBox("##listbox Render Objects in Scene", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
+				{
+					for (size_t i = 0; i < modelRefsPaths.size(); i++)
+					{
+						const bool isSelected = (selectedIndex == (int)i);
+						if (ImGui::Selectable(modelRefsPaths[i].c_str(), isSelected))
+							selectedIndex = (int)i;
+
+						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndListBox();
+				}
+
+				if (selectedIndex < modelRefsPaths.size())
+				{
+					if (ImGui::Button("Edit Selected Model"))
+					{
+						// Create and insert in the model
+						modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
+
+						Model* model = (Model*)Resources::getResource("model;custommodel;" + modelRefsPaths[selectedIndex]);
+						animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
+						ModelWithMetadata mwm = {
+							model,
+							true,
+							animatorForModelForTimelineViewer
+						};
+						modelForTimelineViewer->addModelToRender(mwm);
+
+						timelineViewerMode = true;
+					}
+				}
+			}
+		}
+		ImGui::End();
+	} 
 
 	//
 	// ImGuizmo (NOTE: keep this at the very end so that imguizmo stuff can be rendered after everything else in the background draw list has been rendered)
