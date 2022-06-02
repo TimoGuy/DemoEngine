@@ -38,6 +38,7 @@ public:
 	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
 #ifdef _DEVELOP
+	std::vector<std::string> getMaterialNameList();
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);
 #endif
 

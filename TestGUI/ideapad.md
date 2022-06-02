@@ -35,6 +35,8 @@
 
   *This is gonna be similar to Unity's Timeline feature. It will be usable for animation/skinned meshes and cutscenes bc then you'll be able to align sounds or movements with this system.*
 
+  - [ ] Make file extension "Hawsoo Model Metadata (.hsmm)"
+
   - [ ] Create a state machine
     - [ ] It'll just be animations floating around and a place to put parameters to control when these animations get put in.
     - [ ] Make sure there's error checking (i.e. if two animation states have the same exact variables)

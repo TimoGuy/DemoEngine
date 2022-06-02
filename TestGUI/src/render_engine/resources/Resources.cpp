@@ -402,43 +402,14 @@ void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm
 
 void* loadResource(const std::string& resourceName, bool isUnloading)
 {
-	//
-	// NOTE: this is gonna be a huge function btw
-	//
 	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
-
-//	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
-//	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
-//	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
-//	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/skybox.frag");
-//	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/csm_shadow.vert", "shader/src/csm_shadow.geom", "shader/src/csm_shadow.frag");
-//	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/point_shadow.vert", "shader/src/point_shadow.geom", "shader/src/point_shadow.frag");
-//	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/debug_csm.vert", "shader/src/debug_csm.frag");
-//	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/text.vert", "shader/src/text.frag");
-//	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/hdri_equirectangular.frag");		// NOTE: may not be used in the future
-//	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/irradiance_convolution.frag");
-//	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/prefilter.frag");
-//	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/brdf.vert", "shader/src/brdf.frag");
-//	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/bloom_postprocessing.frag");
-//	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/postprocessing.frag");
-//	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/hudUI.vert", "shader/src/hudUI.frag");
-//	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/z_prepass.frag");
-//	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/luminance_postprocessing.frag");
-//	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/src/luminance_adaptation.comp");
-//	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/ssao_postprocessing.frag");
-//	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/volumetric_postprocessing.frag");
-//	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_x.frag");
-//	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_y.frag");
-//#ifdef _DEVELOP
-//	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
-//	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
-//#endif
 
 	//
 	// Common textures & materials
 	//
+	if (resourceName == "material;pbrDefaultMaterial")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrDefaultAlbedo", "texture;pbrDefaultNormal", "texture;pbr0_5Value", "texture;pbr0_5Value");
 
-
+	if (resourceName == "texture;pbrDefaultAlbedo")						return loadTexture2D(resourceName, isUnloading, "res/_debug/uv_grid_texture.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	if (resourceName == "texture;cloudTestPos")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_pos.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;cloudTestNeg")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_neg.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -455,7 +426,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.4f);
 
-	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
+	//if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);		// @NOTE: The minfilter was supposed to be GL_LINEAR_MIPMAP_LINEAR oh well. It's unused now though.
 	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo
 
 	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });

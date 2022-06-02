@@ -61,8 +61,6 @@ bool RenderManager::renderMeshRenderAABB = false;
 
 #ifdef _DEVELOP
 ImGuizmo::OPERATION transOperation;
-
-nlohmann::json modelReferencesFile = FileLoading::loadJsonFile("res/solanine_editor_model_references.json");
 bool timelineViewerMode = false;		// This is when editing cutscenes or animations (can add events too)
 RenderComponent* modelForTimelineViewer = nullptr;
 Animator* animatorForModelForTimelineViewer = nullptr;
@@ -3533,45 +3531,130 @@ void RenderManager::renderImGuiContents()
 					timelineViewerMode = false;
 				}
 
+				//
+				// Materials
+				//
 				ImGui::Separator();
-				ImGui::Text("YOU ARE IN TIMELINE VIEWER MODE");
+				if (ImGui::TreeNode("Materials"))
+				{
+					std::vector<std::string> materialNameList = modelForTimelineViewer->getMaterialNameList();
+					static int selectedMaterial = -1;
+
+					if (ImGui::BeginCombo("Selected Material", selectedMaterial == -1 ? "Select..." : materialNameList[selectedMaterial].c_str()))
+					{
+						if (ImGui::Selectable("Select...", selectedMaterial == -1))
+							selectedMaterial = -1;
+
+						for (size_t i = 0; i < materialNameList.size(); i++)
+						{
+							const bool isSelected = (selectedMaterial == i);
+							if (ImGui::Selectable(materialNameList[i].c_str(), isSelected))
+								selectedMaterial = i;
+
+							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+							if (isSelected)
+								ImGui::SetItemDefaultFocus();
+						}
+
+						ImGui::EndCombo();
+					}
+
+					ImGui::TreePop();
+				}
+
+				//
+				// Animations
+				//
+				ImGui::Separator();
+				if (ImGui::TreeNode("Animations"))
+				{
+
+					
+					ImGui::TreePop();
+				}
 			}
 			else
 			{
-				static int selectedIndex = -1;
-				std::vector<std::string> modelRefsPaths = modelReferencesFile["paths"];
-				if (ImGui::BeginListBox("##listbox Render Objects in Scene", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
+				//
+				// Enter into timeline viewer mode with a model
+				//
+				if (ImGui::Button("Edit Model Metadata in Timeline..."))
 				{
-					for (size_t i = 0; i < modelRefsPaths.size(); i++)
+					// Open that file
+					const char* filters[] = { "*.hsmm" };
+					char* path = FileLoading::openFileDialog("Open Model for Timeline Editing", "res/model/", filters, "Game Model Metadata Files (*.hsmm)");
+					if (path)
 					{
-						const bool isSelected = (selectedIndex == (int)i);
-						if (ImGui::Selectable(modelRefsPaths[i].c_str(), isSelected))
-							selectedIndex = (int)i;
+						nlohmann::json j = FileLoading::loadJsonFile(path);
 
-						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-						if (isSelected)
-							ImGui::SetItemDefaultFocus();
+						if (j.contains("model_path"))
+						{
+							// @COPYPASTA: Create and insert in the model
+							modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
+
+							Model* model = (Model*)Resources::getResource("model;custommodel;" + std::string(j["model_path"]));
+							//animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
+							ModelWithMetadata mwm = {
+								model,
+								true,
+								nullptr  // animatorForModelForTimelineViewer
+							};
+							modelForTimelineViewer->addModelToRender(mwm);
+
+							timelineViewerMode = true;
+						}
+						else
+						{
+							std::cout << "TIMELINE VIEWER: ERROR: Model path \"" << path << "\" Does not contain key 'model_path'." << std::endl;
+						}
 					}
-					ImGui::EndListBox();
+					else
+					{
+						std::cout << "TIMELINE VIEWER: ERROR: Model path \"" << path << "\" Does not exist." << std::endl;
+					}
 				}
 
-				if (selectedIndex < modelRefsPaths.size())
+				if (ImGui::Button("Create new Model Metadata in Timeline..."))
 				{
-					if (ImGui::Button("Edit Selected Model"))
+					// Create a new file
+					const char* filters[] = { "*.hsmm" };
+					char* path = FileLoading::saveFileDialog("Create Model Metadata for Timeline Editing", "res/model/", filters, "Game Model Metadata Files (*.hsmm)");
+					if (path)
 					{
-						// Create and insert in the model
-						modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
+						nlohmann::json j;
+						FileLoading::saveJsonFile(path, j);
 
-						Model* model = (Model*)Resources::getResource("model;custommodel;" + modelRefsPaths[selectedIndex]);
-						animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
-						ModelWithMetadata mwm = {
-							model,
-							true,
-							animatorForModelForTimelineViewer
-						};
-						modelForTimelineViewer->addModelToRender(mwm);
+						// Load a model
+						const char* modelFilters[] = { "*.glb" };
+						char* modelPath = FileLoading::openFileDialog("Open GLTF Binary Model", "res/model/", modelFilters, "GLTF Binary Model (*.glb)");
 
-						timelineViewerMode = true;
+						if (modelPath)
+						{
+							j["model_path"] = std::filesystem::relative(modelPath).u8string();
+							FileLoading::saveJsonFile(path, j);
+
+							// @COPYPASTA: Create and insert in the model
+							modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
+
+							Model* model = (Model*)Resources::getResource("model;custommodel;" + std::string(j["model_path"]));
+							//animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
+							ModelWithMetadata mwm = {
+								model,
+								true,
+								nullptr  // animatorForModelForTimelineViewer
+							};
+							modelForTimelineViewer->addModelToRender(mwm);
+
+							timelineViewerMode = true;
+						}
+						else
+						{
+							std::cout << "TIMELINE VIEWER: ERROR: Model path \"" << path << "\" Does not exist." << std::endl;
+						}
+					}
+					else
+					{
+						std::cout << "TIMELINE VIEWER: ERROR: Saving path \"" << path << "\" Does not exist." << std::endl;
 					}
 				}
 			}

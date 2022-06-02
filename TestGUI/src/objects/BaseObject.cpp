@@ -313,6 +313,22 @@ void RenderComponent::renderShadow(Shader* shader)		// @Copypasta
 }
 
 #ifdef _DEVELOP
+std::vector<std::string> RenderComponent::getMaterialNameList()
+{
+	std::vector<std::string> materialNameList;
+	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
+	{
+		std::vector<std::string> currentNameList = modelsWithMetadata[i].model->getMaterialNameList();
+		for (size_t j = 0; j < currentNameList.size(); j++)
+		{
+			if (std::find(materialNameList.begin(), materialNameList.end(), currentNameList[j]) != materialNameList.end())
+				continue;	// Uniques only pls
+			materialNameList.push_back(currentNameList[j]);
+		}
+	}
+	return materialNameList;
+}
+
 void RenderComponent::TEMPrenderImguiModelBounds()
 {
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)

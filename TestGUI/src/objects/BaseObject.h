@@ -198,6 +198,7 @@ public:
 	void renderShadow(Shader* shader);
 
 #ifdef _DEVELOP
+	std::vector<std::string> getMaterialNameList();
 	void TEMPrenderImguiModelBounds();
 #endif
 

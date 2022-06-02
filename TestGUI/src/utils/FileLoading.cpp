@@ -41,10 +41,40 @@ nlohmann::json FileLoading::loadJsonFile(std::string fname)
 
 void FileLoading::saveJsonFile(std::string fname, nlohmann::json& object)
 {
-	std::ofstream o("res\\solanine_editor_settings.json");
+	std::ofstream o(fname);
 	o << std::setw(4) << object << std::endl;
 	std::cout << "FILEIO:: File \"" << fname << "\" Successfully saved (JSON)." << std::endl;
 }
+
+char* FileLoading::openFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
+{
+	std::string currentPath{ std::filesystem::current_path().u8string() + "/" + startingPath };
+	char* fnameOpened = tinyfd_openFileDialog(
+		title.c_str(),
+		currentPath.c_str(),
+		1,
+		filters,
+		filterDescription,
+		0
+	);
+
+	return fnameOpened;
+}
+
+char* FileLoading::saveFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
+{
+	std::string currentPath{ std::filesystem::current_path().u8string() + "/" + startingPath };
+	char* fname = tinyfd_saveFileDialog(
+		title.c_str(),
+		currentPath.c_str(),
+		1,
+		filters,
+		filterDescription
+	);
+
+	return fname;
+}
+
 
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
@@ -94,7 +124,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 		// Set this opened file as the new default for next time you open the program
 		// @Copypasta
 		nlohmann::json j;
-		j["startup_level"] = std::filesystem::relative(fnameOpened).u8string();		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
+		j["startup_level"] = std::filesystem::relative(fnameOpened).u8string();
 		std::ofstream o("res\\solanine_editor_settings.json");
 		o << std::setw(4) << j << std::endl;
 		std::cout << "::NOTE:: Set new startup file as \"" << fnameOpened << "\" ..." << std::endl;

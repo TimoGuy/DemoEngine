@@ -159,6 +159,18 @@ void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const s
 }
 
 #ifdef _DEVELOP
+std::vector<std::string> Model::getMaterialNameList()
+{
+	std::vector<std::string> materialNameList;
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		if (std::find(materialNameList.begin(), materialNameList.end(), meshes[i].getMaterialName()) != materialNameList.end())
+			continue;	// Uniques only pls
+		materialNameList.push_back(meshes[i].getMaterialName());
+	}
+	return materialNameList;
+}
+
 void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 {
 	for (size_t i = 0; i < meshes.size(); i++)
