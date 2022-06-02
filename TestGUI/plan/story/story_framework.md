@@ -71,3 +71,5 @@
 ## Finale (Busting the Glass Planet... What do you do now?)
 
 *As soon as you bust the glass planet, everything starts leaving, including the clouds and the people.*
+
+> NOTE: @TODO: who built this glass planet, and why was purifying it necessary? (NOTE that nothing is made of glass at all in this world, nothing is transparent except for water and the single glass bottle that Jojo holds.)
