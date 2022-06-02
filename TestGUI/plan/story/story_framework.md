@@ -27,16 +27,28 @@
 
 ## Questioning Whether Anokata is Trustworthy or Not
 
+*After the talk with the MOM, Jojo feels uneasy about Anokata, and wants to uncover what could be happening and who Anokata is. Learning about the Solanine and its powers lead Jojo to believe that that's what Anokata is after, and the fact that a sacrifice of life must be made in order for one to get the solanine makes things even more interesting.*
+
+*So then Jojo finds Anokata, and this idea of who Anokata is is so built up that Anokata gets no time to explain themselves. Instead, Anokata asks "Do you accept my deal?" to which Jojo draws his weapon. **THIS** is what we need to get to; to a point where the player will hate Anokata, despite all of this being a miscommunication.*
+
+
 
 ## Finding Out Exactly What Anokata Wants
 
-> NOTE: after finding out that Anokata wants the Solanine, the mission becomes finding out who Anokata is and how to capture them.
+
+
+
 
 
 ## The Child Statue and the Mother Statue
 
+*On the top of the tallest mountain in the world, a mother and child statue stand, with the child statue clasping something inside their hands. This object is glowing. Anokata stands in front of the child statue, waiting for Jojo's coming and looking hopeful for the child's treasure.*
+
+
 
 ## The Child Statue Offers and the Mother Statue Allows
+
+*After getting Anokata defeated and locked away, The story seemingly comes to a close. Hopefully nobody else has to bear the burden of the shenanigans of Anokata. Days later, one night while Jojo is sleeping, he receives a dreams that Anokata wants him to visit the Child and Mother Statues again and to go visit his people. Jojo at first shakes this off, but decides to go anyways. There, he finds a jewel left on the ground in front of the Child Statue. Jojo picks it up, and the jewel turns from a deep black into bright red as if it were on fire, and the bright light and heat overtake Jojo's body, and the soul of Anokata is now passed onto Jojo, giving him the ability to turn into lava and protect himself from heat. This moment also fulfills the requirement of sacrificing a life, as Anokata gave their soul up for this pass on.*
 
 - Big Cutscene when the Mother Statue allows (NOTE: you see this in the distance):
     - Since these statues are the size of Daibutsu, the Mother Statue slowly turns around 180 (no leg movmeent), and upon stopping, a loud thud is heard.

@@ -29,7 +29,7 @@ A loud thud sounded, accompanied by an audible crack. Jojo's eyes shoot to the b
 
 How many months had it been for Jojo being in the bed, unable to leave? This question rang into Jojo's mind as he hurled himself out of his bed. Another audible crack sounds as Jojo's left side makes contact with the floor. Jojo's pain in his leg grows to near-unbearable levels. The cool water that the left side of his head managed to land into was bliss. Jojo licks the water and enjoys as much as he can in the short moment as the lion's share of the water had been claimed by the thirsty floorboards.
 
-Jojo looks across at his sister's expression to see what she thought of his response to her selfish act. Jojette's eyes were wide, face straight towards the ground, her whole body quivering. Something was wrong. Upon realizing that that audible crack was actually Jojette, not the bottle, Jojo's heart sinks, realizing he had just taken all of the water that was meant for both of them. Almost by cue, the pain of his broken leg really starts setting in. Filled with guilt, Jojo notices a small pool of leftover water on a divet in the floorboards, so he tries lifting his arm to give Jojette some water. However, the pain is unbearable at this point. He succumbs to it and passes out.
+Jojo looks across at his sister's expression to see what she thought of his response to her selfish act. Jojette's eyes were wide, face straight towards the ground, her whole body quivering. Something was wrong. Upon realizing that that audible crack was actually Jojette, not the bottle, Jojo's heart sinks, realizing he had just taken all of the water that was meant for both of them. Almost by cue, the pain of his broken leg really starts setting in. Filled with guilt, Jojo notices a small pool of leftover water on a divet in the floorboards, so he tries lifting his arm to give Jojette some water. However, the pain is unbearable at this point. He succumbs to it and blacks out.
 
 
 
@@ -45,35 +45,29 @@ Remembering about his sister, Jojo turns around to look for her and sees her sle
 
 A note sitting on the endtable catches Jojo's eye:
 
-"Jojo, do not fear. I am protecting you and your sister. She has pushed herself to a capacity beyond her own body. Without my protection, she would have expired from her lack of strength. I am protecting her from the famine, just as I am protecting you. How have these past *3 months*<sup>1</sup> of rest been? I'm sure you feel very strong from my protection. Because I noticed you own an ancient weapon. I bound it to you to be your companion, and now you and your sister are receiving my protection with your ancient weapon as the conduit.
+"Jojo, do not fear. I am protecting you and your sister. She has pushed herself to a capacity beyond her own body. Without my protection, she would have expired from her exhaustion of strength. I am protecting her from the famine, just as I am protecting you. How have these past *3 months*<sup>1</sup> of rest been? I'm sure you feel very strong from my protection. Because I noticed you own an ancient weapon. I bound it to you to be your companion, and now you and your sister are receiving my protection with your ancient weapon as the conduit.
 
-Now for a little deal. Jojo, seeing your sister's willpower and charity, I'm sure you are just the same. I need your cooperation to save my people. We are on the top of the highest mountain. When you get here, I will let you know what you need to do.
+Now for a little deal. Jojo, seeing your sister's willpower and charity, I'm sure you are just the same. I need your cooperation to save my people<sup>3</sup>. We are on the top of the highest mountain. When you get here, I will let you know what you need to do.
 
 Of course, you don't need to accept this deal. Because of my protection that you get out of this deal, I am assuming that you accept it. Although, if you do not report to me in *338 days*<sup>1</sup>, I will assume that you are leading me on and in fact do not accept this deal, at which point I will withdraw my condition of the deal, which is my protection.
 
-On top of this, if you or your companion fall into the void below<sup>2</sup>, I will take that cue and understand you do not want to help my people. I will take away my protection and find another who can help me.
-
 I will continue to give protection, but the conduit, your ancient weapon, will need to be refilled or else its function as a conduit will permanently be lost and it will return to its state before I activated it; it will become just a water bottle again."
 
-# TODO: FIND CONTRADICTIONS (NOTE: story_framework.md is MASTER TRUTH NOW)
+On top of this, if you or your companion fall into the void below<sup>2</sup>, I will take that cue and understand you do not want to help my people. I will take away my protection and find another who can help me.
 
 > 1: This label will be a couple of 7-segment displays with "months" or "days" written after the number displays
 >
-> NOTE: about NOTE 1 (7-segment displays on the paper), the 'days' one will count down and the 'months' one will keep counting up.
-> (Months will keep counting up just to show that maybe this guy just ain't too high and mighty as he puts himself to be.)
+> NOTE: about NOTE 1 (7-segment displays on the paper), the 'days' one will count down and the 'months' one will keep counting up. (Months will keep counting up just to show that maybe this guy just ain't too high and mighty as he puts himself to be.)
 
-> 2: Make this "fall into the clouds below" so that you don't ever get to see what's underneath the clouds, bc you pass out
-> if you fall into the clouds. So once you get the lava transformation, you *Meet the Person Behind the Letter* who has
-> been picking you up and lifting you out of the clouds back to safety if you fall down. This time, you want to be made up
-> of stone/lava so that they have no way of picking you up again; you can use this loophole to get past the cloud layer.
+> 2: Make this "fall into the clouds below" so that you don't ever get to see what's underneath the clouds, bc you pass out if you fall into the clouds. So once you get the lava transformation, you *Meet the Person Behind the Letter* who has been picking you up and lifting you out of the clouds back to safety if you fall down. This time, you want to be made up of stone/lava so that they have no way of picking you up again; you can use this loophole to get past the cloud layer.
 >
-> NOTE: also, by this time you have figured out that the bottle is the actual supplier (not the conduit) of the "protection"
-> that the guy behind the letter was so adamantly claiming he was giving you. This way you know that if you could escape the
-> grasp of the guy behind the letter, you should.
+> NOTE: also, by this time you have figured out that the bottle is the actual supplier (not the conduit) of the "protection" that the guy behind the letter was so adamantly claiming he was giving you. This way you know that if you could escape the grasp of the guy behind the letter, you should.
 >
-> NOTE2: Also by this time you find that the "ancient weapon" is indeed bound to you and your sister. It chose Jojo as the companion
-> because of the rest that Jojette deserves. However, bc of the two of them inheriting this "ancient weapon" thru family generations,
-> its protection acts upon both of them. Also, the protection was to ward off the guy behind the letter.
+> NOTE2: Also by this time you find that the "ancient weapon" is indeed bound to you and your sister. It chose Jojo as the companion because of the rest that Jojette deserves. However, bc of the two of them inheriting this "ancient weapon" thru family generations, its protection acts upon both of them. Also, the protection was to ward off the guy behind the letter.
+>
+> 3: These "people" are simply referring to Anokata's 'gods', the Mother and Child Statues. Anokata believes that when the Solanine is unlocked, the statues will move and offer the Solanine to the rightful user. However, the rest of Anokata's ppl are on the surface, the glass planet. They're a special lava species who purify the planet below and send the impurities (dirt and rocks etc.) up to the sky. They need to get into the sky and destroy the glass planet to travel out to the aether.
+>
+> NOTE: I'm thinking of the ending cutscene being a bunch of lava ppl who are propulsing the islands upwards and away from the glass planet.
 
 
 > NOTE: the bottle is Jojo's companion. It cannot be separated, except if Jojo wills it to come into his hands for things
@@ -83,15 +77,9 @@ I will continue to give protection, but the conduit, your ancient weapon, will n
 > somewhere and end up where the bottle is. The relationship with his bottle is very important.
 
 
-> NOTE: about the npc's, that'd be interesting if due to their thirst for relief of the drought, upon seeing your body,
-> they brandish their weapons and demand a ration of what you have that's keeping you alive. Therefore, you need to hide
-> from as many villagers and friends or else they would go after you, and you'd need to kill them or run away from them.
-> If you keep on fighting them for awhile, some will pass out from exhaustion or some will work themselves to death. You
-> want to avoid any unnecessary deaths in this famine.
+> NOTE: if an npc sees your body, due to their thirst for relief of the drought they brandish their weapons and demand a ration of what you have that's keeping you alive. Therefore, you need to hide from as many villagers and friends or else they would go after you, and you'd need to kill them or run away from them. If you keep on fighting them for awhile, some will pass out from exhaustion or some will work themselves to death. You want to avoid any unnecessary deaths in this famine.
 > 
-> NOTE2: If there are villagers like merchants who have something so offer, they will beg for water in exchange for some
-> of their services, like using something to unlock an item for you. You can steal their item if money's tight for you,
-> however, they will guard it with their life. To use the tool functionally, you will need to kill them.
+> NOTE2: If there are villagers like merchants who have something so offer, they will beg for water in exchange for some of their services, like using something to unlock an item for you. You can steal their item if money's tight for you, however, they will guard it with their life. To use the tool functionally, you will need to kill them.
 
 
 
@@ -101,8 +89,7 @@ Jojo finds himself out in this weird world, and now he's healthy and strong in i
 
 As he steps outside for the first day of his adventure, he is greeted with the first clue to get up to the top: the trail that his sister left while dragging the bottle on the ground. Let's just follow that, Jojo.
 
-> NOTE: since the relationship of the game and the story is kinda free-form, I don't really know exactly everything that
-> will happen, however this BEGINNING section is satisfactory to me for now.
+> NOTE: since the relationship of the game and the story is kinda free-form, I don't really know exactly everything that will happen, however this BEGINNING section is satisfactory to me for now.
 
 
 #### Exploring the Land, Jojo finds:
@@ -125,8 +112,3 @@ As he steps outside for the first day of his adventure, he is greeted with the f
     - To this day, MOM suffers from his illness and also grief for his family. (NOTE: the illness feels similar to being inside the landslide... the weight and inability to move)
     - MOM tells Jojo that Jojo needs to find anokata and destroy them. And make sure not to let them know anything you're planning, bc they could drive you to misery & pain the moment you do not fulfill their commands.
     > SPOILER: Anokata gave both MOM's family and Jojo's family unconditional protection, bc it's their talent and gift to heal. However, there are odd requirements in order for the people to still experience the healed state, or else they will revert to an odd half-healed state and suffer similar injuries until they fulfill these odd requirements. Anokata will simply know these requirements, and not be able to help the ppl they heal, bc they are not an omnipotent being. Consistently fulfilling these requirements (e.g. keeping the bottle attached to your back filled) is important bc reverting to the half-healed state can possibly render you unable to complete the original requirements. Anokata simply hopes that somebody will take the healing and want to say thank you by trying to help their people as well. Anokata's wording is very bad, however, but Anokata doesn't understand if the letters/wording is effective or not, bc nobody's actually answered them with helping out their people.
-
-
-## Meet the Person Behind the Letter
-
-### Act of Rebellion
