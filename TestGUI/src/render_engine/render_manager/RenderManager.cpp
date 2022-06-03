@@ -61,9 +61,27 @@ bool RenderManager::renderMeshRenderAABB = false;
 
 #ifdef _DEVELOP
 ImGuizmo::OPERATION transOperation;
+
 bool timelineViewerMode = false;		// This is when editing cutscenes or animations (can add events too)
+std::string modelMetadataFname;
 RenderComponent* modelForTimelineViewer = nullptr;
 Animator* animatorForModelForTimelineViewer = nullptr;
+
+struct AnimationNameAndIncluded
+{
+	std::string name;
+	bool included;
+};
+struct AnimationDetail
+{
+	bool trackXZRootMotion = false;
+	float timestampSpeed = 1.0f;
+};
+struct TimelineViewerState
+{
+	std::vector<AnimationNameAndIncluded> animationNameAndIncluded;
+	std::map<std::string, AnimationDetail> animationDetailMap;
+} timelineViewerState;
 #endif
 
 
@@ -2779,6 +2797,93 @@ void RenderManager::renderImGuiPass()
 }
 
 
+void routinePurgeTimelineViewerModel()
+{
+	delete modelForTimelineViewer->baseObject;
+	delete modelForTimelineViewer;
+	modelForTimelineViewer = nullptr;
+	delete animatorForModelForTimelineViewer;
+	animatorForModelForTimelineViewer = nullptr;
+}
+
+
+void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::json& modelMetadataData)
+{
+	//
+	// Create and insert in the model
+	//
+	modelMetadataFname = modelMetadataPath;
+
+	modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
+
+	std::vector<AnimationMetadata> animationsToInclude;
+	if (modelMetadataData.contains("included_anims"))
+	{
+		std::vector<std::string> animationNames = modelMetadataData["included_anims"];
+		for (size_t i = 0; i < animationNames.size(); i++)
+		{
+			animationsToInclude.push_back({ animationNames[i], false });
+		}
+	}
+
+	Model* model = new Model(std::string(modelMetadataData["model_path"]).c_str(), animationsToInclude);		// @NOTE: direct loading of the model is important, since we don't want the resources system to cache it.
+	animatorForModelForTimelineViewer = nullptr;
+	if (animationsToInclude.size() > 0)
+		animatorForModelForTimelineViewer = new Animator(&model->getAnimations());
+	ModelWithMetadata mwm = {
+		model,
+		true,
+		animatorForModelForTimelineViewer
+	};
+	modelForTimelineViewer->addModelToRender(mwm);
+
+	//
+	// Load in the state
+	//
+	
+	// Animation Names and Inclusions in model
+	std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
+	std::vector<std::string> animationNameList = modelForTimelineViewer->getModelFromIndex(0)->getAnimationNameList();
+	timelineViewerState.animationNameAndIncluded.clear();
+	for (size_t i = 0; i < animationNameList.size(); i++)
+	{
+		std::string name = animationNameList[i];
+		bool included = false;
+		for (size_t j = 0; j < modelAnimations.size(); j++)
+			if (name == modelAnimations[j].getName())
+			{
+				included = true;
+				break;
+			}
+		timelineViewerState.animationNameAndIncluded.push_back({ name, included });
+	}
+
+	// Animation details
+	timelineViewerState.animationDetailMap.clear();
+	if (modelMetadataData.contains("animation_details"))
+	{
+		for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
+		{
+			AnimationNameAndIncluded& anai = timelineViewerState.animationNameAndIncluded[i];
+			if (!anai.included)
+				continue;
+
+			AnimationDetail newAnimationDetail;
+			if (modelMetadataData["animation_details"].contains(anai.name))
+			{
+				nlohmann::json animationDetails = modelMetadataData["animation_details"][anai.name];
+
+				if (animationDetails.contains("track_xz_root_motion"))
+					newAnimationDetail.trackXZRootMotion = animationDetails["track_xz_root_motion"];
+				if (animationDetails.contains("timestamp_speed"))
+					newAnimationDetail.timestampSpeed = animationDetails["timestamp_speed"];
+			}
+			timelineViewerState.animationDetailMap[anai.name] = newAnimationDetail;		// @NOTE: this adds an empty newAnimationDetail if it wasn't found inside of the json file
+		}
+	}
+}
+
+
 void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
@@ -3520,15 +3625,38 @@ void RenderManager::renderImGuiContents()
 		{
 			if (timelineViewerMode)
 			{
+				static bool saveAndApplyChangesFlag = false;
+
 				if (ImGui::Button("Exit Timeline Viewer Mode"))
 				{
-					delete modelForTimelineViewer->baseObject;
-					delete modelForTimelineViewer;
-					modelForTimelineViewer = nullptr;
-					delete animatorForModelForTimelineViewer;
-					animatorForModelForTimelineViewer = nullptr;
-
+					routinePurgeTimelineViewerModel();
 					timelineViewerMode = false;
+				}
+				
+				if (saveAndApplyChangesFlag)
+				{
+					ImGui::SameLine();
+					if (ImGui::Button("Save and Apply Changes"))
+					{
+						//
+						// Do a big save of everything
+						//
+						nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
+
+						std::vector<std::string> includedAnimations;
+						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)fsafdasgasdgasdgasdgasdg		// @NOTE: @TODO: you need to include the "animation_details" section for the fyle type 0000000-------mons ssssssss
+							if (timelineViewerState.animationNameAndIncluded[i].included)
+								includedAnimations.push_back(timelineViewerState.animationNameAndIncluded[i].name);
+						j["included_anims"] = includedAnimations;
+
+						FileLoading::saveJsonFile(modelMetadataFname, j);
+
+						// Reimport the model now
+						routinePurgeTimelineViewerModel();
+						routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j);
+
+						saveAndApplyChangesFlag = false;
+					}
 				}
 
 				//
@@ -3568,7 +3696,55 @@ void RenderManager::renderImGuiContents()
 				ImGui::Separator();
 				if (ImGui::TreeNode("Animations"))
 				{
+					if (ImGui::TreeNode("Include Animations"))
+					{
+						//
+						// Show imgui for the animations
+						//
+						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
+						{
+							saveAndApplyChangesFlag |= ImGui::Checkbox(timelineViewerState.animationNameAndIncluded[i].name.c_str(), &timelineViewerState.animationNameAndIncluded[i].included);
+						}
 
+						ImGui::TreePop();
+					}
+
+					if (ImGui::TreeNode("Edit Included Animations"))
+					{
+						std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
+						static int selectedAnimation = -1;
+						static AnimationDetail* selectedAnimationPtr = nullptr;
+						if (ImGui::BeginCombo("Selected Animation", selectedAnimation == -1 ? "Select..." : modelAnimations[selectedAnimation].getName().c_str()))
+						{
+							if (ImGui::Selectable("Select...", selectedAnimation == -1))
+								selectedAnimation = -1;
+
+							for (size_t i = 0; i < modelAnimations.size(); i++)
+							{
+								const bool isSelected = (selectedAnimation == i);
+								if (ImGui::Selectable(modelAnimations[i].getName().c_str(), isSelected))
+								{
+									selectedAnimation = i;
+									selectedAnimationPtr = &timelineViewerState.animationDetailMap[modelAnimations[i].getName()];
+								}
+
+								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
+							}
+
+							ImGui::EndCombo();
+						}
+
+						if (selectedAnimation > 0)
+						{
+							ImGui::Text("General Settings");
+							saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &selectedAnimationPtr->trackXZRootMotion);
+							saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &selectedAnimationPtr->timestampSpeed);
+						}
+
+						ImGui::TreePop();
+					}
 					
 					ImGui::TreePop();
 				}
@@ -3589,18 +3765,7 @@ void RenderManager::renderImGuiContents()
 
 						if (j.contains("model_path"))
 						{
-							// @COPYPASTA: Create and insert in the model
-							modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
-
-							Model* model = (Model*)Resources::getResource("model;custommodel;" + std::string(j["model_path"]));
-							//animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
-							ModelWithMetadata mwm = {
-								model,
-								true,
-								nullptr  // animatorForModelForTimelineViewer
-							};
-							modelForTimelineViewer->addModelToRender(mwm);
-
+							routineCreateAndInsertInTheModel(path, j);
 							timelineViewerMode = true;
 						}
 						else
@@ -3633,18 +3798,7 @@ void RenderManager::renderImGuiContents()
 							j["model_path"] = std::filesystem::relative(modelPath).u8string();
 							FileLoading::saveJsonFile(path, j);
 
-							// @COPYPASTA: Create and insert in the model
-							modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
-
-							Model* model = (Model*)Resources::getResource("model;custommodel;" + std::string(j["model_path"]));
-							//animatorForModelForTimelineViewer = new Animator(&model->getAnimations());		// @TODO: @NOTE: There are no animations by default bc of how the model;custommodel; system works. We're gonna need to overhaul the animation system so that it supports importing multiple animations..... @IDEA: so have all the .glb files be opened up with a json file that contains the model metadata (aka information on how to load in X model). This way there could be the same models but loaded in in different ways (i.e. textures, reserved bones for hair, etc.), so long as you put in the different json that shows the loading format. @ALSO: Have the model load in with default materials for now. In the future there will need to be some kind of material loader so that these models can reference them. (uv_grid_texture.jpg)
-							ModelWithMetadata mwm = {
-								model,
-								true,
-								nullptr  // animatorForModelForTimelineViewer
-							};
-							modelForTimelineViewer->addModelToRender(mwm);
-
+							routineCreateAndInsertInTheModel(path, j);
 							timelineViewerMode = true;
 						}
 						else

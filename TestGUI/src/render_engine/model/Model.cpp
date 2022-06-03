@@ -159,6 +159,11 @@ void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const s
 }
 
 #ifdef _DEVELOP
+std::vector<std::string> Model::getAnimationNameList()
+{
+	return animationNameList;
+}
+
 std::vector<std::string> Model::getMaterialNameList()
 {
 	std::vector<std::string> materialNameList;
@@ -236,6 +241,14 @@ void Model::loadModel(std::string path, std::vector<AnimationMetadata> animation
 		Animation newAnimation(scene, this, animationMetadatas[i]);
 		animations.push_back(newAnimation);
 	}
+
+#ifdef _DEVELOP
+	// Load all the animation names
+	for (size_t i = 0; i < scene->mNumAnimations; i++)
+	{
+		animationNameList.push_back(scene->mAnimations[i]->mName.C_Str());
+	}
+#endif
 
 	std::cout << "MODEL::" << path << "::Import Fimished" << std::endl;
 }

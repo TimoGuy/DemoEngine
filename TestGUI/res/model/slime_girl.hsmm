@@ -1,3 +1,24 @@
 {
+    "included_anims": [
+        "Attack_light_horizontal",
+        "Attack_light_vertical",
+        "Attack_midair",
+        "Draw_Water",
+        "Idle",
+        "Idle_Spinny_Left",
+        "Idle_Spinny_Right",
+        "Idle_Sword_Drawn_horizontal",
+        "Jumping_From_Idle",
+        "Jumping_From_Run",
+        "Jumping_Midair",
+        "Land_From_Jumping_From_Idle",
+        "Land_From_Jumping_From_Run",
+        "Pick_Up_Bottle",
+        "Running",
+        "Walking",
+        "Wall_Climbing",
+        "Wall_Hang",
+        "Write_In_Journal"
+    ],
     "model_path": "res\\slime_girl\\slime_girl.glb"
 }

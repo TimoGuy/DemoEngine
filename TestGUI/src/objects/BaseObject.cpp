@@ -260,6 +260,11 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
+Model* RenderComponent::getModelFromIndex(size_t index)
+{
+	return modelsWithMetadata[index].model;
+}
+
 void RenderComponent::clearAllModels()
 {
 	modelsWithMetadata.clear();

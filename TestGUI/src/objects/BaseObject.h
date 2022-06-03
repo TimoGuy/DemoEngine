@@ -190,6 +190,7 @@ public:
 	// @TODO: @GIANT: You need to add a function to the main game loop to update the animator. This will finally use the modelAniamtor field...
 
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
+	Model* getModelFromIndex(size_t index);
 	void clearAllModels();
 
 	void addTextToRender(TextRenderer* textRenderer);

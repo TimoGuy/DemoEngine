@@ -31,6 +31,7 @@ public:
 
 	Bone* findBone(const std::string& name);
 
+	inline std::string getName() { return name; }
 	inline float getTicksPerSecond() { return (float)ticksPerSecond; }
 	inline float getDuration() { return duration; }
 	inline AssimpNodeData& getRootNode() { return rootNode; }
@@ -41,6 +42,7 @@ private:
 	void readMissingBones(const aiAnimation* animation, Model& model, AnimationMetadata animationMetadata);
 	void readHierarchyData(AssimpNodeData& dest, const aiNode* src);
 
+	std::string name;
 	float duration;
 	int ticksPerSecond;
 	std::map<std::string, Bone> bones;
