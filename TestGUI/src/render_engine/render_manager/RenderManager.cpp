@@ -3768,7 +3768,8 @@ void RenderManager::renderImGuiContents()
 
 							ImGui::Text("Preview Animation");
 							ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
-							float animationDuration = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation].getDuration();
+							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
+							float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
 							ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
 
 							if (timelineViewerState.editor_isAnimationPlaying)
@@ -3794,7 +3795,7 @@ void RenderManager::renderImGuiContents()
 					}
 
 					animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
-					animatorForModelForTimelineViewer->updateAnimation((timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime()) / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
+					animatorForModelForTimelineViewer->updateAnimation(timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime() / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
 				}
 			}
 			else
