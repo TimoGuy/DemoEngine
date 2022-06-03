@@ -36,7 +36,7 @@ void Animator::updateAnimation(float deltaTime)
 
 #ifdef _DEVELOP
 	// Don't run the animation update unless in playmode
-	if (!MainLoop::getInstance().playMode)
+	if (!MainLoop::getInstance().playMode && !MainLoop::getInstance().timelineViewerMode)
 		return;
 #endif
 

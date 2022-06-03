@@ -62,7 +62,6 @@ bool RenderManager::renderMeshRenderAABB = false;
 #ifdef _DEVELOP
 ImGuizmo::OPERATION transOperation;
 
-bool timelineViewerMode = false;		// This is when editing cutscenes or animations (can add events too)
 std::string modelMetadataFname;
 RenderComponent* modelForTimelineViewer = nullptr;
 Animator* animatorForModelForTimelineViewer = nullptr;
@@ -81,6 +80,13 @@ struct TimelineViewerState
 {
 	std::vector<AnimationNameAndIncluded> animationNameAndIncluded;
 	std::map<std::string, AnimationDetail> animationDetailMap;
+
+	// Editor only values
+	int editor_selectedAnimation = -1;
+	int editor_currentlyPlayingAnimation = -1;
+	AnimationDetail* editor_selectedAnimationPtr = nullptr;
+	bool editor_isAnimationPlaying = false;
+	float editor_animationPlaybackTimestamp = 0.0f;
 } timelineViewerState;
 #endif
 
@@ -1588,7 +1594,7 @@ void RenderManager::render()
 	//
 	// Render Picking texture
 	//
-	if (!timelineViewerMode && DEBUGdoPicking)
+	if (!MainLoop::getInstance().timelineViewerMode && DEBUGdoPicking)
 	{
 		if (!MainLoop::getInstance().playMode)		// NOTE: no reason in particular for making this !playmode only
 		{
@@ -1980,7 +1986,7 @@ void RenderManager::renderScene()
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	
 #ifdef _DEVELOP
-	if (timelineViewerMode && modelForTimelineViewer != nullptr)
+	if (MainLoop::getInstance().timelineViewerMode && modelForTimelineViewer != nullptr)
 	{
 		// Render just the single renderObject for the animation viewer
 		modelForTimelineViewer->render(&cookedViewFrustum, INTERNALzPassShader);
@@ -2654,7 +2660,7 @@ void RenderManager::INTERNALaddMeshToTransparentRenderQueue(Mesh* mesh, const gl
 void RenderManager::renderSceneShadowPass(Shader* shader)
 {
 #ifdef _DEVELOP
-	if (timelineViewerMode && modelForTimelineViewer != nullptr)
+	if (MainLoop::getInstance().timelineViewerMode && modelForTimelineViewer != nullptr)
 	{
 		// Render just the single selected object when in timelineviewermode
 		modelForTimelineViewer->renderShadow(shader);
@@ -2809,6 +2815,9 @@ void routinePurgeTimelineViewerModel()
 
 void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::json& modelMetadataData)
 {
+	// Reset state (@WARNING: don't do anything stupid and leave hanging pointers bc of this yo)	@NOTE: with this, editor values don't have to be explicitly updated here... they will simply just be reset. Also, lists that contain references will just get cleared automagically.
+	timelineViewerState = TimelineViewerState();
+
 	//
 	// Create and insert in the model
 	//
@@ -2816,13 +2825,19 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
 
+	// Setup importing the animations
 	std::vector<AnimationMetadata> animationsToInclude;
 	if (modelMetadataData.contains("included_anims"))
 	{
 		std::vector<std::string> animationNames = modelMetadataData["included_anims"];
 		for (size_t i = 0; i < animationNames.size(); i++)
 		{
-			animationsToInclude.push_back({ animationNames[i], false });
+			std::string animationName = animationNames[i];
+			bool trackXZRootMotion = false;
+			if (modelMetadataData.contains("animation_details") && modelMetadataData["animation_details"].contains(animationName) && modelMetadataData["animation_details"][animationName].contains("track_xz_root_motion"))
+				trackXZRootMotion = modelMetadataData["animation_details"][animationName]["track_xz_root_motion"];
+
+			animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, 1.0f });		// @NOTE: the animationSpeed is 1.0f bc the player will use its own value. The animationSpeed value should get imported when the animations would get imported normally.  -Timo
 		}
 	}
 
@@ -2839,12 +2854,10 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	//
 	// Load in the state
-	//
-	
+
 	// Animation Names and Inclusions in model
 	std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
 	std::vector<std::string> animationNameList = modelForTimelineViewer->getModelFromIndex(0)->getAnimationNameList();
-	timelineViewerState.animationNameAndIncluded.clear();
 	for (size_t i = 0; i < animationNameList.size(); i++)
 	{
 		std::string name = animationNameList[i];
@@ -2858,8 +2871,7 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 		timelineViewerState.animationNameAndIncluded.push_back({ name, included });
 	}
 
-	// Animation details
-	timelineViewerState.animationDetailMap.clear();
+	// Get animation details
 	if (modelMetadataData.contains("animation_details"))
 	{
 		for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
@@ -3150,7 +3162,7 @@ void RenderManager::renderImGuiContents()
 	//
 	if (renderMeshRenderAABB)
 	{
-		if (timelineViewerMode && modelForTimelineViewer != nullptr)
+		if (MainLoop::getInstance().timelineViewerMode && modelForTimelineViewer != nullptr)
 		{
 			modelForTimelineViewer->TEMPrenderImguiModelBounds();
 		}
@@ -3623,14 +3635,14 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Timeline Editor", &showTimelineEditorWindow))
 		{
-			if (timelineViewerMode)
+			if (MainLoop::getInstance().timelineViewerMode)
 			{
 				static bool saveAndApplyChangesFlag = false;
 
 				if (ImGui::Button("Exit Timeline Viewer Mode"))
 				{
 					routinePurgeTimelineViewerModel();
-					timelineViewerMode = false;
+					MainLoop::getInstance().timelineViewerMode = false;
 				}
 				
 				if (saveAndApplyChangesFlag)
@@ -3644,10 +3656,21 @@ void RenderManager::renderImGuiContents()
 						nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
 
 						std::vector<std::string> includedAnimations;
-						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)fsafdasgasdgasdgasdgasdg		// @NOTE: @TODO: you need to include the "animation_details" section for the fyle type 0000000-------mons ssssssss
+						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
 							if (timelineViewerState.animationNameAndIncluded[i].included)
 								includedAnimations.push_back(timelineViewerState.animationNameAndIncluded[i].name);
 						j["included_anims"] = includedAnimations;
+
+						nlohmann::json animationDetailsContainer;
+						for (auto it = timelineViewerState.animationDetailMap.begin(); it != timelineViewerState.animationDetailMap.end(); it++)
+						{
+							nlohmann::json animDetail_j;
+							animDetail_j["track_xz_root_motion"] = it->second.trackXZRootMotion;
+							animDetail_j["timestamp_speed"] = it->second.timestampSpeed;
+							
+							animationDetailsContainer[it->first] = animDetail_j;
+						}
+						j["animation_details"] = animationDetailsContainer;
 
 						FileLoading::saveJsonFile(modelMetadataFname, j);
 
@@ -3712,20 +3735,21 @@ void RenderManager::renderImGuiContents()
 					if (ImGui::TreeNode("Edit Included Animations"))
 					{
 						std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
-						static int selectedAnimation = -1;
-						static AnimationDetail* selectedAnimationPtr = nullptr;
-						if (ImGui::BeginCombo("Selected Animation", selectedAnimation == -1 ? "Select..." : modelAnimations[selectedAnimation].getName().c_str()))
+						if (ImGui::BeginCombo("Selected Animation", timelineViewerState.editor_selectedAnimation == -1 ? "Select..." : modelAnimations[timelineViewerState.editor_selectedAnimation].getName().c_str()))
 						{
-							if (ImGui::Selectable("Select...", selectedAnimation == -1))
-								selectedAnimation = -1;
+							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedAnimation == -1))
+							{
+								timelineViewerState.editor_selectedAnimation = -1;
+								timelineViewerState.editor_selectedAnimationPtr = nullptr;
+							}
 
 							for (size_t i = 0; i < modelAnimations.size(); i++)
 							{
-								const bool isSelected = (selectedAnimation == i);
+								const bool isSelected = (timelineViewerState.editor_selectedAnimation == i);
 								if (ImGui::Selectable(modelAnimations[i].getName().c_str(), isSelected))
 								{
-									selectedAnimation = i;
-									selectedAnimationPtr = &timelineViewerState.animationDetailMap[modelAnimations[i].getName()];
+									timelineViewerState.editor_selectedAnimation = i;
+									timelineViewerState.editor_selectedAnimationPtr = &timelineViewerState.animationDetailMap[modelAnimations[i].getName()];
 								}
 
 								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -3736,17 +3760,41 @@ void RenderManager::renderImGuiContents()
 							ImGui::EndCombo();
 						}
 
-						if (selectedAnimation > 0)
+						if (timelineViewerState.editor_selectedAnimationPtr != nullptr)
 						{
 							ImGui::Text("General Settings");
-							saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &selectedAnimationPtr->trackXZRootMotion);
-							saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &selectedAnimationPtr->timestampSpeed);
+							saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->trackXZRootMotion);
+							saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->timestampSpeed);
+
+							ImGui::Text("Preview Animation");
+							ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
+							float animationDuration = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation].getDuration();
+							ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
+
+							if (timelineViewerState.editor_isAnimationPlaying)
+								timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
+							timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
 						}
 
 						ImGui::TreePop();
 					}
 					
 					ImGui::TreePop();
+				}
+
+				//
+				// Update the animation state
+				//
+				if (animatorForModelForTimelineViewer != nullptr && timelineViewerState.editor_selectedAnimationPtr != nullptr)
+				{
+					if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
+					{
+						timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
+						animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
+					}
+
+					animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
+					animatorForModelForTimelineViewer->updateAnimation((timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime()) / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
 				}
 			}
 			else
@@ -3766,7 +3814,7 @@ void RenderManager::renderImGuiContents()
 						if (j.contains("model_path"))
 						{
 							routineCreateAndInsertInTheModel(path, j);
-							timelineViewerMode = true;
+							MainLoop::getInstance().timelineViewerMode = true;
 						}
 						else
 						{
@@ -3799,7 +3847,7 @@ void RenderManager::renderImGuiContents()
 							FileLoading::saveJsonFile(path, j);
 
 							routineCreateAndInsertInTheModel(path, j);
-							timelineViewerMode = true;
+							MainLoop::getInstance().timelineViewerMode = true;
 						}
 						else
 						{
