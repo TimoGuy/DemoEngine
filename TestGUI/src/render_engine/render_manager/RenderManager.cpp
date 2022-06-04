@@ -2826,9 +2826,6 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
 
-	// @TODO: Setup importing the material paths
-	// @TODO @TODO @TODO @TODO @TODO @TODO
-
 	// Setup importing the animations
 	std::vector<AnimationMetadata> animationsToInclude;
 	if (modelMetadataData.contains("included_anims"))
@@ -2855,6 +2852,40 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 		animatorForModelForTimelineViewer
 	};
 	modelForTimelineViewer->addModelToRender(mwm);
+
+	// Setup importing the material paths (and load those materials at the same time)
+	// @NOTE: need to import the animations and the model before touching the materials
+	if (modelMetadataData.contains("material_paths"))
+	{
+		nlohmann::json& materialPathsJ = modelMetadataData["material_paths"];
+		for (auto& [key, val] : materialPathsJ.items())
+		{
+			std::string materialPath = std::string(val);
+			timelineViewerState.materialPathsMap[key] = materialPath;
+
+			// Load in the material too @COPYPASTA
+			try
+			{
+				//
+				// Load in the new material
+				//
+				Material* materialToAssign = (Material*)Resources::getResource("material;" + materialPath);	// @NOTE: this line should fail if the material isn't inputted correctly.
+				if (materialToAssign == nullptr)
+					throw nullptr;		// Just get it to the catch statement
+
+				std::map<std::string, Material*> materialAssignmentMap;
+				materialAssignmentMap[key] = materialToAssign;
+				modelForTimelineViewer->getModelFromIndex(0)->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+
+				// Assign to the timelineViewerState
+				timelineViewerState.materialPathsMap[key] = materialPath;
+			}
+			catch (...)
+			{
+				// Abort applying the material name and show an error message.  @HACK: Bad patterns
+			}
+		}
+	}
 
 	//
 	// Load in the state
@@ -3641,12 +3672,15 @@ void RenderManager::renderImGuiContents()
 		{
 			if (MainLoop::getInstance().timelineViewerMode)
 			{
+				MainLoop::getInstance().playMode = false;		// Ehhhh, this is probably overkill, but just in case, I don't want any funny business!
+
 				static bool saveAndApplyChangesFlag = false;
 
 				if (ImGui::Button("Exit Timeline Viewer Mode"))
 				{
 					routinePurgeTimelineViewerModel();
 					MainLoop::getInstance().timelineViewerMode = false;
+					return;
 				}
 				
 				if (saveAndApplyChangesFlag)
@@ -3690,6 +3724,7 @@ void RenderManager::renderImGuiContents()
 						routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j);
 
 						saveAndApplyChangesFlag = false;
+						MainLoop::getInstance().renderManager->pushMessage("TIMELINE_EDITOR: Saved and Applied Changes");
 					}
 				}
 
@@ -3704,6 +3739,7 @@ void RenderManager::renderImGuiContents()
 					static std::string stagedMaterialName;		// When "apply" is clicked, the material is verified and then assigned.
 					static bool showApplyMaterialFlag = false;
 					static bool showApplyingMaterialAbortedErrorMessage = false;
+					static bool showApplyingMaterialSuccessMessage = false;
 
 					if (ImGui::BeginCombo("Selected Material", selectedMaterial == -1 ? "Select..." : materialNameList[selectedMaterial].c_str()))
 					{
@@ -3713,6 +3749,7 @@ void RenderManager::renderImGuiContents()
 							stagedMaterialName = "";
 							showApplyMaterialFlag = false;
 							showApplyingMaterialAbortedErrorMessage = false;
+							showApplyingMaterialSuccessMessage = false;
 						}
 
 						for (size_t i = 0; i < materialNameList.size(); i++)
@@ -3721,9 +3758,13 @@ void RenderManager::renderImGuiContents()
 							if (ImGui::Selectable(materialNameList[i].c_str(), isSelected))
 							{
 								selectedMaterial = i;
-								stagedMaterialName = "";
+								stagedMaterialName =
+									(timelineViewerState.materialPathsMap.find(materialNameList[i]) == timelineViewerState.materialPathsMap.end()) ?
+									"" :
+									timelineViewerState.materialPathsMap[materialNameList[i]];
 								showApplyMaterialFlag = false;
 								showApplyingMaterialAbortedErrorMessage = false;
+								showApplyingMaterialSuccessMessage = false;
 							}
 
 							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -3738,7 +3779,11 @@ void RenderManager::renderImGuiContents()
 					{
 						ImGui::Text("Assign Material");
 						if (ImGui::InputText("Material Name to Assign", &stagedMaterialName))
+						{
 							showApplyMaterialFlag = true;
+							showApplyingMaterialAbortedErrorMessage = false;
+							showApplyingMaterialSuccessMessage = false;
+						}
 
 						if (showApplyMaterialFlag &&
 							ImGui::Button("Apply new Material Name"))
@@ -3746,7 +3791,7 @@ void RenderManager::renderImGuiContents()
 							try
 							{
 								//
-								// Load in the new material
+								// Load in the new material		@COPYPASTA
 								//
 								Material* materialToAssign = (Material*)Resources::getResource("material;" + stagedMaterialName);	// @NOTE: this line should fail if the material isn't inputted correctly.
 								if (materialToAssign == nullptr)
@@ -3759,20 +3804,24 @@ void RenderManager::renderImGuiContents()
 								// Assign to the timelineViewerState
 								timelineViewerState.materialPathsMap[materialNameList[selectedMaterial]] = stagedMaterialName;
 
-								stagedMaterialName = "";
 								showApplyingMaterialAbortedErrorMessage = false;	// Undo the error message if succeeded
+								showApplyingMaterialSuccessMessage = true;
+								MainLoop::getInstance().renderManager->pushMessage("TIMELINE_EDITOR: SUCCESS! Material was assigned.");
+
 								saveAndApplyChangesFlag = true;		// Since changes were applied material-wise safely, we prompt a save changes flag
 							}
 							catch (...)
 							{
 								// Abort applying the material name and show an error message.  @HACK: Bad patterns
 								showApplyingMaterialAbortedErrorMessage = true;
+								MainLoop::getInstance().renderManager->pushMessage("TIMELINE_EDITOR: ERROR: the material assignment failed. Try a different material path.");
 							}
-
 						}
 
 						if (showApplyingMaterialAbortedErrorMessage)
 							ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ERROR: the material assignment failed. Try a different material path.");
+						if (showApplyingMaterialSuccessMessage)
+							ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "SUCCESS! Material was assigned.");
 					}
 
 					ImGui::TreePop();
@@ -3900,7 +3949,7 @@ void RenderManager::renderImGuiContents()
 					}
 					else
 					{
-						std::cout << "TIMELINE VIEWER: ERROR: Model path \"" << path << "\" Does not exist." << std::endl;
+						std::cout << "TIMELINE VIEWER: ERROR: Model path not selected." << std::endl;
 					}
 				}
 

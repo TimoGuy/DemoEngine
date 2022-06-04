@@ -99,9 +99,22 @@
         "Write_In_Journal"
     ],
     "material_paths": {
+        "Belt": "pbrSlimeBelt",
+        "BeltAccent": "pbrSlimeBeltAccent",
         "Body": "pbrSlimeBody",
         "Eyebrow": "pbrSlimeEyebrow",
-        "Eyes": "pbrSlimeEye"
+        "Eyes": "pbrSlimeEye",
+        "Hair": "pbrSlimeHair",
+        "PlasticCap": "pbrSlimeVest",
+        "ShoeAccent": "pbrSlimeShoeAccent",
+        "ShoeBlack": "pbrSlimeShoeBlack",
+        "ShoeWhite2": "pbrSlimeShoeWhite2",
+        "Shoes": "pbrSlimeShoeWhite",
+        "Shorts": "pbrSlimeShorts",
+        "Sweater": "pbrSlimeSweater",
+        "Sweater2": "pbrSlimeSweater2",
+        "Tights": "pbrSlimeTights",
+        "Vest": "pbrSlimeVest"
     },
     "model_path": "res\\slime_girl\\slime_girl.glb"
 }
