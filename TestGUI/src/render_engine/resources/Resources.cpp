@@ -47,7 +47,8 @@ namespace Resources
 		}
 
 		resource = loadResource(resourceName, false);
-		registerResource(resourceName, resource);
+		if (resource != nullptr)
+			registerResource(resourceName, resource);
 
 		if (resourceDiffersAnswer != nullptr)
 			*resourceDiffersAnswer = (resource != compareResource);
@@ -61,7 +62,8 @@ namespace Resources
 
 		// Re-fetch that resource!
 		void* resource = loadResource(resourceName, false);
-		registerResource(resourceName, resource);
+		if (resource != nullptr)
+			registerResource(resourceName, resource);
 	}
 
 	void unloadResource(std::string resourceName)

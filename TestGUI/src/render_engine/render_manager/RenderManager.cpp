@@ -78,6 +78,7 @@ struct AnimationDetail
 };
 struct TimelineViewerState
 {
+	std::map<std::string, std::string> materialPathsMap;
 	std::vector<AnimationNameAndIncluded> animationNameAndIncluded;
 	std::map<std::string, AnimationDetail> animationDetailMap;
 
@@ -2825,6 +2826,9 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
 
+	// @TODO: Setup importing the material paths
+	// @TODO @TODO @TODO @TODO @TODO @TODO
+
 	// Setup importing the animations
 	std::vector<AnimationMetadata> animationsToInclude;
 	if (modelMetadataData.contains("included_anims"))
@@ -3655,6 +3659,13 @@ void RenderManager::renderImGuiContents()
 						//
 						nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
 
+						nlohmann::json materialPathsContainer;
+						for (auto it = timelineViewerState.materialPathsMap.begin(); it != timelineViewerState.materialPathsMap.end(); it++)
+						{
+							materialPathsContainer[it->first] = it->second;
+						}
+						j["material_paths"] = materialPathsContainer;
+
 						std::vector<std::string> includedAnimations;
 						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
 							if (timelineViewerState.animationNameAndIncluded[i].included)
@@ -3690,17 +3701,30 @@ void RenderManager::renderImGuiContents()
 				{
 					std::vector<std::string> materialNameList = modelForTimelineViewer->getMaterialNameList();
 					static int selectedMaterial = -1;
+					static std::string stagedMaterialName;		// When "apply" is clicked, the material is verified and then assigned.
+					static bool showApplyMaterialFlag = false;
+					static bool showApplyingMaterialAbortedErrorMessage = false;
 
 					if (ImGui::BeginCombo("Selected Material", selectedMaterial == -1 ? "Select..." : materialNameList[selectedMaterial].c_str()))
 					{
 						if (ImGui::Selectable("Select...", selectedMaterial == -1))
+						{
 							selectedMaterial = -1;
+							stagedMaterialName = "";
+							showApplyMaterialFlag = false;
+							showApplyingMaterialAbortedErrorMessage = false;
+						}
 
 						for (size_t i = 0; i < materialNameList.size(); i++)
 						{
 							const bool isSelected = (selectedMaterial == i);
 							if (ImGui::Selectable(materialNameList[i].c_str(), isSelected))
+							{
 								selectedMaterial = i;
+								stagedMaterialName = "";
+								showApplyMaterialFlag = false;
+								showApplyingMaterialAbortedErrorMessage = false;
+							}
 
 							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 							if (isSelected)
@@ -3708,6 +3732,47 @@ void RenderManager::renderImGuiContents()
 						}
 
 						ImGui::EndCombo();
+					}
+
+					if (selectedMaterial >= 0)
+					{
+						ImGui::Text("Assign Material");
+						if (ImGui::InputText("Material Name to Assign", &stagedMaterialName))
+							showApplyMaterialFlag = true;
+
+						if (showApplyMaterialFlag &&
+							ImGui::Button("Apply new Material Name"))
+						{
+							try
+							{
+								//
+								// Load in the new material
+								//
+								Material* materialToAssign = (Material*)Resources::getResource("material;" + stagedMaterialName);	// @NOTE: this line should fail if the material isn't inputted correctly.
+								if (materialToAssign == nullptr)
+									throw nullptr;		// Just get it to the catch statement
+
+								std::map<std::string, Material*> materialAssignmentMap;
+								materialAssignmentMap[materialNameList[selectedMaterial]] = materialToAssign;
+								modelForTimelineViewer->getModelFromIndex(0)->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+
+								// Assign to the timelineViewerState
+								timelineViewerState.materialPathsMap[materialNameList[selectedMaterial]] = stagedMaterialName;
+
+								stagedMaterialName = "";
+								showApplyingMaterialAbortedErrorMessage = false;	// Undo the error message if succeeded
+								saveAndApplyChangesFlag = true;		// Since changes were applied material-wise safely, we prompt a save changes flag
+							}
+							catch (...)
+							{
+								// Abort applying the material name and show an error message.  @HACK: Bad patterns
+								showApplyingMaterialAbortedErrorMessage = true;
+							}
+
+						}
+
+						if (showApplyingMaterialAbortedErrorMessage)
+							ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "ERROR: the material assignment failed. Try a different material path.");
 					}
 
 					ImGui::TreePop();
@@ -3741,6 +3806,8 @@ void RenderManager::renderImGuiContents()
 							{
 								timelineViewerState.editor_selectedAnimation = -1;
 								timelineViewerState.editor_selectedAnimationPtr = nullptr;
+								timelineViewerState.editor_isAnimationPlaying = false;
+								timelineViewerState.editor_animationPlaybackTimestamp = 0.0f;
 							}
 
 							for (size_t i = 0; i < modelAnimations.size(); i++)
@@ -3750,6 +3817,8 @@ void RenderManager::renderImGuiContents()
 								{
 									timelineViewerState.editor_selectedAnimation = i;
 									timelineViewerState.editor_selectedAnimationPtr = &timelineViewerState.animationDetailMap[modelAnimations[i].getName()];
+									timelineViewerState.editor_isAnimationPlaying = false;
+									timelineViewerState.editor_animationPlaybackTimestamp = 0.0f;
 								}
 
 								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -3766,15 +3835,22 @@ void RenderManager::renderImGuiContents()
 							saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->trackXZRootMotion);
 							saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->timestampSpeed);
 
-							ImGui::Text("Preview Animation");
-							ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
 							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
 							float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
-							ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
+							if (animationDuration > 0.0f)
+							{
+								ImGui::Text("Preview Animation");
+								ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
+								ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
 
-							if (timelineViewerState.editor_isAnimationPlaying)
-								timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
-							timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
+								if (timelineViewerState.editor_isAnimationPlaying)
+									timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
+								timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
+							}
+							else
+							{
+								ImGui::Text("Previewing disabled for this animation (animation duration is 0.0)");
+							}
 						}
 
 						ImGui::TreePop();

@@ -1,19 +1,19 @@
 {
     "animation_details": {
         "Attack_light_horizontal": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Attack_light_vertical": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Attack_midair": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 60.0,
             "track_xz_root_motion": false
         },
         "Draw_Water": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Idle": {
@@ -29,31 +29,31 @@
             "track_xz_root_motion": false
         },
         "Idle_Sword_Drawn_horizontal": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Jumping_From_Idle": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Jumping_From_Run": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Jumping_Midair": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 50.0,
             "track_xz_root_motion": false
         },
         "Land_From_Jumping_From_Idle": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Land_From_Jumping_From_Run": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Pick_Up_Bottle": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Running": {
@@ -61,11 +61,11 @@
             "track_xz_root_motion": true
         },
         "Walking": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": true
         },
         "Wall_Climbing": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
         "Wall_Hang": {
@@ -73,7 +73,7 @@
             "track_xz_root_motion": false
         },
         "Write_In_Journal": {
-            "timestamp_speed": 1.0,
+            "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         }
     },
@@ -98,5 +98,10 @@
         "Wall_Hang",
         "Write_In_Journal"
     ],
+    "material_paths": {
+        "Body": "pbrSlimeBody",
+        "Eyebrow": "pbrSlimeEyebrow",
+        "Eyes": "pbrSlimeEye"
+    },
     "model_path": "res\\slime_girl\\slime_girl.glb"
 }
