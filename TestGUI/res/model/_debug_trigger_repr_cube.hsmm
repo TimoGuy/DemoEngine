@@ -1,0 +1,8 @@
+{
+    "animation_details": null,
+    "included_anims": [],
+    "material_paths": {
+        "Material": "pbrDefaultMaterial"
+    },
+    "model_path": "res\\_debug\\trigger_repr_cube.glb"
+}

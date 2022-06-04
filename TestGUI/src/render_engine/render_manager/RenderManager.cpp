@@ -2864,6 +2864,7 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	// Setup importing the material paths (and load those materials at the same time)
 	// @NOTE: need to import the animations and the model before touching the materials
+	// @COPYPASTA (Resources.cpp)
 	if (modelMetadataData.contains("material_paths"))
 	{
 		nlohmann::json& materialPathsJ = modelMetadataData["material_paths"];

@@ -1,0 +1,12 @@
+{
+    "animation_details": null,
+    "included_anims": [
+        "Idle",
+        "No_Water"
+    ],
+    "material_paths": {
+        "Mound": "pbrSlimeBelt",
+        "Water": "pbrWater"
+    },
+    "model_path": "res\\model\\water_pool.glb"
+}

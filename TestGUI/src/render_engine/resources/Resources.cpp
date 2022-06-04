@@ -382,6 +382,42 @@ void* loadModelFromHSMM(const std::string& modelName, bool isUnloading, const ch
 		}
 
 		Model* model = new Model(std::string(hsmm["model_path"]).c_str(), animationsToInclude);
+
+		// Setup importing the material paths (and load those materials at the same time)
+		// @NOTE: need to import the animations and the model before touching the materials
+		// @COPYPASTA (RenderManager.cpp)
+		if (hsmm.contains("material_paths"))
+		{
+			nlohmann::json& materialPathsJ = hsmm["material_paths"];
+			for (auto& [key, val] : materialPathsJ.items())
+			{
+				std::string materialPath = std::string(val);
+				//timelineViewerState.materialPathsMap[key] = materialPath;
+
+				// Load in the material too @COPYPASTA
+				try
+				{
+					//
+					// Load in the new material
+					//
+					Material* materialToAssign = (Material*)Resources::getResource("material;" + materialPath);	// @NOTE: this line should fail if the material isn't inputted correctly.
+					if (materialToAssign == nullptr)
+						throw nullptr;		// Just get it to the catch statement
+
+					std::map<std::string, Material*> materialAssignmentMap;
+					materialAssignmentMap[key] = materialToAssign;
+					model->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+
+					// Assign to the timelineViewerState
+					//timelineViewerState.materialPathsMap[key] = materialPath;
+				}
+				catch (...)
+				{
+					// Abort applying the material name and show an error message.  @HACK: Bad patterns
+				}
+			}
+		}
+	
 		return model;
 	}
 	else
@@ -497,17 +533,14 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Set pieces
 	//
-	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/model/water_pool.glb", { { "Idle", false }, { "No_Water", false } });
-	if (resourceName == "model;cube")									return loadModel(resourceName, isUnloading, "res/model/cube.glb");
-	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/model/house_w_interior.glb");
 	// Custom models vvv
 	if (resourceName.rfind("model;custommodel;", 0) == 0)				return loadModel(resourceName, isUnloading, resourceName.substr(18).c_str());
 
 	//
 	// Slime Girl Model and Materials
 	//
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Jumping_Midair", false, 1.5f }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false }, { "Wall_Climbing", false }, { "Wall_Hang", false }, { "Idle_Sword_Drawn_horizontal", false }, { "Idle_Sword_Drawn_vertical", false }, { "Attack_light_horizontal", false }, { "Attack_light_vertical", false }, { "Attack_midair", false, 2.0f }, { "Spinny_Spinny", false }, { "Idle_Spinny_Left", false }, { "Idle_Spinny_Right", false } });
-	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
+	//if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Jumping_Midair", false, 1.5f }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false }, { "Wall_Climbing", false }, { "Wall_Hang", false }, { "Idle_Sword_Drawn_horizontal", false }, { "Idle_Sword_Drawn_vertical", false }, { "Attack_light_horizontal", false }, { "Attack_light_vertical", false }, { "Attack_midair", false, 2.0f }, { "Spinny_Spinny", false }, { "Idle_Spinny_Left", false }, { "Idle_Spinny_Right", false } });
+	//if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
 
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");
 	if (resourceName == "texture;pbrSlimeBeltAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);

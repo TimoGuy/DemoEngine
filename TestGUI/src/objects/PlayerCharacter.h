@@ -155,10 +155,8 @@ public:
 	//
 	Model* model;
 	Animator animator;
-	std::map<std::string, Material*> materials;
 
 	Model* bottleModel;
-	std::map<std::string, Material*> bottleModelMaterials;
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	glm::vec3 cameraPosition;

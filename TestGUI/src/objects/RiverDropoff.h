@@ -45,5 +45,4 @@ private:
 	// OLD RIVERDROPOFFRENDER
 	//
 	Model* model;
-	std::map<std::string, Material*> materials;
 };

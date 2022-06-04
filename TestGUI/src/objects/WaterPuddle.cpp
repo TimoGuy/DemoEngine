@@ -168,18 +168,9 @@ void WaterPuddle::preRenderUpdate()
 void WaterPuddle::refreshResources()
 {
 	bool recreateAnimations;
-	model = (Model*)Resources::getResource("model;waterPuddle", model, &recreateAnimations);
+	model = (Model*)Resources::getResource("model;water_puddle", model, &recreateAnimations);
 	if (recreateAnimations)
 		animator = Animator(&model->getAnimations());
-
-
-	//
-	// Materials
-	//
-	materials["Mound"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
-	materials["Water"] = (Material*)Resources::getResource("material;pbrWater");
-
-	model->setMaterials(materials);
 }
 
 #ifdef _DEVELOP

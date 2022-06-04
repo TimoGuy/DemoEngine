@@ -505,42 +505,14 @@ void PlayerCharacter::refreshResources()
 				}
 		);
 
-		materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
-		materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
-		materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-		materials["Sweater"] = (Material*)Resources::getResource("material;pbrSlimeSweater");
-		materials["Sweater2"] = (Material*)Resources::getResource("material;pbrSlimeSweater2");
-		materials["Vest"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-		materials["Shorts"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
-		materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
-		materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
-		materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-		materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
-		materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
-		materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
-		materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
-		materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
-		materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-
-		((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
-		((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
-		((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
-
-		model->setMaterials(materials);
+		//((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
+		//((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
+		//((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 	}
 
-	bottleModel = (Model*)Resources::getResource("model;weaponBottle", bottleModel, &recreateAnimations);
+	bottleModel = (Model*)Resources::getResource("model;weapon_bottle", bottleModel, &recreateAnimations);
 	if (recreateAnimations)
 	{
-		// Now for the bottle model!
-		bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrBottleBody");
-		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-		bottleModelMaterials["Water"] = &BottledWaterBobbingMaterial::getInstance();
-		bottleModelMaterials["StaminaMeter"] = &StaminaMeterMaterial::getInstance();
-
-		bottleModel->setMaterials(bottleModelMaterials);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// @HACK: @HAX: Make Water render before SeeThruRubber. This is of course NG and I should never ship a game with this technique in it lol  -Timo
 	}
@@ -1751,17 +1723,18 @@ void PlayerCharacter::preRenderUpdate()
 
 	//
 	// Process ditherAlpha
+	// @FIXME: Fix the dithering, bc now there's not really a reference to the materials anymore. (Maybe try exposing a reference in the model level?)
 	//
 	const float lengthFromCamera = glm::length(MainLoop::getInstance().camera.position - PhysicsUtils::getPosition(getTransform()));
 	const float ditherAlpha = (lengthFromCamera - 1.0f) * 0.2f;
-	for (auto it = materials.begin(); it != materials.end(); it++)
-	{
-		it->second->ditherAlpha = ditherAlpha;
-	}
-	for (auto it = bottleModelMaterials.begin(); it != bottleModelMaterials.end(); it++)
-	{
-		it->second->ditherAlpha = ditherAlpha;
-	}
+	//for (auto it = materials.begin(); it != materials.end(); it++)
+	//{
+	//	it->second->ditherAlpha = ditherAlpha;
+	//}
+	//for (auto it = bottleModelMaterials.begin(); it != bottleModelMaterials.end(); it++)
+	//{
+	//	it->second->ditherAlpha = ditherAlpha;
+	//}
 }
 
 #ifdef _DEVELOP
@@ -1816,11 +1789,11 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Text(("MIN: " + std::to_string(minMvtVectorMagnitude * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 	ImGui::Text(("MAX: " + std::to_string(groundRunSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
-	ImGui::Separator();
-	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Body Zelly Color2", &((ZellyMaterial*)materials["Body"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color2", &((ZellyMaterial*)materials["Hair"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::Separator();
+	//ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Body Zelly Color2", &((ZellyMaterial*)materials["Body"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Hair Zelly Color2", &((ZellyMaterial*)materials["Hair"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);
