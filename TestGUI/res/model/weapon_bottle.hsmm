@@ -4,7 +4,8 @@
     "material_paths": {
         "PlasticCap": "pbrSlimeVest",
         "SeeThruRubber": "pbrBottleBody",
-        "Straw": "pbrSlimeTights"
+        "Straw": "pbrSlimeTights",
+        "Water": "bottledWaterBobbingMaterial"
     },
     "model_path": "res\\slime_girl\\weapon_bottle.glb"
 }
