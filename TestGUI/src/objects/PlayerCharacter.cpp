@@ -527,8 +527,6 @@ void PlayerCharacter::refreshResources()
 		((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 
 		model->setMaterials(materials);
-
-		model->setDepthPriorityOfMeshesWithMaterial("Eyebrow", -0.5f);
 	}
 
 	bottleModel = (Model*)Resources::getResource("model;weaponBottle", bottleModel, &recreateAnimations);
