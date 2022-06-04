@@ -3943,6 +3943,9 @@ void RenderManager::renderImGuiContents()
 						if (j.contains("model_path"))
 						{
 							routineCreateAndInsertInTheModel(path, j);
+							const static glm::vec3 camPos = { -4.132358074188232, 4.923120498657227, 9.876399993896484 };
+							MainLoop::getInstance().camera.position = camPos;
+							MainLoop::getInstance().camera.orientation = glm::normalize(-camPos + glm::vec3(0.0f, 1.5f, 0.0f));
 							MainLoop::getInstance().timelineViewerMode = true;
 						}
 						else
