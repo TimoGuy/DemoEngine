@@ -3843,6 +3843,9 @@ void RenderManager::renderImGuiContents()
 							saveAndApplyChangesFlag |= ImGui::Checkbox(timelineViewerState.animationNameAndIncluded[i].name.c_str(), &timelineViewerState.animationNameAndIncluded[i].included);
 						}
 
+						if (timelineViewerState.animationNameAndIncluded.size() == 0)
+							ImGui::Text("No animations found. Zannnen.");
+
 						ImGui::TreePop();
 					}
 
