@@ -484,7 +484,7 @@ void PlayerCharacter::refreshResources()
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
 	bool recreateAnimations;
-	model = (Model*)Resources::getResource("model;slimeGirl", model, &recreateAnimations);
+	model = (Model*)Resources::getResource("model;slime_girl", model, &recreateAnimations);
 	if (recreateAnimations)
 	{
 		animator =
@@ -1623,10 +1623,9 @@ void PlayerCharacter::processAnimation()
 
 		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
-		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+		//animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+		animator.animationSpeed = 1.0f;
 	}
-	else
-		animator.animationSpeed = animationSpeed;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
 	//std::cout << animator.animationSpeed << std::endl;
 
@@ -1806,7 +1805,6 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
-	ImGui::DragFloat("Model Animation Speed", &animationSpeed);
 	ImGui::DragFloat("Model Run/Walk mult", &speedAnimRunningMult);
 	ImGui::DragFloat("Model Run/Walk floor", &speedAnimRunningFloor);
 

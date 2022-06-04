@@ -147,7 +147,6 @@ void WaterPuddle::preRenderUpdate()
 	{
 		animator.playAnimation(0, 1.5f);
 	}
-	animator.animationSpeed = 1.0f;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);
 
 	//

@@ -12,6 +12,7 @@
 #include "../material/Texture.h"
 #include "../material/Shader.h"
 #include "../model/animation/Animation.h"
+#include "../../utils/FileLoading.h"
 
 
 void* findResource(const std::string& resourceName);
@@ -351,6 +352,45 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	}
 }
 
+void* loadModelFromHSMM(const std::string& modelName, bool isUnloading, const char* path)
+{
+	if (!isUnloading)
+	{
+		nlohmann::json hsmm = FileLoading::loadJsonFile("res/model/" + std::string(path) + ".hsmm");
+
+		// Setup importing the animations @COPYPASTA (RenderManager.cpp)
+		std::vector<AnimationMetadata> animationsToInclude;
+		if (hsmm.contains("included_anims"))
+		{
+			std::vector<std::string> animationNames = hsmm["included_anims"];
+			for (size_t i = 0; i < animationNames.size(); i++)
+			{
+				std::string animationName = animationNames[i];
+				bool trackXZRootMotion = false;
+				float timestampSpeed = 1.0f;
+				if (hsmm.contains("animation_details") && hsmm["animation_details"].contains(animationName))
+				{
+					if (hsmm["animation_details"][animationName].contains("track_xz_root_motion"))
+						trackXZRootMotion = hsmm["animation_details"][animationName]["track_xz_root_motion"];
+
+					if (hsmm["animation_details"][animationName].contains("timestamp_speed"))
+						timestampSpeed = hsmm["animation_details"][animationName]["timestamp_speed"];
+				}
+
+				animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, timestampSpeed });
+			}
+		}
+
+		Model* model = new Model(std::string(hsmm["model_path"]).c_str(), animationsToInclude);
+		return model;
+	}
+	else
+	{
+		delete (Model*)findResource(modelName);
+		return nullptr;
+	}
+}
+
 void* loadPBRMaterial(const std::string& materialName, bool isUnloading, const std::string& albedoName, const std::string& normalName, const std::string& metallicName, const std::string& roughnessName, float fadeAlpha = 1.0f)
 {
 	if (!isUnloading)
@@ -404,7 +444,7 @@ void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm
 
 void* loadResource(const std::string& resourceName, bool isUnloading)
 {
-	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
+	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(sizeof("shader;") - 1).c_str());
 
 	//
 	// Common textures & materials
@@ -538,6 +578,12 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Color.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+
+	//
+	// Load Model from .hsmm file
+	// @NOTE: this is the last "model;" prefix resource
+	//
+	if (resourceName.rfind("model;", 0) == 0)							return loadModelFromHSMM(resourceName, isUnloading, resourceName.substr(sizeof("model;") - 1).c_str());
 
 	//
 	// Special Materials

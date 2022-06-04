@@ -2826,7 +2826,7 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 	modelForTimelineViewer = new RenderComponent(new DummyBaseObject());
 
-	// Setup importing the animations
+	// Setup importing the animations @COPYPASTA (Resources.cpp)
 	std::vector<AnimationMetadata> animationsToInclude;
 	if (modelMetadataData.contains("included_anims"))
 	{
@@ -2835,10 +2835,19 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 		{
 			std::string animationName = animationNames[i];
 			bool trackXZRootMotion = false;
-			if (modelMetadataData.contains("animation_details") && modelMetadataData["animation_details"].contains(animationName) && modelMetadataData["animation_details"][animationName].contains("track_xz_root_motion"))
-				trackXZRootMotion = modelMetadataData["animation_details"][animationName]["track_xz_root_motion"];
+			float timestampSpeed = 1.0f;
+			if (modelMetadataData.contains("animation_details") && modelMetadataData["animation_details"].contains(animationName))
+			{
+				if (modelMetadataData["animation_details"][animationName].contains("track_xz_root_motion"))
+					trackXZRootMotion = modelMetadataData["animation_details"][animationName]["track_xz_root_motion"];
 
-			animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, 1.0f });		// @NOTE: the animationSpeed is 1.0f bc the player will use its own value. The animationSpeed value should get imported when the animations would get imported normally.  -Timo
+				// @NOTE: the animationSpeed is 1.0f bc the player will use its own value. The animationSpeed value
+				// should get imported when the animations would get imported normally.  -Timo
+				//if (modelMetadataData["animation_details"][animationName].contains("timestamp_speed"))
+				//	timestampSpeed = modelMetadataData["animation_details"][animationName]["timestamp_speed"];
+			}
+
+			animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, timestampSpeed });
 		}
 	}
 

@@ -44,7 +44,7 @@ public:
 
 	bool isAnimationFinished(size_t animationIndex, float deltaTime);		// NOTE: this doesn't work with blend trees (atm?)
 
-	float animationSpeed = 42.0f;
+	float animationSpeed = 1.0f;
 
 private:
 	std::vector<glm::mat4> finalBoneMatrices;
