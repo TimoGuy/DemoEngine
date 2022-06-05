@@ -73,3 +73,28 @@
 *As soon as you bust the glass planet, everything starts leaving, including the clouds and the people.*
 
 > NOTE: @TODO: who built this glass planet, and why was purifying it necessary? (NOTE that nothing is made of glass at all in this world, nothing is transparent except for water and the single glass bottle that Jojo holds.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------
+
+# Figure out where to put this!
+
+- Last step to get the impurities out of the glass planet is to shoot a fiery geyser into the sky and incinerate the planets (bc they're the impurities). A friend was on that planet!!
+- Jojo finds out that the geysers are coming from the planet below (the lava people)
+- Jojo gets angry once he finds out that Anokata is a lava person
+- Jojo gets that person executed
+- Jojo finds out that Anokata's plan was to raise an ensign to say that the purification is over.
+- Plan is to jump off the highest mountain and crack the crystal planet below.
+- Jojo tells the lava people on the surface of the crystal planet to stop what they're doing and evacuate. The planet's gonna get cracked, so that the gravitational pull of the impurities (planets) will get reduced and they can escape.
