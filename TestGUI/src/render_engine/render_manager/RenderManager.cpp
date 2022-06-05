@@ -3990,6 +3990,7 @@ void RenderManager::renderImGuiContents()
 						//
 						ImGui::Text("Animation State Machine (ASM) Variables");
 
+						static std::string asmVarNameCollisionsError = "";
 						std::vector<ASMVariable>& animationStateMachineVariables = timelineViewerState.animationStateMachineVariables;
 						if (ImGui::BeginTable("##ASM Var Details Table", 3))
 						{
@@ -3997,7 +3998,25 @@ void RenderManager::renderImGuiContents()
 							{
 								ASMVariable& asmVariable = animationStateMachineVariables[i];
 								ImGui::TableNextColumn();
-								ImGui::InputText(("##ASM Var Name" + std::to_string(i)).c_str(), &asmVariable.varName);
+								
+								std::string varNameCopy = asmVariable.varName;
+								if (ImGui::InputText(("##ASM Var Name" + std::to_string(i)).c_str(), &varNameCopy))
+								{
+									// I know, I know, it's bad practice, but I need to know if there are any name collisions!
+									asmVarNameCollisionsError = "";
+									for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+									{
+										if (j == i)
+											continue;
+
+										if (varNameCopy == animationStateMachineVariables[j].varName)
+										{
+											asmVarNameCollisionsError = varNameCopy;
+										}
+									}
+									if (asmVarNameCollisionsError.empty())
+										asmVariable.varName = varNameCopy;	// Write to the varName if no name collisions are found.
+								}
 
 								int variableTypeAsInt = (int)asmVariable.variableType;
 								ImGui::TableNextColumn();
@@ -4034,6 +4053,11 @@ void RenderManager::renderImGuiContents()
 							}
 
 							ImGui::EndTable();
+						}
+
+						if (!asmVarNameCollisionsError.empty())
+						{
+							ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), ("ERROR: name \"" + asmVarNameCollisionsError + "\" collides").c_str());
 						}
 
 						if (ImGui::Button("Add new ASM var"))
@@ -4090,10 +4114,10 @@ void RenderManager::renderImGuiContents()
 							if (ImGui::InputText("New ASM node Name", &createNewASMNodePopupInputText))
 								showASMNewNodeNameAlreadyExistsError = false;
 
-							if (ImGui::Button("Create"))
+							if (!createNewASMNodePopupInputText.empty() && ImGui::Button("Create"))
 							{
 								// Check if name exists (I know it's super slow Jon)
-								bool exists = false;
+								showASMNewNodeNameAlreadyExistsError = false;
 								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
 									if (timelineViewerState.animationStateMachineNodes[i].nodeName == createNewASMNodePopupInputText)
 									{
@@ -4101,7 +4125,7 @@ void RenderManager::renderImGuiContents()
 										break;
 									}
 
-								if (!exists)
+								if (!showASMNewNodeNameAlreadyExistsError)
 								{
 									// Create the new Node
 									auto newNode = ASMNode();
@@ -4251,15 +4275,16 @@ void RenderManager::renderImGuiContents()
 									ASMTransitionCondition& tranCondition = transitionConditions[i];
 
 									// Variable assignment
+									ImGui::TableNextColumn();
 									std::string tranConditionVarNameReferencePreviewText = tranCondition.varName.empty() ? "Select..." : tranCondition.varName;
-									if (ImGui::BeginCombo("##ASM Transition Condition Var Name Reference", tranConditionVarNameReferencePreviewText.c_str()))
+									if (ImGui::BeginCombo(("##ASM Transition Condition Var Name Reference" + std::to_string(i)).c_str(), tranConditionVarNameReferencePreviewText.c_str()))
 									{
 										if (ImGui::Selectable("Select...", tranCondition.varName.empty()))
 										{
 											tranCondition.varName = "";
 										}
 
-										bool found = false;
+										bool resetVarName = true;
 										for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
 										{
 											ASMVariable& asmVariable = animationStateMachineVariables[j];
@@ -4267,15 +4292,16 @@ void RenderManager::renderImGuiContents()
 											if (ImGui::Selectable(asmVariable.varName.c_str(), isSelected))
 											{
 												tranCondition.varName = asmVariable.varName;
+												resetVarName = false;
 											}
 
 											if (isSelected)
 											{
 												ImGui::SetItemDefaultFocus();
-												found = true;
+												resetVarName = false;
 											}
 										}
-										if (!found)
+										if (resetVarName)
 											tranCondition.varName = "";		// @NOTE: will need to either make this check upon saving or make sure that the relationship doesn't get cut off  -Timo
 
 										ImGui::EndCombo();
@@ -4297,34 +4323,44 @@ void RenderManager::renderImGuiContents()
 											break;
 										}
 									}
-									switch (tempVarPtr->variableType)
+									if (tempVarPtr != nullptr)
 									{
-										case ASMVariable::ASMVariableType::BOOL:
+										switch (tempVarPtr->variableType)
 										{
-											bool valueAsBool = (bool)tranCondition.compareToValue;
-											ImGui::TableNextColumn();
-											ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
-											tranCondition.compareToValue = (float)valueAsBool;
-										}
-										break;
+											case ASMVariable::ASMVariableType::BOOL:
+											{
+												bool valueAsBool = (bool)tranCondition.compareToValue;
+												ImGui::TableNextColumn();
+												ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+												tranCondition.compareToValue = (float)valueAsBool;
+											}
+											break;
 
-										case ASMVariable::ASMVariableType::INT:
-										{
-											int valueAsInt = (int)tranCondition.compareToValue;
-											ImGui::TableNextColumn();
-											ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
-											tranCondition.compareToValue = (float)valueAsInt;
-										}
-										break;
+											case ASMVariable::ASMVariableType::INT:
+											{
+												int valueAsInt = (int)tranCondition.compareToValue;
+												ImGui::TableNextColumn();
+												ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+												tranCondition.compareToValue = (float)valueAsInt;
+											}
+											break;
 
-										case ASMVariable::ASMVariableType::FLOAT:
-										{
-											ImGui::TableNextColumn();
-											ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+											case ASMVariable::ASMVariableType::FLOAT:
+											{
+												ImGui::TableNextColumn();
+												ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+											}
+											break;
 										}
-										break;
+									}
+									else
+									{
+										ImGui::TableNextColumn();
+										ImGui::Text("Select ASM variable");
 									}
 								}
+
+								ImGui::EndTable();
 							}
 
 							if (ImGui::Button("Add new ASM Transition Condition"))
