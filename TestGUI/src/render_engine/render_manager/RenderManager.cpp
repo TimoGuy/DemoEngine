@@ -76,11 +76,49 @@ struct AnimationDetail
 	bool trackXZRootMotion = false;
 	float timestampSpeed = 1.0f;
 };
+
+// @NOTE: likely after this is constructed here, we're gonna have to move it to the Animator class so they can be the sole users of it.
+struct ASMVariable
+{
+	std::string varName;
+	float value;
+	enum ASMVariableType {
+		BOOL,
+		INT,
+		FLOAT
+	} variableType;
+};
+struct ASMTransitionCondition
+{
+	std::string variableName;
+	enum ASMComparisonOperator {
+		EQUAL,
+		NEQUAL,
+		LESSER,
+		GREATER,
+		LEQUAL,
+		GEQUAL
+	} comparisonOperator;
+};
+struct ASMNode
+{
+	std::string nodeName;			// @NOTE: this is not used as the index. Use the index of animationStateMachineNodes;
+	std::string animationName1;		// @NOTE: This should get saved as an index to the animation, not the name!
+	std::string animationName2;		// @NOTE: This should get saved as an index to the animation, not the name!
+	std::string varFloatBlend;		// The float var that should keep track of blending between animationName1 and animationName2 [0-1]
+
+	std::vector<ASMTransitionCondition> transitionConditions;	// @NOTE: all these conditions must be true to transition. Also, it's to transition TO HERE.  -Timo
+};
 struct TimelineViewerState
 {
 	std::map<std::string, std::string> materialPathsMap;
 	std::vector<AnimationNameAndIncluded> animationNameAndIncluded;
 	std::map<std::string, AnimationDetail> animationDetailMap;
+
+	// Animation State Machine (ASM)
+	std::vector<ASMVariable> animationStateMachineVariables;
+	std::vector<ASMNode> animationStateMachineNodes;
+	int animationStateMachineStartNode = 0;
 
 	// Editor only values
 	int editor_selectedAnimation = -1;
@@ -88,6 +126,8 @@ struct TimelineViewerState
 	AnimationDetail* editor_selectedAnimationPtr = nullptr;
 	bool editor_isAnimationPlaying = false;
 	float editor_animationPlaybackTimestamp = 0.0f;
+
+	int editor_selectedASMNode = -1;
 } timelineViewerState;
 #endif
 
@@ -3837,30 +3877,36 @@ void RenderManager::renderImGuiContents()
 					ImGui::TreePop();
 				}
 
-				//
-				// Animations
-				//
 				ImGui::Separator();
-				if (ImGui::TreeNode("Animations"))
+				if (timelineViewerState.animationNameAndIncluded.size() == 0)
+					ImGui::Text("No animations found. Zannnen.");
+				else
 				{
-					if (ImGui::TreeNode("Include Animations"))
+					//
+					// Animations
+					//
+					if (ImGui::TreeNode("Animations"))
 					{
 						//
-						// Show imgui for the animations
+						// Import animations
 						//
-						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
+						if (ImGui::TreeNode("Include Animations"))
 						{
-							saveAndApplyChangesFlag |= ImGui::Checkbox(timelineViewerState.animationNameAndIncluded[i].name.c_str(), &timelineViewerState.animationNameAndIncluded[i].included);
+							//
+							// Show imgui for the animations
+							//
+							for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
+							{
+								saveAndApplyChangesFlag |= ImGui::Checkbox(timelineViewerState.animationNameAndIncluded[i].name.c_str(), &timelineViewerState.animationNameAndIncluded[i].included);
+							}
+
+							ImGui::TreePop();
 						}
 
-						if (timelineViewerState.animationNameAndIncluded.size() == 0)
-							ImGui::Text("No animations found. Zannnen.");
-
-						ImGui::TreePop();
-					}
-
-					if (ImGui::TreeNode("Edit Included Animations"))
-					{
+						//
+						// Select Animation to edit
+						//
+						ImGui::Separator();
 						std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
 						if (ImGui::BeginCombo("Selected Animation", timelineViewerState.editor_selectedAnimation == -1 ? "Select..." : modelAnimations[timelineViewerState.editor_selectedAnimation].getName().c_str()))
 						{
@@ -3891,49 +3937,317 @@ void RenderManager::renderImGuiContents()
 							ImGui::EndCombo();
 						}
 
+						//
+						// Edit animation and stuff (if selected)
+						//
 						if (timelineViewerState.editor_selectedAnimationPtr != nullptr)
 						{
-							ImGui::Text("General Settings");
-							saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->trackXZRootMotion);
-							saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->timestampSpeed);
-
-							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
-							float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
-							if (animationDuration > 0.0f)
+							//
+							// Edit selected animation
+							//
+							if (ImGui::TreeNode("Edit Selected Animation"))
 							{
-								ImGui::Text("Preview Animation");
-								ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
-								ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
+								ImGui::Text("General Settings");
+								saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->trackXZRootMotion);
+								saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->timestampSpeed);
 
-								if (timelineViewerState.editor_isAnimationPlaying)
-									timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
-								timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
+								Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
+								float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
+								if (animationDuration > 0.0f)
+								{
+									ImGui::Separator();
+									ImGui::Text("Preview Animation");
+									ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
+									ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
+
+									if (timelineViewerState.editor_isAnimationPlaying)
+										timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
+									timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
+								}
+								else
+								{
+									ImGui::Text("Previewing disabled for this animation (animation duration is 0.0)");
+								}
+
+								ImGui::TreePop();
+							}
+						}
+						
+						ImGui::TreePop();
+					}
+
+					//
+					// Animations State Machine Builder
+					//
+					ImGui::Separator();
+					if (ImGui::TreeNode("Animation State Machine"))
+					{
+						//
+						// ASM Variables
+						//
+						ImGui::Text("Animation State Machine (ASM) Variables");
+
+						std::vector<ASMVariable>& animationStateMachineVariables = timelineViewerState.animationStateMachineVariables;
+						if (ImGui::BeginTable("##ASM Var Details Table", 3))
+						{
+							for (size_t i = 0; i < animationStateMachineVariables.size(); i++)
+							{
+								ASMVariable& asmVariable = animationStateMachineVariables[i];
+								ImGui::TableNextColumn();
+								ImGui::InputText(("##ASM Var Name" + std::to_string(i)).c_str(), &asmVariable.varName);
+
+								int variableTypeAsInt = (int)asmVariable.variableType;
+								ImGui::TableNextColumn();
+								ImGui::Combo(("##ASM Var Type" + std::to_string(i)).c_str(), &variableTypeAsInt, "Bool\0Int\0Float");
+								asmVariable.variableType = (ASMVariable::ASMVariableType)variableTypeAsInt;
+
+								switch (asmVariable.variableType)
+								{
+									case ASMVariable::ASMVariableType::BOOL:
+									{
+										bool valueAsBool = (bool)asmVariable.value;
+										ImGui::TableNextColumn();
+										ImGui::Checkbox(("##ASM Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+										asmVariable.value = (float)valueAsBool;
+									}
+									break;
+
+									case ASMVariable::ASMVariableType::INT:
+									{
+										int valueAsInt = (int)asmVariable.value;
+										ImGui::TableNextColumn();
+										ImGui::InputInt(("##ASM Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+										asmVariable.value = (float)valueAsInt;
+									}
+									break;
+
+									case ASMVariable::ASMVariableType::FLOAT:
+									{
+										ImGui::TableNextColumn();
+										ImGui::DragFloat(("##ASM Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
+									}
+									break;
+								}
+							}
+
+							ImGui::EndTable();
+						}
+
+						if (ImGui::Button("Add new ASM var"))
+						{
+							animationStateMachineVariables.push_back(ASMVariable());
+						}
+
+
+						//
+						// ASM Nodes
+						//
+        				ImGui::Spacing();
+						ImGui::Text("Animation State Machine (ASM) Nodes");
+
+						std::string selectedASMNodeLabelText = "Select...";
+						if (timelineViewerState.editor_selectedASMNode >= 0)
+						{
+							selectedASMNodeLabelText = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_selectedASMNode].nodeName;
+						}
+
+						if (ImGui::BeginCombo("Selected ASM Node", selectedASMNodeLabelText.c_str()))
+						{
+							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedASMNode == -1))
+							{
+								timelineViewerState.editor_selectedASMNode = -1;
+							}
+
+							for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+							{
+								const bool isSelected = (timelineViewerState.editor_selectedASMNode == i);
+								if (ImGui::Selectable(timelineViewerState.animationStateMachineNodes[i].nodeName.c_str(), isSelected))
+								{
+									timelineViewerState.editor_selectedASMNode = i;
+								}
+
+								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+								if (isSelected)
+									ImGui::SetItemDefaultFocus();
+							}
+
+							ImGui::EndCombo();
+						}
+
+						static std::string createNewASMNodePopupInputText;
+						static bool showASMNewNodeNameAlreadyExistsError = false;
+						if (ImGui::Button("Create new ASM Node.."))
+						{
+							ImGui::OpenPopup("create_new_asm_node_popup");
+							createNewASMNodePopupInputText = "";
+							showASMNewNodeNameAlreadyExistsError = false;
+						}
+						if (ImGui::BeginPopup("create_new_asm_node_popup"))
+						{
+							if (ImGui::InputText("New ASM node Name", &createNewASMNodePopupInputText))
+								showASMNewNodeNameAlreadyExistsError = false;
+
+							if (ImGui::Button("Create"))
+							{
+								// Check if name exists (I know it's super slow Jon)
+								bool exists = false;
+								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+									if (timelineViewerState.animationStateMachineNodes[i].nodeName == createNewASMNodePopupInputText)
+									{
+										showASMNewNodeNameAlreadyExistsError = true;
+										break;
+									}
+
+								if (!exists)
+								{
+									// Create the new Node
+									auto newNode = ASMNode();
+									newNode.nodeName = createNewASMNodePopupInputText;
+									timelineViewerState.animationStateMachineNodes.push_back(newNode);
+									timelineViewerState.editor_selectedASMNode = timelineViewerState.animationStateMachineNodes.size() - 1;
+									ImGui::CloseCurrentPopup();
+								}
+							}
+
+							if (showASMNewNodeNameAlreadyExistsError)
+								ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name already exists");
+
+							ImGui::EndPopup();
+						}
+
+						if (timelineViewerState.editor_selectedASMNode >= 0)
+						{
+							ImGui::Spacing();
+							ImGui::Text("Edit ASM Node Properties");
+							ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_selectedASMNode];
+
+							static bool showASMChangeNodeNameAlreadyExistsError = false;
+							std::string asmChangeNameText = asmNode.nodeName;
+							if (ImGui::InputText("New ASM node Name", &asmChangeNameText))
+							{
+								// Check if name exists (I know it's super slow Jon)
+								showASMChangeNodeNameAlreadyExistsError = false;
+								bool exists = false;
+								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+									if (timelineViewerState.animationStateMachineNodes[i].nodeName == asmChangeNameText)
+									{
+										showASMChangeNodeNameAlreadyExistsError = true;
+										break;
+									}
+
+								if (!exists)
+								{
+									asmNode.nodeName = asmChangeNameText;
+								}
+							}
+
+							// animationName1
+							std::vector<AnimationNameAndIncluded>& animationNameAndIncluded = timelineViewerState.animationNameAndIncluded;
+							if (ImGui::BeginCombo("Selected Animation 1", asmNode.animationName1.size() == 0 ? "Select..." : asmNode.animationName1.c_str()))
+							{
+								if (ImGui::Selectable("Select...", asmNode.animationName1.size() == 0))
+								{
+									asmNode.animationName1 = "";
+								}
+
+								for (size_t i = 0; i < animationNameAndIncluded.size(); i++)
+								{
+									if (!animationNameAndIncluded[i].included)
+										continue;
+
+									const bool isSelected = (asmNode.animationName1 == animationNameAndIncluded[i].name);
+									if (ImGui::Selectable(animationNameAndIncluded[i].name.c_str(), isSelected))
+									{
+										asmNode.animationName1 = animationNameAndIncluded[i].name;
+									}
+
+									// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+									if (isSelected)
+										ImGui::SetItemDefaultFocus();
+								}
+
+								ImGui::EndCombo();
+							}
+
+							// animationName2  @COPYPASTA
+							if (ImGui::BeginCombo("Selected Animation 2", asmNode.animationName2.size() == 0 ? "Select..." : asmNode.animationName2.c_str()))
+							{
+								if (ImGui::Selectable("Select...", asmNode.animationName2.size() == 0))
+								{
+									asmNode.animationName2 = "";
+								}
+
+								for (size_t i = 0; i < animationNameAndIncluded.size(); i++)
+								{
+									if (!animationNameAndIncluded[i].included)
+										continue;
+
+									const bool isSelected = (asmNode.animationName2 == animationNameAndIncluded[i].name);
+									if (ImGui::Selectable(animationNameAndIncluded[i].name.c_str(), isSelected))
+									{
+										asmNode.animationName2 = animationNameAndIncluded[i].name;
+									}
+
+									// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+									if (isSelected)
+										ImGui::SetItemDefaultFocus();
+								}
+
+								ImGui::EndCombo();
+							}
+
+							if (asmNode.animationName2.size() != 0)
+							{
+								// Choose the blendtree variable
+								std::vector<ASMVariable>& animationStateMachineVariables = timelineViewerState.animationStateMachineVariables;
+								if (ImGui::BeginCombo("Blendtree Variable", asmNode.varFloatBlend.size() == 0 ? "Select..." : asmNode.varFloatBlend.c_str()))
+								{
+									if (ImGui::Selectable("Select...", asmNode.varFloatBlend.size() == 0))
+									{
+										asmNode.varFloatBlend = "";
+									}
+
+									for (size_t i = 0; i < animationStateMachineVariables.size(); i++)
+									{
+										const bool isSelected = (asmNode.varFloatBlend == animationStateMachineVariables[i].varName);
+										if (ImGui::Selectable(animationStateMachineVariables[i].varName.c_str(), isSelected))
+										{
+											asmNode.varFloatBlend = animationStateMachineVariables[i].varName;
+										}
+
+										// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+										if (isSelected)
+											ImGui::SetItemDefaultFocus();
+									}
+
+									ImGui::EndCombo();
+								}
 							}
 							else
-							{
-								ImGui::Text("Previewing disabled for this animation (animation duration is 0.0)");
-							}
+								asmNode.varFloatBlend = "";
+
+
+							if (showASMChangeNodeNameAlreadyExistsError)
+								ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name already exists");
 						}
 
 						ImGui::TreePop();
 					}
-					
-					ImGui::TreePop();
-				}
 
-				//
-				// Update the animation state
-				//
-				if (animatorForModelForTimelineViewer != nullptr && timelineViewerState.editor_selectedAnimationPtr != nullptr)
-				{
-					if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
+					//
+					// Update the animation state
+					//
+					if (animatorForModelForTimelineViewer != nullptr && timelineViewerState.editor_selectedAnimationPtr != nullptr)
 					{
-						timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
-						animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
-					}
+						if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
+						{
+							timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
+							animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
+						}
 
-					animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
-					animatorForModelForTimelineViewer->updateAnimation(timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime() / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
+						animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
+						animatorForModelForTimelineViewer->updateAnimation(timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime() / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
+					}
 				}
 			}
 			else
