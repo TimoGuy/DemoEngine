@@ -4015,7 +4015,26 @@ void RenderManager::renderImGuiContents()
 										}
 									}
 									if (asmVarNameCollisionsError.empty())
-										asmVariable.varName = varNameCopy;	// Write to the varName if no name collisions are found.
+									{
+										// Update all references of the ASM transition conditions (@NOTE: they reference these variables by name)
+										for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes.size(); j++)
+										{
+											for (size_t k = 0; k < timelineViewerState.animationStateMachineNodes[j].transitionConditions.size(); k++)
+											{
+												ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[j].transitionConditions[k];
+												if (tranCondition.varName == asmVariable.varName)
+												{
+													tranCondition.varName = varNameCopy;	// Update to new variable.
+												}
+											}
+
+											if (timelineViewerState.animationStateMachineNodes[j].varFloatBlend == asmVariable.varName)
+												timelineViewerState.animationStateMachineNodes[j].varFloatBlend = varNameCopy;		// Update to new variable name.
+										}
+
+										// Write to the varName if no name collisions are found.
+										asmVariable.varName = varNameCopy;
+									}
 								}
 
 								int variableTypeAsInt = (int)asmVariable.variableType;
@@ -4302,7 +4321,7 @@ void RenderManager::renderImGuiContents()
 											}
 										}
 										if (resetVarName)
-											tranCondition.varName = "";		// @NOTE: will need to either make this check upon saving or make sure that the relationship doesn't get cut off  -Timo
+											tranCondition.varName = "";		// @NOTE: will need to both make this check upon saving and make sure that the relationship doesn't get cut off  -Timo
 
 										ImGui::EndCombo();
 									}
