@@ -82,7 +82,8 @@ struct ASMVariable
 {
 	std::string varName;
 	float value;
-	enum ASMVariableType {
+	enum ASMVariableType
+	{
 		BOOL,
 		INT,
 		FLOAT
@@ -90,8 +91,10 @@ struct ASMVariable
 };
 struct ASMTransitionCondition
 {
-	std::string variableName;
-	enum ASMComparisonOperator {
+	std::string varName;
+	float compareToValue;
+	enum ASMComparisonOperator
+	{
 		EQUAL,
 		NEQUAL,
 		LESSER,
@@ -4117,6 +4120,9 @@ void RenderManager::renderImGuiContents()
 
 						if (timelineViewerState.editor_selectedASMNode >= 0)
 						{
+							//
+							// Edit ASM Node Props
+							//
 							ImGui::Spacing();
 							ImGui::Text("Edit ASM Node Properties");
 							ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_selectedASMNode];
@@ -4229,6 +4235,102 @@ void RenderManager::renderImGuiContents()
 
 							if (showASMChangeNodeNameAlreadyExistsError)
 								ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name already exists");
+
+
+							//
+							// ASM Node Transition Conditions
+							//
+							ImGui::Spacing();
+							ImGui::Text("Edit ASM Node Transition Conditions");
+							
+							std::vector<ASMTransitionCondition>& transitionConditions = asmNode.transitionConditions;
+							if (ImGui::BeginTable("##ASM Transition Conditions Table", 3))
+							{
+								for (size_t i = 0; i < transitionConditions.size(); i++)
+								{
+									ASMTransitionCondition& tranCondition = transitionConditions[i];
+
+									// Variable assignment
+									std::string tranConditionVarNameReferencePreviewText = tranCondition.varName.empty() ? "Select..." : tranCondition.varName;
+									if (ImGui::BeginCombo("##ASM Transition Condition Var Name Reference", tranConditionVarNameReferencePreviewText.c_str()))
+									{
+										if (ImGui::Selectable("Select...", tranCondition.varName.empty()))
+										{
+											tranCondition.varName = "";
+										}
+
+										bool found = false;
+										for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+										{
+											ASMVariable& asmVariable = animationStateMachineVariables[j];
+											const bool isSelected = (asmVariable.varName == tranCondition.varName);
+											if (ImGui::Selectable(asmVariable.varName.c_str(), isSelected))
+											{
+												tranCondition.varName = asmVariable.varName;
+											}
+
+											if (isSelected)
+											{
+												ImGui::SetItemDefaultFocus();
+												found = true;
+											}
+										}
+										if (!found)
+											tranCondition.varName = "";		// @NOTE: will need to either make this check upon saving or make sure that the relationship doesn't get cut off  -Timo
+
+										ImGui::EndCombo();
+									}
+
+									// Comparison operator
+									ImGui::TableNextColumn();
+									int comparisonOperatorAsInt = (int)tranCondition.comparisonOperator;
+									ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL\0LESSER\0GREATER\0LEQUAL\0GEQUAL");
+									tranCondition.comparisonOperator = (ASMTransitionCondition::ASMComparisonOperator)comparisonOperatorAsInt;
+
+									// Find the variable with .varName
+									ASMVariable* tempVarPtr = nullptr;
+									for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+									{
+										if (animationStateMachineVariables[j].varName == tranCondition.varName)
+										{
+											tempVarPtr = &animationStateMachineVariables[j];
+											break;
+										}
+									}
+									switch (tempVarPtr->variableType)
+									{
+										case ASMVariable::ASMVariableType::BOOL:
+										{
+											bool valueAsBool = (bool)tranCondition.compareToValue;
+											ImGui::TableNextColumn();
+											ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+											tranCondition.compareToValue = (float)valueAsBool;
+										}
+										break;
+
+										case ASMVariable::ASMVariableType::INT:
+										{
+											int valueAsInt = (int)tranCondition.compareToValue;
+											ImGui::TableNextColumn();
+											ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+											tranCondition.compareToValue = (float)valueAsInt;
+										}
+										break;
+
+										case ASMVariable::ASMVariableType::FLOAT:
+										{
+											ImGui::TableNextColumn();
+											ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+										}
+										break;
+									}
+								}
+							}
+
+							if (ImGui::Button("Add new ASM Transition Condition"))
+							{
+								transitionConditions.push_back(ASMTransitionCondition());
+							}
 						}
 
 						ImGui::TreePop();
