@@ -125,7 +125,7 @@ struct TimelineViewerState
 	// Animation State Machine (ASM)
 	std::vector<ASMVariable> animationStateMachineVariables;
 	std::vector<ASMNode> animationStateMachineNodes;
-	int animationStateMachineStartNode = 0;		// @NOTE: @TODO: This is currently unused... but you're gonna have to figure this out once the whole ASM machine is built (as in, the functionality is built in and you can use the TEST button)
+	size_t animationStateMachineStartNode = 0;		// @NOTE: @TODO: This is currently unused... but you're gonna have to figure this out once the whole ASM machine is built (as in, the functionality is built in and you can use the TEST button)
 
 	// Editor only values
 	int editor_selectedAnimation = -1;
@@ -3031,6 +3031,9 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 				timelineViewerState.animationStateMachineNodes.push_back(asmNode);
 			}
 		}
+
+		if (animStateMachine.contains("asm_start_node_index"))
+			timelineViewerState.animationStateMachineStartNode = animStateMachine["asm_start_node_index"];
 	}
 }
 
@@ -3793,7 +3796,7 @@ void RenderManager::renderImGuiContents()
 					if (ImGui::Button("Save and Apply Changes"))
 					{
 						//
-						// Do a big save of everything
+						// SAVE: Do a big save of everything
 						//
 						nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
 
@@ -3868,6 +3871,7 @@ void RenderManager::renderImGuiContents()
 							animationStateMachineContainer["asm_nodes"].push_back(asmNode_j);
 						}
 						j["animation_state_machine"] = animationStateMachineContainer;
+						j["animation_state_machine"]["asm_start_node_index"] = timelineViewerState.animationStateMachineStartNode;
 
 						FileLoading::saveJsonFile(modelMetadataFname, j);
 
@@ -4237,7 +4241,6 @@ void RenderManager::renderImGuiContents()
 						{
 							selectedASMNodeLabelText = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_selectedASMNode].nodeName;
 						}
-
 						if (ImGui::BeginCombo("Selected ASM Node", selectedASMNodeLabelText.c_str()))
 						{
 							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedASMNode == -1))
@@ -4248,7 +4251,7 @@ void RenderManager::renderImGuiContents()
 							for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
 							{
 								const bool isSelected = (timelineViewerState.editor_selectedASMNode == i);
-								if (ImGui::Selectable(timelineViewerState.animationStateMachineNodes[i].nodeName.c_str(), isSelected))
+								if (ImGui::Selectable((timelineViewerState.animationStateMachineNodes[i].nodeName + (timelineViewerState.animationStateMachineStartNode == i ? " (START NODE)" : "")).c_str(), isSelected))
 								{
 									timelineViewerState.editor_selectedASMNode = i;
 								}
@@ -4259,6 +4262,12 @@ void RenderManager::renderImGuiContents()
 							}
 
 							ImGui::EndCombo();
+						}
+
+						if (timelineViewerState.animationStateMachineStartNode >= timelineViewerState.animationStateMachineNodes.size())
+						{
+							saveAndApplyChangesFlag |= true;
+							timelineViewerState.animationStateMachineStartNode = 0;
 						}
 
 						if (timelineViewerState.editor_selectedASMNode >= 0)
@@ -4325,6 +4334,23 @@ void RenderManager::renderImGuiContents()
 							ImGui::Spacing();
 							ImGui::Text("Edit ASM Node Properties");
 							ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_selectedASMNode];
+
+							if (timelineViewerState.editor_selectedASMNode == timelineViewerState.animationStateMachineStartNode)
+							{
+								ImGui::SameLine();
+								ImGui::Text("(This is the START NODE)");
+							}
+							else
+							{
+								ImGui::SameLine();
+								ImGui::Text("(This is NOT the START NODE)");
+								ImGui::SameLine();
+								if (ImGui::Button("Set as START NODE"))
+								{
+									saveAndApplyChangesFlag |= true;
+									timelineViewerState.animationStateMachineStartNode = timelineViewerState.editor_selectedASMNode;
+								}
+							}
 
 							static bool showASMChangeNodeNameAlreadyExistsError = false;
 							std::string asmChangeNameText = asmNode.nodeName;

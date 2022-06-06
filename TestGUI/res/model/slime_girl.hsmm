@@ -78,7 +78,23 @@
         }
     },
     "animation_state_machine": {
-        "asm_nodes": [],
+        "asm_nodes": [
+            {
+                "animation_blend_variable": "",
+                "animation_name_1": "",
+                "animation_name_2": "",
+                "node_name": "fdasdf",
+                "node_transition_conditions": []
+            },
+            {
+                "animation_blend_variable": "",
+                "animation_name_1": "",
+                "animation_name_2": "",
+                "node_name": "fdsasdfgs",
+                "node_transition_conditions": []
+            }
+        ],
+        "asm_start_node_index": 1,
         "asm_variables": []
     },
     "included_anims": [
