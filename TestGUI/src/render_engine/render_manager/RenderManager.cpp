@@ -106,7 +106,7 @@ struct ASMTransitionCondition
 
 	const static std::string specialCaseKey;
 };
-const std::string ASMTransitionCondition::specialCaseKey = ASMTransitionCondition::specialCaseKey;
+const std::string ASMTransitionCondition::specialCaseKey = "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  ";		// @NOTE: Man, I really hope nobody thinks to name their ASM variable this... it'd just be trollin' dango bango  -Timo
 struct ASMNode
 {
 	std::string nodeName;			// @NOTE: this is not used as the index. Use the index of animationStateMachineNodes;
@@ -4188,8 +4188,24 @@ void RenderManager::renderImGuiContents()
 										break;
 									}
 
-								if (!exists)
+								if (!exists && !asmChangeNameText.empty())	// @NOTE: we gotta prevent assigning empty strings too
 								{
+									// Go Thru all the references (Specifically from transitionconditions) to edit
+									for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+									{
+										ASMNode& asmNodeRef = timelineViewerState.animationStateMachineNodes[i];
+										for (size_t j = 0; j < asmNodeRef.transitionConditions.size(); j++)
+										{
+											ASMTransitionCondition& asmTranConditionRef = asmNodeRef.transitionConditions[j];
+											if (asmTranConditionRef.varName != ASMTransitionCondition::specialCaseKey)
+												continue;
+
+											if (asmTranConditionRef.specialCaseCurrentASMNodeName == asmNode.nodeName)
+												asmTranConditionRef.specialCaseCurrentASMNodeName = asmChangeNameText;
+										}
+									}
+
+									// Assign the new name
 									asmNode.nodeName = asmChangeNameText;
 								}
 							}
@@ -4310,7 +4326,7 @@ void RenderManager::renderImGuiContents()
 
 										if (ImGui::Selectable("{Current ASM Node}", isSpecialCaseCurrentASMNodeNameVarName))
 										{
-											tranCondition.varName = ASMTransitionCondition::specialCaseKey;		// @NOTE: Man, I really hope nobody thinks to name their ASM variable this... it'd just be trollin' dango bango  -Timo
+											tranCondition.varName = ASMTransitionCondition::specialCaseKey;
 											isSpecialCaseCurrentASMNodeNameVarName = true;
 										}
 
