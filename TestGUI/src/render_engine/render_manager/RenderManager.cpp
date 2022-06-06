@@ -135,6 +135,9 @@ struct TimelineViewerState
 	float editor_animationPlaybackTimestamp = 0.0f;
 
 	int editor_selectedASMNode = -1;
+	bool editor_isASMPreviewMode = false;
+	std::vector<ASMVariable> editor_asmVarCopyForPreview;
+	size_t editor_previewModeCurrentASMNode;
 } timelineViewerState;
 #endif
 
@@ -4057,29 +4060,55 @@ void RenderManager::renderImGuiContents()
 								saveAndApplyChangesFlag |= ImGui::Checkbox("Import with XZ Root Motion ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->trackXZRootMotion);
 								saveAndApplyChangesFlag |= ImGui::DragFloat("Timestamp Speed ##import_selected_animation_information", &timelineViewerState.editor_selectedAnimationPtr->timestampSpeed);
 
-								Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
-								float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
-								if (animationDuration > 0.0f)
-								{
-									ImGui::Separator();
-									ImGui::Text("Preview Animation");
-									ImGui::Checkbox("Play Animation", &timelineViewerState.editor_isAnimationPlaying);
-									ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
-
-									if (timelineViewerState.editor_isAnimationPlaying)
-										timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
-									timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
-								}
-								else
-								{
-									ImGui::Text("Previewing disabled for this animation (animation duration is 0.0)");
-								}
-
 								ImGui::TreePop();
 							}
+
+							//
+							// Preview Animation
+							//
+							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
+							float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
+							if (animationDuration > 0.0f)
+							{
+								ImGui::Separator();
+								ImGui::Text("Preview Animation");
+								ImGui::Checkbox("Preview Animation##This is the checkbox", &timelineViewerState.editor_isAnimationPlaying);
+								ImGui::SliderFloat("Animation Point in Time", &timelineViewerState.editor_animationPlaybackTimestamp, 0.0f, animationDuration);
+
+								if (timelineViewerState.editor_isAnimationPlaying)
+								{
+									timelineViewerState.editor_isASMPreviewMode = false;
+									timelineViewerState.editor_animationPlaybackTimestamp += timelineViewerState.editor_selectedAnimationPtr->timestampSpeed * MainLoop::getInstance().deltaTime;
+								}
+								timelineViewerState.editor_animationPlaybackTimestamp = fmod(timelineViewerState.editor_animationPlaybackTimestamp, animationDuration);
+							}
+							else
+							{
+								ImGui::Text("Previewing disabled for this animation (animation duration is 0.0)");
+							}
+						}
+
+						//
+						// Update the animation state (Preview Animation)
+						// NOTE: this is only available when the animation tab is open.
+						//
+						if (animatorForModelForTimelineViewer != nullptr && timelineViewerState.editor_selectedAnimationPtr != nullptr)
+						{
+							if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
+							{
+								timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
+								animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
+							}
+
+							animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
+							animatorForModelForTimelineViewer->updateAnimation(timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime() / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
 						}
 						
 						ImGui::TreePop();
+					}
+					else
+					{
+						timelineViewerState.editor_currentlyPlayingAnimation = false;
 					}
 
 					//
@@ -4089,8 +4118,161 @@ void RenderManager::renderImGuiContents()
 					if (ImGui::TreeNode("Animation State Machine"))
 					{
 						//
+						// Previewing the ASM
+						//
+						ImGui::Text("Preview ASM");
+						if (timelineViewerState.animationStateMachineNodes.size() > 0)
+						{
+							if (ImGui::Checkbox("Preview ASM##This is the checkbox this time", &timelineViewerState.editor_isASMPreviewMode))
+							{
+								if (timelineViewerState.editor_isASMPreviewMode)
+								{
+									timelineViewerState.editor_isAnimationPlaying = false;
+
+									// Load in all the variables
+									timelineViewerState.editor_previewModeCurrentASMNode = timelineViewerState.animationStateMachineStartNode;
+									timelineViewerState.editor_asmVarCopyForPreview = timelineViewerState.animationStateMachineVariables;
+								}
+							}
+
+							//
+							// Simulate the ASM with the relevant information
+							// and the copy of the variables
+							//
+							if (timelineViewerState.editor_isASMPreviewMode && animatorForModelForTimelineViewer != nullptr)
+							{
+								size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
+
+								// Check all other nodes for transition conditions and go to the first one fulfilled
+								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+								{
+									if (i == currentNode)
+										continue;
+
+									bool tranConditionPasses = true;
+									for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes[i].transitionConditions.size(); j++)
+									{
+										ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[i].transitionConditions[j];
+										
+										// Get Variable Value
+										float compareToValue;
+										bool isCompareCurrentNode = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
+										if (!isCompareCurrentNode)
+										{
+											for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+											{
+												ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+												if (asmVariable.varName == tranCondition.varName)
+												{
+													compareToValue = asmVariable.value;
+													break;
+												}
+											}
+										}
+
+										// Compare the values
+										switch (tranCondition.comparisonOperator)
+										{
+										case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
+											if (isCompareCurrentNode)
+												tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName == tranCondition.specialCaseCurrentASMNodeName);
+											else
+												tranConditionPasses &= (compareToValue == tranCondition.compareToValue);
+											break;
+
+										case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
+											if (isCompareCurrentNode)
+												tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName != tranCondition.specialCaseCurrentASMNodeName);
+											else
+												tranConditionPasses &= (compareToValue != tranCondition.compareToValue);
+											break;
+
+										case ASMTransitionCondition::ASMComparisonOperator::LESSER:
+											tranConditionPasses &= (tranCondition.compareToValue < compareToValue);
+											break;
+
+										case ASMTransitionCondition::ASMComparisonOperator::GREATER:
+											tranConditionPasses &= (tranCondition.compareToValue > compareToValue);
+											break;
+
+										case ASMTransitionCondition::ASMComparisonOperator::LEQUAL:
+											tranConditionPasses &= (tranCondition.compareToValue <= compareToValue);
+											break;
+
+										case ASMTransitionCondition::ASMComparisonOperator::GEQUAL:
+											tranConditionPasses &= (tranCondition.compareToValue >= compareToValue);
+											break;
+										
+										default:
+											std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
+											break;
+										}
+
+										if (!tranConditionPasses)
+											break;
+									}
+
+									if (tranConditionPasses)
+									{
+										// Switch to this new node
+										currentNode = i;
+										break;
+									}
+								}
+
+								//
+								// Report back the current node in preview
+								//
+								ImGui::Text(("Current Node: " + timelineViewerState.animationStateMachineNodes[currentNode].nodeName).c_str());
+
+								//
+								// Edit the copied variables
+								//
+								ImGui::Spacing();
+								if (ImGui::TreeNode("Edit Preview Variables (NOTE: They're just previews)"))
+								{
+									for (size_t i = 0; i < timelineViewerState.editor_asmVarCopyForPreview.size(); i++)
+									{
+										ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[i];
+										switch (asmVariable.variableType)
+										{
+										case ASMVariable::ASMVariableType::BOOL:
+										{
+											bool valueAsBool = (bool)asmVariable.value;
+											ImGui::Checkbox((asmVariable.varName + "##ASM Preview Mode Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+											asmVariable.value = (float)valueAsBool;
+										}
+										break;
+
+										case ASMVariable::ASMVariableType::INT:
+										{
+											int valueAsInt = (int)asmVariable.value;
+											ImGui::InputInt((asmVariable.varName + "##ASM Preview Mode Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+											asmVariable.value = (float)valueAsInt;
+										}
+										break;
+
+										case ASMVariable::ASMVariableType::FLOAT:
+										{
+											ImGui::DragFloat((asmVariable.varName + "##ASM Preview Mode Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
+										}
+										break;
+										}
+									}
+
+									ImGui::TreePop();
+								}
+
+								ImGui::Separator();
+							}
+						}
+						else
+							ImGui::Text("Add ASM Nodes to Enable Preview Mode");
+
+						//
 						// ASM Variables
 						//
+						ImGui::Spacing();
 						ImGui::Text("Animation State Machine (ASM) Variables");
 
 						static std::string asmVarNameCollisionsError = "";
@@ -4157,30 +4339,30 @@ void RenderManager::renderImGuiContents()
 
 								switch (asmVariable.variableType)
 								{
-									case ASMVariable::ASMVariableType::BOOL:
-									{
-										bool valueAsBool = (bool)asmVariable.value;
-										ImGui::TableNextColumn();
-										saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
-										asmVariable.value = (float)valueAsBool;
-									}
-									break;
+								case ASMVariable::ASMVariableType::BOOL:
+								{
+									bool valueAsBool = (bool)asmVariable.value;
+									ImGui::TableNextColumn();
+									saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+									asmVariable.value = (float)valueAsBool;
+								}
+								break;
 
-									case ASMVariable::ASMVariableType::INT:
-									{
-										int valueAsInt = (int)asmVariable.value;
-										ImGui::TableNextColumn();
-										saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
-										asmVariable.value = (float)valueAsInt;
-									}
-									break;
+								case ASMVariable::ASMVariableType::INT:
+								{
+									int valueAsInt = (int)asmVariable.value;
+									ImGui::TableNextColumn();
+									saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+									asmVariable.value = (float)valueAsInt;
+								}
+								break;
 
-									case ASMVariable::ASMVariableType::FLOAT:
-									{
-										ImGui::TableNextColumn();
-										saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
-									}
-									break;
+								case ASMVariable::ASMVariableType::FLOAT:
+								{
+									ImGui::TableNextColumn();
+									saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
+								}
+								break;
 								}
 
 								// Delete Button
@@ -4614,30 +4796,30 @@ void RenderManager::renderImGuiContents()
 										{
 											switch (tempVarPtr->variableType)
 											{
-												case ASMVariable::ASMVariableType::BOOL:
-												{
-													bool valueAsBool = (bool)tranCondition.compareToValue;
-													ImGui::TableNextColumn();
-													saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
-													tranCondition.compareToValue = (float)valueAsBool;
-												}
-												break;
+											case ASMVariable::ASMVariableType::BOOL:
+											{
+												bool valueAsBool = (bool)tranCondition.compareToValue;
+												ImGui::TableNextColumn();
+												saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+												tranCondition.compareToValue = (float)valueAsBool;
+											}
+											break;
 
-												case ASMVariable::ASMVariableType::INT:
-												{
-													int valueAsInt = (int)tranCondition.compareToValue;
-													ImGui::TableNextColumn();
-													saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
-													tranCondition.compareToValue = (float)valueAsInt;
-												}
-												break;
+											case ASMVariable::ASMVariableType::INT:
+											{
+												int valueAsInt = (int)tranCondition.compareToValue;
+												ImGui::TableNextColumn();
+												saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+												tranCondition.compareToValue = (float)valueAsInt;
+											}
+											break;
 
-												case ASMVariable::ASMVariableType::FLOAT:
-												{
-													ImGui::TableNextColumn();
-													saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
-												}
-												break;
+											case ASMVariable::ASMVariableType::FLOAT:
+											{
+												ImGui::TableNextColumn();
+												saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+											}
+											break;
 											}
 										}
 										else
@@ -4669,20 +4851,9 @@ void RenderManager::renderImGuiContents()
 
 						ImGui::TreePop();
 					}
-
-					//
-					// Update the animation state
-					//
-					if (animatorForModelForTimelineViewer != nullptr && timelineViewerState.editor_selectedAnimationPtr != nullptr)
+					else
 					{
-						if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
-						{
-							timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
-							animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
-						}
-
-						animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
-						animatorForModelForTimelineViewer->updateAnimation(timelineViewerState.editor_animationPlaybackTimestamp - animatorForModelForTimelineViewer->getCurrentTime() / animatorForModelForTimelineViewer->getCurrentAnimation()->getTicksPerSecond());
+						timelineViewerState.editor_isASMPreviewMode = false;
 					}
 				}
 			}

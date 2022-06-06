@@ -81,21 +81,44 @@
         "asm_nodes": [
             {
                 "animation_blend_variable": "",
-                "animation_name_1": "",
+                "animation_name_1": "Idle",
                 "animation_name_2": "",
-                "node_name": "fdasdf",
-                "node_transition_conditions": []
+                "node_name": "Idle",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isMoving"
+                    }
+                ]
             },
             {
-                "animation_blend_variable": "",
-                "animation_name_1": "",
-                "animation_name_2": "",
-                "node_name": "fdsasdfgs",
-                "node_transition_conditions": []
+                "animation_blend_variable": "blendWalkRun",
+                "animation_name_1": "Walking",
+                "animation_name_2": "Running",
+                "node_name": "Moving",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isMoving"
+                    }
+                ]
             }
         ],
-        "asm_start_node_index": 1,
-        "asm_variables": []
+        "asm_start_node_index": 0,
+        "asm_variables": [
+            {
+                "value": 0.0,
+                "var_name": "blendWalkRun",
+                "variable_type": 2
+            },
+            {
+                "value": 0.0,
+                "var_name": "isMoving",
+                "variable_type": 0
+            }
+        ]
     },
     "included_anims": [
         "Attack_light_horizontal",
