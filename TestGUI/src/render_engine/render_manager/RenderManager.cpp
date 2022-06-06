@@ -4006,6 +4006,8 @@ void RenderManager::renderImGuiContents()
 								std::string varNameCopy = asmVariable.varName;
 								if (ImGui::InputText(("##ASM Var Name" + std::to_string(i)).c_str(), &varNameCopy))
 								{
+									saveAndApplyChangesFlag |= true;
+
 									// I know, I know, it's bad practice, but I need to know if there are any name collisions!
 									asmVarNameCollisionsError = "";
 									for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
@@ -4043,7 +4045,7 @@ void RenderManager::renderImGuiContents()
 
 								int variableTypeAsInt = (int)asmVariable.variableType;
 								ImGui::TableNextColumn();
-								ImGui::Combo(("##ASM Var Type" + std::to_string(i)).c_str(), &variableTypeAsInt, "Bool\0Int\0Float");
+								saveAndApplyChangesFlag |= ImGui::Combo(("##ASM Var Type" + std::to_string(i)).c_str(), &variableTypeAsInt, "Bool\0Int\0Float");
 								asmVariable.variableType = (ASMVariable::ASMVariableType)variableTypeAsInt;
 
 								switch (asmVariable.variableType)
@@ -4052,7 +4054,7 @@ void RenderManager::renderImGuiContents()
 									{
 										bool valueAsBool = (bool)asmVariable.value;
 										ImGui::TableNextColumn();
-										ImGui::Checkbox(("##ASM Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+										saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
 										asmVariable.value = (float)valueAsBool;
 									}
 									break;
@@ -4061,7 +4063,7 @@ void RenderManager::renderImGuiContents()
 									{
 										int valueAsInt = (int)asmVariable.value;
 										ImGui::TableNextColumn();
-										ImGui::InputInt(("##ASM Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+										saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
 										asmVariable.value = (float)valueAsInt;
 									}
 									break;
@@ -4069,7 +4071,7 @@ void RenderManager::renderImGuiContents()
 									case ASMVariable::ASMVariableType::FLOAT:
 									{
 										ImGui::TableNextColumn();
-										ImGui::DragFloat(("##ASM Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
+										saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
 									}
 									break;
 								}
@@ -4085,6 +4087,7 @@ void RenderManager::renderImGuiContents()
 
 						if (ImGui::Button("Add new ASM var"))
 						{
+							saveAndApplyChangesFlag |= true;
 							animationStateMachineVariables.push_back(ASMVariable());
 						}
 
@@ -4105,6 +4108,7 @@ void RenderManager::renderImGuiContents()
 						{
 							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedASMNode == -1))
 							{
+								saveAndApplyChangesFlag |= true;
 								timelineViewerState.editor_selectedASMNode = -1;
 							}
 
@@ -4113,6 +4117,7 @@ void RenderManager::renderImGuiContents()
 								const bool isSelected = (timelineViewerState.editor_selectedASMNode == i);
 								if (ImGui::Selectable(timelineViewerState.animationStateMachineNodes[i].nodeName.c_str(), isSelected))
 								{
+									saveAndApplyChangesFlag |= true;
 									timelineViewerState.editor_selectedASMNode = i;
 								}
 
@@ -4150,6 +4155,8 @@ void RenderManager::renderImGuiContents()
 
 								if (!showASMNewNodeNameAlreadyExistsError)
 								{
+									saveAndApplyChangesFlag |= true;
+
 									// Create the new Node
 									auto newNode = ASMNode();
 									newNode.nodeName = createNewASMNodePopupInputText;
@@ -4178,6 +4185,8 @@ void RenderManager::renderImGuiContents()
 							std::string asmChangeNameText = asmNode.nodeName;
 							if (ImGui::InputText("New ASM node Name", &asmChangeNameText))
 							{
+								saveAndApplyChangesFlag |= true;
+
 								// Check if name exists (I know it's super slow Jon)
 								showASMChangeNodeNameAlreadyExistsError = false;
 								bool exists = false;
@@ -4216,6 +4225,7 @@ void RenderManager::renderImGuiContents()
 							{
 								if (ImGui::Selectable("Select...", asmNode.animationName1.size() == 0))
 								{
+									saveAndApplyChangesFlag |= true;
 									asmNode.animationName1 = "";
 								}
 
@@ -4227,6 +4237,7 @@ void RenderManager::renderImGuiContents()
 									const bool isSelected = (asmNode.animationName1 == animationNameAndIncluded[i].name);
 									if (ImGui::Selectable(animationNameAndIncluded[i].name.c_str(), isSelected))
 									{
+										saveAndApplyChangesFlag |= true;
 										asmNode.animationName1 = animationNameAndIncluded[i].name;
 									}
 
@@ -4243,6 +4254,7 @@ void RenderManager::renderImGuiContents()
 							{
 								if (ImGui::Selectable("Select...", asmNode.animationName2.size() == 0))
 								{
+									saveAndApplyChangesFlag |= true;
 									asmNode.animationName2 = "";
 								}
 
@@ -4254,6 +4266,7 @@ void RenderManager::renderImGuiContents()
 									const bool isSelected = (asmNode.animationName2 == animationNameAndIncluded[i].name);
 									if (ImGui::Selectable(animationNameAndIncluded[i].name.c_str(), isSelected))
 									{
+										saveAndApplyChangesFlag |= true;
 										asmNode.animationName2 = animationNameAndIncluded[i].name;
 									}
 
@@ -4273,6 +4286,7 @@ void RenderManager::renderImGuiContents()
 								{
 									if (ImGui::Selectable("Select...", asmNode.varFloatBlend.size() == 0))
 									{
+										saveAndApplyChangesFlag |= true;
 										asmNode.varFloatBlend = "";
 									}
 
@@ -4281,6 +4295,7 @@ void RenderManager::renderImGuiContents()
 										const bool isSelected = (asmNode.varFloatBlend == animationStateMachineVariables[i].varName);
 										if (ImGui::Selectable(animationStateMachineVariables[i].varName.c_str(), isSelected))
 										{
+											saveAndApplyChangesFlag |= true;
 											asmNode.varFloatBlend = animationStateMachineVariables[i].varName;
 										}
 
@@ -4321,11 +4336,13 @@ void RenderManager::renderImGuiContents()
 									{
 										if (ImGui::Selectable("Select...", tranCondition.varName.empty()))
 										{
+											saveAndApplyChangesFlag |= true;
 											tranCondition.varName = "";
 										}
 
 										if (ImGui::Selectable("{Current ASM Node}", isSpecialCaseCurrentASMNodeNameVarName))
 										{
+											saveAndApplyChangesFlag |= true;
 											tranCondition.varName = ASMTransitionCondition::specialCaseKey;
 											isSpecialCaseCurrentASMNodeNameVarName = true;
 										}
@@ -4337,6 +4354,7 @@ void RenderManager::renderImGuiContents()
 											const bool isSelected = (asmVariable.varName == tranCondition.varName);
 											if (ImGui::Selectable(asmVariable.varName.c_str(), isSelected))
 											{
+												saveAndApplyChangesFlag |= true;
 												tranCondition.varName = asmVariable.varName;
 												resetVarName = false;
 											}
@@ -4358,13 +4376,16 @@ void RenderManager::renderImGuiContents()
 									int comparisonOperatorAsInt = (int)tranCondition.comparisonOperator;
 									if (isSpecialCaseCurrentASMNodeNameVarName)
 									{
-										ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL");
+										saveAndApplyChangesFlag |= ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL");
 										if (comparisonOperatorAsInt > (int)ASMTransitionCondition::ASMComparisonOperator::NEQUAL)
+										{
+											saveAndApplyChangesFlag |= true;
 											comparisonOperatorAsInt = 0;
+										}
 									}
 									else
 									{
-										ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL\0LESSER\0GREATER\0LEQUAL\0GEQUAL");
+										saveAndApplyChangesFlag |= ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL\0LESSER\0GREATER\0LEQUAL\0GEQUAL");
 									}
 									tranCondition.comparisonOperator = (ASMTransitionCondition::ASMComparisonOperator)comparisonOperatorAsInt;
 
@@ -4378,6 +4399,7 @@ void RenderManager::renderImGuiContents()
 										{
 											if (ImGui::Selectable("Select...", tranCondition.specialCaseCurrentASMNodeName.empty()))
 											{
+												saveAndApplyChangesFlag |= true;
 												tranCondition.specialCaseCurrentASMNodeName = "";
 											}
 
@@ -4387,6 +4409,7 @@ void RenderManager::renderImGuiContents()
 												const bool isSelected = (asmNodeRef.nodeName == tranCondition.specialCaseCurrentASMNodeName);
 												if (ImGui::Selectable((asmNodeRef.nodeName + "##ASM Transition Condition Special Case " + std::to_string(i)).c_str(), isSelected))
 												{
+													saveAndApplyChangesFlag |= true;
 													tranCondition.specialCaseCurrentASMNodeName = asmNodeRef.nodeName;
 												}
 
@@ -4419,7 +4442,7 @@ void RenderManager::renderImGuiContents()
 												{
 													bool valueAsBool = (bool)tranCondition.compareToValue;
 													ImGui::TableNextColumn();
-													ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+													saveAndApplyChangesFlag |= ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
 													tranCondition.compareToValue = (float)valueAsBool;
 												}
 												break;
@@ -4428,7 +4451,7 @@ void RenderManager::renderImGuiContents()
 												{
 													int valueAsInt = (int)tranCondition.compareToValue;
 													ImGui::TableNextColumn();
-													ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+													saveAndApplyChangesFlag |= ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
 													tranCondition.compareToValue = (float)valueAsInt;
 												}
 												break;
@@ -4436,7 +4459,7 @@ void RenderManager::renderImGuiContents()
 												case ASMVariable::ASMVariableType::FLOAT:
 												{
 													ImGui::TableNextColumn();
-													ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+													saveAndApplyChangesFlag |= ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
 												}
 												break;
 											}
@@ -4454,6 +4477,7 @@ void RenderManager::renderImGuiContents()
 
 							if (ImGui::Button("Add new ASM Transition Condition"))
 							{
+								saveAndApplyChangesFlag |= true;
 								transitionConditions.push_back(ASMTransitionCondition());
 							}
 						}
