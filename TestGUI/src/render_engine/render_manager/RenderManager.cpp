@@ -125,7 +125,7 @@ struct TimelineViewerState
 	// Animation State Machine (ASM)
 	std::vector<ASMVariable> animationStateMachineVariables;
 	std::vector<ASMNode> animationStateMachineNodes;
-	int animationStateMachineStartNode = 0;
+	int animationStateMachineStartNode = 0;		// @NOTE: @TODO: This is currently unused... but you're gonna have to figure this out once the whole ASM machine is built (as in, the functionality is built in and you can use the TEST button)
 
 	// Editor only values
 	int editor_selectedAnimation = -1;
@@ -2985,6 +2985,53 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 			timelineViewerState.animationDetailMap[anai.name] = newAnimationDetail;		// @NOTE: this adds an empty newAnimationDetail if it wasn't found inside of the json file
 		}
 	}
+
+	// Get Animation State Machine
+	if (modelMetadataData.contains("animation_state_machine"))
+	{
+		nlohmann::json& animStateMachine = modelMetadataData["animation_state_machine"];
+		if (animStateMachine.contains("asm_variables"))
+		{
+			for (auto asmVar_j : animStateMachine["asm_variables"])
+			{
+				ASMVariable asmVar;
+				asmVar.varName = asmVar_j["var_name"];
+				asmVar.variableType = (ASMVariable::ASMVariableType)(int)asmVar_j["variable_type"];
+				asmVar.value = asmVar_j["value"];
+				timelineViewerState.animationStateMachineVariables.push_back(asmVar);
+			}
+		}
+
+		if (animStateMachine.contains("asm_nodes"))
+		{
+			for (auto asmNode_j : animStateMachine["asm_nodes"])
+			{
+				ASMNode asmNode;
+				asmNode.nodeName = asmNode_j["node_name"];
+				asmNode.animationName1 = asmNode_j["animation_name_1"];
+				asmNode.animationName2 = asmNode_j["animation_name_2"];
+				asmNode.varFloatBlend = asmNode_j["animation_blend_variable"];		// Yes, this is supposed to be a string
+				
+				if (asmNode_j.contains("node_transition_conditions"))
+				{
+					for (auto asmTranCondition_j : asmNode_j["node_transition_conditions"])
+					{
+						ASMTransitionCondition asmTranCondition;
+						asmTranCondition.varName = asmTranCondition_j["var_name"];
+						asmTranCondition.comparisonOperator = (ASMTransitionCondition::ASMComparisonOperator)(int)asmTranCondition_j["comparison_operator"];
+
+						if (asmTranCondition.varName == ASMTransitionCondition::specialCaseKey)
+							asmTranCondition.specialCaseCurrentASMNodeName = asmTranCondition_j["current_asm_node_name_ref"];
+						else
+							asmTranCondition.compareToValue = asmTranCondition_j["compare_to_value"];
+
+						asmNode.transitionConditions.push_back(asmTranCondition);
+					}
+				}
+				timelineViewerState.animationStateMachineNodes.push_back(asmNode);
+			}
+		}
+	}
 }
 
 
@@ -3750,6 +3797,7 @@ void RenderManager::renderImGuiContents()
 						//
 						nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
 
+						// Material References
 						nlohmann::json materialPathsContainer;
 						for (auto it = timelineViewerState.materialPathsMap.begin(); it != timelineViewerState.materialPathsMap.end(); it++)
 						{
@@ -3757,12 +3805,14 @@ void RenderManager::renderImGuiContents()
 						}
 						j["material_paths"] = materialPathsContainer;
 
+						// Included Animations
 						std::vector<std::string> includedAnimations;
 						for (size_t i = 0; i < timelineViewerState.animationNameAndIncluded.size(); i++)
 							if (timelineViewerState.animationNameAndIncluded[i].included)
 								includedAnimations.push_back(timelineViewerState.animationNameAndIncluded[i].name);
 						j["included_anims"] = includedAnimations;
 
+						// Animation Details
 						nlohmann::json animationDetailsContainer;
 						for (auto it = timelineViewerState.animationDetailMap.begin(); it != timelineViewerState.animationDetailMap.end(); it++)
 						{
@@ -3773,6 +3823,51 @@ void RenderManager::renderImGuiContents()
 							animationDetailsContainer[it->first] = animDetail_j;
 						}
 						j["animation_details"] = animationDetailsContainer;
+
+						// Animation State Machine stuff
+						nlohmann::json animationStateMachineContainer;
+						animationStateMachineContainer["asm_variables"] = nlohmann::json::array();
+						for (size_t i = 0; i < timelineViewerState.animationStateMachineVariables.size(); i++)
+						{
+							ASMVariable& asmVariable = timelineViewerState.animationStateMachineVariables[i];
+							nlohmann::json asmVariable_j;
+							asmVariable_j["var_name"] = asmVariable.varName;
+							asmVariable_j["variable_type"] = (int)asmVariable.variableType;
+							asmVariable_j["value"] = asmVariable.value;
+
+							animationStateMachineContainer["asm_variables"].push_back(asmVariable_j);
+						}
+
+						animationStateMachineContainer["asm_nodes"] = nlohmann::json::array();
+						for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+						{
+							ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[i];
+							nlohmann::json asmNode_j;
+							asmNode_j["node_name"] = asmNode.nodeName;
+							asmNode_j["animation_name_1"] = asmNode.animationName1;
+							asmNode_j["animation_name_2"] = asmNode.animationName2;
+							asmNode_j["animation_blend_variable"] = asmNode.varFloatBlend;
+
+							nlohmann::json transitionConditions_j = nlohmann::json::array();
+							for (size_t j = 0; j < asmNode.transitionConditions.size(); j++)
+							{
+								ASMTransitionCondition& asmTranCondition = asmNode.transitionConditions[j];
+								nlohmann::json asmTranCondition_j;
+								asmTranCondition_j["var_name"] = asmTranCondition.varName;
+								asmTranCondition_j["comparison_operator"] = (int)asmTranCondition.comparisonOperator;
+
+								if (asmTranCondition.varName == ASMTransitionCondition::specialCaseKey)
+									asmTranCondition_j["current_asm_node_name_ref"] = asmTranCondition.specialCaseCurrentASMNodeName;
+								else
+									asmTranCondition_j["compare_to_value"] = asmTranCondition.compareToValue;
+
+								transitionConditions_j.push_back(asmTranCondition_j);
+							}
+							asmNode_j["node_transition_conditions"] = transitionConditions_j;
+
+							animationStateMachineContainer["asm_nodes"].push_back(asmNode_j);
+						}
+						j["animation_state_machine"] = animationStateMachineContainer;
 
 						FileLoading::saveJsonFile(modelMetadataFname, j);
 
@@ -3996,8 +4091,13 @@ void RenderManager::renderImGuiContents()
 
 						static std::string asmVarNameCollisionsError = "";
 						std::vector<ASMVariable>& animationStateMachineVariables = timelineViewerState.animationStateMachineVariables;
-						if (ImGui::BeginTable("##ASM Var Details Table", 3))
+						if (ImGui::BeginTable("##ASM Var Details Table", 4))
 						{
+							ImGui::TableSetupColumn("ASM Var Name", ImGuiTableColumnFlags_WidthStretch);
+							ImGui::TableSetupColumn("Var Type", ImGuiTableColumnFlags_WidthStretch);
+							ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+							ImGui::TableSetupColumn("Delete button column ## ASM Variables", ImGuiTableColumnFlags_WidthFixed);
+
 							for (size_t i = 0; i < animationStateMachineVariables.size(); i++)
 							{
 								ASMVariable& asmVariable = animationStateMachineVariables[i];
@@ -4008,38 +4108,41 @@ void RenderManager::renderImGuiContents()
 								{
 									saveAndApplyChangesFlag |= true;
 
-									// I know, I know, it's bad practice, but I need to know if there are any name collisions!
-									asmVarNameCollisionsError = "";
-									for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+									if (!varNameCopy.empty())	// Only allow assignment if first varNameCopy is !empty
 									{
-										if (j == i)
-											continue;
+										// I know, I know, it's bad practice, but I need to know if there are any name collisions!
+										asmVarNameCollisionsError = "";
+										for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+										{
+											if (j == i)
+												continue;
 
-										if (varNameCopy == animationStateMachineVariables[j].varName)
-										{
-											asmVarNameCollisionsError = varNameCopy;
-										}
-									}
-									if (asmVarNameCollisionsError.empty())
-									{
-										// Update all references of the ASM transition conditions (@NOTE: they reference these variables by name)
-										for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes.size(); j++)
-										{
-											for (size_t k = 0; k < timelineViewerState.animationStateMachineNodes[j].transitionConditions.size(); k++)
+											if (varNameCopy == animationStateMachineVariables[j].varName)
 											{
-												ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[j].transitionConditions[k];
-												if (tranCondition.varName == asmVariable.varName)
+												asmVarNameCollisionsError = varNameCopy;
+											}
+										}
+										if (asmVarNameCollisionsError.empty())
+										{
+											// Update all references of the ASM transition conditions (@NOTE: they reference these variables by name)
+											for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes.size(); j++)
+											{
+												for (size_t k = 0; k < timelineViewerState.animationStateMachineNodes[j].transitionConditions.size(); k++)
 												{
-													tranCondition.varName = varNameCopy;	// Update to new variable.
+													ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[j].transitionConditions[k];
+													if (tranCondition.varName == asmVariable.varName)
+													{
+														tranCondition.varName = varNameCopy;	// Update to new variable.
+													}
 												}
+
+												if (timelineViewerState.animationStateMachineNodes[j].varFloatBlend == asmVariable.varName)
+													timelineViewerState.animationStateMachineNodes[j].varFloatBlend = varNameCopy;		// Update to new variable name.
 											}
 
-											if (timelineViewerState.animationStateMachineNodes[j].varFloatBlend == asmVariable.varName)
-												timelineViewerState.animationStateMachineNodes[j].varFloatBlend = varNameCopy;		// Update to new variable name.
+											// Write to the varName if no name collisions are found.
+											asmVariable.varName = varNameCopy;
 										}
-
-										// Write to the varName if no name collisions are found.
-										asmVariable.varName = varNameCopy;
 									}
 								}
 
@@ -4075,6 +4178,15 @@ void RenderManager::renderImGuiContents()
 									}
 									break;
 								}
+
+								// Delete Button
+								ImGui::TableNextColumn();
+								if (ImGui::Button(("X##DELETE BUTTON FOR ASM VAR" + std::to_string(i)).c_str()))
+								{
+									saveAndApplyChangesFlag |= true;
+									animationStateMachineVariables.erase(animationStateMachineVariables.begin() + i);
+									break;	// To prevent further iteration and crashing the program
+								}
 							}
 
 							ImGui::EndTable();
@@ -4088,7 +4200,29 @@ void RenderManager::renderImGuiContents()
 						if (ImGui::Button("Add new ASM var"))
 						{
 							saveAndApplyChangesFlag |= true;
-							animationStateMachineVariables.push_back(ASMVariable());
+							ASMVariable newASMVar;
+							newASMVar.varName = "New Variable";
+
+							bool varNameCollides;
+							int suffix = 1;
+							do
+							{
+								varNameCollides = false;
+								for (size_t i = 0; i < animationStateMachineVariables.size(); i++)
+								{
+									if (newASMVar.varName == animationStateMachineVariables[i].varName)
+									{
+										varNameCollides = true;
+										break;
+									}
+								}
+
+								if (varNameCollides)
+									newASMVar.varName = "New Variable" + std::to_string(suffix++);
+							}
+							while (varNameCollides);
+
+							animationStateMachineVariables.push_back(newASMVar);
 						}
 
 
@@ -4108,7 +4242,6 @@ void RenderManager::renderImGuiContents()
 						{
 							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedASMNode == -1))
 							{
-								saveAndApplyChangesFlag |= true;
 								timelineViewerState.editor_selectedASMNode = -1;
 							}
 
@@ -4117,7 +4250,6 @@ void RenderManager::renderImGuiContents()
 								const bool isSelected = (timelineViewerState.editor_selectedASMNode == i);
 								if (ImGui::Selectable(timelineViewerState.animationStateMachineNodes[i].nodeName.c_str(), isSelected))
 								{
-									saveAndApplyChangesFlag |= true;
 									timelineViewerState.editor_selectedASMNode = i;
 								}
 
@@ -4127,6 +4259,19 @@ void RenderManager::renderImGuiContents()
 							}
 
 							ImGui::EndCombo();
+						}
+
+						if (timelineViewerState.editor_selectedASMNode >= 0)
+						{
+							ImGui::SameLine();
+							if (ImGui::Button("X## Delete the currently selected ASM Node"))
+							{
+								saveAndApplyChangesFlag |= true;
+								timelineViewerState.animationStateMachineNodes.erase(
+									timelineViewerState.animationStateMachineNodes.begin() + timelineViewerState.editor_selectedASMNode
+								);
+								timelineViewerState.editor_selectedASMNode = -1;
+							}
 						}
 
 						static std::string createNewASMNodePopupInputText;
@@ -4322,8 +4467,13 @@ void RenderManager::renderImGuiContents()
 							ImGui::Text("Edit ASM Node Transition Conditions");
 							
 							std::vector<ASMTransitionCondition>& transitionConditions = asmNode.transitionConditions;
-							if (ImGui::BeginTable("##ASM Transition Conditions Table", 3))
+							if (ImGui::BeginTable("##ASM Transition Conditions Table", 4))
 							{
+								ImGui::TableSetupColumn("Var Name Ref", ImGuiTableColumnFlags_WidthStretch);
+								ImGui::TableSetupColumn("Compare Operator", ImGuiTableColumnFlags_WidthStretch);
+								ImGui::TableSetupColumn("Compare Value", ImGuiTableColumnFlags_WidthStretch);
+								ImGui::TableSetupColumn("Delete button column ## ASM Transition Conditions", ImGuiTableColumnFlags_WidthFixed);
+
 								for (size_t i = 0; i < transitionConditions.size(); i++)
 								{
 									ASMTransitionCondition& tranCondition = transitionConditions[i];
@@ -4469,6 +4619,15 @@ void RenderManager::renderImGuiContents()
 											ImGui::TableNextColumn();
 											ImGui::Text("Select ASM variable");
 										}
+									}
+
+									// Delete Button
+									ImGui::TableNextColumn();
+									if (ImGui::Button(("X##DELETE BUTTON FOR ASM TRANSITION CONDITIONS" + std::to_string(i)).c_str()))
+									{
+										saveAndApplyChangesFlag |= true;
+										transitionConditions.erase(transitionConditions.begin() + i);
+										break;	// To prevent further iteration and crashing the program
 									}
 								}
 

@@ -1,5 +1,51 @@
 {
-    "animation_details": null,
+    "animation_details": {
+        "Idle": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        },
+        "No_Water": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        }
+    },
+    "animation_state_machine": {
+        "asm_nodes": [
+            {
+                "animation_blend_variable": "",
+                "animation_name_1": "Idle",
+                "animation_name_2": "",
+                "node_name": "waterFull",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isFull"
+                    }
+                ]
+            },
+            {
+                "animation_blend_variable": "",
+                "animation_name_1": "No_Water",
+                "animation_name_2": "",
+                "node_name": "waterEmpty",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isFull"
+                    }
+                ]
+            }
+        ],
+        "asm_variables": [
+            {
+                "value": 0.0,
+                "var_name": "isFull",
+                "variable_type": 0
+            }
+        ]
+    },
     "included_anims": [
         "Idle",
         "No_Water"

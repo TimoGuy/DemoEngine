@@ -77,6 +77,10 @@
             "track_xz_root_motion": false
         }
     },
+    "animation_state_machine": {
+        "asm_nodes": [],
+        "asm_variables": []
+    },
     "included_anims": [
         "Attack_light_horizontal",
         "Attack_light_vertical",
