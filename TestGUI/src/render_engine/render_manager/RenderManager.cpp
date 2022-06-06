@@ -4141,7 +4141,7 @@ void RenderManager::renderImGuiContents()
 							//
 							if (timelineViewerState.editor_isASMPreviewMode && animatorForModelForTimelineViewer != nullptr)
 							{
-								size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
+								const size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
 
 								// Check all other nodes for transition conditions and go to the first one fulfilled
 								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
@@ -4215,10 +4215,70 @@ void RenderManager::renderImGuiContents()
 									if (tranConditionPasses)
 									{
 										// Switch to this new node
-										currentNode = i;
+										timelineViewerState.editor_previewModeCurrentASMNode = i;
+
+										// Start playing the new animation
+										const ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode];
+										if (asmNode.animationName2.empty())
+										{
+											size_t i = 0;
+											for (auto anai : timelineViewerState.animationNameAndIncluded)
+											{
+												if (!anai.included)
+													continue;
+												if (anai.name == asmNode.animationName1)
+													break;
+												i++;
+											}
+											animatorForModelForTimelineViewer->playAnimation(i);
+										}
+										else
+										{
+											size_t i = 0, j = 0;
+											for (auto anai : timelineViewerState.animationNameAndIncluded)
+											{
+												if (!anai.included)
+													continue;
+												if (anai.name == asmNode.animationName1)
+													break;
+												i++;
+											}
+											for (auto anai : timelineViewerState.animationNameAndIncluded)
+											{
+												if (!anai.included)
+													continue;
+												if (anai.name == asmNode.animationName2)
+													break;
+												j++;
+											}
+											animatorForModelForTimelineViewer->playBlendTree({
+												{ i, 0.0f, "blendVar" },
+												{ j, 1.0f }
+											});
+										}
+
+
 										break;
 									}
 								}
+
+								// Update the animation with the animator
+								if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
+								{
+									float blendVarValue;
+									for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+									{
+										ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+										if (asmVariable.varName == timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend)
+										{
+											blendVarValue = asmVariable.value;
+											break;
+										}
+									}
+									animatorForModelForTimelineViewer->setBlendTreeVariable("blendVar", blendVarValue);
+								}
+								animatorForModelForTimelineViewer->animationSpeed = 1.0f;
+								animatorForModelForTimelineViewer->updateAnimation(MainLoop::getInstance().deltaTime);
 
 								//
 								// Report back the current node in preview
