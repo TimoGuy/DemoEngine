@@ -103,7 +103,10 @@ struct ASMTransitionCondition
 		LEQUAL,
 		GEQUAL
 	} comparisonOperator;
+
+	const static std::string specialCaseKey;
 };
+const std::string ASMTransitionCondition::specialCaseKey = ASMTransitionCondition::specialCaseKey;
 struct ASMNode
 {
 	std::string nodeName;			// @NOTE: this is not used as the index. Use the index of animationStateMachineNodes;
@@ -4296,7 +4299,7 @@ void RenderManager::renderImGuiContents()
 
 									// Variable assignment
 									ImGui::TableNextColumn();
-									bool isSpecialCaseCurrentASMNodeNameVarName = (tranCondition.varName == "#$&!@#$*%&&$#JJJ#H#H#J#H");
+									bool isSpecialCaseCurrentASMNodeNameVarName = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
 									std::string tranConditionVarNameReferencePreviewText = isSpecialCaseCurrentASMNodeNameVarName ? "{Current ASM Node}" : tranCondition.varName.empty() ? "Select..." : tranCondition.varName;
 									if (ImGui::BeginCombo(("##ASM Transition Condition Var Name Reference" + std::to_string(i)).c_str(), tranConditionVarNameReferencePreviewText.c_str()))
 									{
@@ -4307,7 +4310,7 @@ void RenderManager::renderImGuiContents()
 
 										if (ImGui::Selectable("{Current ASM Node}", isSpecialCaseCurrentASMNodeNameVarName))
 										{
-											tranCondition.varName = "#$&!@#$*%&&$#JJJ#H#H#J#H";		// @NOTE: Man, I really hope nobody thinks to name their ASM variable this... it'd just be trollin' dango bango  -Timo
+											tranCondition.varName = ASMTransitionCondition::specialCaseKey;		// @NOTE: Man, I really hope nobody thinks to name their ASM variable this... it'd just be trollin' dango bango  -Timo
 											isSpecialCaseCurrentASMNodeNameVarName = true;
 										}
 
