@@ -93,6 +93,7 @@ struct ASMTransitionCondition
 {
 	std::string varName;
 	float compareToValue;
+	std::string specialCaseCurrentASMNodeName;
 	enum ASMComparisonOperator
 	{
 		EQUAL,
@@ -4295,7 +4296,8 @@ void RenderManager::renderImGuiContents()
 
 									// Variable assignment
 									ImGui::TableNextColumn();
-									std::string tranConditionVarNameReferencePreviewText = tranCondition.varName.empty() ? "Select..." : tranCondition.varName;
+									bool isSpecialCaseCurrentASMNodeNameVarName = (tranCondition.varName == "#$&!@#$*%&&$#JJJ#H#H#J#H");
+									std::string tranConditionVarNameReferencePreviewText = isSpecialCaseCurrentASMNodeNameVarName ? "{Current ASM Node}" : tranCondition.varName.empty() ? "Select..." : tranCondition.varName;
 									if (ImGui::BeginCombo(("##ASM Transition Condition Var Name Reference" + std::to_string(i)).c_str(), tranConditionVarNameReferencePreviewText.c_str()))
 									{
 										if (ImGui::Selectable("Select...", tranCondition.varName.empty()))
@@ -4303,7 +4305,13 @@ void RenderManager::renderImGuiContents()
 											tranCondition.varName = "";
 										}
 
-										bool resetVarName = true;
+										if (ImGui::Selectable("{Current ASM Node}", isSpecialCaseCurrentASMNodeNameVarName))
+										{
+											tranCondition.varName = "#$&!@#$*%&&$#JJJ#H#H#J#H";		// @NOTE: Man, I really hope nobody thinks to name their ASM variable this... it'd just be trollin' dango bango  -Timo
+											isSpecialCaseCurrentASMNodeNameVarName = true;
+										}
+
+										bool resetVarName = !isSpecialCaseCurrentASMNodeNameVarName;
 										for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
 										{
 											ASMVariable& asmVariable = animationStateMachineVariables[j];
@@ -4329,53 +4337,96 @@ void RenderManager::renderImGuiContents()
 									// Comparison operator
 									ImGui::TableNextColumn();
 									int comparisonOperatorAsInt = (int)tranCondition.comparisonOperator;
-									ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL\0LESSER\0GREATER\0LEQUAL\0GEQUAL");
+									if (isSpecialCaseCurrentASMNodeNameVarName)
+									{
+										ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL");
+										if (comparisonOperatorAsInt > (int)ASMTransitionCondition::ASMComparisonOperator::NEQUAL)
+											comparisonOperatorAsInt = 0;
+									}
+									else
+									{
+										ImGui::Combo(("##ASM Transition Condition Comparison Operator" + std::to_string(i)).c_str(), &comparisonOperatorAsInt, "EQUAL\0NEQUAL\0LESSER\0GREATER\0LEQUAL\0GEQUAL");
+									}
 									tranCondition.comparisonOperator = (ASMTransitionCondition::ASMComparisonOperator)comparisonOperatorAsInt;
 
-									// Find the variable with .varName
-									ASMVariable* tempVarPtr = nullptr;
-									for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+									if (isSpecialCaseCurrentASMNodeNameVarName)
 									{
-										if (animationStateMachineVariables[j].varName == tranCondition.varName)
-										{
-											tempVarPtr = &animationStateMachineVariables[j];
-											break;
-										}
-									}
-									if (tempVarPtr != nullptr)
-									{
-										switch (tempVarPtr->variableType)
-										{
-											case ASMVariable::ASMVariableType::BOOL:
-											{
-												bool valueAsBool = (bool)tranCondition.compareToValue;
-												ImGui::TableNextColumn();
-												ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
-												tranCondition.compareToValue = (float)valueAsBool;
-											}
-											break;
+										tranCondition.compareToValue = 0.0f;
 
-											case ASMVariable::ASMVariableType::INT:
+										// List all of the ASM Nodes to choose from
+										ImGui::TableNextColumn();
+										if (ImGui::BeginCombo(("##ASM Transition Condition Special Case Current ASM Node Combo box" + std::to_string(i)).c_str(), tranCondition.specialCaseCurrentASMNodeName.empty() ? "Select..." : tranCondition.specialCaseCurrentASMNodeName.c_str()))
+										{
+											if (ImGui::Selectable("Select...", tranCondition.specialCaseCurrentASMNodeName.empty()))
 											{
-												int valueAsInt = (int)tranCondition.compareToValue;
-												ImGui::TableNextColumn();
-												ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
-												tranCondition.compareToValue = (float)valueAsInt;
+												tranCondition.specialCaseCurrentASMNodeName = "";
 											}
-											break;
 
-											case ASMVariable::ASMVariableType::FLOAT:
+											for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes.size(); j++)
 											{
-												ImGui::TableNextColumn();
-												ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+												ASMNode& asmNodeRef = timelineViewerState.animationStateMachineNodes[j];
+												const bool isSelected = (asmNodeRef.nodeName == tranCondition.specialCaseCurrentASMNodeName);
+												if (ImGui::Selectable((asmNodeRef.nodeName + "##ASM Transition Condition Special Case " + std::to_string(i)).c_str(), isSelected))
+												{
+													tranCondition.specialCaseCurrentASMNodeName = asmNodeRef.nodeName;
+												}
+
+												if (isSelected)
+													ImGui::SetItemDefaultFocus();
 											}
-											break;
+
+											ImGui::EndCombo();
 										}
 									}
 									else
 									{
-										ImGui::TableNextColumn();
-										ImGui::Text("Select ASM variable");
+										tranCondition.specialCaseCurrentASMNodeName = "";
+
+										// Find the variable with .varName
+										ASMVariable* tempVarPtr = nullptr;
+										for (size_t j = 0; j < animationStateMachineVariables.size(); j++)
+										{
+											if (animationStateMachineVariables[j].varName == tranCondition.varName)
+											{
+												tempVarPtr = &animationStateMachineVariables[j];
+												break;
+											}
+										}
+										if (tempVarPtr != nullptr)
+										{
+											switch (tempVarPtr->variableType)
+											{
+												case ASMVariable::ASMVariableType::BOOL:
+												{
+													bool valueAsBool = (bool)tranCondition.compareToValue;
+													ImGui::TableNextColumn();
+													ImGui::Checkbox(("##ASM Transition Condition Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+													tranCondition.compareToValue = (float)valueAsBool;
+												}
+												break;
+
+												case ASMVariable::ASMVariableType::INT:
+												{
+													int valueAsInt = (int)tranCondition.compareToValue;
+													ImGui::TableNextColumn();
+													ImGui::InputInt(("##ASM Transition Condition Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+													tranCondition.compareToValue = (float)valueAsInt;
+												}
+												break;
+
+												case ASMVariable::ASMVariableType::FLOAT:
+												{
+													ImGui::TableNextColumn();
+													ImGui::DragFloat(("##ASM Transition Condition Var Value As Float" + std::to_string(i)).c_str(), &tranCondition.compareToValue, 0.1f);
+												}
+												break;
+											}
+										}
+										else
+										{
+											ImGui::TableNextColumn();
+											ImGui::Text("Select ASM variable");
+										}
 									}
 								}
 
