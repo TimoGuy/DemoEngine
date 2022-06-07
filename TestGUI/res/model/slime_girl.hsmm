@@ -89,6 +89,11 @@
                         "compare_to_value": 0.0,
                         "comparison_operator": 0,
                         "var_name": "isMoving"
+                    },
+                    {
+                        "comparison_operator": 1,
+                        "current_asm_node_name_ref": "Jumping",
+                        "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                     }
                 ]
             },
@@ -102,6 +107,47 @@
                         "compare_to_value": 1.0,
                         "comparison_operator": 0,
                         "var_name": "isMoving"
+                    },
+                    {
+                        "comparison_operator": 1,
+                        "current_asm_node_name_ref": "Jumping",
+                        "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                    }
+                ]
+            },
+            {
+                "animation_blend_variable": "isMoving",
+                "animation_name_1": "Jumping_From_Idle",
+                "animation_name_2": "Jumping_From_Run",
+                "node_name": "Jumping",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isGrounded"
+                    },
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 3,
+                        "var_name": "velocity.y"
+                    }
+                ]
+            },
+            {
+                "animation_blend_variable": "isMoving",
+                "animation_name_1": "Land_From_Jumping_From_Idle",
+                "animation_name_2": "Land_From_Jumping_From_Run",
+                "node_name": "Landing",
+                "node_transition_conditions": [
+                    {
+                        "comparison_operator": 0,
+                        "current_asm_node_name_ref": "Jumping",
+                        "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                    },
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isGrounded"
                     }
                 ]
             }
@@ -117,6 +163,16 @@
                 "value": 0.0,
                 "var_name": "isMoving",
                 "variable_type": 0
+            },
+            {
+                "value": 1.0,
+                "var_name": "isGrounded",
+                "variable_type": 0
+            },
+            {
+                "value": 1.0,
+                "var_name": "velocity.y",
+                "variable_type": 2
             }
         ]
     },

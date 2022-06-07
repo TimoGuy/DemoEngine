@@ -2864,7 +2864,7 @@ void routinePurgeTimelineViewerModel()
 }
 
 
-void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::json& modelMetadataData)
+void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::json& modelMetadataData, bool setTimestampSpeedTo1)
 {
 	// Reset state (@WARNING: don't do anything stupid and leave hanging pointers bc of this yo)	@NOTE: with this, editor values don't have to be explicitly updated here... they will simply just be reset. Also, lists that contain references will just get cleared automagically.
 	timelineViewerState = TimelineViewerState();
@@ -2891,10 +2891,13 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 				if (modelMetadataData["animation_details"][animationName].contains("track_xz_root_motion"))
 					trackXZRootMotion = modelMetadataData["animation_details"][animationName]["track_xz_root_motion"];
 
-				// @NOTE: the animationSpeed is 1.0f bc the player will use its own value. The animationSpeed value
-				// should get imported when the animations would get imported normally.  -Timo
-				//if (modelMetadataData["animation_details"][animationName].contains("timestamp_speed"))
-				//	timestampSpeed = modelMetadataData["animation_details"][animationName]["timestamp_speed"];
+				// @NOTE: In the case where setTimestampSpeedTo1==true, the animationSpeed is 1.0f bc the anim previewer player
+				// will use its own value. The animationSpeed value should get imported when the animations would get imported normally.  -Timo
+				if (!setTimestampSpeedTo1)
+				{
+					if (modelMetadataData["animation_details"][animationName].contains("timestamp_speed"))
+						timestampSpeed = modelMetadataData["animation_details"][animationName]["timestamp_speed"];
+				}
 			}
 
 			animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, timestampSpeed });
@@ -3780,7 +3783,7 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Timeline Editor", &showTimelineEditorWindow))
 		{
-			if (MainLoop::getInstance().timelineViewerMode)
+			if (MainLoop::getInstance().timelineViewerMode && !timelineViewerState.editor_isASMPreviewMode)
 			{
 				MainLoop::getInstance().playMode = false;		// Ehhhh, this is probably overkill, but just in case, I don't want any funny business!
 
@@ -3880,7 +3883,7 @@ void RenderManager::renderImGuiContents()
 
 						// Reimport the model now
 						routinePurgeTimelineViewerModel();
-						routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j);
+						routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j, true);
 
 						saveAndApplyChangesFlag = false;
 						MainLoop::getInstance().renderManager->pushMessage("TIMELINE_EDITOR: Saved and Applied Changes");
@@ -4123,208 +4126,23 @@ void RenderManager::renderImGuiContents()
 						ImGui::Text("Preview ASM");
 						if (timelineViewerState.animationStateMachineNodes.size() > 0)
 						{
-							if (ImGui::Checkbox("Preview ASM##This is the checkbox this time", &timelineViewerState.editor_isASMPreviewMode))
+							if (ImGui::Button("Enter Preview ASM Mode##This is the button this time"))
 							{
-								if (timelineViewerState.editor_isASMPreviewMode)
-								{
-									timelineViewerState.editor_isAnimationPlaying = false;
+								// Reimport the model first (for ASM Preview Mode)
+								routinePurgeTimelineViewerModel();
+								nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
+								routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j, false);
 
-									// Load in all the variables
-									timelineViewerState.editor_previewModeCurrentASMNode = timelineViewerState.animationStateMachineStartNode;
-									timelineViewerState.editor_asmVarCopyForPreview = timelineViewerState.animationStateMachineVariables;
-								}
+								// Load in all the variables
+								timelineViewerState.editor_previewModeCurrentASMNode = timelineViewerState.animationStateMachineStartNode;
+								timelineViewerState.editor_asmVarCopyForPreview = timelineViewerState.animationStateMachineVariables;
+
+								// Change the state
+								timelineViewerState.editor_isAnimationPlaying = false;
+								timelineViewerState.editor_isASMPreviewMode = true;
 							}
-
-							//
-							// Simulate the ASM with the relevant information
-							// and the copy of the variables
-							//
-							if (timelineViewerState.editor_isASMPreviewMode && animatorForModelForTimelineViewer != nullptr)
-							{
-								const size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
-
-								// Check all other nodes for transition conditions and go to the first one fulfilled
-								for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
-								{
-									if (i == currentNode)
-										continue;
-
-									bool tranConditionPasses = true;
-									for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes[i].transitionConditions.size(); j++)
-									{
-										ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[i].transitionConditions[j];
-										
-										// Get Variable Value
-										float compareToValue;
-										bool isCompareCurrentNode = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
-										if (!isCompareCurrentNode)
-										{
-											for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
-											{
-												ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
-												if (asmVariable.varName == tranCondition.varName)
-												{
-													compareToValue = asmVariable.value;
-													break;
-												}
-											}
-										}
-
-										// Compare the values
-										switch (tranCondition.comparisonOperator)
-										{
-										case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
-											if (isCompareCurrentNode)
-												tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName == tranCondition.specialCaseCurrentASMNodeName);
-											else
-												tranConditionPasses &= (compareToValue == tranCondition.compareToValue);
-											break;
-
-										case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
-											if (isCompareCurrentNode)
-												tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName != tranCondition.specialCaseCurrentASMNodeName);
-											else
-												tranConditionPasses &= (compareToValue != tranCondition.compareToValue);
-											break;
-
-										case ASMTransitionCondition::ASMComparisonOperator::LESSER:
-											tranConditionPasses &= (tranCondition.compareToValue < compareToValue);
-											break;
-
-										case ASMTransitionCondition::ASMComparisonOperator::GREATER:
-											tranConditionPasses &= (tranCondition.compareToValue > compareToValue);
-											break;
-
-										case ASMTransitionCondition::ASMComparisonOperator::LEQUAL:
-											tranConditionPasses &= (tranCondition.compareToValue <= compareToValue);
-											break;
-
-										case ASMTransitionCondition::ASMComparisonOperator::GEQUAL:
-											tranConditionPasses &= (tranCondition.compareToValue >= compareToValue);
-											break;
-										
-										default:
-											std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
-											break;
-										}
-
-										if (!tranConditionPasses)
-											break;
-									}
-
-									if (tranConditionPasses)
-									{
-										// Switch to this new node
-										timelineViewerState.editor_previewModeCurrentASMNode = i;
-
-										// Start playing the new animation
-										const ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode];
-										if (asmNode.animationName2.empty())
-										{
-											size_t i = 0;
-											for (auto anai : timelineViewerState.animationNameAndIncluded)
-											{
-												if (!anai.included)
-													continue;
-												if (anai.name == asmNode.animationName1)
-													break;
-												i++;
-											}
-											animatorForModelForTimelineViewer->playAnimation(i);
-										}
-										else
-										{
-											size_t i = 0, j = 0;
-											for (auto anai : timelineViewerState.animationNameAndIncluded)
-											{
-												if (!anai.included)
-													continue;
-												if (anai.name == asmNode.animationName1)
-													break;
-												i++;
-											}
-											for (auto anai : timelineViewerState.animationNameAndIncluded)
-											{
-												if (!anai.included)
-													continue;
-												if (anai.name == asmNode.animationName2)
-													break;
-												j++;
-											}
-											animatorForModelForTimelineViewer->playBlendTree({
-												{ i, 0.0f, "blendVar" },
-												{ j, 1.0f }
-											});
-										}
-
-
-										break;
-									}
-								}
-
-								// Update the animation with the animator
-								if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
-								{
-									float blendVarValue;
-									for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
-									{
-										ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
-										if (asmVariable.varName == timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend)
-										{
-											blendVarValue = asmVariable.value;
-											break;
-										}
-									}
-									animatorForModelForTimelineViewer->setBlendTreeVariable("blendVar", blendVarValue);
-								}
-								animatorForModelForTimelineViewer->animationSpeed = 1.0f;
-								animatorForModelForTimelineViewer->updateAnimation(MainLoop::getInstance().deltaTime);
-
-								//
-								// Report back the current node in preview
-								//
-								ImGui::Text(("Current Node: " + timelineViewerState.animationStateMachineNodes[currentNode].nodeName).c_str());
-
-								//
-								// Edit the copied variables
-								//
-								ImGui::Spacing();
-								if (ImGui::TreeNode("Edit Preview Variables (NOTE: They're just previews)"))
-								{
-									for (size_t i = 0; i < timelineViewerState.editor_asmVarCopyForPreview.size(); i++)
-									{
-										ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[i];
-										switch (asmVariable.variableType)
-										{
-										case ASMVariable::ASMVariableType::BOOL:
-										{
-											bool valueAsBool = (bool)asmVariable.value;
-											ImGui::Checkbox((asmVariable.varName + "##ASM Preview Mode Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
-											asmVariable.value = (float)valueAsBool;
-										}
-										break;
-
-										case ASMVariable::ASMVariableType::INT:
-										{
-											int valueAsInt = (int)asmVariable.value;
-											ImGui::InputInt((asmVariable.varName + "##ASM Preview Mode Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
-											asmVariable.value = (float)valueAsInt;
-										}
-										break;
-
-										case ASMVariable::ASMVariableType::FLOAT:
-										{
-											ImGui::DragFloat((asmVariable.varName + "##ASM Preview Mode Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
-										}
-										break;
-										}
-									}
-
-									ImGui::TreePop();
-								}
-
-								ImGui::Separator();
-							}
+							ImGui::SameLine();
+							ImGui::Text("(THIS WILL DISCARD CHANGES)");
 						}
 						else
 							ImGui::Text("Add ASM Nodes to Enable Preview Mode");
@@ -4917,6 +4735,212 @@ void RenderManager::renderImGuiContents()
 					}
 				}
 			}
+			else if (MainLoop::getInstance().timelineViewerMode && timelineViewerState.editor_isASMPreviewMode)
+			{
+				//
+				// TimelineViewerMode Preview ASM Mode
+				//
+				if (ImGui::Button("Exit Preview ASM Mode"))
+				{
+					// Reimport the model now (for ASM Preview Mode)
+					routinePurgeTimelineViewerModel();
+					nlohmann::json j = FileLoading::loadJsonFile(modelMetadataFname);
+					routineCreateAndInsertInTheModel(modelMetadataFname.c_str(), j, true);
+
+					// Change the state
+					timelineViewerState.editor_isASMPreviewMode = false;
+				}
+
+				//
+				// Simulate the ASM with the relevant information
+				// and the copy of the variables
+				//
+				if (timelineViewerState.editor_isASMPreviewMode && animatorForModelForTimelineViewer != nullptr)
+				{
+					const size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
+
+					// Check all other nodes for transition conditions and go to the first one fulfilled
+					for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+					{
+						if (i == currentNode)
+							continue;
+
+						bool tranConditionPasses = true;
+						for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes[i].transitionConditions.size(); j++)
+						{
+							ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[i].transitionConditions[j];
+							
+							// Get Variable Value
+							float compareToValue;
+							bool isCompareCurrentNode = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
+							if (!isCompareCurrentNode)
+							{
+								for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+								{
+									ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+									if (asmVariable.varName == tranCondition.varName)
+									{
+										compareToValue = asmVariable.value;
+										break;
+									}
+								}
+							}
+
+							// Compare the values
+							switch (tranCondition.comparisonOperator)
+							{
+							case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
+								if (isCompareCurrentNode)
+									tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName == tranCondition.specialCaseCurrentASMNodeName);
+								else
+									tranConditionPasses &= (compareToValue == tranCondition.compareToValue);
+								break;
+
+							case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
+								if (isCompareCurrentNode)
+									tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName != tranCondition.specialCaseCurrentASMNodeName);
+								else
+									tranConditionPasses &= (compareToValue != tranCondition.compareToValue);
+								break;
+
+							case ASMTransitionCondition::ASMComparisonOperator::LESSER:
+								tranConditionPasses &= (compareToValue < tranCondition.compareToValue);
+								break;
+
+							case ASMTransitionCondition::ASMComparisonOperator::GREATER:
+								tranConditionPasses &= (compareToValue > tranCondition.compareToValue);
+								break;
+
+							case ASMTransitionCondition::ASMComparisonOperator::LEQUAL:
+								tranConditionPasses &= (compareToValue <= tranCondition.compareToValue);
+								break;
+
+							case ASMTransitionCondition::ASMComparisonOperator::GEQUAL:
+								tranConditionPasses &= (compareToValue >= tranCondition.compareToValue);
+								break;
+							
+							default:
+								std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
+								break;
+							}
+
+							if (!tranConditionPasses)
+								break;
+						}
+
+						if (tranConditionPasses)
+						{
+							// Switch to this new node
+							timelineViewerState.editor_previewModeCurrentASMNode = i;
+
+							// Start playing the new animation
+							const ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode];
+							if (asmNode.animationName2.empty())
+							{
+								size_t i = 0;
+								for (auto anai : timelineViewerState.animationNameAndIncluded)
+								{
+									if (!anai.included)
+										continue;
+									if (anai.name == asmNode.animationName1)
+										break;
+									i++;
+								}
+								animatorForModelForTimelineViewer->playAnimation(i, 0.0f, true, true);
+							}
+							else
+							{
+								size_t i = 0, j = 0;
+								for (auto anai : timelineViewerState.animationNameAndIncluded)
+								{
+									if (!anai.included)
+										continue;
+									if (anai.name == asmNode.animationName1)
+										break;
+									i++;
+								}
+								for (auto anai : timelineViewerState.animationNameAndIncluded)
+								{
+									if (!anai.included)
+										continue;
+									if (anai.name == asmNode.animationName2)
+										break;
+									j++;
+								}
+								animatorForModelForTimelineViewer->playBlendTree({
+									{ i, 0.0f, "blendVar" },
+									{ j, 1.0f }
+								});
+							}
+
+							break;
+						}
+					}
+
+					// Update the animation with the animator
+					if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
+					{
+						float blendVarValue;
+						for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+						{
+							ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+							if (asmVariable.varName == timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend)
+							{
+								blendVarValue = asmVariable.value;
+								break;
+							}
+						}
+						animatorForModelForTimelineViewer->setBlendTreeVariable("blendVar", blendVarValue);
+					}
+					animatorForModelForTimelineViewer->animationSpeed = 1.0f;
+					animatorForModelForTimelineViewer->updateAnimation(MainLoop::getInstance().deltaTime);
+
+					//
+					// Report back the current node in preview
+					//
+					ImGui::Text(("Current Node: " + timelineViewerState.animationStateMachineNodes[currentNode].nodeName).c_str());
+
+					//
+					// Edit the copied variables
+					//
+					ImGui::Spacing();
+					if (ImGui::TreeNode("Edit Preview Variables (NOTE: These do not change the saved values)"))
+					{
+						for (size_t i = 0; i < timelineViewerState.editor_asmVarCopyForPreview.size(); i++)
+						{
+							ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[i];
+							switch (asmVariable.variableType)
+							{
+							case ASMVariable::ASMVariableType::BOOL:
+							{
+								bool valueAsBool = (bool)asmVariable.value;
+								ImGui::Checkbox((asmVariable.varName + "##ASM Preview Mode Var Value As Bool" + std::to_string(i)).c_str(), &valueAsBool);
+								asmVariable.value = (float)valueAsBool;
+							}
+							break;
+
+							case ASMVariable::ASMVariableType::INT:
+							{
+								int valueAsInt = (int)asmVariable.value;
+								ImGui::InputInt((asmVariable.varName + "##ASM Preview Mode Var Value As Int" + std::to_string(i)).c_str(), &valueAsInt);
+								asmVariable.value = (float)valueAsInt;
+							}
+							break;
+
+							case ASMVariable::ASMVariableType::FLOAT:
+							{
+								ImGui::DragFloat((asmVariable.varName + "##ASM Preview Mode Var Value As Float" + std::to_string(i)).c_str(), &asmVariable.value, 0.1f);
+							}
+							break;
+							}
+						}
+
+						ImGui::TreePop();
+					}
+
+					ImGui::Separator();
+				}
+			}
 			else
 			{
 				//
@@ -4933,7 +4957,7 @@ void RenderManager::renderImGuiContents()
 
 						if (j.contains("model_path"))
 						{
-							routineCreateAndInsertInTheModel(path, j);
+							routineCreateAndInsertInTheModel(path, j, true);
 							const static glm::vec3 camPos = { -4.132358074188232, 4.923120498657227, 9.876399993896484 };
 							MainLoop::getInstance().camera.position = camPos;
 							MainLoop::getInstance().camera.orientation = glm::normalize(-camPos + glm::vec3(0.0f, 1.5f, 0.0f));
@@ -4969,7 +4993,7 @@ void RenderManager::renderImGuiContents()
 							j["model_path"] = std::filesystem::relative(modelPath).u8string();
 							FileLoading::saveJsonFile(path, j);
 
-							routineCreateAndInsertInTheModel(path, j);
+							routineCreateAndInsertInTheModel(path, j, true);
 							MainLoop::getInstance().timelineViewerMode = true;
 						}
 						else
