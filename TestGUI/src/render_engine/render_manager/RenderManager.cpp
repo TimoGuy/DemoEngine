@@ -4825,7 +4825,7 @@ void RenderManager::renderImGuiContents()
 							}
 
 							if (!tranConditionPasses)
-								break;
+								break; nocheckin
 						}
 
 						if (tranConditionPasses)
