@@ -505,6 +505,8 @@ void PlayerCharacter::refreshResources()
 				}
 		);
 
+		animatorStateMachine = AnimatorStateMachine("slime_girl", &animator);
+
 		//((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
 		//((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
 		//((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
@@ -1257,7 +1259,7 @@ float speedAnimRunningMult = 1.3f;			// @Debug
 float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
 {
-	constexpr int IDLE_ANIM					= 0;
+	/*constexpr int IDLE_ANIM					= 0;
 	constexpr int WALKING_ANIM				= 1;
 	constexpr int RUNNING_ANIM				= 2;
 	constexpr int JUMP_ANIM					= 3;
@@ -1599,7 +1601,17 @@ void PlayerCharacter::processAnimation()
 		animator.animationSpeed = 1.0f;
 	}
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
-	//std::cout << animator.animationSpeed << std::endl;
+	//std::cout << animator.animationSpeed << std::endl;*/
+
+	physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+	velo.y = 0.0f;
+	float flatSpeed = velo.magnitude();
+	animatorStateMachine.setVariable("blendWalkRun", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
+	animatorStateMachine.setVariable("isMoving", flatSpeed > 0.1f);
+	animatorStateMachine.setVariable("isGrounded", ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded());
+	animatorStateMachine.setVariable("isJumping", ((PlayerPhysics*)getPhysicsComponent())->velocity.y > 0.0f);
+	animatorStateMachine.setVariable("isLedgeGrab", playerState == PlayerState::LEDGE_GRAB_HUMAN);
+	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)

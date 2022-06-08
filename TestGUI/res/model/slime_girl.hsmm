@@ -121,7 +121,7 @@
             },
             {
                 "animation_blend_boundary_1": 0.0,
-                "animation_blend_boundary_2": 10.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "blendWalkRun",
                 "animation_name_1": "Walking",
                 "animation_name_2": "Running",

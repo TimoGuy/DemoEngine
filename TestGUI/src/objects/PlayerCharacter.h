@@ -3,6 +3,7 @@
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../render_engine/model/animation/Animator.h"
+#include "../render_engine/model/animation/AnimatorStateMachine.h"
 #include "../render_engine/camera/Camera.h"
 
 typedef unsigned int GLuint;
@@ -155,6 +156,7 @@ public:
 	//
 	Model* model;
 	Animator animator;
+	AnimatorStateMachine animatorStateMachine;
 
 	Model* bottleModel;
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
