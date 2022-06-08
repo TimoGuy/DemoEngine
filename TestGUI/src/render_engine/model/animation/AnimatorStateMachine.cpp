@@ -114,24 +114,34 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 					switch (comparisonOperator)
 					{
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::EQUAL:
-						for (size_t i = relevantNodes.size() - 1; i >= 0; i--)
+					{
+						auto itr = relevantNodes.cbegin();
+						while (itr != relevantNodes.cend())
 						{
-							if (relevantNodes[i] != relevantNodesNewRule)		// @NOTE: only *leave* those that are equal, hence the !=
+							if (*itr != relevantNodesNewRule)		// @NOTE: only *leave* those that are equal, hence the !=
 							{
-								relevantNodes.erase(relevantNodes.begin() + i);
+								itr = relevantNodes.erase(itr);
 							}
+							else
+								itr++;
 						}
-						break;
+					}
+					break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::NEQUAL:
-						for (size_t i = relevantNodes.size() - 1; i >= 0; i--)
+					{
+						auto itr = relevantNodes.cbegin();
+						while (itr != relevantNodes.cend())
 						{
-							if (relevantNodes[i] == relevantNodesNewRule)
+							if (*itr == relevantNodesNewRule)
 							{
-								relevantNodes.erase(relevantNodes.begin() + i);
+								itr = relevantNodes.erase(itr);
 							}
+							else
+								itr++;
 						}
-						break;
+					}
+					break;
 					}
 				}
 				else

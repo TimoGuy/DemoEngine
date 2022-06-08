@@ -2677,6 +2677,22 @@ void RenderManager::renderScene()
 	}
 
 	imguizmoIsUsingPrevious = ImGuizmo::IsUsing();
+
+	//
+	// @DEBUG: Draw grid for timelineviewermode
+	//
+	if (MainLoop::getInstance().timelineViewerMode)
+	{
+		glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), { 100, 100, 100 });
+		constexpr float divisor = 4.0f;
+
+		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
+		gridMaterial->setColor(glm::vec3(0.1, 0.1, 0.1) * 5);
+		gridMaterial->applyTextureUniforms();
+		gridMaterial->getShader()->setMat4("modelMatrix", xRotate * scale);
+		renderQuad();
+	}
 #endif
 
 	//
