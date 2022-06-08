@@ -27,7 +27,7 @@
 #define V_SYNC 1
 
 
-void createWindow(const char* appName);f
+void createWindow(const char* appName);
 void setupViewPort();
 void setupPhysx();
 
