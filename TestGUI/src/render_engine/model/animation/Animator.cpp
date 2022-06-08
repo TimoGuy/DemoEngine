@@ -454,12 +454,43 @@ void Animator::createNodeTransformCache(AssimpNodeData* node, Animation* animati
 
 bool Animator::isAnimationFinished(size_t animationIndex, float deltaTime)
 {
-	if (currentAnimationIndex != animationIndex)
-		return false;
+	// @NOTE: @TODO: I really hate this animation system... I want better Blend Tree support and Better isAnimationFinished Support
+	if (currentUseBTN)
+	{
+		size_t longestDurationBTNIndex = 0;
+		float longestDurationBTNValue = -1.0f;
+		bool match = false;
+		for (size_t i = 0; i < currentBTN.size(); i++)
+		{
+			if (!match && currentBTN[i].animationIndex == animationIndex)
+				match = true;
 
-	float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime * animationSpeed;
-	float duration = getCurrentAnimation()->getDuration();
-	return time >= duration;
+			if (currentBTN[i].INTERNALnodeDuration > longestDurationBTNValue)
+			{
+				longestDurationBTNIndex = i;
+				longestDurationBTNValue = currentBTN[i].INTERNALnodeDuration;
+			}
+		}
+
+		if (!match)
+			return false;
+
+		float time = currentBTN[longestDurationBTNIndex].INTERNALcurrentNodeTime + currentBTNAnims[longestDurationBTNIndex]->getTicksPerSecond() * deltaTime * animationSpeed;
+		float duration = currentBTN[longestDurationBTNIndex].INTERNALnodeDuration;
+		return time >= duration;
+	}
+	else
+	{
+		if (currentAnimationIndex != animationIndex)
+			return false;
+
+		float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime * animationSpeed;
+		float duration = getCurrentAnimation()->getDuration();
+		return time >= duration;
+	}
+
+	std::cout << "ANIMATOR: Possible Deadlock????" << std::endl;
+	return true;	// Just return true with a possible deadlock?
 }
 
 void Animator::invalidateCache(AssimpNodeData* node)

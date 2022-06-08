@@ -16,6 +16,11 @@
                 "animation_name_1": "Idle",
                 "animation_name_2": "",
                 "node_name": "waterFull",
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "loop_animation": true,
+                "dont_transition_until_animation_finished": false,
+                "transition_time": 0.0,
                 "node_transition_conditions": [
                     {
                         "compare_to_value": 1.0,
@@ -29,6 +34,11 @@
                 "animation_name_1": "No_Water",
                 "animation_name_2": "",
                 "node_name": "waterEmpty",
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "loop_animation": true,
+                "dont_transition_until_animation_finished": false,
+                "transition_time": 0.0,
                 "node_transition_conditions": [
                     {
                         "compare_to_value": 0.0,

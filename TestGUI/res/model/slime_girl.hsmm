@@ -80,9 +80,13 @@
     "animation_state_machine": {
         "asm_nodes": [
             {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
                 "animation_name_1": "Idle",
                 "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": true,
                 "node_name": "Idle",
                 "node_transition_conditions": [
                     {
@@ -94,13 +98,28 @@
                         "comparison_operator": 1,
                         "current_asm_node_name_ref": "Jumping",
                         "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                    },
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isGrounded"
+                    },
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isLedgeGrab"
                     }
-                ]
+                ],
+                "transition_time": 0.10000000149011612
             },
             {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "blendWalkRun",
                 "animation_name_1": "Walking",
                 "animation_name_2": "Running",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": true,
                 "node_name": "Moving",
                 "node_transition_conditions": [
                     {
@@ -112,31 +131,56 @@
                         "comparison_operator": 1,
                         "current_asm_node_name_ref": "Jumping",
                         "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                    }
-                ]
-            },
-            {
-                "animation_blend_variable": "isMoving",
-                "animation_name_1": "Jumping_From_Idle",
-                "animation_name_2": "Jumping_From_Run",
-                "node_name": "Jumping",
-                "node_transition_conditions": [
+                    },
                     {
-                        "compare_to_value": 0.0,
+                        "compare_to_value": 1.0,
                         "comparison_operator": 0,
                         "var_name": "isGrounded"
                     },
                     {
                         "compare_to_value": 0.0,
-                        "comparison_operator": 3,
-                        "var_name": "velocity.y"
+                        "comparison_operator": 0,
+                        "var_name": "isLedgeGrab"
+                    },
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isJumping"
                     }
-                ]
+                ],
+                "transition_time": 0.10000000149011612
             },
             {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "isMoving",
+                "animation_name_1": "Jumping_From_Idle",
+                "animation_name_2": "Jumping_From_Run",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": false,
+                "node_name": "Jumping",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isJumping"
+                    },
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isLedgeGrab"
+                    }
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "isMoving",
                 "animation_name_1": "Land_From_Jumping_From_Idle",
                 "animation_name_2": "Land_From_Jumping_From_Run",
+                "dont_transition_until_animation_finished": true,
+                "loop_animation": false,
                 "node_name": "Landing",
                 "node_transition_conditions": [
                     {
@@ -149,7 +193,49 @@
                         "comparison_operator": 0,
                         "var_name": "isGrounded"
                     }
-                ]
+                ],
+                "transition_time": 0.02500000037252903
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Wall_Hang",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": false,
+                "node_name": "LedgeGrab",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 1.0,
+                        "comparison_operator": 0,
+                        "var_name": "isLedgeGrab"
+                    }
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": true,
+                "node_name": "Falling",
+                "node_transition_conditions": [
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isGrounded"
+                    },
+                    {
+                        "compare_to_value": 0.0,
+                        "comparison_operator": 0,
+                        "var_name": "isJumping"
+                    }
+                ],
+                "transition_time": 0.0
             }
         ],
         "asm_start_node_index": 0,
@@ -170,9 +256,14 @@
                 "variable_type": 0
             },
             {
-                "value": 1.0,
-                "var_name": "velocity.y",
-                "variable_type": 2
+                "value": 0.0,
+                "var_name": "isLedgeGrab",
+                "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "isJumping",
+                "variable_type": 0
             }
         ]
     },

@@ -112,9 +112,14 @@ struct ASMNode
 	std::string nodeName;			// @NOTE: this is not used as the index. Use the index of animationStateMachineNodes;
 	std::string animationName1;		// @NOTE: This should get saved as an index to the animation, not the name!
 	std::string animationName2;		// @NOTE: This should get saved as an index to the animation, not the name!
-	std::string varFloatBlend;		// The float var that should keep track of blending between animationName1 and animationName2 [0-1]
+	std::string varFloatBlend;		// The float var that should keep track of blending between animationName1 and animationName2
+	float animationBlend1 = 0.0f;
+	float animationBlend2 = 1.0f;
+	bool loopAnimation = true;
+	bool doNotTransitionUntilAnimationFinished = false;
+	float transitionTime = 0.0f;
 
-	std::vector<ASMTransitionCondition> transitionConditions;	// @NOTE: all these conditions must be true to transition. Also, it's to transition TO HERE.  -Timo
+	std::vector<ASMTransitionCondition> transitionConditions;	// @NOTE: all these conditions must be true to transition. Also, it's to transition TO HERE. (aka from somewhere else) (aka ANY STATE -> HERE)  -Timo
 };
 struct TimelineViewerState
 {
@@ -138,6 +143,7 @@ struct TimelineViewerState
 	bool editor_isASMPreviewMode = false;
 	std::vector<ASMVariable> editor_asmVarCopyForPreview;
 	size_t editor_previewModeCurrentASMNode;
+	bool editor_ASMPreviewModeIsPaused = false;
 } timelineViewerState;
 #endif
 
@@ -2513,19 +2519,19 @@ void RenderManager::renderScene()
 		renderText(tr);
 	}
 
-	//
-	// @TEMP: @REFACTOR: try and render a CLOUD!!@!
-	//
-	static Shader* cloudShader = (Shader*)Resources::getResource("shader;cloud_billboard");
-	static Texture* posVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestPos");
-	static Texture* negVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestNeg");
-	cloudShader->use();
-	cloudShader->setMat4("modelMatrix", glm::translate(glm::mat4(1.0f), glm::vec3(0, 1, 0) - MainLoop::getInstance().camera.position) * glm::inverse(cameraInfo.view));
-	cloudShader->setVec3("mainLightDirectionVS", glm::mat3(cameraInfo.view) * skyboxParams.sunOrientation);
-	cloudShader->setVec3("mainLightColor", sunColorForClouds);
-	cloudShader->setSampler("posVolumeTexture", posVolumeTexture->getHandle());
-	cloudShader->setSampler("negVolumeTexture", negVolumeTexture->getHandle());
-	renderQuad();
+	//////////
+	////////// @TEMP: @REFACTOR: try and render a CLOUD!!@!
+	//////////
+	////////static Shader* cloudShader = (Shader*)Resources::getResource("shader;cloud_billboard");
+	////////static Texture* posVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestPos");
+	////////static Texture* negVolumeTexture = (Texture*)Resources::getResource("texture;cloudTestNeg");
+	////////cloudShader->use();
+	////////cloudShader->setMat4("modelMatrix", glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0) - MainLoop::getInstance().camera.position) * glm::inverse(cameraInfo.view));
+	////////cloudShader->setVec3("mainLightDirectionVS", glm::mat3(cameraInfo.view) * skyboxParams.sunOrientation);
+	////////cloudShader->setVec3("mainLightColor", sunColorForClouds);
+	////////cloudShader->setSampler("posVolumeTexture", posVolumeTexture->getHandle());
+	////////cloudShader->setSampler("negVolumeTexture", negVolumeTexture->getHandle());
+	////////renderQuad();
 
 	//
 	// TRANSPARENT RENDER QUEUE
@@ -3017,6 +3023,11 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 				asmNode.animationName1 = asmNode_j["animation_name_1"];
 				asmNode.animationName2 = asmNode_j["animation_name_2"];
 				asmNode.varFloatBlend = asmNode_j["animation_blend_variable"];		// Yes, this is supposed to be a string
+				asmNode.animationBlend1 = asmNode_j["animation_blend_boundary_1"];
+				asmNode.animationBlend2 = asmNode_j["animation_blend_boundary_2"];
+				asmNode.loopAnimation = asmNode_j["loop_animation"];
+				asmNode.doNotTransitionUntilAnimationFinished = asmNode_j["dont_transition_until_animation_finished"];
+				asmNode.transitionTime = asmNode_j["transition_time"];
 				
 				if (asmNode_j.contains("node_transition_conditions"))
 				{
@@ -3058,7 +3069,7 @@ void routinePlayCurrentASMAnimation()
 				break;
 			i++;
 		}
-		animatorForModelForTimelineViewer->playAnimation(i, 0.0f, true);
+		animatorForModelForTimelineViewer->playAnimation(i, asmNode.transitionTime, asmNode.loopAnimation);
 	}
 	else
 	{
@@ -3080,9 +3091,12 @@ void routinePlayCurrentASMAnimation()
 			j++;
 		}
 		animatorForModelForTimelineViewer->playBlendTree({
-			{ i, 0.0f, "blendVar" },
-			{ j, 1.0f }
-		});
+				{ i, 0.0f, "blendVar" },
+				{ j, 1.0f }
+			},
+			asmNode.transitionTime,
+			asmNode.loopAnimation
+		);
 	}
 }
 
@@ -3899,6 +3913,11 @@ void RenderManager::renderImGuiContents()
 							asmNode_j["animation_name_1"] = asmNode.animationName1;
 							asmNode_j["animation_name_2"] = asmNode.animationName2;
 							asmNode_j["animation_blend_variable"] = asmNode.varFloatBlend;
+							asmNode_j["animation_blend_boundary_1"] = asmNode.animationBlend1;
+							asmNode_j["animation_blend_boundary_2"] = asmNode.animationBlend2;
+							asmNode_j["loop_animation"] = asmNode.loopAnimation;
+							asmNode_j["dont_transition_until_animation_finished"] = asmNode.doNotTransitionUntilAnimationFinished;
+							asmNode_j["transition_time"] = asmNode.transitionTime;
 
 							nlohmann::json transitionConditions_j = nlohmann::json::array();
 							for (size_t j = 0; j < asmNode.transitionConditions.size(); j++)
@@ -4583,13 +4602,21 @@ void RenderManager::renderImGuiContents()
 
 									ImGui::EndCombo();
 								}
+
+								// Choose blendtree float boundaries (Default is 0-1)
+								saveAndApplyChangesFlag |= ImGui::DragFloat("Blendtree Variable Bound 1", &asmNode.animationBlend1, 0.1f);
+								saveAndApplyChangesFlag |= ImGui::DragFloat("Blendtree Variable Bound 2", &asmNode.animationBlend2, 0.1f);
 							}
 							else
 								asmNode.varFloatBlend = "";
-
+							
+							saveAndApplyChangesFlag |= ImGui::Checkbox("Loop Animation##ASM Node Prop", &asmNode.loopAnimation);
+							saveAndApplyChangesFlag |= ImGui::Checkbox("Don't Transition Until Animation is Finished##ASM Node Prop", &asmNode.doNotTransitionUntilAnimationFinished);
+							saveAndApplyChangesFlag |= ImGui::DragFloat("Animation Transition Time##ASM Node Prop", &asmNode.transitionTime);
 
 							if (showASMChangeNodeNameAlreadyExistsError)
 								ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Name already exists");
+
 
 
 							//
@@ -4805,109 +4832,135 @@ void RenderManager::renderImGuiContents()
 				{
 					const size_t& currentNode = timelineViewerState.editor_previewModeCurrentASMNode;
 
-					// Check all other nodes for transition conditions and go to the first one fulfilled
-					for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+					if (!timelineViewerState.editor_ASMPreviewModeIsPaused)
 					{
-						if (i == currentNode)
-							continue;
-
-						bool tranConditionPasses = true;
-						for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes[i].transitionConditions.size(); j++)
+						bool checkTransitionConditions = true;
+						if (timelineViewerState.animationStateMachineNodes[currentNode].doNotTransitionUntilAnimationFinished)
 						{
-							ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[i].transitionConditions[j];
-							
-							// Get Variable Value
-							float compareToValue;
-							bool isCompareCurrentNode = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
-							if (!isCompareCurrentNode)
+							// @NOTE: With blend trees too, only animationName1 is used for isAnimationFinished()
+							size_t i = 0;
+							for (auto anai : timelineViewerState.animationNameAndIncluded)
 							{
-								for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+								if (!anai.included)
+									continue;
+								if (anai.name == timelineViewerState.animationStateMachineNodes[currentNode].animationName1)
+									break;
+								i++;
+							}
+							checkTransitionConditions = animatorForModelForTimelineViewer->isAnimationFinished(i, MainLoop::getInstance().deltaTime);
+						}
+
+						if (checkTransitionConditions)
+						{
+							// Check all other nodes for transition conditions and go to the first one fulfilled
+							for (size_t i = 0; i < timelineViewerState.animationStateMachineNodes.size(); i++)
+							{
+								if (i == currentNode)
+									continue;
+
+								bool tranConditionPasses = true;
+								for (size_t j = 0; j < timelineViewerState.animationStateMachineNodes[i].transitionConditions.size(); j++)
 								{
-									ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
-									if (asmVariable.varName == tranCondition.varName)
+									ASMTransitionCondition& tranCondition = timelineViewerState.animationStateMachineNodes[i].transitionConditions[j];
+									
+									// Get Variable Value
+									float compareToValue;
+									bool isCompareCurrentNode = (tranCondition.varName == ASMTransitionCondition::specialCaseKey);
+									if (!isCompareCurrentNode)
 									{
-										compareToValue = asmVariable.value;
+										for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
+										{
+											ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+											if (asmVariable.varName == tranCondition.varName)
+											{
+												compareToValue = asmVariable.value;
+												break;
+											}
+										}
+									}
+
+									// Compare the values
+									switch (tranCondition.comparisonOperator)
+									{
+									case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
+										if (isCompareCurrentNode)
+											tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName == tranCondition.specialCaseCurrentASMNodeName);
+										else
+											tranConditionPasses &= (compareToValue == tranCondition.compareToValue);
+										break;
+
+									case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
+										if (isCompareCurrentNode)
+											tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName != tranCondition.specialCaseCurrentASMNodeName);
+										else
+											tranConditionPasses &= (compareToValue != tranCondition.compareToValue);
+										break;
+
+									case ASMTransitionCondition::ASMComparisonOperator::LESSER:
+										tranConditionPasses &= (compareToValue < tranCondition.compareToValue);
+										break;
+
+									case ASMTransitionCondition::ASMComparisonOperator::GREATER:
+										tranConditionPasses &= (compareToValue > tranCondition.compareToValue);
+										break;
+
+									case ASMTransitionCondition::ASMComparisonOperator::LEQUAL:
+										tranConditionPasses &= (compareToValue <= tranCondition.compareToValue);
+										break;
+
+									case ASMTransitionCondition::ASMComparisonOperator::GEQUAL:
+										tranConditionPasses &= (compareToValue >= tranCondition.compareToValue);
+										break;
+									
+									default:
+										std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
 										break;
 									}
+
+									if (!tranConditionPasses)
+										break;
+								}
+
+								if (tranConditionPasses)
+								{
+									// Switch to this new node
+									timelineViewerState.editor_previewModeCurrentASMNode = i;
+									if (timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].animationName1.empty())
+										std::cout << "ASM: ERROR: animationName1 is empty" << std::endl;
+									else
+										// Start playing the new animation
+										routinePlayCurrentASMAnimation();
+
+									break;
 								}
 							}
-
-							// Compare the values
-							switch (tranCondition.comparisonOperator)
-							{
-							case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
-								if (isCompareCurrentNode)
-									tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName == tranCondition.specialCaseCurrentASMNodeName);
-								else
-									tranConditionPasses &= (compareToValue == tranCondition.compareToValue);
-								break;
-
-							case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
-								if (isCompareCurrentNode)
-									tranConditionPasses &= (timelineViewerState.animationStateMachineNodes[currentNode].nodeName != tranCondition.specialCaseCurrentASMNodeName);
-								else
-									tranConditionPasses &= (compareToValue != tranCondition.compareToValue);
-								break;
-
-							case ASMTransitionCondition::ASMComparisonOperator::LESSER:
-								tranConditionPasses &= (compareToValue < tranCondition.compareToValue);
-								break;
-
-							case ASMTransitionCondition::ASMComparisonOperator::GREATER:
-								tranConditionPasses &= (compareToValue > tranCondition.compareToValue);
-								break;
-
-							case ASMTransitionCondition::ASMComparisonOperator::LEQUAL:
-								tranConditionPasses &= (compareToValue <= tranCondition.compareToValue);
-								break;
-
-							case ASMTransitionCondition::ASMComparisonOperator::GEQUAL:
-								tranConditionPasses &= (compareToValue >= tranCondition.compareToValue);
-								break;
-							
-							default:
-								std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
-								break;
-							}
-
-							if (!tranConditionPasses)
-								break;
 						}
 
-						if (tranConditionPasses)
+						// Update the animation with the animator
+						if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
 						{
-							// Switch to this new node
-							timelineViewerState.editor_previewModeCurrentASMNode = i;
-
-							// Start playing the new animation
-							routinePlayCurrentASMAnimation();
-
-							break;
-						}
-					}
-
-					// Update the animation with the animator
-					if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
-					{
-						float blendVarValue;
-						for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
-						{
-							ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
-							if (asmVariable.varName == timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend)
+							float blendVarValue;
+							for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
 							{
-								blendVarValue = asmVariable.value;
-								break;
+								ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
+								if (asmVariable.varName == timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend)
+								{
+									blendVarValue = asmVariable.value;
+									break;
+								}
 							}
+							animatorForModelForTimelineViewer->setBlendTreeVariable("blendVar", blendVarValue);
 						}
-						animatorForModelForTimelineViewer->setBlendTreeVariable("blendVar", blendVarValue);
+						animatorForModelForTimelineViewer->animationSpeed = 1.0f;
+						animatorForModelForTimelineViewer->updateAnimation(MainLoop::getInstance().deltaTime);
 					}
-					animatorForModelForTimelineViewer->animationSpeed = 1.0f;
-					animatorForModelForTimelineViewer->updateAnimation(MainLoop::getInstance().deltaTime);
 
 					//
 					// Report back the current node in preview
 					//
 					ImGui::Text(("Current Node: " + timelineViewerState.animationStateMachineNodes[currentNode].nodeName).c_str());
+					if (ImGui::Button(timelineViewerState.editor_ASMPreviewModeIsPaused ? "Click to Resume" : "Click to Pause"))
+						timelineViewerState.editor_ASMPreviewModeIsPaused = !timelineViewerState.editor_ASMPreviewModeIsPaused;
 
 					//
 					// Edit the copied variables
