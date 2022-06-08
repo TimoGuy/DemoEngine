@@ -12,42 +12,47 @@
     "animation_state_machine": {
         "asm_nodes": [
             {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
                 "animation_name_1": "Idle",
                 "animation_name_2": "",
-                "node_name": "waterFull",
-                "animation_blend_boundary_1": 0.0,
-                "animation_blend_boundary_2": 1.0,
-                "loop_animation": true,
                 "dont_transition_until_animation_finished": false,
-                "transition_time": 0.0,
-                "node_transition_conditions": [
-                    {
-                        "compare_to_value": 1.0,
-                        "comparison_operator": 0,
-                        "var_name": "isFull"
-                    }
-                ]
+                "loop_animation": true,
+                "node_name": "waterFull",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isFull"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
             },
             {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
                 "animation_name_1": "No_Water",
                 "animation_name_2": "",
-                "node_name": "waterEmpty",
-                "animation_blend_boundary_1": 0.0,
-                "animation_blend_boundary_2": 1.0,
-                "loop_animation": true,
                 "dont_transition_until_animation_finished": false,
-                "transition_time": 0.0,
-                "node_transition_conditions": [
-                    {
-                        "compare_to_value": 0.0,
-                        "comparison_operator": 0,
-                        "var_name": "isFull"
-                    }
-                ]
+                "loop_animation": true,
+                "node_name": "waterEmpty",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "isFull"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
             }
         ],
+        "asm_start_node_index": 0,
         "asm_variables": [
             {
                 "value": 0.0,
