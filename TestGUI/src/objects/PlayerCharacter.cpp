@@ -1477,16 +1477,16 @@ void PlayerCharacter::processAnimation()
 		case 0:
 			// Idle
 			if (isSpinnySpinny)
-				animator.playAnimation(weaponDrawnSpinAccumulated > 0.0f ? IDLE_SPINNY_LEFT_ANIM : IDLE_SPINNY_RIGHT_ANIM, 6.0f, false, true);
+				animator.playAnimation(weaponDrawnSpinAccumulated > 0.0f ? IDLE_SPINNY_LEFT_ANIM : IDLE_SPINNY_RIGHT_ANIM, 6.0f, false);
 			else
-				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true);
 
 			break;
 
 		case 1:
 			// Move
 			if (isSpinnySpinny)
-				animator.playAnimation(IDLE_SPINNY_LEFT_ANIM, 6.0f, false, true);
+				animator.playAnimation(IDLE_SPINNY_LEFT_ANIM, 6.0f, false);
 			else
 				animator.playBlendTree(
 					{
@@ -1500,50 +1500,50 @@ void PlayerCharacter::processAnimation()
 		case 2:
 			// Jump
 			if (human_numJumpsCurrent > 1)
-				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false, true);		// Midair jump
+				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false);		// Midair jump
 			else
-				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
+				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false);
 			break;
 
 		case 3:
 			// Land
-			animator.playAnimation(LAND_ANIM + (int)isMoving, 0.0f, false, true);
+			animator.playAnimation(LAND_ANIM + (int)isMoving, 0.0f, false);
 			break;
 
 		case 4:
 			// Draw water
-			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false, true);
+			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false);
 			break;
 
 		case 5:
 			// Drink water
-			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false, true);
+			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false);
 			break;
 
 		case 6:
 			// Pick up bottle
-			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false, true);
+			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false);
 			break;
 
 		case 7:
 			// Write in journal
-			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false, true);
+			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false);
 			break;
 
 		case 8:
 			// @SPECIAL_SKILL: @HUMAN: Wall Climb
-			animator.playAnimation(HUMAN_SPEC_WALL_CLIMB, 0.0f, false, true);
+			animator.playAnimation(HUMAN_SPEC_WALL_CLIMB, 0.0f, false);
 			break;
 
 		case 9:
 			// @SPECIAL_SKILL: @HUMAN: Ledge grab
-			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false, true);
+			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false);
 			break;
 
 		case 10:
 			if (isSpinnySpinny)
 			{
-				animator.playAnimation(SPINNY_SPINNY_ANIM, 6.0f, false, true);
+				animator.playAnimation(SPINNY_SPINNY_ANIM, 6.0f, false);
 				break;		// Break early if figured out that I'm a spinny spinny!
 			}	
 
@@ -1561,19 +1561,19 @@ void PlayerCharacter::processAnimation()
 			//				in any way, but we shall see eh!  -Timo
 			
 			//if (weaponDrawnStyle == 1)
-				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true, true);
+				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true);
 			//else if (weaponDrawnStyle == 2 || weaponDrawnStyle == 3)
-			//	animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true, true);
+			//	animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true);
 			break;
 
 		case 11:
 			// Unleash the weapon stance
 			if (weaponDrawnStyle == 1)
-				animator.playAnimation(ATTACK_LIGHT_HORIZONTAL, 6.0f, false, true);
+				animator.playAnimation(ATTACK_LIGHT_HORIZONTAL, 6.0f, false);
 			else if (weaponDrawnStyle == 2)
-				animator.playAnimation(ATTACK_LIGHT_VERTICAL, 6.0f, false, true);
+				animator.playAnimation(ATTACK_LIGHT_VERTICAL, 6.0f, false);
 			else if (weaponDrawnStyle == 3)
-				animator.playAnimation(ATTACK_MIDAIR, 3.0f, false, true);
+				animator.playAnimation(ATTACK_MIDAIR, 3.0f, false);
 			break;
 
 		default:

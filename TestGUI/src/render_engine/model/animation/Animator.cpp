@@ -11,7 +11,7 @@
 
 Animator::Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf) : allAnimations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
 {
-	playAnimation(0, 0.0f, true, true);
+	playAnimation(0, 0.0f, true);
 
 	finalBoneMatrices.reserve(100);
 
@@ -208,16 +208,8 @@ void Animator::updateAnimation(float deltaTime)
 }
 
 
-void Animator::playAnimation(size_t animationIndex, float mixTime, bool looping, bool force)
-{		// TODO: fix the forcing. It can be overridden somehow
-	if (!force &&
-		(currentAnimationIndex == (int)animationIndex ||
-			nextAnimationIndex == (int)animationIndex))
-		return;
-	if (!force &&
-		nextAnimation)
-		return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
-
+void Animator::playAnimation(size_t animationIndex, float mixTime, bool looping)
+{
 	assert(animationIndex < allAnimations->size());
 
 	if (mixTime > 0.0f)

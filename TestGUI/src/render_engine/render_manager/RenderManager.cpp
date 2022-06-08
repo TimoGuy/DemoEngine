@@ -3044,6 +3044,49 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 }
 
 
+void routinePlayCurrentASMAnimation()
+{
+	const ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode];
+	if (asmNode.animationName2.empty())
+	{
+		size_t i = 0;
+		for (auto anai : timelineViewerState.animationNameAndIncluded)
+		{
+			if (!anai.included)
+				continue;
+			if (anai.name == asmNode.animationName1)
+				break;
+			i++;
+		}
+		animatorForModelForTimelineViewer->playAnimation(i, 0.0f, true);
+	}
+	else
+	{
+		size_t i = 0, j = 0;
+		for (auto anai : timelineViewerState.animationNameAndIncluded)
+		{
+			if (!anai.included)
+				continue;
+			if (anai.name == asmNode.animationName1)
+				break;
+			i++;
+		}
+		for (auto anai : timelineViewerState.animationNameAndIncluded)
+		{
+			if (!anai.included)
+				continue;
+			if (anai.name == asmNode.animationName2)
+				break;
+			j++;
+		}
+		animatorForModelForTimelineViewer->playBlendTree({
+			{ i, 0.0f, "blendVar" },
+			{ j, 1.0f }
+		});
+	}
+}
+
+
 void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
@@ -4100,7 +4143,7 @@ void RenderManager::renderImGuiContents()
 							if (timelineViewerState.editor_currentlyPlayingAnimation != timelineViewerState.editor_selectedAnimation)
 							{
 								timelineViewerState.editor_currentlyPlayingAnimation = timelineViewerState.editor_selectedAnimation;
-								animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true, true);
+								animatorForModelForTimelineViewer->playAnimation((size_t)timelineViewerState.editor_currentlyPlayingAnimation, 0.0f, true);
 							}
 
 							animatorForModelForTimelineViewer->animationSpeed = 1.0f;		// Prevents any internal animator funny business
@@ -4140,6 +4183,9 @@ void RenderManager::renderImGuiContents()
 								// Change the state
 								timelineViewerState.editor_isAnimationPlaying = false;
 								timelineViewerState.editor_isASMPreviewMode = true;
+
+								// Play the initial animation
+								routinePlayCurrentASMAnimation();
 							}
 							ImGui::SameLine();
 							ImGui::Text("(THIS WILL DISCARD CHANGES)");
@@ -4834,44 +4880,7 @@ void RenderManager::renderImGuiContents()
 							timelineViewerState.editor_previewModeCurrentASMNode = i;
 
 							// Start playing the new animation
-							const ASMNode& asmNode = timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode];
-							if (asmNode.animationName2.empty())
-							{
-								size_t i = 0;
-								for (auto anai : timelineViewerState.animationNameAndIncluded)
-								{
-									if (!anai.included)
-										continue;
-									if (anai.name == asmNode.animationName1)
-										break;
-									i++;
-								}
-								animatorForModelForTimelineViewer->playAnimation(i, 0.0f, true, true);
-							}
-							else
-							{
-								size_t i = 0, j = 0;
-								for (auto anai : timelineViewerState.animationNameAndIncluded)
-								{
-									if (!anai.included)
-										continue;
-									if (anai.name == asmNode.animationName1)
-										break;
-									i++;
-								}
-								for (auto anai : timelineViewerState.animationNameAndIncluded)
-								{
-									if (!anai.included)
-										continue;
-									if (anai.name == asmNode.animationName2)
-										break;
-									j++;
-								}
-								animatorForModelForTimelineViewer->playBlendTree({
-									{ i, 0.0f, "blendVar" },
-									{ j, 1.0f }
-								});
-							}
+							routinePlayCurrentASMAnimation();
 
 							break;
 						}

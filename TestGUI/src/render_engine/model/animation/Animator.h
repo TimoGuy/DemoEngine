@@ -29,7 +29,7 @@ public:
 	Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf = {});
 	
 	void updateAnimation(float deltaTime);
-	void playAnimation(size_t animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
+	void playAnimation(size_t animationIndex, float mixTime = 0.0f, bool looping = true);
 	void playBlendTree(std::vector<BlendTreeNode> blendTreeNodes, float mixTime = 0.0f, bool looping = true);		// NOTE: force=true
 
 	void setBlendTreeVariable(std::string variableName, float value);
