@@ -3100,8 +3100,8 @@ void routinePlayCurrentASMAnimation()
 			j++;
 		}
 		animatorForModelForTimelineViewer->playBlendTree({
-				{ i, 0.0f, "blendVar" },
-				{ j, 1.0f }
+				{ i, asmNode.animationBlend1, "blendVar" },
+				{ j, asmNode.animationBlend2 }
 			},
 			asmNode.transitionTime,
 			asmNode.loopAnimation
