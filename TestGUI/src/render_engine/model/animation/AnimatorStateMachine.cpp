@@ -99,6 +99,17 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 		for (auto asmTranConditionGroup_j : asmNode_j["node_transition_condition_groups"])
 		{
 			std::vector<std::string> relevantNodes = nodeNameList;
+			auto itr = relevantNodes.cbegin();		// @Possibly_not_needed: remove the reference to self in the relevant transition nodes.
+			while (itr != relevantNodes.cend())
+			{
+				if (*itr == asmNode_j["node_name"])
+				{
+					itr = relevantNodes.erase(itr);
+				}
+				else
+					itr++;
+			}
+
 			AnimationStateMachine_TransitionConditionGroup transitionConditionGroup;
 
 			// Bundle together all the transition conditions for the transition condition group
@@ -158,7 +169,7 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 			// Search thru all the relevant node names and add this transition
 			for (auto relevantNodeName : relevantNodes)
 			{
-				auto node = nodeList[nodeNameToIndexMap[relevantNodeName]];
+				auto& node = nodeList[nodeNameToIndexMap[relevantNodeName]];
 				
 				// See if there are any transitions with this current node index yet.
 				AnimationStateMachine_Transition* transitionPtr = nullptr;
@@ -184,6 +195,9 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 
 		nodeIndex++;
 	}
+
+	// Kick off the animation state machine
+	moveToStateMachineNode(currentASMNode);
 }
 
 
