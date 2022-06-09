@@ -18,7 +18,7 @@
                 "animation_name_1": "Idle",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
-                "loop_animation": true,
+                "loop_animation": false,
                 "node_name": "waterFull",
                 "node_transition_condition_groups": [
                     [
@@ -29,7 +29,7 @@
                         }
                     ]
                 ],
-                "transition_time": 0.0
+                "transition_time": 1.0
             },
             {
                 "animation_blend_boundary_1": 0.0,
@@ -38,7 +38,7 @@
                 "animation_name_1": "No_Water",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
-                "loop_animation": true,
+                "loop_animation": false,
                 "node_name": "waterEmpty",
                 "node_transition_condition_groups": [
                     [
@@ -49,7 +49,7 @@
                         }
                     ]
                 ],
-                "transition_time": 0.0
+                "transition_time": 1.0
             }
         ],
         "asm_start_node_index": 0,

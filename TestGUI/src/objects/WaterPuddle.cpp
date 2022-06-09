@@ -139,15 +139,8 @@ void WaterPuddle::preRenderUpdate()
 	//
 	// Process Animations
 	//
-	if (numWaterServings == 0)
-	{
-		animator.playAnimation(1, 1.5f);
-	}
-	else
-	{
-		animator.playAnimation(0, 1.5f);
-	}
-	animator.updateAnimation(MainLoop::getInstance().deltaTime);
+	animatorStateMachine.setVariable("isFull", numWaterServings > 0);
+	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//
 	// Do trigger-related stuff
@@ -170,7 +163,10 @@ void WaterPuddle::refreshResources()
 	bool recreateAnimations;
 	model = (Model*)Resources::getResource("model;water_puddle", model, &recreateAnimations);
 	if (recreateAnimations)
+	{
 		animator = Animator(&model->getAnimations());
+		animatorStateMachine = AnimatorStateMachine("water_puddle", &animator);
+	}
 }
 
 #ifdef _DEVELOP

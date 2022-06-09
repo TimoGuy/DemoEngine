@@ -2,6 +2,7 @@
 
 #include "BaseObject.h"
 #include "../render_engine/model/animation/Animator.h"
+#include "../render_engine/model/animation/AnimatorStateMachine.h"
 
 
 class WaterPuddle : public BaseObject
@@ -46,6 +47,7 @@ private:
 	//
 	Model* model;
 	Animator animator;
+	AnimatorStateMachine animatorStateMachine;
 	std::map<std::string, Material*> materials;
 	TextRenderer waterServingsText;
 };
