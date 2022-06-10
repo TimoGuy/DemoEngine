@@ -765,7 +765,7 @@ void PlayerCharacter::processMovement()
 			// Trigger falling if velo.y <= 0.0f
 			if (prevIsGrounded && ((PlayerPhysics*)getPhysicsComponent())->velocity.y <= 0.0f)
 			{
-				animatorStateMachine.setVariable("triggerFalling", true);
+				animatorStateMachine.setVariable("triggerFall", true);
 			}
 		}
 		prevIsGrounded = isGroundedChecked;
