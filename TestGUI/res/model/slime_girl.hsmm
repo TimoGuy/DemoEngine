@@ -60,6 +60,10 @@
             "timestamp_speed": 42.0,
             "track_xz_root_motion": true
         },
+        "Running_Turn_Around": {
+            "timestamp_speed": 150.0,
+            "track_xz_root_motion": false
+        },
         "Walking": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": true
@@ -275,6 +279,26 @@
                     ]
                 ],
                 "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Running_Turn_Around",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "loop_animation": false,
+                "node_name": "RunningTurnAround",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerTurnAround"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
             }
         ],
         "asm_start_node_index": 0,
@@ -303,6 +327,11 @@
                 "value": 0.0,
                 "var_name": "isJumping",
                 "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "triggerTurnAround",
+                "variable_type": 0
             }
         ]
     },
@@ -322,6 +351,7 @@
         "Land_From_Jumping_From_Run",
         "Pick_Up_Bottle",
         "Running",
+        "Running_Turn_Around",
         "Walking",
         "Wall_Climbing",
         "Wall_Hang",

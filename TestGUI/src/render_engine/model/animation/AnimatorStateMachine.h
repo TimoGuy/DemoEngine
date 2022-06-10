@@ -49,6 +49,12 @@ struct AnimationStateMachine_Node		// The node index will be what index it's sto
 	std::vector<AnimationStateMachine_Transition> transitions;
 };
 
+struct AnimationStateMachine_Variable
+{
+	float value;
+	bool isTriggerVariable;		// @NOTE: this is set to true if variable name starts with the name "trigger"
+};
+
 
 /**
  * @brief I guess this is what you call a Decorator Class
@@ -74,7 +80,7 @@ private:
 
 	std::map<std::string, size_t> variableNameIndexMap;		// Populates in the constructor!
 	std::vector<std::string> variableNames;						// Hopefully this is fast eh!
-	std::vector<float> variableValues;						// Hopefully this is fast eh!
+	std::vector<AnimationStateMachine_Variable> variableValues;						// Hopefully this is fast eh!
 
 	size_t currentASMNode;
 	std::vector<AnimationStateMachine_Node> nodeList;

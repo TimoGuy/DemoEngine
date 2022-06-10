@@ -34,7 +34,7 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 		std::cout << "ASM: CONSTR: YA STUPID???!???!? (nodes are missing)" << std::endl;
 		return;
 	}
-	//if (!animStateMachine["asm_nodes"].contains("node_transition_condition_groups"))
+	//if (!animStateMachine["asm_nodes"].contains("node_transition_condition_groups"))		@TODO: Find out why uncommenting this breaks the whole thing!!?!??!?!
 	//{
 	//	std::cout << "ASM: CONSTR: YA STUPID???!???!? (node transitions are missing)" << std::endl;
 	//	return;
@@ -45,9 +45,11 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 	//
 	for (auto asmVar_j : animStateMachine["asm_variables"])
 	{
-		variableNameIndexMap[asmVar_j["var_name"]] = variableNames.size();
-		variableNames.push_back(asmVar_j["var_name"]);
-		variableValues.push_back(asmVar_j["value"]);
+		std::string varName = asmVar_j["var_name"];
+		variableNameIndexMap[varName] = variableNames.size();
+		variableNames.push_back(varName);
+		bool isTriggerVariable = (varName.rfind("trigger", 0) == 0);	// @NOTE: @HACK: @FIXME: if a variable name starts with the keyword "trigger", then mark the variable as a trigger variable (i.e. every frame where it's bool==true, turn it off after)
+		variableValues.push_back({ asmVar_j["value"], isTriggerVariable });
 	}
 
 	//
@@ -99,7 +101,9 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 		for (auto asmTranConditionGroup_j : asmNode_j["node_transition_condition_groups"])
 		{
 			std::vector<std::string> relevantNodes = nodeNameList;
-			auto itr = relevantNodes.cbegin();		// @Possibly_not_needed: remove the reference to self in the relevant transition nodes.
+
+			// @Possibly_not_needed: remove the reference to self in the relevant transition nodes.
+			auto itr = relevantNodes.cbegin();
 			while (itr != relevantNodes.cend())
 			{
 				if (*itr == asmNode_j["node_name"])
@@ -225,27 +229,27 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 					switch (transitionCondition.comparisonOperator)
 					{
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::EQUAL:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] == transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value == transitionCondition.compareToValue);
 						break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::NEQUAL:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] != transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value != transitionCondition.compareToValue);
 						break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::LESSER:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] < transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value < transitionCondition.compareToValue);
 						break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::GREATER:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] > transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value > transitionCondition.compareToValue);
 						break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::LEQUAL:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] <= transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value <= transitionCondition.compareToValue);
 						break;
 
 					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::GEQUAL:
-						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex] >= transitionCondition.compareToValue);
+						transitionConditionGroupPasses &= (variableValues[transitionCondition.variableIndex].value >= transitionCondition.compareToValue);
 						break;
 					
 					default:
@@ -253,6 +257,9 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 						std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
 						break;
 					}
+
+					if (variableValues[transitionCondition.variableIndex].isTriggerVariable)
+						variableValues[transitionCondition.variableIndex].value = (float)false;
 				}
 
 				if (transitionConditionGroupPasses)
@@ -276,7 +283,7 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 	if (nodeList[currentASMNode].isBlendTreeAnimation)
 	{
 		size_t variableIndex = nodeList[currentASMNode].blendTreeVariableIndex;
-		animatorPtr->setBlendTreeVariable(variableNames[variableIndex], variableValues[variableIndex]);
+		animatorPtr->setBlendTreeVariable(variableNames[variableIndex], variableValues[variableIndex].value);
 	}
 	animatorPtr->updateAnimation(deltaTime);
 }
@@ -284,7 +291,7 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 
 void AnimatorStateMachine::setVariable(const std::string& varName, float value)
 {
-	variableValues[variableNameIndexMap[varName]] = value;		// Hopefully this doesn't crash...
+	variableValues[variableNameIndexMap[varName]].value = value;		// Hopefully this doesn't crash...
 }
 
 

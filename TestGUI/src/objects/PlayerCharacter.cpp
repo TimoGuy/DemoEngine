@@ -1004,6 +1004,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			{
 				facingDirection = movementVector;
 				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
+				animatorStateMachine.setVariable("triggerTurnAround", true);
 			}
 			// Immediate facing direction when moving slowly:
 			else if (!weaponDrawn && flatVelocityMagnitude <= immediateTurningRequiredSpeed)		// @NOTE: after some thinking, I really don't think that this should be allowed while the weapon is drawn, bc then turning would be very difficult.  -Timo
