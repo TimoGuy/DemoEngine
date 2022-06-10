@@ -251,6 +251,8 @@ private:
 
 	bool triggerDrinkWaterAnimation = false;
 
+	bool prevIsGrounded;
+
 	//
 	// Rope Simulations
 	//

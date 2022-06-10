@@ -1,5 +1,9 @@
 {
     "animation_details": {
+        "0_TPose": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        },
         "Attack_light_horizontal": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
@@ -256,7 +260,7 @@
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
-                "animation_name_1": "",
+                "animation_name_1": "0_TPose",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
                 "loop_animation": true,
@@ -266,27 +270,12 @@
                         {
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
-                            "var_name": "isGrounded"
-                        },
-                        {
-                            "compare_to_value": 0.0,
-                            "comparison_operator": 0,
-                            "var_name": "triggerJumping"
-                        },
-                        {
-                            "compare_to_value": 0.0,
-                            "comparison_operator": 0,
                             "var_name": "isLedgeGrab"
                         },
                         {
-                            "compare_to_value": 0.0,
+                            "compare_to_value": 1.0,
                             "comparison_operator": 0,
-                            "var_name": "triggerMidairJumping"
-                        },
-                        {
-                            "compare_to_value": 0.0,
-                            "comparison_operator": 2,
-                            "var_name": "velocity.y"
+                            "var_name": "triggerFall"
                         }
                     ]
                 ],
@@ -316,10 +305,10 @@
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
-                "animation_name_1": "",
+                "animation_name_1": "Jumping_Midair",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
-                "loop_animation": true,
+                "loop_animation": false,
                 "node_name": "MidairJumping",
                 "node_transition_condition_groups": [
                     [
@@ -377,12 +366,13 @@
             },
             {
                 "value": 0.0,
-                "var_name": "velocity.y",
-                "variable_type": 2
+                "var_name": "triggerFall",
+                "variable_type": 0
             }
         ]
     },
     "included_anims": [
+        "0_TPose",
         "Attack_light_horizontal",
         "Attack_light_vertical",
         "Attack_midair",

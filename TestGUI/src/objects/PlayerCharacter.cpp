@@ -751,15 +751,24 @@ void PlayerCharacter::processMovement()
 	//
 	if (playerState == PlayerState::NORMAL)
 	{
-		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() &&
-			!((PlayerPhysics*)getPhysicsComponent())->getIsSliding())		// @TODO: for some reason sliding and trying to jump doesn't work... why???
+		bool isGroundedChecked =
+			((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() &&
+			!((PlayerPhysics*)getPhysicsComponent())->getIsSliding();		// @TODO: for some reason sliding and trying to jump doesn't work... why???
+		if (isGroundedChecked)
 		{
 			velocity = processGroundedMovement(movementVector);
 		}
 		else
 		{
 			velocity = processAirMovement(movementVector);
+
+			// Trigger falling if velo.y <= 0.0f
+			if (prevIsGrounded && ((PlayerPhysics*)getPhysicsComponent())->velocity.y <= 0.0f)
+			{
+				animatorStateMachine.setVariable("triggerFalling", true);
+			}
 		}
+		prevIsGrounded = isGroundedChecked;
 
 		// Poll input for the jump (include debounce input)
 		jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
@@ -1615,7 +1624,6 @@ void PlayerCharacter::processAnimation()
 	animatorStateMachine.setVariable("isMoving", flatSpeed > 0.1f);
 	animatorStateMachine.setVariable("isGrounded", ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded());
 	animatorStateMachine.setVariable("isLedgeGrab", playerState == PlayerState::LEDGE_GRAB_HUMAN);
-	animatorStateMachine.setVariable("velocity.y", ((PlayerPhysics*)getPhysicsComponent())->velocity.y);
 	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//

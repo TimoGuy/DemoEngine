@@ -4,6 +4,8 @@
 #include "Animator.h"
 #include "../../../utils/FileLoading.h"
 #include "../../../utils/json.hpp"
+#include "../../render_manager/RenderManager.h"
+#include "../../../mainloop/MainLoop.h"
 
 
 AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator* animator) : animatorPtr(animator)
@@ -74,6 +76,10 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 
 		AnimationStateMachine_Node node;
 		node.animationIndex = animNameToIndexMap[asmNode_j["animation_name_1"]];
+		if (std::string(asmNode_j["animation_name_1"]).empty())
+		{
+			MainLoop::getInstance().renderManager->pushMessage("ERROR: Animation name missing for node " + std::string(asmNode_j["node_name"]));
+		}
 
 		node.isBlendTreeAnimation = !std::string(asmNode_j["animation_name_2"]).empty();
 		if (node.isBlendTreeAnimation)
@@ -264,7 +270,7 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 
 				if (transitionConditionGroupPasses)
 				{
-					transitionPasses = true;
+ 					transitionPasses = true;
 					break;
 				}
 			}
