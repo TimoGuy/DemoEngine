@@ -781,7 +781,11 @@ void PlayerCharacter::processMovement()
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 			((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
-			triggerAnimationStateReset = true;
+
+			if (canJumpGrounded)
+				animatorStateMachine.setVariable("triggerJumping", true);
+			else if (human_canJumpAirbourne)
+				animatorStateMachine.setVariable("triggerMidairJumping", true);
 
 			//
 			// @SPECIAL_SKILL: @HUMAN: Human midair Jump
@@ -1610,8 +1614,8 @@ void PlayerCharacter::processAnimation()
 	animatorStateMachine.setVariable("blendWalkRun", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 	animatorStateMachine.setVariable("isMoving", flatSpeed > 0.1f);
 	animatorStateMachine.setVariable("isGrounded", ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded());
-	animatorStateMachine.setVariable("isJumping", ((PlayerPhysics*)getPhysicsComponent())->velocity.y > 0.0f);
 	animatorStateMachine.setVariable("isLedgeGrab", playerState == PlayerState::LEDGE_GRAB_HUMAN);
+	animatorStateMachine.setVariable("velocity.y", ((PlayerPhysics*)getPhysicsComponent())->velocity.y);
 	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//
@@ -1696,10 +1700,10 @@ void PlayerCharacter::processAnimation()
 		//
 		// Calculate the bottle transformation matrix
 		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-		if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7 || weaponDrawn)
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
-		else
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+		//if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7 || weaponDrawn)
+		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+		//else
+		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		// Calculate the fit AABB for just the water mesh inside the bottle
 		bool first = true;

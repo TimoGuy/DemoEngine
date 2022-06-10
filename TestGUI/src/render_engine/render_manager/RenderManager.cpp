@@ -4841,6 +4841,7 @@ void RenderManager::renderImGuiContents()
 
 									if (ImGui::Button("[X] Delete this ASM Transition Condition Group"))
 									{
+										saveAndApplyChangesFlag |= true;
 										asmNode.transitionConditionGroups.erase(asmNode.transitionConditionGroups.begin() + a);
 									}
 
