@@ -914,6 +914,7 @@ void PlayerCharacter::processMovement()
 			velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			playerState = PlayerState::NORMAL;
+			animatorStateMachine.setVariable("triggerJumping", true);
 		}
 
 		// @TODO: Hold the stick away from facingDirection to do a let go instead of a jump up.
@@ -1621,7 +1622,7 @@ void PlayerCharacter::processAnimation()
 	velo.y = 0.0f;
 	float flatSpeed = velo.magnitude();
 	animatorStateMachine.setVariable("blendWalkRun", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
-	animatorStateMachine.setVariable("isMoving", flatSpeed > 0.1f);
+	animatorStateMachine.setVariable("isMoving", isMoving);
 	animatorStateMachine.setVariable("isGrounded", ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded());
 	animatorStateMachine.setVariable("isLedgeGrab", playerState == PlayerState::LEDGE_GRAB_HUMAN);
 	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
@@ -1712,6 +1713,11 @@ void PlayerCharacter::processAnimation()
 		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		//else
 		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+
+		if (weaponDrawn)
+			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+		else
+			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		// Calculate the fit AABB for just the water mesh inside the bottle
 		bool first = true;

@@ -1,9 +1,5 @@
 {
     "animation_details": {
-        "0_TPose": {
-            "timestamp_speed": 1.0,
-            "track_xz_root_motion": false
-        },
         "Attack_light_horizontal": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
@@ -18,6 +14,10 @@
         },
         "Draw_Water": {
             "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
+        "Falling": {
+            "timestamp_speed": 73.0,
             "track_xz_root_motion": false
         },
         "Idle": {
@@ -49,7 +49,7 @@
             "track_xz_root_motion": false
         },
         "Jumping_Midair": {
-            "timestamp_speed": 50.0,
+            "timestamp_speed": 62.0,
             "track_xz_root_motion": false
         },
         "Land_From_Jumping_From_Idle": {
@@ -109,7 +109,7 @@
                         },
                         {
                             "comparison_operator": 1,
-                            "current_asm_node_name_ref": "Jumping",
+                            "current_asm_node_name_ref": "JumpingIdle",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -131,6 +131,31 @@
                             "comparison_operator": 1,
                             "current_asm_node_name_ref": "MidairJumping",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerJumping"
+                        },
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerMidairJumping"
+                        },
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerFall"
+                        },
+                        {
+                            "comparison_operator": 1,
+                            "current_asm_node_name_ref": "JumpingRun",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerTurnAround"
                         }
                     ]
                 ],
@@ -154,7 +179,7 @@
                         },
                         {
                             "comparison_operator": 1,
-                            "current_asm_node_name_ref": "Jumping",
+                            "current_asm_node_name_ref": "JumpingIdle",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -179,8 +204,18 @@
                         },
                         {
                             "comparison_operator": 1,
-                            "current_asm_node_name_ref": "Jumping",
+                            "current_asm_node_name_ref": "JumpingRun",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "comparison_operator": 1,
+                            "current_asm_node_name_ref": "MidairJumping",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerTurnAround"
                         }
                     ]
                 ],
@@ -189,12 +224,12 @@
             {
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
-                "animation_blend_variable": "isMoving",
+                "animation_blend_variable": "",
                 "animation_name_1": "Jumping_From_Idle",
-                "animation_name_2": "Jumping_From_Run",
+                "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
                 "loop_animation": false,
-                "node_name": "Jumping",
+                "node_name": "JumpingIdle",
                 "node_transition_condition_groups": [
                     [
                         {
@@ -205,7 +240,7 @@
                         {
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
-                            "var_name": "isLedgeGrab"
+                            "var_name": "isMoving"
                         }
                     ]
                 ],
@@ -225,6 +260,42 @@
                         {
                             "comparison_operator": 0,
                             "current_asm_node_name_ref": "Falling",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isGrounded"
+                        }
+                    ],
+                    [
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": "JumpingIdle",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isGrounded"
+                        }
+                    ],
+                    [
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": "MidairJumping",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isGrounded"
+                        }
+                    ],
+                    [
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": "JumpingRun",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -260,18 +331,13 @@
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
-                "animation_name_1": "0_TPose",
+                "animation_name_1": "Falling",
                 "animation_name_2": "",
-                "dont_transition_until_animation_finished": false,
-                "loop_animation": true,
+                "dont_transition_until_animation_finished": true,
+                "loop_animation": false,
                 "node_name": "Falling",
                 "node_transition_condition_groups": [
                     [
-                        {
-                            "compare_to_value": 0.0,
-                            "comparison_operator": 0,
-                            "var_name": "isLedgeGrab"
-                        },
                         {
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
@@ -316,11 +382,31 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "triggerMidairJumping"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Jumping_From_Run",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": true,
+                "node_name": "JumpingRun",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerJumping"
                         },
                         {
-                            "compare_to_value": 0.0,
+                            "compare_to_value": 1.0,
                             "comparison_operator": 0,
-                            "var_name": "isLedgeGrab"
+                            "var_name": "isMoving"
                         }
                     ]
                 ],
@@ -372,11 +458,11 @@
         ]
     },
     "included_anims": [
-        "0_TPose",
         "Attack_light_horizontal",
         "Attack_light_vertical",
         "Attack_midair",
         "Draw_Water",
+        "Falling",
         "Idle",
         "Idle_Hip",
         "Idle_Spinny_Left",

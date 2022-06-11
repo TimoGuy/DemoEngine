@@ -75,6 +75,9 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 		nodeNameList.push_back(asmNode_j["node_name"]);
 
 		AnimationStateMachine_Node node;
+#ifdef _DEVELOP
+		node.nodeName = asmNode_j["node_name"];
+#endif
 		node.animationIndex = animNameToIndexMap[asmNode_j["animation_name_1"]];
 		if (std::string(asmNode_j["animation_name_1"]).empty())
 		{
@@ -263,9 +266,6 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 						std::cout << "ERROR: The comparison operator doesn't exist" << std::endl;
 						break;
 					}
-
-					if (variableValues[transitionCondition.variableIndex].isTriggerVariable)
-						variableValues[transitionCondition.variableIndex].value = (float)false;
 				}
 
 				if (transitionConditionGroupPasses)
@@ -278,8 +278,21 @@ void AnimatorStateMachine::updateStateMachine(float deltaTime)
 			if (transitionPasses)
 			{
 				moveToStateMachineNode(transition.toNodeIndex);
+#ifdef _DEVELOP
+				std::cout << "ASM: NOTE: Transferred to node \"" << nodeList[currentASMNode].nodeName << "\"" << std::endl; 
+#endif
 				break;
 			}
+		}
+
+		//
+		// Reset all trigger variables
+		// @NOTE: only do the reset when variables are considered
+		//
+		for (auto& variable : variableValues)
+		{
+			if (variable.isTriggerVariable)
+				variable.value = false;
 		}
 	}
 

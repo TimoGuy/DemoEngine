@@ -34,6 +34,9 @@ struct AnimationStateMachine_Transition		// NOTE: the specialCaseCurrentASMNodeN
 
 struct AnimationStateMachine_Node		// The node index will be what index it's stored in the node list
 {
+#ifdef _DEVELOP
+	std::string nodeName;
+#endif
 	size_t animationIndex;
 
 	bool isBlendTreeAnimation;
