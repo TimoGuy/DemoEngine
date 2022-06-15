@@ -5,6 +5,8 @@
 #include "../render_engine/model/animation/AnimatorStateMachine.h"
 
 
+class Material;
+
 class WaterPuddle : public BaseObject
 {
 public:

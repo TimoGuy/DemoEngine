@@ -11,6 +11,7 @@
 #include "../utils/Utils.h"
 #include "../render_engine/camera/Camera.h"
 #include "../render_engine/render_manager/RenderManager.h"
+#include "../render_engine/model/Model.h"
 #include "../render_engine/model/animation/Animator.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/material/Shader.h"

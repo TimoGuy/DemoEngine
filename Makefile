@@ -22,7 +22,8 @@ LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
 LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -O1 -g -Wall -Wextra -Wpedantic
+CCFLAGS  = -O1 -g -w
+# CCFLAGS  = -O1 -g -Wall -Wextra -Wpedantic
 # CCFLAGS += -Wno-c99-extensions -Wno-unused-parameter -Wno-vla-extension
 # CCFLAGS += -Wno-c++11-extensions -Wno-gnu-statement-expression
 # CCFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-nested-anon-types
@@ -77,21 +78,23 @@ TARGET = checked_win_x64
 
 BIN_DIR = Bin
 OUT     = $(BIN_DIR)/solanine_$(TARGET).exe
+OUT_ILK = $(BIN_DIR)/solanine_$(TARGET).ilk
 OUT_PDB = $(BIN_DIR)/solanine_$(TARGET).pdb
 
 SRC_DIR      = TestGUI/src
-SRC_CPP      = $(shell find $(SRC_DIR) -name "*.cpp")
+SRC_CPP      = $(shell find $(SRC_DIR) -name "*.cpp") $(shell find $(SRC_DIR) -name "*.c")
 SRC_C        = $(shell find $(SRC_DIR) -name "*.c")
 SRC_COMBINED = $(SRC_CPP) $(SRC_C)
 
 OBJ_DIR      = Obj
-OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(notdir $(SRC_COMBINED))))
+OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(notdir $(SRC_CPP))))
 
 
 .PHONY: all build run $(SRC_CPP) $(SRC_C) link $(OBJ) clean
-all: build run
+all: build
+	@make run
 
-build: $(SRC_CPP) $(SRC_C)
+build: $(SRC_CPP) # $(SRC_C)
 	@make link
 
 run:
@@ -99,15 +102,15 @@ run:
 
 $(SRC_CPP):
 	@mkdir -p $(OBJ_DIR)
-	@$(CXX) $(LIBPATHS) -std=c++17 $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS) -v
+	@$(CXX) $(LIBPATHS) -std=c++20 $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS)
 
 $(SRC_C):
 	@mkdir -p $(OBJ_DIR)
-	@$(CC) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS) -v
+	@$(CC) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS)
 
 link: $(OBJ)
 	@mkdir -p $(BIN_DIR)
-	@$(CXX) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) $(OBJ) -o $(OUT) $(LDFLAGS) -v
+	@$(CXX) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) $(OBJ) -o $(OUT) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJ) $(OUT) $(OUT_PDB)
+	rm -f $(OBJ) $(OUT) $(OUT_ILK) $(OUT_PDB)

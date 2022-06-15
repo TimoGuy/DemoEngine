@@ -6,6 +6,7 @@
 
 
 typedef unsigned int GLuint;
+class Material;
 
 class YosemiteTerrain : public BaseObject
 {
@@ -21,8 +22,8 @@ public:
 	void preRenderUpdate();
 	void physicsUpdate();
 
-	PhysicsComponent* physicsComponent;
-	RenderComponent* renderComponent;
+	PhysicsComponent* physicsComponent = nullptr;
+	RenderComponent* renderComponent = nullptr;
 
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }

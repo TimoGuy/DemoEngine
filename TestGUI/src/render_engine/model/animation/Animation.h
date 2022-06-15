@@ -1,10 +1,17 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <vector>
 #include "Bone.h"
 
 
-struct AnimatedRope;
+struct aiScene;
+struct aiAnimation;
+struct aiNode;
+class Model;
 
+struct AnimatedRope;
 struct AssimpNodeData
 {
 	glm::mat4 transformation;
@@ -21,6 +28,19 @@ struct AssimpNodeData
 	int cacheBoneInfo_id;
 	glm::mat4 cacheBoneInfo_offset;
 	AnimatedRope* cacheAnimatedRope;
+};
+
+struct BoneInfo
+{
+	int id;
+	glm::mat4 offset;
+};
+
+struct AnimationMetadata
+{
+	std::string animationName;
+	bool trackXZRootMotion;
+	float timestampSpeed = 1.0f;
 };
 
 class Animation

@@ -1,8 +1,11 @@
 #pragma once
 
-#include "../Model.h"
+#include <string>
+#include <vector>
 #include <glm/gtc/quaternion.hpp>
 
+
+struct aiNodeAnim;
 
 struct KeyPosition
 {

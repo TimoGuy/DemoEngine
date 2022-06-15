@@ -9,6 +9,8 @@
 #include "../utils/InputManager.h"
 #include "../utils/Messages.h"
 #include "components/PhysicsComponents.h"
+#include "../render_engine/model/Model.h"
+#include "../render_engine/material/Material.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 

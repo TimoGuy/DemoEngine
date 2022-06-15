@@ -11,6 +11,7 @@
 
 #include "../material/Texture.h"
 #include "../material/Shader.h"
+#include "../model/Model.h"
 #include "../model/animation/Animation.h"
 #include "../../utils/FileLoading.h"
 

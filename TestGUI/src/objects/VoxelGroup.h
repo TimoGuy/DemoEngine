@@ -7,6 +7,7 @@
 
 typedef unsigned int GLuint;
 class Spline;
+class Material;
 
 enum class MOVING_PLATFORM_MODE
 {
@@ -27,8 +28,8 @@ public:
 	void preRenderUpdate();
 	void physicsUpdate();
 
-	PhysicsComponent* physicsComponent;
-	RenderComponent* renderComponent;
+	PhysicsComponent* physicsComponent = nullptr;
+	RenderComponent* renderComponent = nullptr;
 
 	LightComponent* getLightComponent() { return nullptr; }
 	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
@@ -63,7 +64,7 @@ private:
 	void setVoxelBitAtPosition(glm::i64vec3 pos, bool flag);
 	bool getVoxelBitAtPosition(glm::i64vec3 pos);
 	void updateQuadMeshFromBitField();
-	Model* voxel_model;
+	Model* voxel_model = nullptr;
 	std::map<std::string, Material*> materials;
 
 	struct ImguiRenderVariables

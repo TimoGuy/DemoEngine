@@ -48,7 +48,7 @@ void FileLoading::saveJsonFile(std::string fname, nlohmann::json& object)
 
 char* FileLoading::openFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
 {
-	std::string currentPath{ std::filesystem::current_path().u8string() + "/" + startingPath };
+	std::string currentPath{ std::filesystem::current_path().string() + std::string("/") + startingPath };
 	char* fnameOpened = tinyfd_openFileDialog(
 		title.c_str(),
 		currentPath.c_str(),
@@ -63,7 +63,7 @@ char* FileLoading::openFileDialog(const std::string& title, const std::string& s
 
 char* FileLoading::saveFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
 {
-	std::string currentPath{ std::filesystem::current_path().u8string() + "/" + startingPath };
+	std::string currentPath{ std::filesystem::current_path().string() + std::string("/") + startingPath };
 	char* fname = tinyfd_saveFileDialog(
 		title.c_str(),
 		currentPath.c_str(),
@@ -105,7 +105,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
+		std::string currentPath{ std::filesystem::current_path().string() + std::string("\\res\\level\\") };
 		char* fnameOpened = tinyfd_openFileDialog(
 			"Open Scene File",
 			currentPath.c_str(),
@@ -124,7 +124,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 		// Set this opened file as the new default for next time you open the program
 		// @Copypasta
 		nlohmann::json j;
-		j["startup_level"] = std::filesystem::relative(fnameOpened).u8string();
+		j["startup_level"] = std::filesystem::relative(fnameOpened).string();
 		std::ofstream o("res\\solanine_editor_settings.json");
 		o << std::setw(4) << j << std::endl;
 		std::cout << "::NOTE:: Set new startup file as \"" << fnameOpened << "\" ..." << std::endl;
@@ -197,7 +197,7 @@ void FileLoading::saveFile(bool withPrompt)
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
+		std::string currentPath{ std::filesystem::current_path().string() + std::string("\\res\\level\\") };
 		char* fname = tinyfd_saveFileDialog(
 			"Save Scene File As...",
 			currentPath.c_str(),

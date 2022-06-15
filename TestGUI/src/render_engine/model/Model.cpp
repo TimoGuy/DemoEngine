@@ -2,6 +2,7 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #include <iostream>
 
 #include "animation/Animation.h"
@@ -12,7 +13,7 @@
 #include "../material/Shader.h"
 
 
-Model::Model() { scene = nullptr; }
+Model::Model() { }
 
 Model::Model(const char* path)
 {
@@ -221,8 +222,6 @@ void Model::loadModel(std::string path, std::vector<AnimationMetadata> animation
 
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
-
-	Model::scene = scene;
 
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{

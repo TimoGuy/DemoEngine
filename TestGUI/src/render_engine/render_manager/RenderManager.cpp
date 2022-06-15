@@ -32,6 +32,8 @@
 #include "../material/shaderext/ShaderExtShadow.h"
 #include "../material/shaderext/ShaderExtSSAO.h"
 #include "../material/shaderext/ShaderExtZBuffer.h"
+#include "../material/Material.h"
+#include "../model/Model.h"
 #include "../resources/Resources.h"
 #include "../../utils/FileLoading.h"
 #include "../../utils/PhysicsUtils.h"

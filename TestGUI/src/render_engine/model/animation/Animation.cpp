@@ -2,7 +2,9 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #include <algorithm>
+#include "../Model.h"
 
 
 Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata)
