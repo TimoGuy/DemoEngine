@@ -1,6 +1,5 @@
 UNAME_S = $(shell uname -s)
 
-CC  = clang
 CXX = clang++
 
 # Libraries
@@ -125,7 +124,7 @@ $(OBJ):
 	@mkdir -p $(dir $@)
 	@echo '==     Compiling '$(patsubst $(OBJ_DIR)/%,%,$(basename $@))
 	@$(CXX) $(LIBPATHS) -MMD -MP $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $(patsubst $(OBJ_DIR)/%,%,$(basename $@)) -o $@ $(LDFLAGS)
--include $(addsuffix .d,$(basename $@))
+-include $(DEP)
 
 link: $(OBJ)
 	@mkdir -p $(BIN_DIR)
