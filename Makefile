@@ -22,7 +22,7 @@ LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
 LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -O1 -g -w
+CCFLAGS  = -std=c++20 -O1 -g -w
 # CCFLAGS  = -O1 -g -Wall -Wextra -Wpedantic
 # CCFLAGS += -Wno-c99-extensions -Wno-unused-parameter -Wno-vla-extension
 # CCFLAGS += -Wno-c++11-extensions -Wno-gnu-statement-expression
@@ -76,41 +76,55 @@ MACROS += -DUNICODE
 TARGET = checked_win_x64
 ########################
 
-BIN_DIR = Bin
+BIN_DIR = bin
 OUT     = $(BIN_DIR)/solanine_$(TARGET).exe
 OUT_ILK = $(BIN_DIR)/solanine_$(TARGET).ilk
 OUT_PDB = $(BIN_DIR)/solanine_$(TARGET).pdb
 
 SRC_DIR      = TestGUI/src
-SRC_CPP      = $(shell find $(SRC_DIR) -name "*.cpp") $(shell find $(SRC_DIR) -name "*.c")
-SRC_C        = $(shell find $(SRC_DIR) -name "*.c")
-SRC_COMBINED = $(SRC_CPP) $(SRC_C)
+SRC          = $(shell find $(SRC_DIR) -name "*.cpp") $(shell find $(SRC_DIR) -name "*.c")
 
-OBJ_DIR      = Obj
-OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(notdir $(SRC_CPP))))
+OBJ_DIR      = obj
+OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(SRC)))
+DEP          = $(addsuffix .d,$(basename $(OBJ)))
 
 
-.PHONY: all build run $(SRC_CPP) $(SRC_C) link $(OBJ) clean
+.PHONY: all
 all: build
 	@make run
 
-build: $(SRC_CPP) # $(SRC_C)
+# NOTE: this was just for printing out various text manipulations to make sure I was setting up the files correctly.
+# ALSO: I essentially wanted to replicate the obj/ folder to have the same file structure as the src/ folder  -Timo
+# print:
+# 	@echo $(OBJ)
+# 	@echo -----------------------------------------------------
+# 	@echo $(basename $(OBJ))
+# 	@echo -----------------------------------------------------
+# 	@echo $(patsubst $(OBJ_DIR)/%,%,$(basename $(OBJ)))
+
+.PHONY: build
+build: $(OBJ)
+	@echo 
+	@echo 
+	@echo '===================================='
+	@echo '==     Linking assembly files'
+	@echo '===================================='
 	@make link
 
+.PHONY: run
 run:
 	@(cd TestGUI && ../$(OUT))
 
-$(SRC_CPP):
-	@mkdir -p $(OBJ_DIR)
-	@$(CXX) $(LIBPATHS) -std=c++20 $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS)
-
-$(SRC_C):
-	@mkdir -p $(OBJ_DIR)
-	@$(CC) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $@ -o $(OBJ_DIR)/$(notdir $@).o $(LDFLAGS)
+# NOTE: if you add $(OBJ) to .PHONY, it doesn't use the -include dependencies so the build gets rebuilt all the way from the beginning. ouch!
+$(OBJ):
+	@mkdir -p $(dir $@)
+	@echo '==     Compiling '$(patsubst $(OBJ_DIR)/%,%,$(basename $@))
+	@$(CXX) $(LIBPATHS) -MMD -MP $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $(patsubst $(OBJ_DIR)/%,%,$(basename $@)) -o $@ $(LDFLAGS)
+-include $(addsuffix .d,$(basename $@))
 
 link: $(OBJ)
 	@mkdir -p $(BIN_DIR)
 	@$(CXX) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) $(OBJ) -o $(OUT) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJ) $(OUT) $(OUT_ILK) $(OUT_PDB)
+	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB)
