@@ -113,6 +113,11 @@ build: $(OBJ)
 
 .PHONY: run
 run:
+	@echo 
+	@echo 
+	@echo '===================================='
+	@echo '==     Running '$(notdir $(OUT))
+	@echo '===================================='
 	@(cd TestGUI && ../$(OUT))
 
 # NOTE: if you add $(OBJ) to .PHONY, it doesn't use the -include dependencies so the build gets rebuilt all the way from the beginning. ouch!
