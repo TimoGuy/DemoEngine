@@ -28,8 +28,9 @@ CCFLAGS  = -O1 -g -Wall -Wextra -Wpedantic
 # CCFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-nested-anon-types
 # CCFLAGS += -Wno-gnu-anonymous-struct
 
-LDFLAGS  = -m64
-# LDFLAGS += -lstdc++
+# Included Libs
+LDFLAGS  = -m64		# NOTE: Idk if this really does anything?
+LDFLAGS += -lstdc++
 LDFLAGS += -lglfw3_mt
 LDFLAGS += -lopengl32
 LDFLAGS += -lassimp-vc142-mt
@@ -44,10 +45,29 @@ LDFLAGS += -lfmod_vc
 LDFLAGS += -lfmodstudio_vc
 LDFLAGS += -lfreetype		# This is 'freetyped' in DEBUG
 
+# Inherited libs
+LDFLAGS += -lkernel32
+LDFLAGS += -luser32
+LDFLAGS += -lgdi32
+LDFLAGS += -lwinspool
+LDFLAGS += -lcomdlg32
+LDFLAGS += -ladvapi32
+LDFLAGS += -lshell32
+LDFLAGS += -lole32
+LDFLAGS += -loleaut32
+LDFLAGS += -luuid
+LDFLAGS += -lodbc32
+LDFLAGS += -lodbccp32
+
+
+# Predefined Macros
 MACROS  = -DNDEBUG
+MACROS += -DGLFW_INCLUDE_NONE
 MACROS += -D_DEVELOP
 MACROS += -D_CONSOLE
-MACROS += -DGLFW_INCLUDE_NONE
+MACROS += -D_CONSOLE
+MACROS += -D_UNICODE
+MACROS += -DUNICODE
 
 
 
@@ -68,16 +88,14 @@ OBJ_DIR      = Obj
 OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(notdir $(SRC_COMBINED))))
 
 
-.PHONY: depend clean $(SRC_CPP) $(SRC_C) link $(OBJ)
+.PHONY: all build run $(SRC_CPP) $(SRC_C) link $(OBJ) clean
 all: build run
-
-print:
-	@echo $(SRC_COMBINED)
-	@echo ---------------------
-	@echo $(OBJ)
 
 build: $(SRC_CPP) $(SRC_C)
 	@make link
+
+run:
+	@(cd TestGUI && ../$(OUT))
 
 $(SRC_CPP):
 	@mkdir -p $(OBJ_DIR)
