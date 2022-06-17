@@ -15,9 +15,8 @@
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // TriangleMeshCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), model(model)
+TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), model(model), rigidActorType(rigidActorType)
 {
-	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
 	routineCreateTriangleMeshGeometry(baseObject->getTransform());
 }
 
@@ -31,15 +30,6 @@ void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 {
-	// NOTE: I guess that it doesn't matter that you recreate the shape geometry huh. (Why do I have to do it for boxCollider and Spherecollider... maybe it's the scale???)
-	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
-	body->setGlobalPose(trans);
-
-	//
-	// Resize the scale of the triangle mesh
-	//
-	//body->detachShape(*shape);
-
 	// REDO THE TRI MESH!!!!
 	routineCreateTriangleMeshGeometry(newTransform);
 }
@@ -51,6 +41,15 @@ physx::PxTransform TriangleMeshCollider::getGlobalPose()
 
 void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& newTransform)
 {
+	if (body != nullptr)
+	{
+		MainLoop::getInstance().physicsScene->removeActor(*body);
+		body->release();
+		body = nullptr;
+	}
+
+	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
+
 	physx::PxU32 nbVerts = 0;
 	physx::PxU32 nbIndices = 0;
 	uint32_t baseIndex = 0;
@@ -132,7 +131,6 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 	}
 
 	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
-
 	MainLoop::getInstance().physicsScene->addActor(*body);
 	triMesh->release();
 }

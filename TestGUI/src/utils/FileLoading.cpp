@@ -213,7 +213,7 @@ void FileLoading::saveFile(bool withPrompt)
 
 		// Set this opened file as the new default for next time you open the program
 		nlohmann::json j;
-		j["startup_level"] = std::filesystem::relative(fname).u8string();		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
+		j["startup_level"] = std::filesystem::relative(fname).string();		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
 		std::ofstream o("res\\solanine_editor_settings.json");
 		o << std::setw(4) << j << std::endl;
 		std::cout << "::NOTE:: Set new startup file as \"" << fname << "\" ..." << std::endl;

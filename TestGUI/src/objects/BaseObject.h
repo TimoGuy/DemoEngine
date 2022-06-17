@@ -142,7 +142,7 @@ public:
 	void INTERNALonTrigger(const physx::PxTriggerPair& pair);
 
 protected:
-	physx::PxRigidActor* body;
+	physx::PxRigidActor* body = nullptr;
 };
 
 

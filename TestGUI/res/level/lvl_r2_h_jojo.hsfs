@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    422.0127868652344,
-                    -13.597753524780273,
-                    78.71224975585938
+                    0.0,
+                    7.251999855041504,
+                    0.0
                 ],
                 "rotation": [
                     0.0,
@@ -28,8 +28,8 @@
                 "name": "Voxel Group (start)",
                 "position": [
                     0.0,
-                    9.5367431640625e-07,
-                    0.0
+                    0.0,
+                    -0.0
                 ],
                 "rotation": [
                     0.0,
@@ -234,7 +234,7 @@
                 ],
                 "rotation": [
                     0.0,
-                    -0.04776203632354736,
+                    -0.04776205122470856,
                     0.0
                 ],
                 "scale": [
@@ -361,9 +361,9 @@
                 "guid": "42cf447b0ed87d0e78b1346f13a04e20f24f8006b7b74094149257c283f531d5",
                 "name": "Voxel Group (unnamed)",
                 "position": [
-                    -58.21388244628906,
-                    76.00055694580078,
-                    -61.27955627441406
+                    -42.424095153808594,
+                    76.00039672851563,
+                    -70.1714859008789
                 ],
                 "rotation": [
                     0.0,
@@ -382,9 +382,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "a522c822a1661965f5b1b2f19279173af8e8f4f00f0ef063081922a2a989ef67",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 42.00008773803711,
+            "moving_platform_spline_position_in_time": 22.123428344726563,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 10.0,
             "moving_platform_velocity": [
@@ -465,9 +465,9 @@
                 "guid": "06d5ef291866daa427234cbf2d62014f3cd491f7813ffc9c0486533da8d4d5bc",
                 "name": "Voxel Group (unnamed)",
                 "position": [
-                    -17.20081329345703,
-                    120.5130844116211,
-                    -123.65666198730469
+                    -17.008316040039063,
+                    113.37738037109375,
+                    -130.31671142578125
                 ],
                 "rotation": [
                     0.0,
@@ -488,7 +488,7 @@
             "moving_platform_spline_guid": "cb36f7f15c62fab33cf81e988315633cdf2d39f54da4f76760642b5caaca3325",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 66.60012817382813,
+            "moving_platform_spline_position_in_time": 51.60012435913086,
             "moving_platform_spline_pp_hold_time": 0.0,
             "moving_platform_spline_speed": 10.0,
             "moving_platform_velocity": [
@@ -673,29 +673,6 @@
                 31
             ],
             "voxel_render_size": 4.0
-        },
-        {
-            "baseObject": {
-                "guid": "28d974bf7b7e446cfd37b9ad71bd3c21168a65d8cc1a88c546fe881038b623d3",
-                "name": "Yosemite Terrain",
-                "position": [
-                    396.7511901855469,
-                    -1005.4331665039063,
-                    -65.47332000732422
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    20.0,
-                    20.0,
-                    20.0
-                ]
-            },
-            "modelResourceName": "model;custommodel;res/model/lvl_draft_1.glb",
-            "type": "ground"
         }
     ]
 }

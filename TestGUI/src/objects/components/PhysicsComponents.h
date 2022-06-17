@@ -22,6 +22,7 @@ private:
 	Model* model;
 	physx::PxShape* shape;
 	physx::PxGeometry* geom;
+	RigidActorTypes rigidActorType = RigidActorTypes::STATIC;
 	ShapeTypes shapeType = ShapeTypes::COLLISION;
 };
 

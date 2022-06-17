@@ -95,7 +95,7 @@ void RiverDropoff::preRenderUpdate()
 
 void RiverDropoff::refreshResources()
 {
-	model = (Model*)Resources::getResource("model;_debug_trigger_repr_cube.glb");
+	model = (Model*)Resources::getResource("model;_debug_trigger_repr_cube");
 }
 
 #ifdef _DEVELOP

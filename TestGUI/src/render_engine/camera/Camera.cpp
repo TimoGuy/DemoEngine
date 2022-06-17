@@ -159,7 +159,7 @@ void Camera::updateToVirtualCameras()
 	up = currentVirtualCamera->up;
 }
 
-bool prevF11Keypressed;
+bool prevF11Keypressed = GLFW_RELEASE;
 void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
 #ifdef _DEVELOP
