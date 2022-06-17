@@ -5129,7 +5129,7 @@ void RenderManager::renderImGuiContents()
 					}
 					else
 					{
-						std::cout << "TIMELINE VIEWER: ERROR: Saving path \"" << path << "\" Does not exist." << std::endl;
+						std::cout << "TIMELINE VIEWER: ERROR: Saving path does not exist." << std::endl;
 					}
 				}
 			}
