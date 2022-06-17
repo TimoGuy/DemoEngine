@@ -50,6 +50,7 @@ void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLe
 		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
 		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
 		}
+		return "<UNKNOWN>";
 	}();
 
 	auto const type_str = [type]() {
@@ -63,15 +64,18 @@ void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLe
 		case GL_DEBUG_TYPE_MARKER: return "MARKER";
 		case GL_DEBUG_TYPE_OTHER: return "OTHER";
 		}
+		return "<UNKNOWN>";
 	}();
 
 	auto const severity_str = [severity]() {
-		switch (severity) {
+		switch (severity)
+		{
 		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
 		case GL_DEBUG_SEVERITY_LOW: return "LOW";
 		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
 		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
 		}
+		return "<UNKNOWN>";
 	}();
 	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
 }

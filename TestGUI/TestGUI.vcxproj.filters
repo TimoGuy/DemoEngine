@@ -120,9 +120,6 @@
     <ClCompile Include="src\utils\tinyfiledialogs.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\utils\Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\objects\ObjectTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -433,9 +430,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\tinyfiledialogs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\utils\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\json.hpp">

@@ -394,7 +394,7 @@
                 "animation_name_1": "Jumping_From_Run",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
-                "loop_animation": true,
+                "loop_animation": false,
                 "node_name": "JumpingRun",
                 "node_transition_condition_groups": [
                     [

@@ -36,7 +36,8 @@ public:
 #endif
 
 	// TODO: this should be private, with all the components just referring back to the single main one
-	physx::PxVec3 velocity, angularVelocity;
+	physx::PxVec3 velocity = physx::PxVec3(0.0f),
+		angularVelocity = physx::PxVec3(0.0f);
 
 	//
 	// OLD YOSEMITETERRAINRENDER

@@ -83,9 +83,10 @@ private:
 	// Moving platform props
 	//
 	bool rigidbodyIsDynamic;	// INTERNAL
-	physx::PxVec3 velocity, angularVelocity;
+	physx::PxVec3 velocity = physx::PxVec3(0.0f),
+		angularVelocity = physx::PxVec3(0.0f);
 
-	std::string assignedSplineGUID;
+	std::string assignedSplineGUID = "";
 	float splineSpeed;
 	float currentSplinePosition;
 	bool movingPlatformMoveBackwards;

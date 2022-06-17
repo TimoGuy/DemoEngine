@@ -8,7 +8,6 @@
 
 #include "../mainloop/MainLoop.h"
 #include "../utils/PhysicsUtils.h"
-#include "../utils/Utils.h"
 #include "../render_engine/camera/Camera.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/model/Model.h"

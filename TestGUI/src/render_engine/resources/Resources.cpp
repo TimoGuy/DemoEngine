@@ -274,7 +274,7 @@ void* loadTexture2D(
 	}
 	else
 	{
-		delete findResource(textureName);
+		delete (Texture*)findResource(textureName);		// @NOTE: there are many type of textures... @MEMLEAK?
 		return nullptr;
 	}
 }
@@ -315,7 +315,7 @@ void* loadTextureCube(
 	}
 	else
 	{
-		delete findResource(textureName);
+		delete (Texture*)findResource(textureName);
 		return nullptr;
 	}
 }

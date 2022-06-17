@@ -18,7 +18,6 @@
 #include "../objects/Spline.h"
 
 #include "tinyfiledialogs.h"
-#include "Utils.h"
 
 
 FileLoading& FileLoading::getInstance()

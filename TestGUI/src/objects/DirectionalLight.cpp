@@ -690,7 +690,7 @@ void DirectionalLight::imguiRender()
 		float a = 0.0f;
 		float b = gizmoSize1to1;
 
-		float defaultHeight = std::tanf(glm::radians(MainLoop::getInstance().camera.fov)) * clipZ;
+		float defaultHeight = tanf(glm::radians(MainLoop::getInstance().camera.fov)) * clipZ;
 		float t = gizmoSize1to1 / defaultHeight;
 		//std::cout << t << std::endl;
 		gizmoRadius = t * (b - a) + a;

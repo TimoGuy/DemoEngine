@@ -181,8 +181,8 @@ RenderManager::RenderManager()
 			firstSkyMap,
 			i,
 			glm::vec3(
-				std::cosf(glm::radians(preBakedSkyMapAngles[i])),
-				-std::sinf(glm::radians(preBakedSkyMapAngles[i])),
+				cosf(glm::radians(preBakedSkyMapAngles[i])),
+				-sinf(glm::radians(preBakedSkyMapAngles[i])),
 				0.0f
 			)
 		);
@@ -1035,7 +1035,10 @@ void RenderManager::createCloudNoise()
 			{
 				std::string filename = "/layer" + std::to_string(i) + ".png";
 				if (!std::filesystem::exists(baseNoiseDirectory + filename))
-					throw new std::exception(("File " + std::string(baseNoiseDirectory) + filename + " Does not exist.").c_str());
+				{
+					std::cout << "File " << std::string(baseNoiseDirectory) << filename << " Does not exist." << std::endl;
+					throw new std::exception();
+				}
 
 				baseNoiseFiles.push_back({ baseNoiseDirectory + filename, true, false, false });
 			}
@@ -1044,7 +1047,10 @@ void RenderManager::createCloudNoise()
 			{
 				std::string filename = "/layer" + std::to_string(i) + ".png";
 				if (!std::filesystem::exists(detailNoiseDirectory + filename))
-					throw new std::exception(("File " + std::string(detailNoiseDirectory) + filename + " Does not exist.").c_str());
+				{
+					std::cout << "File " << std::string(detailNoiseDirectory) << filename << " Does not exist." << std::endl;
+					throw new std::exception();
+				}
 
 				detailNoiseFiles.push_back({ detailNoiseDirectory + filename, true, false, false });
 			}
@@ -1247,7 +1253,7 @@ void RenderManager::createCloudNoise()
 		stbi_flip_vertically_on_write(true);
 		stbi_write_png((baseNoiseDirectory + std::string("/layer") + std::to_string(i) + ".png").c_str(), cloudNoiseTex1Size, cloudNoiseTex1Size, 4, pixels, 4 * cloudNoiseTex1Size);
 		std::cout << "::CLOUD NOISE GENERATOR:: \tSaved render for base_noise layer " << i << std::endl;
-		delete pixels;
+		delete[] pixels;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -1399,7 +1405,7 @@ void RenderManager::createCloudNoise()
 		stbi_flip_vertically_on_write(true);
 		stbi_write_png((detailNoiseDirectory + std::string("/layer") + std::to_string(i) + ".png").c_str(), cloudNoiseTex2Size, cloudNoiseTex2Size, 3, pixels, 3 * cloudNoiseTex2Size);
 		std::cout << "::CLOUD NOISE GENERATOR:: \tSaved render for detail_noise layer " << i << std::endl;
-		delete pixels;
+		delete[] pixels;
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -1818,7 +1824,7 @@ void RenderManager::render()
 					RenderComponent* rc = objs[i]->getRenderComponent();
 					if (rc != nullptr)
 					{
-						float evaluatedIntensityValue = (std::sinf(selectedColorIntensityTime) + 1);
+						float evaluatedIntensityValue = (sinf(selectedColorIntensityTime) + 1);
 						//std::cout << evaluatedIntensityValue << std::endl;		@DEBUG
 						selectionWireframeShader->setVec4("color", { 0.973f, 0.29f, 1.0f, std::clamp(evaluatedIntensityValue, 0.0f, 1.0f) });
 						selectionWireframeShader->setFloat("colorIntensity", evaluatedIntensityValue);
@@ -2117,7 +2123,7 @@ void RenderManager::renderScene()
 	//
 	for (int i = (int)numSkyMaps - 1; i >= 0; i--)
 	{
-		if (-skyboxParams.sunOrientation.y < std::sinf(glm::radians(preBakedSkyMapAngles[i])))
+		if (-skyboxParams.sunOrientation.y < sinf(glm::radians(preBakedSkyMapAngles[i])))
 		{
 			whichMap = i;
 
@@ -2127,8 +2133,8 @@ void RenderManager::renderScene()
 			{
 				mapInterpolationAmt =
 					1 -
-					(-skyboxParams.sunOrientation.y - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1]))) /
-					(std::sinf(glm::radians(preBakedSkyMapAngles[i])) - std::sinf(glm::radians(preBakedSkyMapAngles[i + 1])));
+					(-skyboxParams.sunOrientation.y - sinf(glm::radians(preBakedSkyMapAngles[i + 1]))) /
+					(sinf(glm::radians(preBakedSkyMapAngles[i])) - sinf(glm::radians(preBakedSkyMapAngles[i + 1])));
 			}
 
 			break;
@@ -2648,7 +2654,6 @@ void RenderManager::renderScene()
 		glm::mat4 position = glm::translate(glm::mat4(1.0f), INTERNALselectionSystemAveragePosition);
 		glm::mat4 rotation = glm::toMat4(INTERNALselectionSystemLatestOrientation);
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), { 100, 100, 100 });
-		constexpr float divisor = 4.0f;
 		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
 
 		if (showZGrid)
@@ -2687,7 +2692,6 @@ void RenderManager::renderScene()
 	{
 		glm::mat4 xRotate = glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))));
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), { 100, 100, 100 });
-		constexpr float divisor = 4.0f;
 
 		LvlGridMaterial* gridMaterial = (LvlGridMaterial*)Resources::getResource("material;lvlGridMaterial");
 		gridMaterial->setColor(glm::vec3(0.1, 0.1, 0.1) * 5);
@@ -3137,8 +3141,6 @@ void RenderManager::renderImGuiContents()
 	static bool showLoadedResourcesWindow = true;
 	static bool showMaterialsManager = true;
 	static bool showTimelineEditorWindow = true;
-
-	static bool showShadowMap = false;
 
 	//
 	// Menu Bar
@@ -5004,7 +5006,7 @@ void RenderManager::renderImGuiContents()
 						// Update the animation with the animator
 						if (!timelineViewerState.animationStateMachineNodes[timelineViewerState.editor_previewModeCurrentASMNode].varFloatBlend.empty())
 						{
-							float blendVarValue;
+							float blendVarValue = 0.0f;
 							for (size_t k = 0; k < timelineViewerState.editor_asmVarCopyForPreview.size(); k++)
 							{
 								ASMVariable& asmVariable = timelineViewerState.editor_asmVarCopyForPreview[k];
@@ -5117,7 +5119,7 @@ void RenderManager::renderImGuiContents()
 
 						if (modelPath)
 						{
-							j["model_path"] = std::filesystem::relative(modelPath).u8string();
+							j["model_path"] = std::filesystem::relative(modelPath).string();
 							FileLoading::saveJsonFile(path, j);
 
 							routineCreateAndInsertInTheModel(path, j, true);

@@ -73,7 +73,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;_DEBUG;_DEVELOP;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Libraries\fmod_core\inc;$(SolutionDir)Libraries\fmod_studio\inc;$(SolutionDir)Libraries\NvidiaPhysx\include;$(SolutionDir)Libraries\freetype\include;$(SolutionDir)Libraries\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Libraries\fmod_core\inc;$(SolutionDir)Libraries\fmod_studio\inc;$(SolutionDir)Libraries\NvidiaPhysx\include;$(SolutionDir)Libraries\freetype\include;$(SolutionDir)Libraries\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -116,7 +116,7 @@
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;NDEBUG;_DEVELOP;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Libraries\fmod_core\inc;$(SolutionDir)Libraries\fmod_studio\inc;$(SolutionDir)Libraries\NvidiaPhysx\include;$(SolutionDir)Libraries\freetype\include;$(SolutionDir)Libraries\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
@@ -186,7 +186,6 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\render_engine\render_manager\RenderManager.cpp" />
     <ClCompile Include="src\stb.cpp" />
-    <ClCompile Include="src\utils\Utils.cpp" />
     <ClCompile Include="src\render_engine\material\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -387,7 +386,6 @@
     <ClInclude Include="src\render_engine\model\Mesh.h" />
     <ClInclude Include="src\render_engine\render_manager\RenderManager.h" />
     <ClInclude Include="src\SkinningTech.h" />
-    <ClInclude Include="src\utils\Utils.h" />
     <ClInclude Include="src\render_engine\material\Texture.h" />
   </ItemGroup>
   <ItemGroup>

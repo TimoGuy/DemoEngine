@@ -7,7 +7,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "../../utils/json.hpp"
-#include "../../utils/Utils.h"
 #include "shaderext/ShaderExtZBuffer.h"
 #include "shaderext/ShaderExtPBR_daynight_cycle.h"
 #include "shaderext/ShaderExtShadow.h"
@@ -87,21 +86,21 @@ Shader::Shader(const std::string& fname) : type(ShaderType::UNDEFINED), currentT
 	for (size_t i = 0; i < compiledShaders.size(); i++)
 		glDeleteShader(compiledShaders[i]);		// @NOTE: before, this was 'glAttachShader()', so like after 256 shaders or whatever, the program would crash. Man, I'm dumb. But it's fixed now!  -Timo
 
-	//
-	// Load in all props
-	//
-	std::vector<std::string> propsStrs = params["props"];
-	for (size_t i = 0; i < propsStrs.size(); i++)
-	{
-		ShaderUniform u;
+	// //
+	// // Load in all props
+	// //
+	// std::vector<std::string> propsStrs = params["props"];
+	// for (size_t i = 0; i < propsStrs.size(); i++)
+	// {
+	// 	ShaderUniform u;
 
-		size_t splitIndex = propsStrs[i].find_first_of(' ');
-		u.dataType = strToDataType(trimString(propsStrs[i].substr(0, splitIndex)));
-		u.name = trimString(propsStrs[i].substr(splitIndex));
-		u.isArray = (u.name.find("[") != std::string::npos);
+	// 	size_t splitIndex = propsStrs[i].find_first_of(' ');
+	// 	u.dataType = strToDataType(trimString(propsStrs[i].substr(0, splitIndex)));
+	// 	u.name = trimString(propsStrs[i].substr(splitIndex));
+	// 	u.isArray = (u.name.find("[") != std::string::npos);
 
-		props.push_back(u);
-	}
+	// 	props.push_back(u);
+	// }
 
 	//
 	// Load in all extensions

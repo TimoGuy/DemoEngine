@@ -15,7 +15,41 @@
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // TriangleMeshCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo)
+TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), model(model)
+{
+	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
+	routineCreateTriangleMeshGeometry(baseObject->getTransform());
+}
+
+TriangleMeshCollider::~TriangleMeshCollider()
+{
+	MainLoop::getInstance().physicsScene->removeActor(*body);
+	body->release();
+}
+
+void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
+
+void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
+{
+	// NOTE: I guess that it doesn't matter that you recreate the shape geometry huh. (Why do I have to do it for boxCollider and Spherecollider... maybe it's the scale???)
+	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
+	body->setGlobalPose(trans);
+
+	//
+	// Resize the scale of the triangle mesh
+	//
+	//body->detachShape(*shape);
+
+	// REDO THE TRI MESH!!!!
+	routineCreateTriangleMeshGeometry(newTransform);
+}
+
+physx::PxTransform TriangleMeshCollider::getGlobalPose()
+{
+	return body->getGlobalPose();
+}
+
+void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& newTransform)
 {
 	physx::PxU32 nbVerts = 0;
 	physx::PxU32 nbIndices = 0;
@@ -27,6 +61,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	//
 	// Extract meshes from model and conform to physx trianglemeshdesc
 	//
+	glm::vec3 xformScale = PhysicsUtils::getScale(newTransform);
 	const std::vector<Mesh>& modelMeshes = model->getMeshes();
 	for (size_t i = 0; i < modelMeshes.size(); i++)
 	{
@@ -41,7 +76,7 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 		//
 		for (size_t j = 0; j < vertices.size(); j++)
 		{
-			const glm::vec3 vec = vertices[j].position;
+			const glm::vec3 vec = vertices[j].position * xformScale;
 			verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
 		}
 
@@ -75,16 +110,15 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
 	physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
 
-	//
-	// Create the rigidbody actor!
-	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
-	//
 	physx::PxTriangleMeshGeometry triGeom;
 	triGeom.triangleMesh = triMesh;
 	geom = &triGeom;
 
-	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-	shape = physx::PxRigidActorExt::createExclusiveShape(*body, triGeom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
+	//
+	// Create the rigidbody actor!
+	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
+	//
+	shape = physx::PxRigidActorExt::createExclusiveShape(*body, *geom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
 
 	physx::PxFilterData filterData;
 	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
@@ -101,33 +135,6 @@ TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidAc
 
 	MainLoop::getInstance().physicsScene->addActor(*body);
 	triMesh->release();
-}
-
-TriangleMeshCollider::~TriangleMeshCollider()
-{
-	MainLoop::getInstance().physicsScene->removeActor(*body);
-	body->release();
-}
-
-void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
-
-void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
-{
-	// NOTE: I guess that it doesn't matter that you recreate the shape geometry huh. (Why do I have to do it for boxCollider and Spherecollider... maybe it's the scale???)
-	physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
-	body->setGlobalPose(trans);
-
-	//
-	// Resize the scale of the triangle mesh
-	//
-	//body->detachShape(*shape);
-
-	// REDO THE TRI MESH!!!!
-}
-
-physx::PxTransform TriangleMeshCollider::getGlobalPose()
-{
-	return body->getGlobalPose();
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------

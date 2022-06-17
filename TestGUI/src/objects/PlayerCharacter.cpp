@@ -31,7 +31,6 @@ void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
 {
 	RopeSimulation::points = RopeSimulation::prevPoints = points;
 
-	size_t counter = 0;
 	for (size_t i = 0; i < points.size() - 1; i++)
 	{
 		distances.push_back(glm::length(points[i] - points[i + 1]));
@@ -545,7 +544,7 @@ void PlayerCharacter::processMovement()
 		{
 			lookingInputReturnToDefaultTime = 0.0f;
 			lookingInputReturnToDefaultCachedFromInput = lookingInput;
-			lookingInputReturnToDefaultCachedToInput = glm::vec2(glm::degrees(std::atan2f(-facingDirection.x, facingDirection.y)), 0.25f);
+			lookingInputReturnToDefaultCachedToInput = glm::vec2(glm::degrees(atan2f(-facingDirection.x, facingDirection.y)), 0.25f);
 		}
 	}
 	else
@@ -658,7 +657,7 @@ void PlayerCharacter::processMovement()
 		{
 			glm::vec3 flatLookingDirection = cameraTargetPosition - followCameraAnchorPosition;
 			if (glm::length2(glm::vec2(flatLookingDirection.x, flatLookingDirection.z)) > 0.01f)
-				lookingInput.x = -glm::degrees(std::atan2f(flatLookingDirection.x, flatLookingDirection.z));
+				lookingInput.x = -glm::degrees(atan2f(flatLookingDirection.x, flatLookingDirection.z));
 		}
 	}
 
@@ -941,7 +940,7 @@ void PlayerCharacter::processMovement()
 
 	model->localTransform =
 		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
+		glm::eulerAngleXYZ(0.0f, atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform()));
 }
 
@@ -1032,14 +1031,14 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				//
 				// Slowly face towards the targetFacingDirection
 				//
-				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+				float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+				float targetDirectionAngle = glm::degrees(atan2f(movementVector.x, movementVector.y));
 
 				const float facingTurningAttenuation = glm::clamp(-(flatVelocityMagnitude - runSpeed) / (groundRunSpeedCantTurn - runSpeed) + 1.0f, 0.0f, 1.0f);		// https://www.desmos.com/calculator/fkrhuwn3l4
 				const float turnSpeed = weaponDrawn ? weaponDrawnSpinSpeedMinMax.x : groundedFacingTurnSpeed;
 				const float maxTurnSpeed = facingTurningAttenuation * turnSpeed * MainLoop::getInstance().deltaTime;
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, maxTurnSpeed));
-				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+				facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 
 				//
 				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
@@ -1067,8 +1066,8 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		//
 		if (weaponDrawn && isMoving)
 		{
-			const float facingDirectionAngle	= glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-			const float inputDirectionAngle		= glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+			const float facingDirectionAngle	= glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+			const float inputDirectionAngle		= glm::degrees(atan2f(movementVector.x, movementVector.y));
 			float deltaDirectionAngle			= inputDirectionAngle - facingDirectionAngle;
 
 			if (deltaDirectionAngle < -180.0f)			deltaDirectionAngle += 360.0f;
@@ -1107,11 +1106,11 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		//
 		if (isSpinnySpinny)
 		{
-			const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+			const float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
 			const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnSpinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
 			const float facingTurnSpeed = PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue);
 			const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + facingTurnSpeed * glm::sign(weaponDrawnSpinAccumulated) * MainLoop::getInstance().deltaTime);
-			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+			facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 		}
 
 		//std::cout << "SPINNYSPINNY: " << weaponDrawnSpinAccumulated << std::endl;
@@ -1133,12 +1132,12 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	{
 		isMoving = true;
 
-		float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-		float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+		float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+		float targetDirectionAngle = glm::degrees(atan2f(movementVector.x, movementVector.y));
 
 		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
 
-		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+		facingDirection = glm::vec2(sinf(facingDirectionAngle), cosf(facingDirectionAngle));
 	}
 
 	//
@@ -1148,11 +1147,11 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	const bool isSpinnySpinny = glm::abs(weaponDrawnSpinAccumulated) > weaponDrawnSpinAmountThreshold;
 	if (isSpinnySpinny)
 	{
-		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+		const float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
 		const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnSpinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
 		const float facingTurnSpeed = PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue);
 		const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + facingTurnSpeed * glm::sign(weaponDrawnSpinAccumulated) * MainLoop::getInstance().deltaTime);
-		facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+		facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 	}
 
 	//

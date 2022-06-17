@@ -398,7 +398,7 @@ void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
 	}
 
 	//boneId = 3;
-	int smallestBoneWeightIndex = -1;
+	//int smallestBoneWeightIndex = -1;
 	for (size_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (vertex.boneIds[i] < 0)
