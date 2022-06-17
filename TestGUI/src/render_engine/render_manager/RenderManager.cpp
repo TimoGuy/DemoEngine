@@ -3698,9 +3698,10 @@ void RenderManager::renderImGuiContents()
 	//
 	// Render out the properties panels of selected object
 	//
-	ImGui::Begin("Selected Object Properties");
+	auto objs = getSelectedObjects();
+	if (objs.size() > 0)
 	{
-		auto objs = getSelectedObjects();
+		ImGui::Begin("Selected Object Properties");
 		if (objs.size() == 1)
 		{
 			BaseObject* obj = objs[0];
@@ -3732,12 +3733,8 @@ void RenderManager::renderImGuiContents()
 		{
 			ImGui::Text("Multiple objects are currently selected");
 		}
-		else
-		{
-			ImGui::Text("No object is currently selected");
-		}
+		ImGui::End();
 	}
-	ImGui::End();
 
 	//
 	// Loaded resources window
@@ -5147,7 +5144,6 @@ void RenderManager::renderImGuiContents()
 	ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
 	ImVec2 work_size = viewport->WorkSize;
 
-	auto objs = getSelectedObjects();
 	if (!objs.empty() && !MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
 	{
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
