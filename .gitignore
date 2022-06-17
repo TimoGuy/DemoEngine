@@ -390,3 +390,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Random files
+TestGUI/res/music/neko_hacker_sleep_tight.wav
