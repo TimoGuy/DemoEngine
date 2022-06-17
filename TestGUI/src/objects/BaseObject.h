@@ -143,7 +143,7 @@ public:
 
 protected:
 	physx::PxRigidActor* body = nullptr;
-};
+}; 
 
 
 //
