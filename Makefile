@@ -21,17 +21,14 @@ LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
 LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -std=c++20 -O1 -g -Wall -Wno-unused-command-line-argument -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
-# CCFLAGS  = -O1 -g -Wall -Wextra -Wpedantic
-# CCFLAGS += -Wno-c99-extensions -Wno-unused-parameter -Wno-vla-extension
-# CCFLAGS += -Wno-c++11-extensions -Wno-gnu-statement-expression
-# CCFLAGS += -Wno-gnu-zero-variadic-macro-arguments -Wno-nested-anon-types
-# CCFLAGS += -Wno-gnu-anonymous-struct
+CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
+CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
+CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
+CCFLAGS += -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
 
 # Included Libs
-LDFLAGS  = -m64		# NOTE: Idk if this really does anything?
+LDFLAGS  = -m64
 LDFLAGS += -municode
-# LDFLAGS += -fpack-struct=8
 # LDFLAGS += -lm	# NOTE: this is only for GNU G++ compiler (when using that side of clang eh!)
 LDFLAGS += -lstdc++
 LDFLAGS += -lglfw3_mt
