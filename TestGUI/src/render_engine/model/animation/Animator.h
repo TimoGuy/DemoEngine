@@ -29,7 +29,7 @@ public:
 	Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf = {});
 	
 	void updateAnimation(float deltaTime);
-	void playAnimation(size_t animationIndex, float mixTime = 0.0f, bool looping = true, bool force = false);
+	void playAnimation(size_t animationIndex, float mixTime = 0.0f, bool looping = true);
 	void playBlendTree(std::vector<BlendTreeNode> blendTreeNodes, float mixTime = 0.0f, bool looping = true);		// NOTE: force=true
 
 	void setBlendTreeVariable(std::string variableName, float value);
@@ -44,7 +44,7 @@ public:
 
 	bool isAnimationFinished(size_t animationIndex, float deltaTime);		// NOTE: this doesn't work with blend trees (atm?)
 
-	float animationSpeed = 42.0f;
+	float animationSpeed = 1.0f;
 
 private:
 	std::vector<glm::mat4> finalBoneMatrices;

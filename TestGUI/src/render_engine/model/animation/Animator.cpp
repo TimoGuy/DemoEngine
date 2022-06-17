@@ -3,15 +3,10 @@
 #include <glm/gtx/quaternion.hpp>
 #include "../../../mainloop/MainLoop.h"
 
-//// @Debug: for seeing how long matrix updates occur
-//#include <chrono>
-//#include <iostream>
-//#include <iomanip>
-
 
 Animator::Animator(std::vector<Animation>* animations, const std::vector<std::string>& boneTransformationsToKeepTrackOf) : allAnimations(animations), currentAnimation(nullptr), nextAnimation(nullptr)
 {
-	playAnimation(0, 0.0f, true, true);
+	playAnimation(0, 0.0f, true);
 
 	finalBoneMatrices.reserve(100);
 
@@ -36,7 +31,7 @@ void Animator::updateAnimation(float deltaTime)
 
 #ifdef _DEVELOP
 	// Don't run the animation update unless in playmode
-	if (!MainLoop::getInstance().playMode)
+	if (!MainLoop::getInstance().playMode && !MainLoop::getInstance().timelineViewerMode)
 		return;
 #endif
 
@@ -208,16 +203,8 @@ void Animator::updateAnimation(float deltaTime)
 }
 
 
-void Animator::playAnimation(size_t animationIndex, float mixTime, bool looping, bool force)
-{		// TODO: fix the forcing. It can be overridden somehow
-	if (!force &&
-		(currentAnimationIndex == (int)animationIndex ||
-			nextAnimationIndex == (int)animationIndex))
-		return;
-	if (!force &&
-		nextAnimation)
-		return;		// NOTE: for now this is a blend and no-interrupt system, so when there's blending happening, there will be no other animation that can come in and blend as well
-
+void Animator::playAnimation(size_t animationIndex, float mixTime, bool looping)
+{
 	assert(animationIndex < allAnimations->size());
 
 	if (mixTime > 0.0f)
@@ -462,12 +449,43 @@ void Animator::createNodeTransformCache(AssimpNodeData* node, Animation* animati
 
 bool Animator::isAnimationFinished(size_t animationIndex, float deltaTime)
 {
-	if (currentAnimationIndex != animationIndex)
-		return false;
+	// @NOTE: @TODO: I really hate this animation system... I want better Blend Tree support and Better isAnimationFinished Support
+	if (currentUseBTN)
+	{
+		size_t longestDurationBTNIndex = 0;
+		float longestDurationBTNValue = -1.0f;
+		bool match = false;
+		for (size_t i = 0; i < currentBTN.size(); i++)
+		{
+			if (!match && currentBTN[i].animationIndex == animationIndex)
+				match = true;
 
-	float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime * animationSpeed;
-	float duration = getCurrentAnimation()->getDuration();
-	return time >= duration;
+			if (currentBTN[i].INTERNALnodeDuration > longestDurationBTNValue)
+			{
+				longestDurationBTNIndex = i;
+				longestDurationBTNValue = currentBTN[i].INTERNALnodeDuration;
+			}
+		}
+
+		if (!match)
+			return false;
+
+		float time = currentBTN[longestDurationBTNIndex].INTERNALcurrentNodeTime + currentBTNAnims[longestDurationBTNIndex]->getTicksPerSecond() * deltaTime * animationSpeed;
+		float duration = currentBTN[longestDurationBTNIndex].INTERNALnodeDuration;
+		return time >= duration;
+	}
+	else
+	{
+		if (currentAnimationIndex != animationIndex)
+			return false;
+
+		float time = getCurrentTime() + getCurrentAnimation()->getTicksPerSecond() * deltaTime * animationSpeed;
+		float duration = getCurrentAnimation()->getDuration();
+		return time >= duration;
+	}
+
+	std::cout << "ANIMATOR: Possible Deadlock????" << std::endl;
+	return true;	// Just return true with a possible deadlock?
 }
 
 void Animator::invalidateCache(AssimpNodeData* node)

@@ -50,6 +50,7 @@ void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLe
 		case GL_DEBUG_SOURCE_APPLICATION: return "APPLICATION";
 		case GL_DEBUG_SOURCE_OTHER: return "OTHER";
 		}
+		return "<UNKNOWN>";
 	}();
 
 	auto const type_str = [type]() {
@@ -63,15 +64,18 @@ void GLAPIENTRY openglMessageCallback(GLenum source, GLenum type, GLuint id, GLe
 		case GL_DEBUG_TYPE_MARKER: return "MARKER";
 		case GL_DEBUG_TYPE_OTHER: return "OTHER";
 		}
+		return "<UNKNOWN>";
 	}();
 
 	auto const severity_str = [severity]() {
-		switch (severity) {
+		switch (severity)
+		{
 		case GL_DEBUG_SEVERITY_NOTIFICATION: return "NOTIFICATION";
 		case GL_DEBUG_SEVERITY_LOW: return "LOW";
 		case GL_DEBUG_SEVERITY_MEDIUM: return "MEDIUM";
 		case GL_DEBUG_SEVERITY_HIGH: return "HIGH";
 		}
+		return "<UNKNOWN>";
 	}();
 	std::cout << src_str << ", " << type_str << ", " << severity_str << ", " << id << ": " << message << '\n';
 }
@@ -323,6 +327,9 @@ void MainLoop::run()
 			deltaTime = 0.1f;		// Clamp it if it's too big! (10 fps btw) (1/10 = 0.1)
 		lastFrame = currentFrame;
 
+		// Update time of day
+		GameState::getInstance().updateDayNightTime(deltaTime);
+
 		//
 		// Run Physics intermittently
 		// 
@@ -348,9 +355,6 @@ void MainLoop::run()
 			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
 		}
 
-		// Update time of day
-		GameState::getInstance().updateDayNightTime(deltaTime);
-
 		//
 		// Do all pre-render updates
 		//
@@ -369,6 +373,7 @@ void MainLoop::run()
 		// Render out the rendermanager
 		//
 		renderManager->render();
+
 
 		//
 		// Delete all objects that were marked for deletion
@@ -545,6 +550,7 @@ void setupImGui()
 	style.WindowTitleAlign.x = 0.5f;
 	style.WindowMenuButtonPosition = 1;		// Right side of menu
 	style.WindowRounding = 0;
+	style.Alpha = 1.0f;
 
 	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");

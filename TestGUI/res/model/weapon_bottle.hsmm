@@ -1,0 +1,11 @@
+{
+    "animation_details": null,
+    "included_anims": [],
+    "material_paths": {
+        "PlasticCap": "pbrSlimeVest",
+        "SeeThruRubber": "pbrBottleBody",
+        "Straw": "pbrSlimeTights",
+        "Water": "bottledWaterBobbingMaterial"
+    },
+    "model_path": "res\\slime_girl\\weapon_bottle.glb"
+}

@@ -72,6 +72,25 @@ private:
 	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
+#ifdef _DEVELOP
+// This is for creating a rendercomponent that you need to connect to 0,0,0
+class DummyBaseObject : public BaseObject
+{
+public:
+	DummyBaseObject() { setTransform(glm::mat4(1.0f)); }
+	~DummyBaseObject() {}
+
+	void loadPropertiesFromJson(nlohmann::json& object) {}
+	nlohmann::json savePropertiesToJson() { nlohmann::json j; return j; }
+
+	LightComponent* getLightComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	RenderComponent* getRenderComponent() { return nullptr; }
+
+	void refreshResources() {}
+};
+#endif
+
 
 //
 // This indicates that a light is extractable
@@ -171,6 +190,7 @@ public:
 	// @TODO: @GIANT: You need to add a function to the main game loop to update the animator. This will finally use the modelAniamtor field...
 
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
+	Model* getModelFromIndex(size_t index);
 	void clearAllModels();
 
 	void addTextToRender(TextRenderer* textRenderer);
@@ -179,6 +199,7 @@ public:
 	void renderShadow(Shader* shader);
 
 #ifdef _DEVELOP
+	std::vector<std::string> getMaterialNameList();
 	void TEMPrenderImguiModelBounds();
 #endif
 

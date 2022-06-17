@@ -1,5 +1,8 @@
 #include "Bone.h"
+
 #include <iostream>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 
 Bone::Bone(int id, const aiNodeAnim* channel) : id(id)

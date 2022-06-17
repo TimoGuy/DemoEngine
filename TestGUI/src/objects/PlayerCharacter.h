@@ -3,6 +3,7 @@
 #include <PxPhysicsAPI.h>
 #include "BaseObject.h"
 #include "../render_engine/model/animation/Animator.h"
+#include "../render_engine/model/animation/AnimatorStateMachine.h"
 #include "../render_engine/camera/Camera.h"
 
 typedef unsigned int GLuint;
@@ -155,10 +156,9 @@ public:
 	//
 	Model* model;
 	Animator animator;
-	std::map<std::string, Material*> materials;
+	AnimatorStateMachine animatorStateMachine;
 
 	Model* bottleModel;
-	std::map<std::string, Material*> bottleModelMaterials;
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	glm::vec3 cameraPosition;
@@ -219,7 +219,6 @@ public:
 	
 	// Model Anim stuff I guess
 	float modelOffsetY = -3.35f;
-	float animationSpeed = 42.0f;
 
 private:
 	void refreshResources();
@@ -242,22 +241,14 @@ private:
 	float indoorOverlapCheckHeight = 17.5f;		// NOTE: very tall, because now I want false positives for indoors so I can see how to improve this algorithm later. Thus, @Incomplete
 	float indoorOverlapCheckOffY = 20.0f;
 
-	//
-	// Animation Variables
-	//
-	int animationState = 0;		// 0:Standing	1:Jumping	2:Landing
-	int prevAnimState = -1;
-	bool triggerAnimationStateReset = false;
-
 	float targetCharacterLeanValue = 0.0f;
 	float characterLeanValue = 0.0f;		// [-1, 1], where 0 is no lean
 	bool isMoving = false;
-	bool waitUntilAnimationFinished = false;
 
 	bool lockFacingDirection = false;
 	bool lockJumping = false;
 
-	bool triggerDrinkWaterAnimation = false;
+	bool prevIsGrounded;
 
 	//
 	// Rope Simulations

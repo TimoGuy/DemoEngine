@@ -35,6 +35,8 @@
 
   *This is gonna be similar to Unity's Timeline feature. It will be usable for animation/skinned meshes and cutscenes bc then you'll be able to align sounds or movements with this system.*
 
+  - [ ] Make file extension "Hawsoo Model Metadata (.hsmm)"
+
   - [ ] Create a state machine
     - [ ] It'll just be animations floating around and a place to put parameters to control when these animations get put in.
     - [ ] Make sure there's error checking (i.e. if two animation states have the same exact variables)
@@ -53,6 +55,16 @@
 
   - [x] Implement FMOD into the game
 
+
+
+
+
+
+  ### ~~Prebaked GI with all of the static lights in the world~~ (Maybe out of scope? Or may not mesh well with the realtime lighting?)
+
+  *There should be a GI bake pass when doing a heavy release of the game where you can take all of the static world pieces and bake them with static point lights and then load the irradiances into probes that can be used for all of the dynamic objects.*
+
+  - [ ] There should be 
 
 
 
@@ -197,9 +209,21 @@
 
 -------------------------------------------------------------------------------------------------------------------------
 
-## Gameplay
+## Game Design
 
-  ### 
+  ### Combat
+
+  - [ ] Create "villager" type "enemy"
+    - They essentially spot Jojo's nice, healthy body and chase and demand Jojo's food and water
+    - If left to run too long, they just die, however, they will actually grab and shove you.
+      - If you get attacked this way, you'll spill some water, and then they'll start chasing after you once they slurp up the water on the ground.
+
+  - [ ] Create a "water splash" particle effect
+    - The bottle will crack the more you get hit (the bottle's wear is supposed to indicate your poise. If it gets completely broken, then you're left vulnerable for a couple moments.)
+    - This of course is supposed to really look like blood effects hahaha. Don't think about it too much yo!
+
+
+
 
   ### Physics-based combat system
 

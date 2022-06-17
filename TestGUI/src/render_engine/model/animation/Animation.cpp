@@ -2,7 +2,9 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #include <algorithm>
+#include "../Model.h"
 
 
 Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata animationMetadata)
@@ -22,6 +24,7 @@ Animation::Animation(const aiScene* scene, Model* model, AnimationMetadata anima
 	// Make sure that the animation exists
 	assert(animation != nullptr);
 
+	name = animation->mName.C_Str();
 	duration = (float)animation->mDuration;
 	ticksPerSecond = (int)animation->mTicksPerSecond * animationMetadata.timestampSpeed;
 

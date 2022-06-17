@@ -507,7 +507,7 @@ namespace PhysicsUtils
 		for (unsigned int i = 0; i < numVertices; i++)
 		{
 			// Set point
-			glm::vec4 point = glm::vec4(std::cosf(angle) * radius, std::sinf(angle) * radius, 0.0f, 1.0f);
+			glm::vec4 point = glm::vec4(cosf(angle) * radius, sinf(angle) * radius, 0.0f, 1.0f);
 			ringVertices.push_back(modelMatrix * (glm::toMat4(glm::quat(eulerAngles)) * point + glm::vec4(offset, 0.0f)));
 
 			// Increment angle
@@ -549,7 +549,7 @@ namespace PhysicsUtils
 		for (unsigned int i = 0; i <= numVertices / 2; i++)
 		{
 			// Set point
-			glm::vec4 point = glm::vec4(std::cosf(angle) * radius - halfHeight, std::sinf(angle) * radius, 0.0f, 1.0f);
+			glm::vec4 point = glm::vec4(cosf(angle) * radius - halfHeight, sinf(angle) * radius, 0.0f, 1.0f);
 			ringVertices.push_back(modelMatrix * glm::toMat4(glm::quat(eulerAngles)) * point);
 
 			// Increment angle
@@ -560,7 +560,7 @@ namespace PhysicsUtils
 		for (unsigned int i = 0; i <= numVertices / 2; i++)
 		{
 			// Set point
-			glm::vec4 point = glm::vec4(std::cosf(angle) * radius + halfHeight, std::sinf(angle) * radius, 0.0f, 1.0f);
+			glm::vec4 point = glm::vec4(cosf(angle) * radius + halfHeight, sinf(angle) * radius, 0.0f, 1.0f);
 			ringVertices.push_back(modelMatrix * glm::toMat4(glm::quat(eulerAngles)) * point);
 
 			// Increment angle
@@ -648,7 +648,7 @@ namespace PhysicsUtils
 		const float farTimeZ = (bounds.center.z + signZ * (bounds.extents.z + paddingZ) - start.z) * scaleZ;
 
 		//
-		// If the closest time of collision on either axis is further than the far time on the opposite axis, we can’t be colliding
+		// If the closest time of collision on either axis is further than the far time on the opposite axis, we canï¿½t be colliding
 		//
 		if (nearTimeX > farTimeY ||
 			nearTimeX > farTimeZ ||

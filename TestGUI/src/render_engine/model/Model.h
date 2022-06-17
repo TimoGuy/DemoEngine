@@ -1,31 +1,19 @@
 #pragma once
 
-
-#include <assimp/scene.h>
 #include <vector>
 #include <string>
 #include <map>
 
+#include "animation/Animation.h"
 #include "Mesh.h"
 
 
-class Animation;
+struct aiNode;
+struct aiScene;
+struct aiMesh;
 struct ViewFrustum;
 class Shader;
 typedef unsigned int GLuint;
-
-struct BoneInfo
-{
-	int id;
-	glm::mat4 offset;
-};
-
-struct AnimationMetadata
-{
-	std::string animationName;
-	bool trackXZRootMotion;
-	float timestampSpeed = 1.0f;
-};
 
 class Model
 {
@@ -34,10 +22,17 @@ public:
 	Model(const char* path);
 	Model(const char* path, std::vector<AnimationMetadata> animationMetadatas);
 	Model(const std::vector<Vertex>& quadMesh);			// NOTE: this is for VoxelGroup class
+	~Model() { }
 	bool getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView);
 	void render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage);
 
 #ifdef _DEVELOP
+	std::vector<std::string> getAnimationNameList();
+private:
+	std::vector<std::string> animationNameList;
+public:
+
+	std::vector<std::string> getMaterialNameList();
 	void TEMPrenderImguiModelBounds(glm::mat4 trans);
 #endif
 
@@ -60,8 +55,6 @@ private:
 
 	std::map<std::string, BoneInfo> boneInfoMap;
 	int boneCounter = 0;
-
-	const aiScene* scene;
 
 	void loadModel(std::string path, std::vector<AnimationMetadata> animationMetadatas);
 	void processNode(aiNode* node, const aiScene* scene);

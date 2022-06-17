@@ -1,0 +1,73 @@
+{
+    "animation_details": {
+        "Idle": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        },
+        "No_Water": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        }
+    },
+    "animation_state_machine": {
+        "asm_nodes": [
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Idle",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": false,
+                "node_name": "waterFull",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isFull"
+                        }
+                    ]
+                ],
+                "transition_time": 1.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "No_Water",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": false,
+                "loop_animation": false,
+                "node_name": "waterEmpty",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "isFull"
+                        }
+                    ]
+                ],
+                "transition_time": 1.0
+            }
+        ],
+        "asm_start_node_index": 0,
+        "asm_variables": [
+            {
+                "value": 0.0,
+                "var_name": "isFull",
+                "variable_type": 0
+            }
+        ]
+    },
+    "included_anims": [
+        "Idle",
+        "No_Water"
+    ],
+    "material_paths": {
+        "Mound": "pbrSlimeBelt",
+        "Water": "pbrWater"
+    },
+    "model_path": "res\\model\\water_pool.glb"
+}

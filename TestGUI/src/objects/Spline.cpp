@@ -224,7 +224,10 @@ void Spline::imguiRender()
         for (bool isLocalCtrlPt = false;; isLocalCtrlPt = true)
         {
             if (ImGuizmo::IsUsing() && m_imguizmo_using_index == (int)i && isLocalCtrlPt != m_imguizmo_using_is_local_ctrl_pt)
-                if (isLocalCtrlPt) break; else continue;       // When you're using the manipulate function, only show either the objectspace position or the control point position.
+                if (isLocalCtrlPt)
+                    break;
+                else
+                    continue;       // When you're using the manipulate function, only show either the objectspace position or the control point position.
 
             glm::mat4 transformCopy = getTransform() * glm::translate(glm::mat4(1.0f), m_control_modules[i].position + (isLocalCtrlPt ? m_control_modules[i].localControlPoint : glm::vec3(0)));
             bool changed =
@@ -242,7 +245,9 @@ void Spline::imguiRender()
                 m_imguizmo_using_is_local_ctrl_pt = isLocalCtrlPt;
             }
             else
+            {
                 m_imguizmo_using_index = -1;
+            }
 
             if (changed)
             {

@@ -11,7 +11,9 @@
 
 #include "../material/Texture.h"
 #include "../material/Shader.h"
+#include "../model/Model.h"
 #include "../model/animation/Animation.h"
+#include "../../utils/FileLoading.h"
 
 
 void* findResource(const std::string& resourceName);
@@ -47,7 +49,8 @@ namespace Resources
 		}
 
 		resource = loadResource(resourceName, false);
-		registerResource(resourceName, resource);
+		if (resource != nullptr)
+			registerResource(resourceName, resource);
 
 		if (resourceDiffersAnswer != nullptr)
 			*resourceDiffersAnswer = (resource != compareResource);
@@ -61,7 +64,8 @@ namespace Resources
 
 		// Re-fetch that resource!
 		void* resource = loadResource(resourceName, false);
-		registerResource(resourceName, resource);
+		if (resource != nullptr)
+			registerResource(resourceName, resource);
 	}
 
 	void unloadResource(std::string resourceName)
@@ -270,7 +274,7 @@ void* loadTexture2D(
 	}
 	else
 	{
-		delete findResource(textureName);
+		delete (Texture*)findResource(textureName);		// @NOTE: there are many type of textures... @MEMLEAK?
 		return nullptr;
 	}
 }
@@ -311,7 +315,7 @@ void* loadTextureCube(
 	}
 	else
 	{
-		delete findResource(textureName);
+		delete (Texture*)findResource(textureName);
 		return nullptr;
 	}
 }
@@ -340,6 +344,81 @@ void* loadModel(const std::string& modelName, bool isUnloading, const char* path
 	if (!isUnloading)
 	{
 		Model* model = new Model(path, animationNames);
+		return model;
+	}
+	else
+	{
+		delete (Model*)findResource(modelName);
+		return nullptr;
+	}
+}
+
+void* loadModelFromHSMM(const std::string& modelName, bool isUnloading, const char* path)
+{
+	if (!isUnloading)
+	{
+		nlohmann::json hsmm = FileLoading::loadJsonFile("res/model/" + std::string(path) + ".hsmm");
+
+		// Setup importing the animations @COPYPASTA (RenderManager.cpp)
+		std::vector<AnimationMetadata> animationsToInclude;
+		if (hsmm.contains("included_anims"))
+		{
+			std::vector<std::string> animationNames = hsmm["included_anims"];
+			for (size_t i = 0; i < animationNames.size(); i++)
+			{
+				std::string animationName = animationNames[i];
+				bool trackXZRootMotion = false;
+				float timestampSpeed = 1.0f;
+				if (hsmm.contains("animation_details") && hsmm["animation_details"].contains(animationName))
+				{
+					if (hsmm["animation_details"][animationName].contains("track_xz_root_motion"))
+						trackXZRootMotion = hsmm["animation_details"][animationName]["track_xz_root_motion"];
+
+					if (hsmm["animation_details"][animationName].contains("timestamp_speed"))
+						timestampSpeed = hsmm["animation_details"][animationName]["timestamp_speed"];
+				}
+
+				animationsToInclude.push_back({ animationNames[i], trackXZRootMotion, timestampSpeed });
+			}
+		}
+
+		Model* model = new Model(std::string(hsmm["model_path"]).c_str(), animationsToInclude);
+
+		// Setup importing the material paths (and load those materials at the same time)
+		// @NOTE: need to import the animations and the model before touching the materials
+		// @COPYPASTA (RenderManager.cpp)
+		if (hsmm.contains("material_paths"))
+		{
+			nlohmann::json& materialPathsJ = hsmm["material_paths"];
+			for (auto& [key, val] : materialPathsJ.items())
+			{
+				std::string materialPath = std::string(val);
+				//timelineViewerState.materialPathsMap[key] = materialPath;
+
+				// Load in the material too @COPYPASTA
+				try
+				{
+					//
+					// Load in the new material
+					//
+					Material* materialToAssign = (Material*)Resources::getResource("material;" + materialPath);	// @NOTE: this line should fail if the material isn't inputted correctly.
+					if (materialToAssign == nullptr)
+						throw nullptr;		// Just get it to the catch statement
+
+					std::map<std::string, Material*> materialAssignmentMap;
+					materialAssignmentMap[key] = materialToAssign;
+					model->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+
+					// Assign to the timelineViewerState
+					//timelineViewerState.materialPathsMap[key] = materialPath;
+				}
+				catch (...)
+				{
+					// Abort applying the material name and show an error message.  @HACK: Bad patterns
+				}
+			}
+		}
+	
 		return model;
 	}
 	else
@@ -402,43 +481,14 @@ void* loadLvlGridMaterial(const std::string& materialName, bool isUnloading, glm
 
 void* loadResource(const std::string& resourceName, bool isUnloading)
 {
-	//
-	// NOTE: this is gonna be a huge function btw
-	//
-	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(7).c_str());
-
-//	if (resourceName == "shader;pbr")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/pbr.frag");
-//	if (resourceName == "shader;zelly")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/zelly.frag");
-//	if (resourceName == "shader;lvlGrid")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/lvlGrid.vert", "shader/src/lvlGrid.frag");		// @DEBUG
-//	if (resourceName == "shader;skybox")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/skybox.frag");
-//	if (resourceName == "shader;csmShadowPass")							return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/csm_shadow.vert", "shader/src/csm_shadow.geom", "shader/src/csm_shadow.frag");
-//	if (resourceName == "shader;pointLightShadowPass")					return loadShaderProgramVGF(resourceName, isUnloading, "shader/src/point_shadow.vert", "shader/src/point_shadow.geom", "shader/src/point_shadow.frag");
-//	if (resourceName == "shader;debugCSM")								return loadShaderProgramVF(resourceName, isUnloading, "shader/src/debug_csm.vert", "shader/src/debug_csm.frag");
-//	if (resourceName == "shader;text")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/text.vert", "shader/src/text.frag");
-//	if (resourceName == "shader;hdriGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/hdri_equirectangular.frag");		// NOTE: may not be used in the future
-//	if (resourceName == "shader;irradianceGeneration")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/irradiance_convolution.frag");
-//	if (resourceName == "shader;pbrPrefilterGeneration")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/cubemap.vert", "shader/src/prefilter.frag");
-//	if (resourceName == "shader;brdfGeneration")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/brdf.vert", "shader/src/brdf.frag");
-//	if (resourceName == "shader;bloom_postprocessing")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/bloom_postprocessing.frag");
-//	if (resourceName == "shader;postprocessing")						return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/postprocessing.frag");
-//	if (resourceName == "shader;hudUI")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/hudUI.vert", "shader/src/hudUI.frag");
-//	if (resourceName == "shader;zPassShader")							return loadShaderProgramVF(resourceName, isUnloading, "shader/src/pbr.vert", "shader/src/z_prepass.frag");
-//	if (resourceName == "shader;luminance_postprocessing")				return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/luminance_postprocessing.frag");
-//	if (resourceName == "shader;computeLuminanceAdaptation")			return loadShaderProgramC(resourceName, isUnloading, "shader/src/luminance_adaptation.comp");
-//	if (resourceName == "shader;ssao")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/ssao_postprocessing.frag");
-//	if (resourceName == "shader;volumetricLighting")					return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/volumetric_postprocessing.frag");
-//	if (resourceName == "shader;blurX")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_x.frag");
-//	if (resourceName == "shader;blurY")									return loadShaderProgramVF(resourceName, isUnloading, "shader/src/postprocessing.vert", "shader/src/blur_y.frag");
-//#ifdef _DEVELOP
-//	if (resourceName == "shader;selectionSkinnedWireframe")				return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/color.frag");
-//	if (resourceName == "shader;pickingRenderFormat")					return loadShaderProgramVF(resourceName, isUnloading, "shader/pbr.vert", "shader/debug_picking.frag");
-//#endif
+	if (resourceName.rfind("shader;", 0) == 0)							return loadShader(resourceName, isUnloading, resourceName.substr(sizeof("shader;") - 1).c_str());
 
 	//
 	// Common textures & materials
 	//
+	if (resourceName == "material;pbrDefaultMaterial")					return loadPBRMaterial(resourceName, isUnloading, "texture;pbrDefaultAlbedo", "texture;pbrDefaultNormal", "texture;pbr0_5Value", "texture;pbr0_5Value");
 
-
+	if (resourceName == "texture;pbrDefaultAlbedo")						return loadTexture2D(resourceName, isUnloading, "res/_debug/uv_grid_texture.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
 	if (resourceName == "texture;cloudTestPos")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_pos.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;cloudTestNeg")							return loadTexture2D(resourceName, isUnloading, "res/skybox/cloud_test_neg.png", GL_RGBA, GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -455,7 +505,7 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 
 	if (resourceName == "material;pbrWater")							return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeShortsAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness", 0.4f);
 
-	if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);
+	//if (resourceName == "texture;hdrEnvironmentMap")					return loadTexture2D(resourceName, isUnloading, "res/skybox/environment.hdr", GL_RGB, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, true);		// @NOTE: The minfilter was supposed to be GL_LINEAR_MIPMAP_LINEAR oh well. It's unused now though.
 	if (resourceName == "texture;nightSkybox")							return loadTextureCube(resourceName, isUnloading, { { "res/night_skybox/right.png", "res/night_skybox/left.png", "res/night_skybox/top.png", "res/night_skybox/bottom.png", "res/night_skybox/front.png", "res/night_skybox/back.png" } }, GL_RGBA, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, false, false);		// @Weird: Front.png and Back.png needed to be switched, then flipVertical needed to be false.... I wonder if skyboxes are just gonna be a struggle lol -Timo
 
 	if (resourceName == "material;lvlGridMaterial")						return loadLvlGridMaterial(resourceName, isUnloading, { 1, 1, 1 });
@@ -484,17 +534,14 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Set pieces
 	//
-	if (resourceName == "model;waterPuddle")							return loadModel(resourceName, isUnloading, "res/model/water_pool.glb", { { "Idle", false }, { "No_Water", false } });
-	if (resourceName == "model;cube")									return loadModel(resourceName, isUnloading, "res/model/cube.glb");
-	if (resourceName == "model;houseInterior")							return loadModel(resourceName, isUnloading, "res/model/house_w_interior.glb");
 	// Custom models vvv
 	if (resourceName.rfind("model;custommodel;", 0) == 0)				return loadModel(resourceName, isUnloading, resourceName.substr(18).c_str());
 
 	//
 	// Slime Girl Model and Materials
 	//
-	if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Jumping_Midair", false, 1.5f }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false }, { "Wall_Climbing", false }, { "Wall_Hang", false }, { "Idle_Sword_Drawn_horizontal", false }, { "Idle_Sword_Drawn_vertical", false }, { "Attack_light_horizontal", false }, { "Attack_light_vertical", false }, { "Attack_midair", false, 2.0f }, { "Spinny_Spinny", false }, { "Idle_Spinny_Left", false }, { "Idle_Spinny_Right", false } });
-	if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
+	//if (resourceName == "model;slimeGirl")								return loadModel(resourceName, isUnloading, "res/slime_girl/slime_girl.glb", { { "Idle", false }, { "Walking", true }, { "Running", true }, { "Jumping_From_Idle", false }, { "Jumping_From_Run", false }, { "Jumping_Midair", false, 1.5f }, { "Land_From_Jumping_From_Idle", false }, { "Land_From_Jumping_From_Run", false }, { "Land_Hard", false }, { "Get_Up_From_Land_Hard", false }, { "Draw_Water", false }, { "Drink_From_Bottle", false }, { "Pick_Up_Bottle", false }, { "Write_In_Journal", false }, { "Wall_Climbing", false }, { "Wall_Hang", false }, { "Idle_Sword_Drawn_horizontal", false }, { "Idle_Sword_Drawn_vertical", false }, { "Attack_light_horizontal", false }, { "Attack_light_vertical", false }, { "Attack_midair", false, 2.0f }, { "Spinny_Spinny", false }, { "Idle_Spinny_Left", false }, { "Idle_Spinny_Right", false } });
+	//if (resourceName == "model;weaponBottle")							return loadModel(resourceName, isUnloading, "res/slime_girl/weapon_bottle.glb");
 
 	if (resourceName == "material;pbrSlimeBelt")						return loadPBRMaterial(resourceName, isUnloading, "texture;pbrSlimeBeltAlbedo", "texture;pbrSlimeBeltNormal", "texture;pbr0Value", "texture;pbrSlimeBeltRoughness");
 	if (resourceName == "texture;pbrSlimeBeltAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Clay002/1K-JPG/Clay002_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
@@ -565,6 +612,18 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestAlbedo")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Color.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+
+	//
+	// Load Model from .hsmm file
+	// @NOTE: this is the last "model;" prefix resource
+	//
+	if (resourceName.rfind("model;", 0) == 0)							return loadModelFromHSMM(resourceName, isUnloading, resourceName.substr(sizeof("model;") - 1).c_str());
+
+	//
+	// Special Materials
+	//
+	if (resourceName == "material;bottledWaterBobbingMaterial")			return &BottledWaterBobbingMaterial::getInstance();
+	if (resourceName == "material;staminaMeterMaterial")				return &StaminaMeterMaterial::getInstance();
 
 	// Out of luck, bud. Try the custom resources yo
 	std::cout << "ERROR:: Resource \"" << resourceName << "\" was not found." << std::endl;

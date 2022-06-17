@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "../../mainloop/MainLoop.h"
+#include "../resources/Resources.h"
 #include "../render_manager/RenderManager.h"
 #include "../material/Texture.h"
 #include "../material/Shader.h"
@@ -16,6 +17,7 @@ Mesh::Mesh(glm::vec3 centerOfGravity, std::vector<Vertex> vertices, std::vector<
     Mesh::bounds = bounds;
     Mesh::materialName = materialName;
     Mesh::depthPriority = 0.0f;
+    Mesh::material = (Material*)Resources::getResource("material;pbrDefaultMaterial");
 
     setupMesh();
 }

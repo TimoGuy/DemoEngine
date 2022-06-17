@@ -322,7 +322,28 @@ namespace ImGuizmo
         MT_SCALE_XYZ
     };
 
-    enum OPERATION;
+    // call it when you want a gizmo
+    // Needs view and projection matrices. 
+    // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
+    // translation is applied in world space
+    enum OPERATION
+    {
+       TRANSLATE_X      = (1u << 0),
+       TRANSLATE_Y      = (1u << 1),
+       TRANSLATE_Z      = (1u << 2),
+       ROTATE_X         = (1u << 3),
+       ROTATE_Y         = (1u << 4),
+       ROTATE_Z         = (1u << 5),
+       ROTATE_SCREEN    = (1u << 6),
+       SCALE_X          = (1u << 7),
+       SCALE_Y          = (1u << 8),
+       SCALE_Z          = (1u << 9),
+       BOUNDS           = (1u << 10),
+       TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
+       ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
+       SCALE = SCALE_X | SCALE_Y | SCALE_Z
+    };
+
     int GetMoveType(OPERATION op, vec_t* gizmoHitProportion);
 
 
@@ -371,28 +392,6 @@ namespace ImGuizmo
    // Render a cube with face color corresponding to face normal. Usefull for debug/tests
    IMGUI_API void DrawCubes(const float* view, const float* projection, const float* matrices, int matrixCount);
    IMGUI_API void DrawGrid(const float* view, const float* projection, const float* matrix, const float gridSize);
-
-   // call it when you want a gizmo
-   // Needs view and projection matrices. 
-   // matrix parameter is the source matrix (where will be gizmo be drawn) and might be transformed by the function. Return deltaMatrix is optional
-   // translation is applied in world space
-   enum OPERATION
-   {
-      TRANSLATE_X      = (1u << 0),
-      TRANSLATE_Y      = (1u << 1),
-      TRANSLATE_Z      = (1u << 2),
-      ROTATE_X         = (1u << 3),
-      ROTATE_Y         = (1u << 4),
-      ROTATE_Z         = (1u << 5),
-      ROTATE_SCREEN    = (1u << 6),
-      SCALE_X          = (1u << 7),
-      SCALE_Y          = (1u << 8),
-      SCALE_Z          = (1u << 9),
-      BOUNDS           = (1u << 10),
-      TRANSLATE = TRANSLATE_X | TRANSLATE_Y | TRANSLATE_Z,
-      ROTATE = ROTATE_X | ROTATE_Y | ROTATE_Z | ROTATE_SCREEN,
-      SCALE = SCALE_X | SCALE_Y | SCALE_Z
-   };
 
    inline OPERATION operator|(OPERATION lhs, OPERATION rhs)
    {

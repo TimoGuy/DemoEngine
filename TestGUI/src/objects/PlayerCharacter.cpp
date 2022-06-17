@@ -9,6 +9,7 @@
 #include <glm/gtx/scalar_multiplication.hpp>
 #include "components/PhysicsComponents.h"
 #include "../mainloop/MainLoop.h"
+#include "../render_engine/model/Model.h"
 #include "../render_engine/render_manager/RenderManager.h"
 #include "../render_engine/resources/Resources.h"
 #include "../utils/PhysicsUtils.h"
@@ -30,7 +31,6 @@ void RopeSimulation::initializePoints(const std::vector<glm::vec3>& points)
 {
 	RopeSimulation::points = RopeSimulation::prevPoints = points;
 
-	size_t counter = 0;
 	for (size_t i = 0; i < points.size() - 1; i++)
 	{
 		distances.push_back(glm::length(points[i] - points[i + 1]));
@@ -484,7 +484,7 @@ void PlayerCharacter::refreshResources()
 	// since Assimp's model loader incorrectly includes bones and vertices with fbx)
 	//
 	bool recreateAnimations;
-	model = (Model*)Resources::getResource("model;slimeGirl", model, &recreateAnimations);
+	model = (Model*)Resources::getResource("model;slime_girl", model, &recreateAnimations);
 	if (recreateAnimations)
 	{
 		animator =
@@ -505,44 +505,16 @@ void PlayerCharacter::refreshResources()
 				}
 		);
 
-		materials["BeltAccent"] = (Material*)Resources::getResource("material;pbrSlimeBeltAccent");
-		materials["Body"] = (Material*)Resources::getResource("material;pbrSlimeBody");
-		materials["Tights"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-		materials["Sweater"] = (Material*)Resources::getResource("material;pbrSlimeSweater");
-		materials["Sweater2"] = (Material*)Resources::getResource("material;pbrSlimeSweater2");
-		materials["Vest"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-		materials["Shorts"] = (Material*)Resources::getResource("material;pbrSlimeShorts");
-		materials["Belt"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
-		materials["Eyebrow"] = (Material*)Resources::getResource("material;pbrSlimeEyebrow");
-		materials["Eyes"] = (Material*)Resources::getResource("material;pbrSlimeEye");
-		materials["Hair"] = (Material*)Resources::getResource("material;pbrSlimeHair");
-		materials["Shoes"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite");
-		materials["ShoeWhite2"] = (Material*)Resources::getResource("material;pbrSlimeShoeWhite2");
-		materials["ShoeBlack"] = (Material*)Resources::getResource("material;pbrSlimeShoeBlack");
-		materials["ShoeAccent"] = (Material*)Resources::getResource("material;pbrSlimeShoeAccent");
-		materials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
+		animatorStateMachine = AnimatorStateMachine("slime_girl", &animator);
 
-		((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
-		((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
-		((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
-
-		model->setMaterials(materials);
-
-		model->setDepthPriorityOfMeshesWithMaterial("Eyebrow", -0.5f);
+		//((PBRMaterial*)materials["Sweater"])->setTilingAndOffset(glm::vec4(0.4, 0.4, 0, 0));
+		//((PBRMaterial*)materials["Vest"])->setTilingAndOffset(glm::vec4(0.6, 0.6, 0, 0));
+		//((PBRMaterial*)materials["Shoes"])->setTilingAndOffset(glm::vec4(0.5, 0.5, 0, 0));
 	}
 
-	bottleModel = (Model*)Resources::getResource("model;weaponBottle", bottleModel, &recreateAnimations);
+	bottleModel = (Model*)Resources::getResource("model;weapon_bottle", bottleModel, &recreateAnimations);
 	if (recreateAnimations)
 	{
-		// Now for the bottle model!
-		bottleModelMaterials["PlasticCap"] = (Material*)Resources::getResource("material;pbrSlimeVest");
-		bottleModelMaterials["SeeThruRubber"] = (Material*)Resources::getResource("material;pbrBottleBody");
-		bottleModelMaterials["MetalStand"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-		bottleModelMaterials["Straw"] = (Material*)Resources::getResource("material;pbrSlimeTights");
-		bottleModelMaterials["Water"] = &BottledWaterBobbingMaterial::getInstance();
-		bottleModelMaterials["StaminaMeter"] = &StaminaMeterMaterial::getInstance();
-
-		bottleModel->setMaterials(bottleModelMaterials);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("SeeThruRubber", 0.0f);
 		bottleModel->setDepthPriorityOfMeshesWithMaterial("Water", 1.0f);		// @HACK: @HAX: Make Water render before SeeThruRubber. This is of course NG and I should never ship a game with this technique in it lol  -Timo
 	}
@@ -572,7 +544,7 @@ void PlayerCharacter::processMovement()
 		{
 			lookingInputReturnToDefaultTime = 0.0f;
 			lookingInputReturnToDefaultCachedFromInput = lookingInput;
-			lookingInputReturnToDefaultCachedToInput = glm::vec2(glm::degrees(std::atan2f(-facingDirection.x, facingDirection.y)), 0.25f);
+			lookingInputReturnToDefaultCachedToInput = glm::vec2(glm::degrees(atan2f(-facingDirection.x, facingDirection.y)), 0.25f);
 		}
 	}
 	else
@@ -685,7 +657,7 @@ void PlayerCharacter::processMovement()
 		{
 			glm::vec3 flatLookingDirection = cameraTargetPosition - followCameraAnchorPosition;
 			if (glm::length2(glm::vec2(flatLookingDirection.x, flatLookingDirection.z)) > 0.01f)
-				lookingInput.x = -glm::degrees(std::atan2f(flatLookingDirection.x, flatLookingDirection.z));
+				lookingInput.x = -glm::degrees(atan2f(flatLookingDirection.x, flatLookingDirection.z));
 		}
 	}
 
@@ -779,15 +751,24 @@ void PlayerCharacter::processMovement()
 	//
 	if (playerState == PlayerState::NORMAL)
 	{
-		if (((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() &&
-			!((PlayerPhysics*)getPhysicsComponent())->getIsSliding())		// @TODO: for some reason sliding and trying to jump doesn't work... why???
+		bool isGroundedChecked =
+			((PlayerPhysics*)getPhysicsComponent())->getIsGrounded() &&
+			!((PlayerPhysics*)getPhysicsComponent())->getIsSliding();		// @TODO: for some reason sliding and trying to jump doesn't work... why???
+		if (isGroundedChecked)
 		{
 			velocity = processGroundedMovement(movementVector);
 		}
 		else
 		{
 			velocity = processAirMovement(movementVector);
+
+			// Trigger falling if velo.y <= 0.0f
+			if (prevIsGrounded && ((PlayerPhysics*)getPhysicsComponent())->velocity.y <= 0.0f)
+			{
+				animatorStateMachine.setVariable("triggerFall", true);
+			}
 		}
+		prevIsGrounded = isGroundedChecked;
 
 		// Poll input for the jump (include debounce input)
 		jumpInputDebounceTimer -= MainLoop::getInstance().deltaTime;
@@ -809,7 +790,11 @@ void PlayerCharacter::processMovement()
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			((PlayerPhysics*)getPhysicsComponent())->setIsGrounded(false);
 			((PlayerPhysics*)getPhysicsComponent())->setIsSliding(false);
-			triggerAnimationStateReset = true;
+
+			if (canJumpGrounded)
+				animatorStateMachine.setVariable("triggerJumping", true);
+			else if (human_canJumpAirbourne)
+				animatorStateMachine.setVariable("triggerMidairJumping", true);
 
 			//
 			// @SPECIAL_SKILL: @HUMAN: Human midair Jump
@@ -929,6 +914,7 @@ void PlayerCharacter::processMovement()
 			velocity.y = ps_ledgeGrabHumanData.jumpSpeed;
 			GameState::getInstance().inputStaminaEvent(StaminaEvent::JUMP);
 			playerState = PlayerState::NORMAL;
+			animatorStateMachine.setVariable("triggerJumping", true);
 		}
 
 		// @TODO: Hold the stick away from facingDirection to do a let go instead of a jump up.
@@ -954,7 +940,7 @@ void PlayerCharacter::processMovement()
 
 	model->localTransform =
 		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
-		glm::eulerAngleXYZ(0.0f, std::atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
+		glm::eulerAngleXYZ(0.0f, atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform()));
 }
 
@@ -1032,6 +1018,7 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 			{
 				facingDirection = movementVector;
 				currentRunSpeed = -currentRunSpeed; // NOTE: this makes more sense especially when you land on the ground and inherit a butt ton of velocity
+				animatorStateMachine.setVariable("triggerTurnAround", true);
 			}
 			// Immediate facing direction when moving slowly:
 			else if (!weaponDrawn && flatVelocityMagnitude <= immediateTurningRequiredSpeed)		// @NOTE: after some thinking, I really don't think that this should be allowed while the weapon is drawn, bc then turning would be very difficult.  -Timo
@@ -1044,14 +1031,14 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 				//
 				// Slowly face towards the targetFacingDirection
 				//
-				float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-				float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+				float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+				float targetDirectionAngle = glm::degrees(atan2f(movementVector.x, movementVector.y));
 
 				const float facingTurningAttenuation = glm::clamp(-(flatVelocityMagnitude - runSpeed) / (groundRunSpeedCantTurn - runSpeed) + 1.0f, 0.0f, 1.0f);		// https://www.desmos.com/calculator/fkrhuwn3l4
 				const float turnSpeed = weaponDrawn ? weaponDrawnSpinSpeedMinMax.x : groundedFacingTurnSpeed;
 				const float maxTurnSpeed = facingTurningAttenuation * turnSpeed * MainLoop::getInstance().deltaTime;
 				float newFacingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, maxTurnSpeed));
-				facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+				facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 
 				//
 				// Calculate lean amount (use targetDirectionAngle bc of lack of deltaTime mess)
@@ -1079,8 +1066,8 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		//
 		if (weaponDrawn && isMoving)
 		{
-			const float facingDirectionAngle	= glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-			const float inputDirectionAngle		= glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+			const float facingDirectionAngle	= glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+			const float inputDirectionAngle		= glm::degrees(atan2f(movementVector.x, movementVector.y));
 			float deltaDirectionAngle			= inputDirectionAngle - facingDirectionAngle;
 
 			if (deltaDirectionAngle < -180.0f)			deltaDirectionAngle += 360.0f;
@@ -1119,11 +1106,11 @@ physx::PxVec3 PlayerCharacter::processGroundedMovement(const glm::vec2& movement
 		//
 		if (isSpinnySpinny)
 		{
-			const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+			const float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
 			const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnSpinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
 			const float facingTurnSpeed = PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue);
 			const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + facingTurnSpeed * glm::sign(weaponDrawnSpinAccumulated) * MainLoop::getInstance().deltaTime);
-			facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+			facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 		}
 
 		//std::cout << "SPINNYSPINNY: " << weaponDrawnSpinAccumulated << std::endl;
@@ -1145,12 +1132,12 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	{
 		isMoving = true;
 
-		float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
-		float targetDirectionAngle = glm::degrees(std::atan2f(movementVector.x, movementVector.y));
+		float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
+		float targetDirectionAngle = glm::degrees(atan2f(movementVector.x, movementVector.y));
 
 		facingDirectionAngle = glm::radians(PhysicsUtils::moveTowardsAngle(facingDirectionAngle, targetDirectionAngle, airBourneFacingTurnSpeed * MainLoop::getInstance().deltaTime));
 
-		facingDirection = glm::vec2(std::sinf(facingDirectionAngle), std::cosf(facingDirectionAngle));
+		facingDirection = glm::vec2(sinf(facingDirectionAngle), cosf(facingDirectionAngle));
 	}
 
 	//
@@ -1160,11 +1147,11 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 	const bool isSpinnySpinny = glm::abs(weaponDrawnSpinAccumulated) > weaponDrawnSpinAmountThreshold;
 	if (isSpinnySpinny)
 	{
-		const float facingDirectionAngle = glm::degrees(std::atan2f(facingDirection.x, facingDirection.y));
+		const float facingDirectionAngle = glm::degrees(atan2f(facingDirection.x, facingDirection.y));
 		const float spinSpeedMinMaxLerpValue = (glm::abs(weaponDrawnSpinAccumulated) - weaponDrawnSpinAmountThreshold) / weaponDrawnSpinBuildupAmount;
 		const float facingTurnSpeed = PhysicsUtils::lerp(weaponDrawnSpinSpeedMinMax.x, weaponDrawnSpinSpeedMinMax.y, spinSpeedMinMaxLerpValue);
 		const float newFacingDirectionAngle = glm::radians(facingDirectionAngle + facingTurnSpeed * glm::sign(weaponDrawnSpinAccumulated) * MainLoop::getInstance().deltaTime);
-		facingDirection = glm::vec2(std::sinf(newFacingDirectionAngle), std::cosf(newFacingDirectionAngle));
+		facingDirection = glm::vec2(sinf(newFacingDirectionAngle), cosf(newFacingDirectionAngle));
 	}
 
 	//
@@ -1287,7 +1274,7 @@ float speedAnimRunningMult = 1.3f;			// @Debug
 float speedAnimRunningFloor = 0.525f;		// @Debug
 void PlayerCharacter::processAnimation()
 {
-	constexpr int IDLE_ANIM					= 0;
+	/*constexpr int IDLE_ANIM					= 0;
 	constexpr int WALKING_ANIM				= 1;
 	constexpr int RUNNING_ANIM				= 2;
 	constexpr int JUMP_ANIM					= 3;
@@ -1507,16 +1494,16 @@ void PlayerCharacter::processAnimation()
 		case 0:
 			// Idle
 			if (isSpinnySpinny)
-				animator.playAnimation(weaponDrawnSpinAccumulated > 0.0f ? IDLE_SPINNY_LEFT_ANIM : IDLE_SPINNY_RIGHT_ANIM, 6.0f, false, true);
+				animator.playAnimation(weaponDrawnSpinAccumulated > 0.0f ? IDLE_SPINNY_LEFT_ANIM : IDLE_SPINNY_RIGHT_ANIM, 6.0f, false);
 			else
-				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true, true);
+				animator.playAnimation(IDLE_ANIM + (unsigned int)isMoving, 6.0f, true);
 
 			break;
 
 		case 1:
 			// Move
 			if (isSpinnySpinny)
-				animator.playAnimation(IDLE_SPINNY_LEFT_ANIM, 6.0f, false, true);
+				animator.playAnimation(IDLE_SPINNY_LEFT_ANIM, 6.0f, false);
 			else
 				animator.playBlendTree(
 					{
@@ -1530,50 +1517,50 @@ void PlayerCharacter::processAnimation()
 		case 2:
 			// Jump
 			if (human_numJumpsCurrent > 1)
-				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false, true);		// Midair jump
+				animator.playAnimation(JUMP_ANIM + 2, 0.0f, false);		// Midair jump
 			else
-				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false, true);
+				animator.playAnimation(JUMP_ANIM + (int)isMoving, 0.0f, false);
 			break;
 
 		case 3:
 			// Land
-			animator.playAnimation(LAND_ANIM + (int)isMoving, 0.0f, false, true);
+			animator.playAnimation(LAND_ANIM + (int)isMoving, 0.0f, false);
 			break;
 
 		case 4:
 			// Draw water
-			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false, true);
+			animator.playAnimation(DRAW_WATER_ANIM, 1.0f, false);
 			break;
 
 		case 5:
 			// Drink water
-			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false, true);
+			animator.playAnimation(DRINK_WATER_ANIM, 1.0f, false);
 			break;
 
 		case 6:
 			// Pick up bottle
-			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false, true);
+			animator.playAnimation(SHEATH_BOTTLE_ANIM, 7.5f, false);
 			break;
 
 		case 7:
 			// Write in journal
-			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false, true);
+			animator.playAnimation(WRITE_IN_JOURNAL_ANIM, 0.0f, false);
 			break;
 
 		case 8:
 			// @SPECIAL_SKILL: @HUMAN: Wall Climb
-			animator.playAnimation(HUMAN_SPEC_WALL_CLIMB, 0.0f, false, true);
+			animator.playAnimation(HUMAN_SPEC_WALL_CLIMB, 0.0f, false);
 			break;
 
 		case 9:
 			// @SPECIAL_SKILL: @HUMAN: Ledge grab
-			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false, true);
+			animator.playAnimation(HUMAN_SPEC_WALL_HANG, 0.0f, false);
 			break;
 
 		case 10:
 			if (isSpinnySpinny)
 			{
-				animator.playAnimation(SPINNY_SPINNY_ANIM, 6.0f, false, true);
+				animator.playAnimation(SPINNY_SPINNY_ANIM, 6.0f, false);
 				break;		// Break early if figured out that I'm a spinny spinny!
 			}	
 
@@ -1591,19 +1578,19 @@ void PlayerCharacter::processAnimation()
 			//				in any way, but we shall see eh!  -Timo
 			
 			//if (weaponDrawnStyle == 1)
-				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true, true);
+				animator.playAnimation(IDLE_WEAPON_HORIZONTAL, 6.0f, true);
 			//else if (weaponDrawnStyle == 2 || weaponDrawnStyle == 3)
-			//	animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true, true);
+			//	animator.playAnimation(IDLE_WEAPON_VERTICAL, 6.0f, true);
 			break;
 
 		case 11:
 			// Unleash the weapon stance
 			if (weaponDrawnStyle == 1)
-				animator.playAnimation(ATTACK_LIGHT_HORIZONTAL, 6.0f, false, true);
+				animator.playAnimation(ATTACK_LIGHT_HORIZONTAL, 6.0f, false);
 			else if (weaponDrawnStyle == 2)
-				animator.playAnimation(ATTACK_LIGHT_VERTICAL, 6.0f, false, true);
+				animator.playAnimation(ATTACK_LIGHT_VERTICAL, 6.0f, false);
 			else if (weaponDrawnStyle == 3)
-				animator.playAnimation(ATTACK_MIDAIR, 3.0f, false, true);
+				animator.playAnimation(ATTACK_MIDAIR, 3.0f, false);
 			break;
 
 		default:
@@ -1625,12 +1612,20 @@ void PlayerCharacter::processAnimation()
 
 		animator.setBlendTreeVariable("walkRunBlendVar", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
 
-		animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+		//animator.animationSpeed = animationSpeed * flatSpeed * speedAnimRunningMult + speedAnimRunningFloor;
+		animator.animationSpeed = 1.0f;
 	}
-	else
-		animator.animationSpeed = animationSpeed;
 	animator.updateAnimation(MainLoop::getInstance().deltaTime);		// Correction: this adds more than 10ms consistently
-	//std::cout << animator.animationSpeed << std::endl;
+	//std::cout << animator.animationSpeed << std::endl;*/
+
+	physx::PxVec3 velo = ((PlayerPhysics*)getPhysicsComponent())->velocity;
+	velo.y = 0.0f;
+	float flatSpeed = velo.magnitude();
+	animatorStateMachine.setVariable("blendWalkRun", glm::clamp(REMAP(flatSpeed, 0.4f, groundRunSpeed, 0.0f, 1.0f), 0.0f, 1.0f));
+	animatorStateMachine.setVariable("isMoving", isMoving);
+	animatorStateMachine.setVariable("isGrounded", ((PlayerPhysics*)getPhysicsComponent())->getIsGrounded());
+	animatorStateMachine.setVariable("isLedgeGrab", playerState == PlayerState::LEDGE_GRAB_HUMAN);
+	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//
 	// @TODO: Do IK (Forward and Backward Reaching Inverse Kinematics for a heuristic approach)
@@ -1714,7 +1709,12 @@ void PlayerCharacter::processAnimation()
 		//
 		// Calculate the bottle transformation matrix
 		// @@@TODO: fix the baseObject->getTransform() areas, bc the transformation hierarchy isn't established yet.
-		if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7 || weaponDrawn)
+		//if (animationState == 4 || animationState == 5 || animationState == 6 || animationState == 7 || weaponDrawn)
+		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+		//else
+		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+
+		if (weaponDrawn)
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
 			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
@@ -1754,17 +1754,18 @@ void PlayerCharacter::preRenderUpdate()
 
 	//
 	// Process ditherAlpha
+	// @FIXME: Fix the dithering, bc now there's not really a reference to the materials anymore. (Maybe try exposing a reference in the model level?)
 	//
 	const float lengthFromCamera = glm::length(MainLoop::getInstance().camera.position - PhysicsUtils::getPosition(getTransform()));
 	const float ditherAlpha = (lengthFromCamera - 1.0f) * 0.2f;
-	for (auto it = materials.begin(); it != materials.end(); it++)
-	{
-		it->second->ditherAlpha = ditherAlpha;
-	}
-	for (auto it = bottleModelMaterials.begin(); it != bottleModelMaterials.end(); it++)
-	{
-		it->second->ditherAlpha = ditherAlpha;
-	}
+	//for (auto it = materials.begin(); it != materials.end(); it++)
+	//{
+	//	it->second->ditherAlpha = ditherAlpha;
+	//}
+	//for (auto it = bottleModelMaterials.begin(); it != bottleModelMaterials.end(); it++)
+	//{
+	//	it->second->ditherAlpha = ditherAlpha;
+	//}
 }
 
 #ifdef _DEVELOP
@@ -1808,7 +1809,6 @@ void PlayerCharacter::imguiPropertyPanel()
 
 	ImGui::Separator();
 	ImGui::DragFloat("Model Offset Y", &modelOffsetY, 0.05f);
-	ImGui::DragFloat("Model Animation Speed", &animationSpeed);
 	ImGui::DragFloat("Model Run/Walk mult", &speedAnimRunningMult);
 	ImGui::DragFloat("Model Run/Walk floor", &speedAnimRunningFloor);
 
@@ -1820,11 +1820,11 @@ void PlayerCharacter::imguiPropertyPanel()
 	ImGui::Text(("MIN: " + std::to_string(minMvtVectorMagnitude * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 	ImGui::Text(("MAX: " + std::to_string(groundRunSpeed * speedAnimRunningMult + speedAnimRunningFloor)).c_str());
 
-	ImGui::Separator();
-	ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Body Zelly Color2", &((ZellyMaterial*)materials["Body"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
-	ImGui::ColorPicker3("Hair Zelly Color2", &((ZellyMaterial*)materials["Hair"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::Separator();
+	//ImGui::ColorPicker3("Body Zelly Color", &((ZellyMaterial*)materials["Body"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Body Zelly Color2", &((ZellyMaterial*)materials["Body"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Hair Zelly Color", &((ZellyMaterial*)materials["Hair"])->getColor().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
+	//ImGui::ColorPicker3("Hair Zelly Color2", &((ZellyMaterial*)materials["Hair"])->getColor2().x, ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float);
 
 	ImGui::Separator();
 	ImGui::DragFloat("Hair Weight", &hairWeightMult);

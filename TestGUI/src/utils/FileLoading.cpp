@@ -18,7 +18,6 @@
 #include "../objects/Spline.h"
 
 #include "tinyfiledialogs.h"
-#include "Utils.h"
 
 
 FileLoading& FileLoading::getInstance()
@@ -27,17 +26,63 @@ FileLoading& FileLoading::getInstance()
 	return instance;
 }
 
+nlohmann::json FileLoading::loadJsonFile(std::string fname)
+{
+	nlohmann::json j;
+	std::ifstream i(fname);
+	if (i.is_open())
+	{
+		i >> j;
+		std::cout << "FILEIO:: File \"" << fname << "\" Successfully loaded (JSON)." << std::endl;
+	}
+	return j;
+}
+
+void FileLoading::saveJsonFile(std::string fname, nlohmann::json& object)
+{
+	std::ofstream o(fname);
+	o << std::setw(4) << object << std::endl;
+	std::cout << "FILEIO:: File \"" << fname << "\" Successfully saved (JSON)." << std::endl;
+}
+
+char* FileLoading::openFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
+{
+	std::string currentPath{ std::filesystem::current_path().string() + std::string("/") + startingPath };
+	char* fnameOpened = tinyfd_openFileDialog(
+		title.c_str(),
+		currentPath.c_str(),
+		1,
+		filters,
+		filterDescription,
+		0
+	);
+
+	return fnameOpened;
+}
+
+char* FileLoading::saveFileDialog(const std::string& title, const std::string& startingPath, const char* filters[], const char* filterDescription)
+{
+	std::string currentPath{ std::filesystem::current_path().string() + std::string("/") + startingPath };
+	char* fname = tinyfd_saveFileDialog(
+		title.c_str(),
+		currentPath.c_str(),
+		1,
+		filters,
+		filterDescription
+	);
+
+	return fname;
+}
+
+
 void FileLoading::loadFileWithPrompt(bool withPrompt)
 {
 	// Load all info of the level
 	std::string fname;
 	{
-		std::ifstream i("res\\solanine_editor_settings.json");		// @TODO: This kinda bothers me. There's no way to guarantee the user has this file touched. At the very least there should be a "if file doesn't exist, touch it real quick" at the beginning of the program... dango bango yoooo.
-		if (i.is_open())
+		nlohmann::json j = loadJsonFile("res\\solanine_editor_settings.json");		// @TODO: This kinda bothers me. There's no way to guarantee the user has this file touched. At the very least there should be a "if file doesn't exist, touch it real quick" at the beginning of the program... dango bango yoooo.
+		if (!j.empty())
 		{
-			nlohmann::json j;
-			i >> j;
-
 			if (j.contains("startup_level"))
 			{
 				fname = j["startup_level"];
@@ -59,7 +104,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
+		std::string currentPath{ std::filesystem::current_path().string() + std::string("\\res\\level\\") };
 		char* fnameOpened = tinyfd_openFileDialog(
 			"Open Scene File",
 			currentPath.c_str(),
@@ -78,7 +123,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 		// Set this opened file as the new default for next time you open the program
 		// @Copypasta
 		nlohmann::json j;
-		j["startup_level"] = std::filesystem::relative(fnameOpened).u8string();		// This is apparently the whole path, so oh well. The fallback level1.hsfs should be good though
+		j["startup_level"] = std::filesystem::relative(fnameOpened).string();
 		std::ofstream o("res\\solanine_editor_settings.json");
 		o << std::setw(4) << j << std::endl;
 		std::cout << "::NOTE:: Set new startup file as \"" << fnameOpened << "\" ..." << std::endl;
@@ -106,9 +151,7 @@ void FileLoading::loadFileWithPrompt(bool withPrompt)
 	currentWorkingPath = fname;
 
 	// Load all info of the level
-	std::ifstream i(currentWorkingPath);
-	nlohmann::json j;
-	i >> j;
+	nlohmann::json j = loadJsonFile(currentWorkingPath);
 
 	//
 	// Start working with the retrieved filename
@@ -153,7 +196,7 @@ void FileLoading::saveFile(bool withPrompt)
 	if (withPrompt)
 	{
 		const char* filters[] = { "*.hsfs" };
-		std::string currentPath{ std::filesystem::current_path().u8string() + "\\res\\level\\" };
+		std::string currentPath{ std::filesystem::current_path().string() + std::string("\\res\\level\\") };
 		char* fname = tinyfd_saveFileDialog(
 			"Save Scene File As...",
 			currentPath.c_str(),
@@ -204,19 +247,14 @@ void FileLoading::saveCameraPosition()
 {
 	nlohmann::json j;
 	{
-		std::ifstream i("res\\solanine_editor_settings.json");
-		if (i.is_open())
-		{
-			i >> j;
+		j = loadJsonFile("res\\solanine_editor_settings.json");
 
-			// Append the camera information to this
-			Camera& cam = MainLoop::getInstance().camera;
-			j["level_editor_camera_pos"] = { cam.position.x, cam.position.y, cam.position.z };
-			j["level_editor_camera_orientation"] = { cam.orientation.x, cam.orientation.y, cam.orientation.z };
-		}
+		// Append the camera information to this
+		Camera& cam = MainLoop::getInstance().camera;
+		j["level_editor_camera_pos"] = { cam.position.x, cam.position.y, cam.position.z };
+		j["level_editor_camera_orientation"] = { cam.orientation.x, cam.orientation.y, cam.orientation.z };
 	}
 
-	std::ofstream o("res\\solanine_editor_settings.json");
-	o << std::setw(4) << j << std::endl;
+	saveJsonFile("res\\solanine_editor_settings.json", j);
 }
 #endif

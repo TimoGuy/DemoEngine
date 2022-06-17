@@ -17,9 +17,12 @@ public:
 	physx::PxTransform getGlobalPose();
 
 private:
+	void routineCreateTriangleMeshGeometry(const glm::mat4& newTransform);
+
+	Model* model;
 	physx::PxShape* shape;
 	physx::PxGeometry* geom;
-	ShapeTypes shapeType;
+	ShapeTypes shapeType = ShapeTypes::COLLISION;
 };
 
 class BoxCollider : public PhysicsComponent
@@ -36,7 +39,7 @@ private:
 	glm::vec3 extents;
 	physx::PxShape* shape;
 	physx::PxGeometry* geom;
-	ShapeTypes shapeType;
+	ShapeTypes shapeType = ShapeTypes::COLLISION;
 };
 
 
@@ -54,5 +57,5 @@ private:
 	physx::PxShape* shape;
 	physx::PxGeometry* geom;
 	float radius;
-	ShapeTypes shapeType;
+	ShapeTypes shapeType = ShapeTypes::COLLISION;
 };

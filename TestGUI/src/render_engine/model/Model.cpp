@@ -2,6 +2,7 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
 #include <iostream>
 
 #include "animation/Animation.h"
@@ -12,7 +13,7 @@
 #include "../material/Shader.h"
 
 
-Model::Model() { scene = nullptr; }
+Model::Model() { }
 
 Model::Model(const char* path)
 {
@@ -159,6 +160,23 @@ void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const s
 }
 
 #ifdef _DEVELOP
+std::vector<std::string> Model::getAnimationNameList()
+{
+	return animationNameList;
+}
+
+std::vector<std::string> Model::getMaterialNameList()
+{
+	std::vector<std::string> materialNameList;
+	for (size_t i = 0; i < meshes.size(); i++)
+	{
+		if (std::find(materialNameList.begin(), materialNameList.end(), meshes[i].getMaterialName()) != materialNameList.end())
+			continue;	// Uniques only pls
+		materialNameList.push_back(meshes[i].getMaterialName());
+	}
+	return materialNameList;
+}
+
 void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 {
 	for (size_t i = 0; i < meshes.size(); i++)
@@ -205,8 +223,6 @@ void Model::loadModel(std::string path, std::vector<AnimationMetadata> animation
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_LimitBoneWeights);
 
-	Model::scene = scene;
-
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
@@ -224,6 +240,14 @@ void Model::loadModel(std::string path, std::vector<AnimationMetadata> animation
 		Animation newAnimation(scene, this, animationMetadatas[i]);
 		animations.push_back(newAnimation);
 	}
+
+#ifdef _DEVELOP
+	// Load all the animation names
+	for (size_t i = 0; i < scene->mNumAnimations; i++)
+	{
+		animationNameList.push_back(scene->mAnimations[i]->mName.C_Str());
+	}
+#endif
 
 	std::cout << "MODEL::" << path << "::Import Fimished" << std::endl;
 }
@@ -374,7 +398,7 @@ void Model::addVertexBoneData(Vertex& vertex, int boneId, float boneWeight)
 	}
 
 	//boneId = 3;
-	int smallestBoneWeightIndex = -1;
+	//int smallestBoneWeightIndex = -1;
 	for (size_t i = 0; i < MAX_BONE_INFLUENCE; i++)
 	{
 		if (vertex.boneIds[i] < 0)

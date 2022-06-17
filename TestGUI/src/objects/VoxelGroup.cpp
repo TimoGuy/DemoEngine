@@ -9,6 +9,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include "components/PhysicsComponents.h"
 #include "../mainloop/MainLoop.h"
+#include "../render_engine/model/Model.h"
+#include "../render_engine/material/Material.h"
 #include "../render_engine/resources/Resources.h"
 #include "../utils/PhysicsUtils.h"
 #include "Spline.h"

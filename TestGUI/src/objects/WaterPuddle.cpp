@@ -9,6 +9,8 @@
 #include "../utils/InputManager.h"
 #include "../utils/Messages.h"
 #include "components/PhysicsComponents.h"
+#include "../render_engine/model/Model.h"
+#include "../render_engine/material/Material.h"
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 
@@ -139,16 +141,8 @@ void WaterPuddle::preRenderUpdate()
 	//
 	// Process Animations
 	//
-	if (numWaterServings == 0)
-	{
-		animator.playAnimation(1, 1.5f);
-	}
-	else
-	{
-		animator.playAnimation(0, 1.5f);
-	}
-	animator.animationSpeed = 1.0f;
-	animator.updateAnimation(MainLoop::getInstance().deltaTime);
+	animatorStateMachine.setVariable("isFull", numWaterServings > 0);
+	animatorStateMachine.updateStateMachine(MainLoop::getInstance().deltaTime);
 
 	//
 	// Do trigger-related stuff
@@ -169,18 +163,12 @@ void WaterPuddle::preRenderUpdate()
 void WaterPuddle::refreshResources()
 {
 	bool recreateAnimations;
-	model = (Model*)Resources::getResource("model;waterPuddle", model, &recreateAnimations);
+	model = (Model*)Resources::getResource("model;water_puddle", model, &recreateAnimations);
 	if (recreateAnimations)
+	{
 		animator = Animator(&model->getAnimations());
-
-
-	//
-	// Materials
-	//
-	materials["Mound"] = (Material*)Resources::getResource("material;pbrSlimeBelt");
-	materials["Water"] = (Material*)Resources::getResource("material;pbrWater");
-
-	model->setMaterials(materials);
+		animatorStateMachine = AnimatorStateMachine("water_puddle", &animator);
+	}
 }
 
 #ifdef _DEVELOP

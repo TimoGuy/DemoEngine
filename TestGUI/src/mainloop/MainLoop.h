@@ -20,29 +20,31 @@ public:
 
 	void deleteObject(BaseObject* obj);
 
-	GLFWwindow* window;
+	GLFWwindow* window = nullptr;
 	Camera camera;
 	std::vector<BaseObject*> objects;
 	std::vector<LightComponent*> lightObjects;
 	std::vector<PhysicsComponent*> physicsObjects;
 	std::vector<RenderComponent*> renderObjects;
 
-	RenderManager* renderManager;
+	RenderManager* renderManager = nullptr;
 
 	// Physics System
-	physx::PxScene* physicsScene;
-	physx::PxPhysics* physicsPhysics;
-	physx::PxCooking* physicsCooking;
-	physx::PxControllerManager* physicsControllerManager;
-	physx::PxMaterial* defaultPhysicsMaterial;
+	physx::PxScene* physicsScene = nullptr;
+	physx::PxPhysics* physicsPhysics = nullptr;
+	physx::PxCooking* physicsCooking = nullptr;
+	physx::PxControllerManager* physicsControllerManager = nullptr;
+	physx::PxMaterial* defaultPhysicsMaterial = nullptr;
 
-	float deltaTime;				// To only be used on the rendering thread
-	float physicsDeltaTime;			// To only be used on the physics thread
-	float physicsCalcTimeAnchor;
+	float deltaTime = 0.0f;				// To only be used on the rendering thread
+	float physicsDeltaTime = 0.0f;			// To only be used on the physics thread
+	float physicsCalcTimeAnchor = 0.0f;
 
 #ifdef _DEVELOP
 	bool playMode = false;
 	float timeScale = 1.0f;
+
+	bool timelineViewerMode = false;
 #endif
 
 	//
@@ -54,7 +56,7 @@ private:
 	std::vector<BaseObject*> objectsToDelete;
 
 	// Fullscreen/windowed cache
-	bool isFullscreen;
+	bool isFullscreen = false;
 	int windowXposCache, windowYposCache, windowWidthCache, windowHeightCache;
 	void setFullscreen(bool flag, bool force = false);
 };

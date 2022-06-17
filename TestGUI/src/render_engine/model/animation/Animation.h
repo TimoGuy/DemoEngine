@@ -1,10 +1,17 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <vector>
 #include "Bone.h"
 
 
-struct AnimatedRope;
+struct aiScene;
+struct aiAnimation;
+struct aiNode;
+class Model;
 
+struct AnimatedRope;
 struct AssimpNodeData
 {
 	glm::mat4 transformation;
@@ -23,6 +30,19 @@ struct AssimpNodeData
 	AnimatedRope* cacheAnimatedRope;
 };
 
+struct BoneInfo
+{
+	int id;
+	glm::mat4 offset;
+};
+
+struct AnimationMetadata
+{
+	std::string animationName;
+	bool trackXZRootMotion;
+	float timestampSpeed = 1.0f;
+};
+
 class Animation
 {
 public:
@@ -31,6 +51,7 @@ public:
 
 	Bone* findBone(const std::string& name);
 
+	inline std::string getName() { return name; }
 	inline float getTicksPerSecond() { return (float)ticksPerSecond; }
 	inline float getDuration() { return duration; }
 	inline AssimpNodeData& getRootNode() { return rootNode; }
@@ -41,6 +62,7 @@ private:
 	void readMissingBones(const aiAnimation* animation, Model& model, AnimationMetadata animationMetadata);
 	void readHierarchyData(AssimpNodeData& dest, const aiNode* src);
 
+	std::string name;
 	float duration;
 	int ticksPerSecond;
 	std::map<std::string, Bone> bones;

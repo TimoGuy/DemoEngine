@@ -2,6 +2,7 @@
 
 #include "PhysicsUtils.h"
 #include <iostream>
+#include <algorithm>
 
 
 GameState& GameState::getInstance()
