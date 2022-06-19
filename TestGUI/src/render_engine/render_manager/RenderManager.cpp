@@ -3572,6 +3572,7 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Scene Properties", &showSceneProperties))
 		{
+			ImGui::DragFloat("Camera Movement Speed", &MainLoop::getInstance().camera.speed, 0.05f);
 			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
