@@ -1,0 +1,15 @@
+{
+    "animation_details": null,
+    "animation_state_machine": {
+        "asm_nodes": [],
+        "asm_start_node_index": 0,
+        "asm_variables": []
+    },
+    "included_anims": [],
+    "material_paths": {
+        "Bricks037": "Bricks037",
+        "Bricks067": "Bricks067",
+        "PaintedPlaster014": "PaintedPlaster014"
+    },
+    "model_path": "res\\model\\the_wall.glb"
+}

@@ -534,8 +534,21 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	//
 	// Set pieces
 	//
-	// Custom models vvv
+	// Custom models (without .hsmm file @DEPRECATED) vvv
 	if (resourceName.rfind("model;custommodel;", 0) == 0)				return loadModel(resourceName, isUnloading, resourceName.substr(18).c_str());
+
+	if (resourceName == "material;Bricks037")							return loadPBRMaterial(resourceName, isUnloading, "texture;Bricks037Albedo", "texture;Bricks037Normal", "texture;pbr0Value", "texture;Bricks037Roughness");
+	if (resourceName == "texture;Bricks037Albedo")							return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks037/1K-JPG/Bricks037_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;Bricks037Normal")							return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks037/1K-JPG/Bricks037_1K_NormalDX.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;Bricks037Roughness")						return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks037/1K-JPG/Bricks037_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "material;Bricks067")							return loadPBRMaterial(resourceName, isUnloading, "texture;Bricks067Albedo", "texture;Bricks067Normal", "texture;pbr0Value", "texture;Bricks067Roughness");
+	if (resourceName == "texture;Bricks067Albedo")							return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks067/1K-JPG/Bricks067_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;Bricks067Normal")							return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks067/1K-JPG/Bricks067_1K_NormalDX.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;Bricks067Roughness")						return loadTexture2D(resourceName, isUnloading, "res/texture/Bricks067/1K-JPG/Bricks067_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "material;PaintedPlaster014")					return loadPBRMaterial(resourceName, isUnloading, "texture;PaintedPlaster014Albedo", "texture;PaintedPlaster014Normal", "texture;pbr0Value", "texture;PaintedPlaster014Roughness");
+	if (resourceName == "texture;PaintedPlaster014Albedo")					return loadTexture2D(resourceName, isUnloading, "res/texture/PaintedPlaster014/1K-JPG/PaintedPlaster014_1K_Color.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;PaintedPlaster014Normal")					return loadTexture2D(resourceName, isUnloading, "res/texture/PaintedPlaster014/1K-JPG/PaintedPlaster014_1K_NormalDX.jpg", GL_RGB, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;PaintedPlaster014Roughness")				return loadTexture2D(resourceName, isUnloading, "res/texture/PaintedPlaster014/1K-JPG/PaintedPlaster014_1K_Roughness.jpg", GL_RED, GL_NEAREST_MIPMAP_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 
 	//
 	// Slime Girl Model and Materials

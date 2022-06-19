@@ -137,3 +137,5 @@ As he steps outside for the first day of his adventure, he is greeted with the f
 - The stalk is often described as "our future" and "what the world needs to be"
 - Legend has it that when the gods decide that the world has "made it" (the prerequisite is that all boundaries are destroyed and the world goes from NINGEN, MAMONO, SURAIMU, HININ to the single unified SORANIN)
     - End credits will show whether the flower has bloomed or not. If you 100% the game and you make it up to the islands when you're escaping the glass planet (which of course is optional), then the flower will bloom, or else the final moment of the credits will show an unbloomed flower bud.
+        - NOTE: here's an example of bloomed flower and unbloomed
+        - ![A Potato Flower](./potato-flower.jpg)

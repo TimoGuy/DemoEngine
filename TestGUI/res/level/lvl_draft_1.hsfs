@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    -52.12384033203125,
-                    1021.415283203125,
-                    -403.1774597167969
+                    -65.50910186767578,
+                    1027.40771484375,
+                    -325.3276062011719
                 ],
                 "rotation": [
                     0.0,
@@ -267,6 +267,29 @@
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/giant_unti.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
+                "name": "The WALL",
+                "position": [
+                    0.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
             "type": "ground"
         }
     ]

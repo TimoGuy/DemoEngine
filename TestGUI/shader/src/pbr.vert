@@ -10,15 +10,15 @@ out vec2 texCoord;
 out vec3 fragPosition;
 out vec3 normalVector;
 
-uniform mat4 modelMatrix;
+uniform highp mat4 modelMatrix;
 uniform mat3 normalsModelMatrix;
 
 // Camera
 layout (std140, binding = 3) uniform CameraInformation
 {
-    mat4 cameraProjection;
-	mat4 cameraView;
-	mat4 cameraProjectionView;
+    highp mat4 cameraProjection;
+	highp mat4 cameraView;
+	highp mat4 cameraProjectionView;
 };
 
 const int MAX_BONES = 100;
@@ -30,7 +30,7 @@ void main()
 	//
 	// Do Bone Transformations (NOTE: the branching paths don't do much of a difference in performance)
 	//
-	mat4 boneTransform = mat4(1.0f);
+	highp mat4 boneTransform = mat4(1.0f);
 	mat3 normTransform = mat3(1.0f);
 	bool first = true;
 	for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
