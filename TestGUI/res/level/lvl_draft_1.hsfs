@@ -272,11 +272,80 @@
         {
             "baseObject": {
                 "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
-                "name": "The WALL",
+                "name": "The WALL (First En)",
                 "position": [
                     0.0,
                     -200.0,
                     0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e054369ceaabcb54be2bddd2f0731547b3136d214e1f88af1ab04cbcc6ce1b3a",
+                "name": "The WALL (Garden En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "26d7c2998da48837660a4b8243c139407c9cd3531f5d26e925383f5ac98ae001",
+                "name": "The WALL (Monster En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "51837060380d9510af96181af16f5a0a2be9581c254edd696bfd554de1711b72",
+                "name": "The WALL (Broken En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    9500.0
                 ],
                 "rotation": [
                     0.0,
