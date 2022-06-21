@@ -45,3 +45,17 @@ Jojo learns how to will his weapon into his hands. With this skill activated fro
 
 
 
+
+
+## Uncategorized
+
+#### Anokata's "willing yourself to the weapon" cavern
+
+This is a secret skill that's a little different from "willing the weapon". Instead of willing the weapon into your hands or onto your body, you will *yourself* to the location of the weapon. Because of this skill, you're now able to throw the weapon. Essentially, you can throw the weapon super far onto an island that's unreachable, and will yourself to where the weapon is (so long as you don't drop it down into the clouds).
+
+If you can do something like place your weapon in a catapult and have it thrown to somewhere else, the possibilities really open up.
+
+Or if you put your weapon into a slot that passes thru a wall, you can then will yourself thru the wall.
+
+
+#### 
