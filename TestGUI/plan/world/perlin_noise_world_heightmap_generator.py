@@ -1,5 +1,4 @@
 from array import array
-from multiprocessing.dummy import Array
 import sys
 from xmlrpc.client import Boolean
 from PIL import Image
@@ -124,7 +123,6 @@ if __name__ == '__main__':
     #
     # With the new clusters, color them with random colors
     #
-
     for cluster in img_mask_clusters:
         random_color = GREEN_OUT_COLOR if len(cluster) < CLUSTER_SIZE_THRESHOLD else [int(random() * 255), int(random() * 255), int(random() * 255), 255]
         for coordinate in cluster:
@@ -140,4 +138,3 @@ if __name__ == '__main__':
         sys.exit(0)
 
     image_greened_clustered.save(save_fname2)
-
