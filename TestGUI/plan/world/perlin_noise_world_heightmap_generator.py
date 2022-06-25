@@ -72,26 +72,6 @@ if __name__ == '__main__':
             return False
         return img_mask[i][j]
 
-    # @DEPRECATED: python doesn't like recursion I guess eh
-    def visit_img_mask_location(visiting_arr: array, i: int, j: int, i_prev: int = -1, j_prev: int = -1) -> bool:
-        if i < 0 or i >= len(img_mask) or \
-            j < 0 or j >= len(img_mask[i]):
-            return False
-
-        mask_val = img_mask[i][j]
-        if mask_val:
-            img_mask[i][j] = False  # Destruct this node bc it's visited now
-            visiting_arr.append((i, j))
-            if i+1 != i_prev or j != j_prev:
-                visit_img_mask_location(visiting_arr, i+1, j, i, j)
-            if i-1 != i_prev or j != j_prev:
-                visit_img_mask_location(visiting_arr, i-1, j, i, j)
-            if i != i_prev or j+1 != j_prev:
-                visit_img_mask_location(visiting_arr, i, j+1, i, j)
-            if i != i_prev or j-1 != j_prev:
-                visit_img_mask_location(visiting_arr, i, j-1, i, j)
-        return mask_val
-
     img_mask_clusters = []
     for i in range(len(img_mask)):
         for j in range(len(img_mask[i])):
