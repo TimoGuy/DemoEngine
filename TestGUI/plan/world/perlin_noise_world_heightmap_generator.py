@@ -38,6 +38,9 @@ class Quad:
             2 -- 3
     """
 
+    def __init__(self):
+        self.four_indices = []
+
     def evaluate(self, wavefront_obj):
         # The indices
         i0 = self.four_indices[0]
@@ -87,25 +90,39 @@ class Vertex:
     z: float = 0.0
     is_active: bool = False
 
+    def __init__(self):
+        self.x = 0.0
+        self.y = 0.0
+        self.z = 0.0
+        self.is_active = False
+
 
 class WavefrontObject:      # NOTE: for now at least, there's only one bc we're putting the whole thing in one.
-    name: str = ''
+    name: str
 
-    registered_vertices: dict = dict()
-    next_vertex_index: int = 1
+    registered_vertices: dict
+    next_vertex_index: int
     registered_vertices_values = []
 
     vertices = []
     faces = []
 
+    def __init__(self):
+        self.name = ''
+        self.registered_vertices = dict()
+        self.next_vertex_index = 1
+        self.registered_vertices_values = []
+        self.vertices = []
+        self.faces = []
+
     def as_string(self):
         giant_string = f'o {self.name}\n'
 
-        giant_string += '\n# Vertices'
+        giant_string += '\n# Vertices\n'
         for vert in self.vertices:
             giant_string += f'{vert}\n'
 
-        giant_string += '\n# Faces'
+        giant_string += '\n# Faces\n'
         for face in self.faces:
             giant_string += f'{face}\n'
         
@@ -203,10 +220,11 @@ if __name__ == '__main__':
     #
     # Generate .obj objects
     #
-    obj_obj = WavefrontObject
+    obj_obj = WavefrontObject()
     obj_obj.name = 'the_ho_thing'
 
     # Create the vertex grid
+    print("Creating the Vertex Grid")
     vertices = []
     for i in range(len(arr)):
         new_vertices_row = []
@@ -215,12 +233,13 @@ if __name__ == '__main__':
             new_vert = Vertex()
             new_vert.is_active = False if col[3] == 0 else True
             new_vert.x = i
-            new_vert.y = col[0]
+            new_vert.y = float(col[0]) / 20.0 * 1.5
             new_vert.z = j
             new_vertices_row.append(new_vert)
         vertices.append(new_vertices_row)
 
     # Create the quad grid
+    print("Creating the Quad Grid")
     quads = []
     for x in range(len(vertices) - 1):
         new_quads_row = []
@@ -253,18 +272,21 @@ if __name__ == '__main__':
         quads.append(new_quads_row)
     
     # Evaluate the quads
+    print("Evaluating Quads into Triangles")
     for quad_row in quads:
         for quad in quad_row:
             quad.evaluate(obj_obj)
-    h# TODO: MAKE A PROGRESS BAR!!!!
 
     # Write out the obj file
+    print("Done.")
     save_fname_objfile = tkfd.asksaveasfilename(initialdir='.', confirmoverwrite=True, initialfile='output_3d_model.obj')
     if not save_fname_objfile:
         sys.exit(0)
 
+    print("Saving...")
     with open(save_fname_objfile, 'w') as fo:
         fo.write(obj_obj.as_string())
+    print("Done.")
 
 
     #

@@ -55,6 +55,7 @@ public:
 	void setMat3(std::string uniformName, const glm::mat3& value);
 	void setMat4(std::string uniformName, const glm::mat4& value);
 	void setSampler(std::string uniformName, const GLuint& value);
+	void resetSamplers();
 
 private:
 	static UniformDataType strToDataType(const std::string& str);

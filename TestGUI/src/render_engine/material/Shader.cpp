@@ -131,7 +131,7 @@ Shader::~Shader()
 
 void Shader::use()
 {
-	currentTexIndex = 1;	// New shader means new textures, so we need to reset the texture binding counter
+	resetSamplers();	// New shader means new textures, so we need to reset the texture binding counter
 	for (size_t i = 0; i < extensions.size(); i++)
 		extensions[i]->setupExtension();
 
@@ -223,6 +223,12 @@ void Shader::setSampler(std::string uniformName, const GLuint& value)
 	glBindTextureUnit(currentTexIndex, value);
 	glProgramUniform1i(programId, loc, currentTexIndex);
 	currentTexIndex++;
+}
+
+
+void Shader::resetSamplers()
+{
+	currentTexIndex = 1;
 }
 
 

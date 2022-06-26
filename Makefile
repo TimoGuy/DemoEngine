@@ -18,7 +18,8 @@ INCFLAGS += -I$(PATH_LIB)/Include
 
 LIBPATHS  = -L$(PATH_FMOD_CORE)/lib/x64
 LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
-LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
+#LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
+LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_release		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
 CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument

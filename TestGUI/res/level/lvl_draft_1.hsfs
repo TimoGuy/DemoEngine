@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    -65.50910186767578,
-                    1027.40771484375,
-                    -325.3276062011719
+                    -106.80619812011719,
+                    1084.2020263671875,
+                    -486.1693115234375
                 ],
                 "rotation": [
                     0.0,
@@ -359,6 +359,29 @@
                 ]
             },
             "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "968ec088ad6fe35976cc408b4e5a6bb87f1af8f42770973204719efe2c993a6f",
+                "name": "Yosemite Terrain",
+                "position": [
+                    -484.98974609375,
+                    1007.660888671875,
+                    -45.08447265625
+                ],
+                "rotation": [
+                    89.99993896484375,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/generated_world.glb",
             "type": "ground"
         }
     ]
