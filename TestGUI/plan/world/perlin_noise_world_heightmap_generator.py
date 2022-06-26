@@ -6,6 +6,7 @@ import numpy as np
 import tkinter as tk
 import tkinter.filedialog as tkfd
 from random import random
+import pywavefront
 #from perlin_numpy import ( generate_fractal_noise_2d )        # Run `pip3 install git+https://github.com/pvigier/perlin-numpy` for this package
 
 
@@ -24,6 +25,95 @@ def read_image(path: str) -> Image:
         return image
     except Exception as e:
         print(e)
+
+
+class Quad:
+    # NOTE: this class is simply two triangles calculated in the evaluate function. It holds 4 vertices however.
+    four_indices = []
+    """
+            The four_indices are defined in this order:
+
+            0 -- 1
+            |    |
+            2 -- 3
+    """
+
+    def evaluate(self, wavefront_obj):
+        # The indices
+        i0 = self.four_indices[0]
+        i1 = self.four_indices[1]
+        i2 = self.four_indices[2]
+        i3 = self.four_indices[3]
+
+        # Get count of number of inactive vertices (NOTE: this system may actually create dangling vertices)
+        count_inactive = 0
+        for index in self.four_indices:
+            if index < 0:
+                count_inactive += 1
+
+        if count_inactive > 1:
+            return  # This is an impossible quad
+        elif count_inactive == 1:
+            # Create the face where the 3 remaining active vertices are
+            if i0 < 0:
+                wavefront_obj.faces.append(f'f {i1} {i2} {i3}')
+            elif i1 < 0:
+                wavefront_obj.faces.append(f'f {i0} {i2} {i3}')
+            elif i2 < 0:
+                wavefront_obj.faces.append(f'f {i0} {i3} {i1}')
+            elif i3 < 0:
+                wavefront_obj.faces.append(f'f {i0} {i2} {i1}')
+            return  # Let the rest of the method do the normal 4 active vertices calc
+
+        # Find how to arrange the triangles
+        v0 = wavefront_obj.registered_vertices_values[i0 - 1]
+        v1 = wavefront_obj.registered_vertices_values[i1 - 1]
+        v2 = wavefront_obj.registered_vertices_values[i2 - 1]
+        v3 = wavefront_obj.registered_vertices_values[i3 - 1]
+        height_diff_03 = abs(v0.y - v3.y)
+        height_diff_12 = abs(v1.y - v2.y)
+
+        if height_diff_03 < height_diff_12:
+            wavefront_obj.faces.append(f'f {i0} {i3} {i1}')
+            wavefront_obj.faces.append(f'f {i0} {i2} {i3}')
+        else:
+            wavefront_obj.faces.append(f'f {i0} {i2} {i1}')
+            wavefront_obj.faces.append(f'f {i1} {i2} {i3}')
+
+
+class Vertex:
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+    is_active: bool = False
+
+
+class WavefrontObject:      # NOTE: for now at least, there's only one bc we're putting the whole thing in one.
+    name: str = ''
+
+    registered_vertices: dict = dict()
+    next_vertex_index: int = 1
+    registered_vertices_values = []
+
+    vertices = []
+    faces = []
+
+    def as_string(self):
+        giant_string = f'o {self.name}\n'
+
+        giant_string += '\n# Vertices'
+        for vert in self.vertices:
+            giant_string += f'{vert}\n'
+
+        giant_string += '\n# Faces'
+        for face in self.faces:
+            giant_string += f'{face}\n'
+        
+        return giant_string
+
+
+# class WavefrontFile:
+#     objects = [WavefrontObject]
 
 
 if __name__ == '__main__':
@@ -100,6 +190,83 @@ if __name__ == '__main__':
             if len(new_cluster) > 0:
                 img_mask_clusters.append(new_cluster)
     
+    #
+    # With the new clusters, cut out small clusters
+    #
+    for cluster in img_mask_clusters:
+        if len(cluster) < CLUSTER_SIZE_THRESHOLD:
+            for coordinate in cluster:
+                i = coordinate[0]
+                j = coordinate[1]
+                arr[i][j] = GREEN_OUT_COLOR
+
+    #
+    # Generate .obj objects
+    #
+    obj_obj = WavefrontObject
+    obj_obj.name = 'the_ho_thing'
+
+    # Create the vertex grid
+    vertices = []
+    for i in range(len(arr)):
+        new_vertices_row = []
+        for j in range(len(arr[i])):
+            col = arr[i][j]
+            new_vert = Vertex()
+            new_vert.is_active = False if col[3] == 0 else True
+            new_vert.x = i
+            new_vert.y = col[0]
+            new_vert.z = j
+            new_vertices_row.append(new_vert)
+        vertices.append(new_vertices_row)
+
+    # Create the quad grid
+    quads = []
+    for x in range(len(vertices) - 1):
+        new_quads_row = []
+        for z in range(len(vertices[x]) - 1):
+            offsets = [[0,0], [1,0], [0,1], [1,1]]
+            new_quad = Quad()
+
+            for off in offsets:
+                # Convert vertices into the indices
+                vertex = vertices[x + off[0]][z + off[1]]
+
+                insertion_index = -1    # This is the inactive flag value
+                if vertex.is_active:
+                    if vertex in obj_obj.registered_vertices.keys():
+                        # Use previously registered index for this vertex
+                        insertion_index = obj_obj.registered_vertices[vertex]
+                    else:
+                        # Register the unknown vertex
+                        insertion_index = obj_obj.next_vertex_index
+                        obj_obj.next_vertex_index += 1
+                        obj_obj.registered_vertices[vertex] = insertion_index
+                        obj_obj.registered_vertices_values.append(vertex)
+                        obj_obj.vertices.append(f'v {vertex.x} {vertex.y} {vertex.z}')
+
+                # Add the index into the quad
+                new_quad.four_indices.append(insertion_index)
+            
+            # Add the quad
+            new_quads_row.append(new_quad)
+        quads.append(new_quads_row)
+    
+    # Evaluate the quads
+    for quad_row in quads:
+        for quad in quad_row:
+            quad.evaluate(obj_obj)
+    h# TODO: MAKE A PROGRESS BAR!!!!
+
+    # Write out the obj file
+    save_fname_objfile = tkfd.asksaveasfilename(initialdir='.', confirmoverwrite=True, initialfile='output_3d_model.obj')
+    if not save_fname_objfile:
+        sys.exit(0)
+
+    with open(save_fname_objfile, 'w') as fo:
+        fo.write(obj_obj.as_string())
+
+
     #
     # With the new clusters, color them with random colors
     #
