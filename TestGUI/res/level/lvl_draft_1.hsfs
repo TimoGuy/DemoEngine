@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    -106.80619812011719,
-                    1084.2020263671875,
-                    -486.1693115234375
+                    1404.1824951171875,
+                    1165.7340087890625,
+                    -179.18539428710938
                 ],
                 "rotation": [
                     0.0,
@@ -376,12 +376,35 @@
                     0.0
                 ],
                 "scale": [
-                    50.0,
-                    50.0,
-                    50.0
+                    8.5,
+                    8.5,
+                    8.5
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/generated_world.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "a0e715545abf7ae3b8e63c40ef7d6abd601f3c9b255cbd9cb023a12c73ae87f0",
+                "name": "world.jojos_home",
+                "position": [
+                    1391.3802490234375,
+                    1154.4781494140625,
+                    -180.0042266845703
+                ],
+                "rotation": [
+                    89.99993896484375,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    8.5,
+                    8.5,
+                    8.5
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_home.glb",
             "type": "ground"
         }
     ]
