@@ -1,0 +1,200 @@
+{
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
+                "name": "Player Controller",
+                "position": [
+                    0.0,
+                    5.9050774574279785,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "de808fe480ae7808dff7a28fdb34a9a38ee45a948c83cb9207b33853492c11cf",
+                "name": "Directional Light",
+                "position": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "color_multiplier": 5.0,
+            "hiokure_color": [
+                1.0,
+                0.722000002861023,
+                0.44699999690055847
+            ],
+            "hiruma_color": [
+                1.0,
+                0.9330000281333923,
+                0.8899999856948853
+            ],
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
+                "name": "The WALL (First En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e054369ceaabcb54be2bddd2f0731547b3136d214e1f88af1ab04cbcc6ce1b3a",
+                "name": "The WALL (Garden En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "26d7c2998da48837660a4b8243c139407c9cd3531f5d26e925383f5ac98ae001",
+                "name": "The WALL (Monster En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "51837060380d9510af96181af16f5a0a2be9581c254edd696bfd554de1711b72",
+                "name": "The WALL (Broken En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "a0e715545abf7ae3b8e63c40ef7d6abd601f3c9b255cbd9cb023a12c73ae87f0",
+                "name": "world.jojos_home",
+                "position": [
+                    13.777329444885254,
+                    -6.362740516662598,
+                    -0.7436755895614624
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    11.5,
+                    11.499996185302734,
+                    11.499996185302734
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_home.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7355fe65ca7900b14fac879e1bdf7630f513d5642df57d81434065aaf1189f22",
+                "name": "world.jojos_nearby_town",
+                "position": [
+                    135.47674560546875,
+                    17.915884017944336,
+                    -79.518798828125
+                ],
+                "rotation": [
+                    0.0,
+                    -52.87788009643555,
+                    8.487994637107477e-05
+                ],
+                "scale": [
+                    11.49999713897705,
+                    11.499992370605469,
+                    11.499995231628418
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_nearby_town.glb",
+            "type": "ground"
+        }
+    ]
+}

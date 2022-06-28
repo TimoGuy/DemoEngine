@@ -6,7 +6,7 @@
                 "name": "Player Controller",
                 "position": [
                     1404.1824951171875,
-                    1165.7340087890625,
+                    1167.52099609375,
                     -179.18539428710938
                 ],
                 "rotation": [
@@ -363,29 +363,6 @@
         },
         {
             "baseObject": {
-                "guid": "968ec088ad6fe35976cc408b4e5a6bb87f1af8f42770973204719efe2c993a6f",
-                "name": "Yosemite Terrain",
-                "position": [
-                    -484.98974609375,
-                    1007.660888671875,
-                    -45.08447265625
-                ],
-                "rotation": [
-                    89.99993896484375,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    8.5,
-                    8.5,
-                    8.5
-                ]
-            },
-            "modelResourceName": "model;custommodel;res/model/generated_world.glb",
-            "type": "ground"
-        },
-        {
-            "baseObject": {
                 "guid": "a0e715545abf7ae3b8e63c40ef7d6abd601f3c9b255cbd9cb023a12c73ae87f0",
                 "name": "world.jojos_home",
                 "position": [
@@ -399,12 +376,35 @@
                     0.0
                 ],
                 "scale": [
-                    8.5,
-                    8.5,
-                    8.5
+                    11.5,
+                    11.499998092651367,
+                    11.499998092651367
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/world.jojos_home.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7355fe65ca7900b14fac879e1bdf7630f513d5642df57d81434065aaf1189f22",
+                "name": "world.jojos_nearby_town",
+                "position": [
+                    1475.8719482421875,
+                    1156.00048828125,
+                    -319.29815673828125
+                ],
+                "rotation": [
+                    89.99993896484375,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    11.5,
+                    11.49999713897705,
+                    11.49999713897705
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_nearby_town.glb",
             "type": "ground"
         }
     ]
