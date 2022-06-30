@@ -2501,11 +2501,6 @@ void RenderManager::renderScene()
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
 
-	//// Start of main render queues: turn on face culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	//glFrontFace(GL_CCW);
-
 	//
 	// OPAQUE RENDER QUEUE
 	//
