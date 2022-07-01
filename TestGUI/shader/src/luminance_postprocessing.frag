@@ -20,7 +20,7 @@ void main()
 	float luminance =
 		dot(vec3(0.2125, 0.7154, 0.0721),
 			texture(hdrColorBuffer, texCoord).rgb +
-			sunLightColor * texture(volumetricLighting, texCoord).r) *			// NOTE: this is cheap and dirty. It's like a hoe.
+			sunLightColor * max(texture(volumetricLighting, texCoord).r - 0.5, 0.0)) *			// NOTE: this is cheap and dirty. It's like a hoe.
 		vignette(texCoord, 0.5, 0.75);
 
 	fragColor = vec4(vec3(luminance), 1.0);

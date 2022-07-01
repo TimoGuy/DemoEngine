@@ -736,7 +736,8 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
-	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol (According to Tiffoneus Bamboozler)  -Timo 01-20-2022
+	//volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol (According to Tiffoneus Bamboozler)  -Timo 01-20-2022
+	volumetricLightingStrength = 0.0f;		// @FIXME: @TODO: @NOTE: This is really bad looking and can cause gpu color issues if the brightness is too high (which 0.01f was too high apparently.. on some angles) SO YOU NEED TO REDO THE VOLUMETRIC LIGHT SYSTEM AND MAKE IT BETTER!!!!!
 
 	constexpr float volumetricTextureScale = 0.125f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;

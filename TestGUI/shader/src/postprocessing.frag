@@ -27,7 +27,7 @@ void main()
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
-	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * texture(volumetricLighting, texCoord).r;
+	vec3 hdrColor = texture(hdrColorBuffer, texCoord).rgb + sunLightColor * max(texture(volumetricLighting, texCoord).r - 0.5, 0.0);
 
 	hdrColor += texture(bloomColorBuffer, texCoord).rgb * bloomIntensity;
 	float avgLuminance = texture(luminanceProcessed, vec2(0.5, 0.5)).r;
