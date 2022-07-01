@@ -514,6 +514,8 @@ void main()
         FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
 
+    FragColor.rgb = clamp(FragColor.rgb, vec3(0.0), vec3(5000.0));
+
     //FragColor = vec4(vec3(1) * ao, fadeAlpha);        @DEBUG: for seeing how the ao affects the scene
 
     //FragColor = vec4(vec3(linearDepth), 1.0);

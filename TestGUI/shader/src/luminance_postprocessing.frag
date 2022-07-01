@@ -23,5 +23,5 @@ void main()
 			sunLightColor * max(texture(volumetricLighting, texCoord).r - 0.5, 0.0)) *			// NOTE: this is cheap and dirty. It's like a hoe.
 		vignette(texCoord, 0.5, 0.75);
 
-	fragColor = vec4(vec3(luminance), 1.0);
+	fragColor = vec4(vec3(max(0.0, luminance)), 1.0);		// Clamp it off to remove any -INF's
 }

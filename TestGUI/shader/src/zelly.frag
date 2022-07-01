@@ -469,4 +469,6 @@ void main()
         const vec4 cloudEffectColor = texture(cloudEffect, ssSampleCoord);        // @NOTE: the alpha channel is transmittance, not traditional alpha  -Timo
         FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
     }
+
+    FragColor.rgb = clamp(FragColor.rgb, vec3(0.0), vec3(5000.0));
 }
