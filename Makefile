@@ -22,10 +22,11 @@ LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
 LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_release		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
-CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
-CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
-CCFLAGS += -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
+CCFLAGS  = -std=c++20 -O1 -g -w
+# CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
+# CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
+# CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
+# CCFLAGS += -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
 
 # Included Libs
 LDFLAGS  = -m64
