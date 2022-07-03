@@ -22,7 +22,7 @@ LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
 LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_release		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -std=c++20 -O1 -g -w
+CCFLAGS  = -std=c++20 -O0 -g -w
 # CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
 # CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
 # CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
@@ -90,7 +90,8 @@ DEP          = $(addsuffix .d,$(basename $(OBJ)))
 
 
 .PHONY: all
-all: build
+all:
+	@make build -j 36
 	@make run
 
 # NOTE: this was just for printing out various text manipulations to make sure I was setting up the files correctly.
@@ -103,13 +104,7 @@ all: build
 # 	@echo $(patsubst $(OBJ_DIR)/%,%,$(basename $(OBJ)))
 
 .PHONY: build
-build: $(OBJ)
-	@echo 
-	@echo 
-	@echo '===================================='
-	@echo '==     Linking assembly files'
-	@echo '===================================='
-	@make link
+build: $(OBJ) .link
 
 .PHONY: run
 run:
@@ -127,9 +122,21 @@ $(OBJ):
 	@$(CXX) $(LIBPATHS) -MMD -MP $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $(patsubst $(OBJ_DIR)/%,%,$(basename $@)) -o $@ $(LDFLAGS)
 -include $(DEP)
 
-link: $(OBJ)
+.link: $(OBJ)
+	@echo 
+	@echo 
+	@echo '===================================='
+	@echo '==     Linking assembly files'
+	@echo '===================================='
 	@mkdir -p $(BIN_DIR)
 	@$(CXX) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) $(OBJ) -o $(OUT) $(LDFLAGS)
+	@touch .link
 
 clean:
-	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB)
+	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB) .link
+
+release:
+	@make clean
+	@make build -j 36
+# TODO: Make something that will copy over the resources and package it into a zip file
+	@python -m webbrowser https://github.com/TimoGuy/solanine_demo_releases/releases/new
