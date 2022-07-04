@@ -16,6 +16,10 @@
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
+        "Draw_Weapon": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
         "Falling": {
             "timestamp_speed": 73.0,
             "track_xz_root_motion": false
@@ -156,6 +160,13 @@
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
                             "var_name": "triggerTurnAround"
+                        }
+                    ],
+                    [
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": "DrawWeapon",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -411,6 +422,26 @@
                     ]
                 ],
                 "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Draw_Weapon",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "loop_animation": false,
+                "node_name": "DrawWeapon",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerDrawWeapon"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
             }
         ],
         "asm_start_node_index": 0,
@@ -454,6 +485,11 @@
                 "value": 0.0,
                 "var_name": "triggerFall",
                 "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "triggerDrawWeapon",
+                "variable_type": 0
             }
         ]
     },
@@ -462,6 +498,7 @@
         "Attack_light_vertical",
         "Attack_midair",
         "Draw_Water",
+        "Draw_Weapon",
         "Falling",
         "Idle",
         "Idle_Hip",
