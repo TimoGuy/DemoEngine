@@ -1,0 +1,411 @@
+{
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
+                "name": "Player Controller",
+                "position": [
+                    1404.1824951171875,
+                    1167.52099609375,
+                    -179.18539428710938
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "4ce30b0f6e3517931b12d5eac5ffeb1ca88dcedef1f773fbdbb89efcf48eab89",
+                "name": "Voxel Group (start)",
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                0.8373051881790161,
+                0.906862735748291,
+                0.31562379002571106
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "de808fe480ae7808dff7a28fdb34a9a38ee45a948c83cb9207b33853492c11cf",
+                "name": "Directional Light",
+                "position": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "color_multiplier": 5.0,
+            "hiokure_color": [
+                1.0,
+                0.722000002861023,
+                0.44699999690055847
+            ],
+            "hiruma_color": [
+                1.0,
+                0.9330000281333923,
+                0.8899999856948853
+            ],
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "a1399036bc08556cab14893aae243dcc083626e730baf8b6871a8465bc6f5286",
+                "name": "Yosemite Terrain",
+                "position": [
+                    0.0,
+                    -50.36635971069336,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    20.0,
+                    20.0,
+                    20.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/lvl_draft_1.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "25101c00ed38ff72ae15fb8ff6f842a90cfe7f174d07d7e0f9dc8b378e74cf75",
+                "name": "Voxel Group (start)",
+                "position": [
+                    -590.13134765625,
+                    411.9881286621094,
+                    6.647046089172363
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "54:0;10:1;55:0;10:1;55:0;10:1;62:0;3:1;10:0;3:1;10:0;3:1;10:0;3:1;10:0;3:1;10:0;3:1;10:0;3:1;62:0;3:1;62:0;3:1;53:0;13:1;52:0;13:1;52:0;13:1;52:0;13:1;52:0;",
+            "voxel_group_color": [
+                0.8373051881790161,
+                0.906862735748291,
+                0.31562379002571106
+            ],
+            "voxel_group_offset": [
+                10,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                12,
+                5,
+                13
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "0abbe4c3d2e47780a973ab242e34573db289ea64055503689bf479db92114058",
+                "name": "Voxel Group (unnamed)",
+                "position": [
+                    -672.925048828125,
+                    422.8247375488281,
+                    -20.10704803466797
+                ],
+                "rotation": [
+                    0.0,
+                    23.766054153442383,
+                    0.0
+                ],
+                "scale": [
+                    0.9999992251396179,
+                    1.0,
+                    0.9999992251396179
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "54:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                4
+            ],
+            "voxel_group_size": [
+                6,
+                1,
+                9
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "7d5f41556cae617b04ba2b9d437db45c901dbc7855506e22e2e04d0d11a28ece",
+                "name": "Yosemite Terrain",
+                "position": [
+                    -39.034690856933594,
+                    1021.254638671875,
+                    -433.152587890625
+                ],
+                "rotation": [
+                    0.0,
+                    -30.721132278442383,
+                    0.0
+                ],
+                "scale": [
+                    15.999990463256836,
+                    16.0,
+                    15.999990463256836
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/giant_unti.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
+                "name": "The WALL (First En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e054369ceaabcb54be2bddd2f0731547b3136d214e1f88af1ab04cbcc6ce1b3a",
+                "name": "The WALL (Garden En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "26d7c2998da48837660a4b8243c139407c9cd3531f5d26e925383f5ac98ae001",
+                "name": "The WALL (Monster En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "51837060380d9510af96181af16f5a0a2be9581c254edd696bfd554de1711b72",
+                "name": "The WALL (Broken En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "a0e715545abf7ae3b8e63c40ef7d6abd601f3c9b255cbd9cb023a12c73ae87f0",
+                "name": "world.jojos_home",
+                "position": [
+                    1391.3802490234375,
+                    1154.4781494140625,
+                    -180.0042266845703
+                ],
+                "rotation": [
+                    89.99993896484375,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    11.5,
+                    11.499998092651367,
+                    11.499998092651367
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_home.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7355fe65ca7900b14fac879e1bdf7630f513d5642df57d81434065aaf1189f22",
+                "name": "world.jojos_nearby_town",
+                "position": [
+                    1475.8719482421875,
+                    1156.00048828125,
+                    -319.29815673828125
+                ],
+                "rotation": [
+                    89.99993896484375,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    11.5,
+                    11.49999713897705,
+                    11.49999713897705
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_nearby_town.glb",
+            "type": "ground"
+        }
+    ]
+}

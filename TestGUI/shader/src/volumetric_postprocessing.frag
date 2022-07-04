@@ -113,7 +113,9 @@ void main()
     vec3 deltaPositionNormalized = deltaPosition / rayLength;
     float rayStepIncrement = min(rayLength, farPlane) / NB_RAYMARCH_STEPS;      // Clamp the furthest the rayLength can go is where shadows end (farPlane)
     vec3 stepVector = deltaPositionNormalized * rayStepIncrement;
+    float stepVectorLength = length(stepVector);
     float lightDotView = dot(deltaPositionNormalized, -mainlightDirection);
+    float lightDotViewSubsurfaceAccuentuated = max(0.0, 1.0 - pow(1.0 - (lightDotView * 0.5 + 0.5), 5.0));
 
     // Offset the start position
     float ditherPattern[16] = {
@@ -123,7 +125,10 @@ void main()
         0.9375, 0.4375, 0.8125, 0.3125
     };
     uint index = (uint(gl_FragCoord.x) % 4) * 4 + uint(gl_FragCoord.y) % 4;
-    currentPosition += stepVector * ditherPattern[index];
+
+    const float ditherOffset = ditherPattern[index] + 0.1;
+    currentPosition += stepVector * ditherOffset;
+    float distanceSteppedTowardsLight = stepVectorLength * ditherOffset * lightDotView;
 
     float accumulatedFog = 0.0;
 
@@ -132,12 +137,14 @@ void main()
         float shadow = simpleShadowCalculationCSM(mainlightDirection, currentPosition);
         if (shadow < 0.5)
         {
-            accumulatedFog += computeScattering(lightDotView);
+            float linearFalloff = 1.0 - float(i + ditherOffset) / float(NB_RAYMARCH_STEPS);     // @NOTE: https://www.desmos.com/calculator/jye0yhfcx5
+            float falloffTowardsLightDirection = 1.0 - distanceSteppedTowardsLight / rayLength;
+            accumulatedFog += computeScattering(lightDotViewSubsurfaceAccuentuated) * falloffTowardsLightDirection * linearFalloff;
         }
         currentPosition += stepVector;
+        distanceSteppedTowardsLight += stepVectorLength * lightDotView;
     }
     
-    float remappedAccum = (1.0 - pow(1.0 - clamp(accumulatedFog / ACCUMULATION_CEILING, 0, 1), 5.0)) * ACCUMULATION_CEILING;
-    //float remappedAccum = smoothstep(clamp(accumulatedFog / ACCUMULATION_CEILING, 0.0, 1.0), 0.0, 1.0) * ACCUMULATION_CEILING;
+    float remappedAccum = 1.0 - pow(1.0 - clamp(accumulatedFog / ACCUMULATION_CEILING, 0, 1), 5.0);
 	fragColor = vec4(vec3(remappedAccum), 1.0);
 }

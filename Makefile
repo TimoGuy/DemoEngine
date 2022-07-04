@@ -18,13 +18,15 @@ INCFLAGS += -I$(PATH_LIB)/Include
 
 LIBPATHS  = -L$(PATH_FMOD_CORE)/lib/x64
 LIBPATHS += -L$(PATH_FMOD_STUDIO)/lib/x64
-LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
+#LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_checked		# /lib_release if release build; /lib_debug if debug build
+LIBPATHS += -L$(PATH_NVIDIA_PHYSX)/lib_release		# /lib_release if release build; /lib_debug if debug build
 LIBPATHS += -L$(PATH_LIB)/Lib
 
-CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
-CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
-CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
-CCFLAGS += -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
+CCFLAGS  = -std=c++20 -O0 -g -w
+# CCFLAGS  = -std=c++20 -O1 -g -Wall -Wpedantic -Wno-unused-command-line-argument
+# CCFLAGS += -Wno-pragma-pack -Wno-delete-abstract-non-virtual-dtor
+# CCFLAGS += -Wno-unknown-pragmas -Wno-deprecated-volatile -Wno-return-type-c-linkage
+# CCFLAGS += -Wno-switch -Wno-self-assign -Wno-trigraphs -Wno-deprecated -Wno-reorder-ctor
 
 # Included Libs
 LDFLAGS  = -m64
@@ -86,9 +88,15 @@ OBJ_DIR      = obj
 OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(SRC)))
 DEP          = $(addsuffix .d,$(basename $(OBJ)))
 
+TEMP_DIR   = temp
+RES_DIR    = TestGUI/res
+SHADER_DIR = TestGUI/shader
+BUILD_NAME = 0.0.x-checked.1.zip
+
 
 .PHONY: all
-all: build
+all:
+	@make build -j 36
 	@make run
 
 # NOTE: this was just for printing out various text manipulations to make sure I was setting up the files correctly.
@@ -101,13 +109,7 @@ all: build
 # 	@echo $(patsubst $(OBJ_DIR)/%,%,$(basename $(OBJ)))
 
 .PHONY: build
-build: $(OBJ)
-	@echo 
-	@echo 
-	@echo '===================================='
-	@echo '==     Linking assembly files'
-	@echo '===================================='
-	@make link
+build: $(OBJ) .link
 
 .PHONY: run
 run:
@@ -125,9 +127,32 @@ $(OBJ):
 	@$(CXX) $(LIBPATHS) -MMD -MP $(CCFLAGS) $(INCFLAGS) $(MACROS) -c $(patsubst $(OBJ_DIR)/%,%,$(basename $@)) -o $@ $(LDFLAGS)
 -include $(DEP)
 
-link: $(OBJ)
+.link: $(OBJ)
+	@echo 
+	@echo 
+	@echo '===================================='
+	@echo '==     Linking assembly files'
+	@echo '===================================='
 	@mkdir -p $(BIN_DIR)
 	@$(CXX) $(LIBPATHS) $(CCFLAGS) $(INCFLAGS) $(MACROS) $(OBJ) -o $(OUT) $(LDFLAGS)
+	@touch .link
 
 clean:
-	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB)
+	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB) .link
+	rm -rf $(TEMP_DIR)
+
+.PHONY: release
+release:
+	@make clean
+	@make build -j 36
+
+#	Setup files for zip extraction
+	@mkdir -p $(TEMP_DIR)
+	@cp $(RES_DIR)/../imgui.ini $(BIN_DIR)/imgui.ini
+
+#	Zip up the files wanted using python module
+	@(cd $(BIN_DIR) && python -m zipfile -c ../$(TEMP_DIR)/$(BUILD_NAME) * ../$(RES_DIR) ../$(SHADER_DIR))
+
+#	Open up the folder with the built zip and open up a new release at the repo
+	@start "$(TEMP_DIR)"
+	@python -m webbrowser https://github.com/TimoGuy/solanine_demo_releases/releases/new

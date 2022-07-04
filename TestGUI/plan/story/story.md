@@ -112,3 +112,30 @@ As he steps outside for the first day of his adventure, he is greeted with the f
     - To this day, MOM suffers from his illness and also grief for his family. (NOTE: the illness feels similar to being inside the landslide... the weight and inability to move)
     - MOM tells Jojo that Jojo needs to find anokata and destroy them. And make sure not to let them know anything you're planning, bc they could drive you to misery & pain the moment you do not fulfill their commands.
     > SPOILER: Anokata gave both MOM's family and Jojo's family unconditional protection, bc it's their talent and gift to heal. However, there are odd requirements in order for the people to still experience the healed state, or else they will revert to an odd half-healed state and suffer similar injuries until they fulfill these odd requirements. Anokata will simply know these requirements, and not be able to help the ppl they heal, bc they are not an omnipotent being. Consistently fulfilling these requirements (e.g. keeping the bottle attached to your back filled) is important bc reverting to the half-healed state can possibly render you unable to complete the original requirements. Anokata simply hopes that somebody will take the healing and want to say thank you by trying to help their people as well. Anokata's wording is very bad, however, but Anokata doesn't understand if the letters/wording is effective or not, bc nobody's actually answered them with helping out their people.
+
+
+
+# JFDJAKSDFASDJF
+
+*CONTEXT: Monsters and Humans have a boundary: the circular walls. However, the slime people do not have any of these walls. In fact, they don't even have people who stand as messengers or deliverers for the whole people's food like the humans and monsters. Instead of having the commandment to try to create a peaceful community, they're given the commandment to supervise and watch over the humans and monsters. Hence all of their islands are above all of the circular walls and they themselves don't have any circular walls and lots of observation decks and telescopes. Because they are the water type as slimes, *
+
+- Get to the slime people who own the mountain, since they're in charge of the water, ask if Anokata is there.
+    - NOTE: since the bizarreness and suddenness of your question, the empress assumes that your memories were taken away (since you have to show up in the SURAIMUHIME form, which of course the empress would understand), and gets interested in this conversation (really to find fault?).
+    - The empress raises an eyebrow upon figuring this out and assumes that whoever the Anokata person is they must've caused memory loss in you.
+
+- Bc of the empress's interest piqued, Q&A ensues. After some Q and A, slime empress realizes who it is you're asking for (but doesn't show it, just adds it as a mental note of fault of Anokata and the lava ppl), and asks what Anokata wanted you to do when you got up here.
+- After answering that you need to go to the mountain, empress gets *super* upset, and "realizes" (there is no ulterier motive of Anokata but empress decides there is) that Anokata is after her people and the mountain.
+    - You learn that the mountain is unbelievably sacred, and that normal people aren't allowed up there.
+    - Another detail: Empress hasn't even been able to climb the mountain because recently the path up has been breaking down. On top of that, it looks sabotaged (Anokata did do it but it wasn't to sabotage the slime ppl, though it was to prevent them from getting to the top and definitely looks like sabotage and is vandalism)
+
+- Empress really wants to climb up to the top of the mountain, so the both of you go up for 
+
+
+# Meaning of Solanine
+
+- Has double meaning, since SORANIN can mean "people of the sky", and it's a giant stalk coming out of a potato.
+- The stalk is often described as "our future" and "what the world needs to be"
+- Legend has it that when the gods decide that the world has "made it" (the prerequisite is that all boundaries are destroyed and the world goes from NINGEN, MAMONO, SURAIMU, HININ to the single unified SORANIN)
+    - End credits will show whether the flower has bloomed or not. If you 100% the game and you make it up to the islands when you're escaping the glass planet (which of course is optional), then the flower will bloom, or else the final moment of the credits will show an unbloomed flower bud.
+        - NOTE: here's an example of bloomed flower and unbloomed
+        - ![A Potato Flower](./potato-flower.jpg)

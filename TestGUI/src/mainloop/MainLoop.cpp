@@ -540,7 +540,7 @@ void setupImGui()
 	ImGui::CreateContext();
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;  // | ImGuiConfigFlags_ViewportsEnable;  NOTE: I have decided that multiple viewports kinda really sucks, so I don't wanna have this in here anymore  -Timo
 	io.ConfigWindowsResizeFromEdges = true;
 
 	ImGui::StyleColorsDark();
@@ -550,7 +550,7 @@ void setupImGui()
 	style.WindowTitleAlign.x = 0.5f;
 	style.WindowMenuButtonPosition = 1;		// Right side of menu
 	style.WindowRounding = 0;
-	style.Alpha = 1.0f;
+	style.Alpha = 0.75f;
 
 	ImGui_ImplGlfw_InitForOpenGL(MainLoop::getInstance().window, true);
 	ImGui_ImplOpenGL3_Init("#version 130");

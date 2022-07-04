@@ -1192,9 +1192,6 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 			flatNormal.y = 0.0f;
 			flatNormal = glm::normalize(flatNormal);
 
-			facingDirection.x = -flatNormal.x;
-			facingDirection.y = -flatNormal.z;
-
 			if (GameState::getInstance().currentTransformation == Transformation::HUMAN)
 			{
 				glm::vec3 ledgeGrabPoint = PhysicsUtils::toGLMVec3(hitInfo.block.position);		// @NOTE: this is the wall hit position
@@ -1225,17 +1222,10 @@ physx::PxVec3 PlayerCharacter::processAirMovement(const glm::vec2& movementVecto
 						// There's a hit for ledgegrab! (And the crevice is empty for at least the min required height!
 						ps_ledgeGrabHumanData.holdLedgePosition = ledgeGrabPoint;
 						playerState = PlayerState::LEDGE_GRAB_HUMAN;
-					}
-				}
 
-				//
-				// Enter into the wall climb state bc no ledge grab!
-				//
-				else if (ps_wallClimbHumanData.canEnterIntoState && glm::length2(currentFlatVelocity) > 0.001f)		// @NOTE: you need to be moving to do a wall climb, but not to do a ledge grab. Keep that in mind, yo.  -Timo
-				{
-					ps_wallClimbHumanData.canEnterIntoState = false;
-					ps_wallClimbHumanData.climbTimer = ps_wallClimbHumanData.climbTime;
-					playerState = PlayerState::WALL_CLIMB_HUMAN;
+						facingDirection.x = -flatNormal.x;
+						facingDirection.y = -flatNormal.z;
+					}
 				}
 			}
 			else if (GameState::getInstance().currentTransformation == Transformation::CAT)

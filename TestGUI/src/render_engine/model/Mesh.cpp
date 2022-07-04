@@ -113,6 +113,7 @@ void Mesh::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const st
         Texture* mainTexture = material->getMainTexture();
         if (mainTexture != nullptr)
         {
+            shaderOverride->resetSamplers();        // This is bc ubauTexture is the only sampler!  -Timo
             shaderOverride->setSampler("ubauTexture", mainTexture->getHandle());
             shaderOverride->setFloat("fadeAlpha", material->fadeAlpha);
         }

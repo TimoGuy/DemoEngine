@@ -736,9 +736,10 @@ void RenderManager::createHDRBuffer()
 	//
 	// Create Volumetric Lighting framebuffer
 	//
-	volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol (According to Tiffoneus Bamboozler)  -Timo 01-20-2022
+	//volumetricLightingStrength = 0.01f;		// @NOTE: I hate how subtle it is, but it just needs to be like this lol (According to Tiffoneus Bamboozler)  -Timo 01-20-2022
+	volumetricLightingStrength = 0.005f;		// @FIXME: @TODO: @NOTE: This is really bad looking and can cause gpu color issues if the brightness is too high (which 0.01f was too high apparently.. on some angles) SO YOU NEED TO REDO THE VOLUMETRIC LIGHT SYSTEM AND MAKE IT BETTER!!!!!
 
-	constexpr float volumetricTextureScale = 0.125f;
+	constexpr float volumetricTextureScale = 0.25f;  // 0.125f;
 	volumetricTextureWidth = MainLoop::getInstance().camera.width * volumetricTextureScale;
 	volumetricTextureHeight = MainLoop::getInstance().camera.height * volumetricTextureScale;
 
@@ -2501,11 +2502,6 @@ void RenderManager::renderScene()
 	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
 	//}
 
-	//// Start of main render queues: turn on face culling
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
-	//glFrontFace(GL_CCW);
-
 	//
 	// OPAQUE RENDER QUEUE
 	//
@@ -3572,6 +3568,7 @@ void RenderManager::renderImGuiContents()
 	{
 		if (ImGui::Begin("Scene Properties", &showSceneProperties))
 		{
+			ImGui::DragFloat("Camera Movement Speed", &MainLoop::getInstance().camera.speed, 0.05f);
 			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
 			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
@@ -3698,9 +3695,10 @@ void RenderManager::renderImGuiContents()
 	//
 	// Render out the properties panels of selected object
 	//
-	ImGui::Begin("Selected Object Properties");
+	auto objs = getSelectedObjects();
+	if (objs.size() > 0)
 	{
-		auto objs = getSelectedObjects();
+		ImGui::Begin("Selected Object Properties");
 		if (objs.size() == 1)
 		{
 			BaseObject* obj = objs[0];
@@ -3732,12 +3730,8 @@ void RenderManager::renderImGuiContents()
 		{
 			ImGui::Text("Multiple objects are currently selected");
 		}
-		else
-		{
-			ImGui::Text("No object is currently selected");
-		}
+		ImGui::End();
 	}
-	ImGui::End();
 
 	//
 	// Loaded resources window
@@ -5132,7 +5126,7 @@ void RenderManager::renderImGuiContents()
 					}
 					else
 					{
-						std::cout << "TIMELINE VIEWER: ERROR: Saving path \"" << path << "\" Does not exist." << std::endl;
+						std::cout << "TIMELINE VIEWER: ERROR: Saving path does not exist." << std::endl;
 					}
 				}
 			}
@@ -5147,7 +5141,6 @@ void RenderManager::renderImGuiContents()
 	ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
 	ImVec2 work_size = viewport->WorkSize;
 
-	auto objs = getSelectedObjects();
 	if (!objs.empty() && !MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
 	{
 		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());

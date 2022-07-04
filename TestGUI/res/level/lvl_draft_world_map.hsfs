@@ -1,0 +1,324 @@
+{
+    "objects": [
+        {
+            "baseObject": {
+                "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
+                "name": "Player Controller",
+                "position": [
+                    368.4307861328125,
+                    2684.572021484375,
+                    49.86564254760742
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": "player"
+        },
+        {
+            "baseObject": {
+                "guid": "de808fe480ae7808dff7a28fdb34a9a38ee45a948c83cb9207b33853492c11cf",
+                "name": "Directional Light",
+                "position": [
+                    0.0,
+                    100.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "color_multiplier": 5.0,
+            "hiokure_color": [
+                1.0,
+                0.722000002861023,
+                0.44699999690055847
+            ],
+            "hiruma_color": [
+                1.0,
+                0.9330000281333923,
+                0.8899999856948853
+            ],
+            "lightComponent": {
+                "casts_shadows": true
+            },
+            "type": "dir_light"
+        },
+        {
+            "baseObject": {
+                "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
+                "name": "The WALL (First En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e054369ceaabcb54be2bddd2f0731547b3136d214e1f88af1ab04cbcc6ce1b3a",
+                "name": "The WALL (Garden En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "26d7c2998da48837660a4b8243c139407c9cd3531f5d26e925383f5ac98ae001",
+                "name": "The WALL (Monster En)",
+                "position": [
+                    -9500.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "51837060380d9510af96181af16f5a0a2be9581c254edd696bfd554de1711b72",
+                "name": "The WALL (Broken En)",
+                "position": [
+                    0.0,
+                    -200.0,
+                    9500.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    400.0,
+                    400.0,
+                    400.0
+                ]
+            },
+            "modelResourceName": "model;the_wall",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "a0e715545abf7ae3b8e63c40ef7d6abd601f3c9b255cbd9cb023a12c73ae87f0",
+                "name": "world.jojos_home",
+                "position": [
+                    10.298995971679688,
+                    -6.3622331619262695,
+                    -1.9243659973144531
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    11.5,
+                    11.499996185302734,
+                    11.499996185302734
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_home.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7355fe65ca7900b14fac879e1bdf7630f513d5642df57d81434065aaf1189f22",
+                "name": "world.jojos_nearby_town",
+                "position": [
+                    262.5190124511719,
+                    79.1148681640625,
+                    2.8574676513671875
+                ],
+                "rotation": [
+                    180.0,
+                    -69.68495178222656,
+                    -179.9999237060547
+                ],
+                "scale": [
+                    11.500014305114746,
+                    11.499992370605469,
+                    11.500009536743164
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_nearby_town.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "425b66aeecb21cd59fd931e66e41333e6da126627db476589af9257da98024dc",
+                "name": "world.jojos_town_windchime",
+                "position": [
+                    671.3860473632813,
+                    243.11492919921875,
+                    -278.9263000488281
+                ],
+                "rotation": [
+                    -6.943646352342014e-11,
+                    9.937670707702637,
+                    8.487980085192248e-05
+                ],
+                "scale": [
+                    11.499999046325684,
+                    11.499992370605469,
+                    11.499992370605469
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos_town_windchime.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "4c1aa5a7e2902e66d2190cbdb2ecd8cebc44e1c8dcd63c8cf49deedb023217bf",
+                "name": "Voxel Group (unnamed)",
+                "position": [
+                    218.81613159179688,
+                    46.17728042602539,
+                    259.6849670410156
+                ],
+                "rotation": [
+                    6.5341691970825195,
+                    12.692163467407227,
+                    27.53373908996582
+                ],
+                "scale": [
+                    1.0000004768371582,
+                    0.999999463558197,
+                    0.9999996423721313
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 0,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 0.0,
+            "moving_platform_spline_speed": 0.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;85:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                0,
+                0,
+                19
+            ],
+            "voxel_group_size": [
+                102,
+                1,
+                20
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "67971bf002f487765e22a792247efe128d84659d3ce0b964956f2cc06b6ab1c9",
+                "name": "world.jojos.prop1",
+                "position": [
+                    132.08853149414063,
+                    79.11434173583984,
+                    -294.4202880859375
+                ],
+                "rotation": [
+                    -180.0,
+                    -69.68495178222656,
+                    -179.9999237060547
+                ],
+                "scale": [
+                    11.500014305114746,
+                    11.499992370605469,
+                    11.500009536743164
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.jojos.prop1.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "fc60352ea4e4e4fa1b262f8a91a2fc9edc10f010bacaf7d35c2f40f7745830f0",
+                "name": "world.first_cave",
+                "position": [
+                    111.46107482910156,
+                    9.391178131103516,
+                    15.452534675598145
+                ],
+                "rotation": [
+                    -7.755099431960844e-06,
+                    2.7311923503875732,
+                    0.00011116811219835654
+                ],
+                "scale": [
+                    11.500014305114746,
+                    11.499992370605469,
+                    11.500009536743164
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/world.first_cave.glb",
+            "type": "ground"
+        }
+    ]
+}

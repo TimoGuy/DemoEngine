@@ -1,0 +1,13 @@
+{
+    "level_editor_camera_orientation": [
+        0.6483557224273682,
+        0.2629682421684265,
+        0.7142493724822998
+    ],
+    "level_editor_camera_pos": [
+        540.7657470703125,
+        246.05641174316406,
+        -250.9620361328125
+    ],
+    "startup_level": "res\\level\\lvl_draft_world_map.hsfs"
+}

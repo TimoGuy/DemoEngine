@@ -159,7 +159,7 @@ void Camera::updateToVirtualCameras()
 	up = currentVirtualCamera->up;
 }
 
-bool prevF11Keypressed;
+bool prevF11Keypressed = GLFW_RELEASE;
 void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called when not hovering over Imgui stuff
 {
 #ifdef _DEVELOP
@@ -220,23 +220,22 @@ void Camera::Inputs(GLFWwindow* window)			// NOTE: this event only gets called w
 		//
 		// Move around in the scene (only when right button pressed)
 		//
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-			position += speed * orientation * MainLoop::getInstance().deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-			position += speed * -glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-			position += speed * -orientation * MainLoop::getInstance().deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-			position += speed * glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-			position += speed * -up * MainLoop::getInstance().deltaTime;
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-			position += speed * up * MainLoop::getInstance().deltaTime;
-
+		float speedMultiplier = 50.0f;
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-			speed = 100.0f;  // 1000.0f;
-		else if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-			speed = 50.0f;
+			speedMultiplier = 100.0f;
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+			position += speed * speedMultiplier * orientation * MainLoop::getInstance().deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+			position += speed * speedMultiplier * -glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+			position += speed * speedMultiplier * -orientation * MainLoop::getInstance().deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+			position += speed * speedMultiplier * glm::normalize(glm::cross(orientation, up)) * MainLoop::getInstance().deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+			position += speed * speedMultiplier * -up * MainLoop::getInstance().deltaTime;
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+			position += speed * speedMultiplier * up * MainLoop::getInstance().deltaTime;
 
 		//
 		// Look around functionality

@@ -43,9 +43,6 @@ void YosemiteTerrain::refreshResources()
 		renderComponent->clearAllModels();
 		renderComponent->addModelToRender({ model, true, nullptr });
 	}
-
-	materials["Material"] = (Material*)Resources::getResource("material;pbrRustyMetal");
-	model->setMaterials(materials);
 }
 
 void YosemiteTerrain::loadPropertiesFromJson(nlohmann::json& object)		// @Override
