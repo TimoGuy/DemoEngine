@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    368.4307861328125,
-                    2684.572021484375,
-                    49.86564254760742
+                    91.16078186035156,
+                    8.667048454284668,
+                    68.91375732421875
                 ],
                 "rotation": [
                     0.0,
@@ -183,7 +183,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -206,9 +206,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -6.943646352342014e-11,
+                    -7.191633399905584e-11,
                     9.937670707702637,
-                    8.487980085192248e-05
+                    8.487977174809203e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -229,7 +229,7 @@
                     259.6849670410156
                 ],
                 "rotation": [
-                    6.5341691970825195,
+                    6.534168243408203,
                     12.692163467407227,
                     27.53373908996582
                 ],
@@ -284,7 +284,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -319,6 +319,110 @@
             },
             "modelResourceName": "model;custommodel;res/model/world.first_cave.glb",
             "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
+                "name": "Voxel Group (world.first_cave)",
+                "position": [
+                    80.0,
+                    -16.0,
+                    28.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
+            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 50.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
+                "name": "Spline (world.first_cave)",
+                "position": [
+                    80.0,
+                    -16.0,
+                    28.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        -34.800174713134766,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        23.21532440185547,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        -6.480049133300781,
+                        17.453969955444336,
+                        41.27313995361328
+                    ]
+                }
+            ],
+            "type": "spline"
         }
     ]
 }
