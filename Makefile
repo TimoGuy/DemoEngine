@@ -88,6 +88,11 @@ OBJ_DIR      = obj
 OBJ          = $(addprefix $(OBJ_DIR)/,$(addsuffix .o,$(SRC)))
 DEP          = $(addsuffix .d,$(basename $(OBJ)))
 
+TEMP_DIR   = temp
+RES_DIR    = TestGUI/res
+SHADER_DIR = TestGUI/shader
+BUILD_NAME = 0.0.x-checked.1.zip
+
 
 .PHONY: all
 all:
@@ -134,9 +139,20 @@ $(OBJ):
 
 clean:
 	rm -f $(OBJ) $(DEP) $(OUT) $(OUT_ILK) $(OUT_PDB) .link
+	rm -rf $(TEMP_DIR)
 
+.PHONY: release
 release:
 	@make clean
 	@make build -j 36
-# TODO: Make something that will copy over the resources and package it into a zip file
+
+#	Setup files for zip extraction
+	@mkdir -p $(TEMP_DIR)
+	@cp $(RES_DIR)/../imgui.ini $(BIN_DIR)/imgui.ini
+
+#	Zip up the files wanted using python module
+	@(cd $(BIN_DIR) && python -m zipfile -c ../$(TEMP_DIR)/$(BUILD_NAME) * ../$(RES_DIR) ../$(SHADER_DIR))
+
+#	Open up the folder with the built zip and open up a new release at the repo
+	@start "$(TEMP_DIR)"
 	@python -m webbrowser https://github.com/TimoGuy/solanine_demo_releases/releases/new

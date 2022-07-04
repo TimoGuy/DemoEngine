@@ -31,6 +31,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+[Tt]emp/
 
 # ImGui ini file
 [Tt]est[Gg][Uu][Ii]/imgui.ini
