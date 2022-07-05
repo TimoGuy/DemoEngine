@@ -22,6 +22,7 @@
 #include "../../imgui/imgui_impl_glfw.h"
 #include "../../imgui/imgui_impl_opengl3.h"
 #include "../../imgui/ImGuizmo.h"
+#include "../../imgui/GraphEditor.h"
 #endif
 
 #include "../material/Texture.h"
@@ -67,6 +68,131 @@ ImGuizmo::OPERATION transOperation;
 std::string modelMetadataFname;
 RenderComponent* modelForTimelineViewer = nullptr;
 Animator* animatorForModelForTimelineViewer = nullptr;
+
+template <typename T, std::size_t N>
+struct Array
+{
+   T data[N];
+   const size_t size() const { return N; }
+
+   const T operator [] (size_t index) const { return data[index]; }
+   operator T* () {
+      T* p = new T[N];
+      memcpy(p, data, sizeof(data));
+      return p;
+   }
+};
+
+template <typename T, typename ... U> Array(T, U...)->Array<T, 1 + sizeof...(U)>;
+struct GraphEditorDelegate : public GraphEditor::Delegate
+{
+	bool AllowedLink(GraphEditor::NodeIndex from, GraphEditor::NodeIndex to) override
+	{
+		return true;
+	}
+
+	void SelectNode(GraphEditor::NodeIndex nodeIndex, bool selected) override
+	{
+		mNodes[nodeIndex].mSelected = selected;
+	}
+
+	void MoveSelectedNodes(const ImVec2 delta) override
+	{
+		for (auto& node : mNodes)
+		{
+			if (!node.mSelected)
+			{
+			continue;
+			}
+			node.x += delta.x;
+			node.y += delta.y;
+		}
+	}
+
+	virtual void RightClick(GraphEditor::NodeIndex nodeIndex, GraphEditor::SlotIndex slotIndexInput, GraphEditor::SlotIndex slotIndexOutput) override
+	{
+	}
+
+	void AddLink(GraphEditor::NodeIndex inputNodeIndex, GraphEditor::SlotIndex inputSlotIndex, GraphEditor::NodeIndex outputNodeIndex, GraphEditor::SlotIndex outputSlotIndex) override
+	{
+		mLinks.push_back({ inputNodeIndex, inputSlotIndex, outputNodeIndex, outputSlotIndex });
+	}
+
+	void DelLink(GraphEditor::LinkIndex linkIndex) override
+	{
+		mLinks.erase(mLinks.begin() + linkIndex);
+	}
+
+	void CustomDraw(ImDrawList* drawList, ImRect rectangle, GraphEditor::NodeIndex nodeIndex) override
+	{
+		//drawList->AddLine(rectangle.Min, rectangle.Max, IM_COL32(0, 0, 0, 255));
+		//drawList->AddText(rectangle.Min, IM_COL32(255, 128, 64, 255), "Draw");
+	}
+
+	const size_t GetTemplateCount() override
+	{
+		return sizeof(mTemplates) / sizeof(GraphEditor::Template);
+	}
+
+	const GraphEditor::Template GetTemplate(GraphEditor::TemplateIndex index) override
+	{
+		return mTemplates[index];
+	}
+
+	const size_t GetNodeCount() override
+	{
+		return mNodes.size();
+	}
+
+	const GraphEditor::Node GetNode(GraphEditor::NodeIndex index) override
+	{
+		const auto& myNode = mNodes[index];
+		return GraphEditor::Node
+		{
+			myNode.name,
+			myNode.templateIndex,
+			ImRect(ImVec2(myNode.x, myNode.y), ImVec2(myNode.x + 200, myNode.y + 50)),
+			myNode.mSelected
+		};
+	}
+
+	const size_t GetLinkCount() override
+	{
+		return mLinks.size();
+	}
+
+	const GraphEditor::Link GetLink(GraphEditor::LinkIndex index) override
+	{
+		return mLinks[index];
+	}
+
+	// Graph datas
+	static const inline GraphEditor::Template mTemplates[] = {
+		{
+			IM_COL32(160, 160, 180, 255),
+			IM_COL32(100, 100, 140, 255),
+			IM_COL32(110, 110, 150, 255),
+			1,
+			Array{"In"},
+			nullptr,
+			1,
+			Array{"Out"},
+			nullptr
+		},
+	};
+
+	struct Node
+	{
+		const char* name;
+		GraphEditor::TemplateIndex templateIndex;
+		float x, y;
+		bool mSelected;
+	};
+
+	std::vector<Node> mNodes;
+	std::vector<GraphEditor::Link> mLinks;
+	std::map<std::string, size_t> mNodeNameToIndex;
+};
 
 struct AnimationNameAndIncluded
 {
@@ -150,6 +276,8 @@ struct TimelineViewerState
 	std::vector<ASMVariable> editor_asmVarCopyForPreview;
 	size_t editor_previewModeCurrentASMNode;
 	bool editor_ASMPreviewModeIsPaused = false;
+	GraphEditorDelegate editor_ASMNodePreviewerDelegate;
+	bool editor_flag_ASMNodePreviewerRunFitAllNodes = false;
 } timelineViewerState;
 #endif
 
@@ -2875,6 +3003,7 @@ void RenderManager::renderImGuiPass()
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
@@ -3038,6 +3167,8 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 		if (animStateMachine.contains("asm_nodes"))
 		{
+			std::vector<std::string> allNodeNames;
+
 			for (auto asmNode_j : animStateMachine["asm_nodes"])
 			{
 				ASMNode asmNode;
@@ -3073,6 +3204,112 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 					}
 				}
 				timelineViewerState.animationStateMachineNodes.push_back(asmNode);
+				allNodeNames.push_back(asmNode.nodeName);
+
+				//
+				// Add to GraphEditor Node preview
+				//
+				GraphEditorDelegate::Node gedNode;
+				gedNode.mSelected = false;
+				gedNode.templateIndex = 0;
+				gedNode.name = (new std::string(asmNode.nodeName))->c_str();		// @MEMLEAK
+				if (asmNode_j.contains("ged_pos"))
+				{
+					gedNode.x = asmNode_j["ged_pos"][0];
+					gedNode.y = asmNode_j["ged_pos"][1];
+				}
+				else
+				{
+					static float startupPosX = 0;
+					gedNode.x = startupPosX;
+					gedNode.y = 0.0f;
+					startupPosX += 400.0f;
+				}
+				timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[asmNode.nodeName] =
+					timelineViewerState.editor_ASMNodePreviewerDelegate.mNodes.size();
+				timelineViewerState.editor_ASMNodePreviewerDelegate.mNodes.push_back(gedNode);
+			}
+
+			//
+			// Add in the links for the grapheditor node preview
+			//
+			for (auto asmNode : timelineViewerState.animationStateMachineNodes)
+			{
+				size_t tranCondGroupIndex = 0;
+				for (auto tranCondGroup : asmNode.transitionConditionGroups)
+				{
+					// @COPYPASTA: This whole section right here
+					std::vector<std::string> relevantNodes = allNodeNames;
+
+					// @Possibly_not_needed: remove the reference to self in the relevant transition nodes.
+					auto itr = relevantNodes.cbegin();
+					while (itr != relevantNodes.cend())
+					{
+						if (*itr == asmNode.nodeName)
+						{
+							itr = relevantNodes.erase(itr);
+						}
+						else
+							itr++;
+					}
+
+					for (auto tranCond : tranCondGroup.transitionConditions)
+					{
+						if (tranCond.varName != ASMTransitionCondition::specialCaseKey)
+							continue;
+
+						// Shave off or only include certain nodes
+						switch (tranCond.comparisonOperator)
+						{
+						case ASMTransitionCondition::ASMComparisonOperator::EQUAL:
+						{
+							auto itr = relevantNodes.cbegin();
+							while (itr != relevantNodes.cend())
+							{
+								if (*itr != tranCond.specialCaseCurrentASMNodeName)		// @NOTE: only *leave* those that are equal, hence the !=
+								{
+									itr = relevantNodes.erase(itr);
+								}
+								else
+									itr++;
+							}
+						}
+						break;
+
+						case ASMTransitionCondition::ASMComparisonOperator::NEQUAL:
+						{
+							auto itr = relevantNodes.cbegin();
+						while (itr != relevantNodes.cend())
+						{
+							if (*itr == tranCond.specialCaseCurrentASMNodeName)
+							{
+								itr = relevantNodes.erase(itr);
+							}
+							else
+								itr++;
+						}
+						}
+						break;
+						}
+					}
+
+					// Add the remaining relevantnodes into the links for the node previewer
+					if (relevantNodes.empty())
+					{
+						std::cout << "WARNING: 0 nodes are able to transition into state {" << asmNode.nodeName << "}with Transition Condition Group " << tranCondGroupIndex << std::endl;
+					}
+					else
+					{
+						size_t toNodeIndex = timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[asmNode.nodeName];
+						for (auto fromNodeName : relevantNodes)
+						{
+							size_t fromNodeIndex = timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[fromNodeName];
+							timelineViewerState.editor_ASMNodePreviewerDelegate.AddLink(fromNodeIndex, 0, toNodeIndex, 0);
+						}
+					}
+
+					tranCondGroupIndex++;
+				}
 			}
 		}
 
@@ -3131,11 +3368,10 @@ void routinePlayCurrentASMAnimation()
 void RenderManager::renderImGuiContents()
 {
 	static bool showAnalyticsOverlay = true;
-	static bool showDemoWindow = true;
+	static bool showDemoWindow = false;
 	static bool showSceneProperties = true;
 	static bool showObjectSelectionWindow = true;
 	static bool showLoadedResourcesWindow = true;
-	static bool showMaterialsManager = true;
 	static bool showTimelineEditorWindow = true;
 
 	//
@@ -3242,7 +3478,6 @@ void RenderManager::renderImGuiContents()
 				if (ImGui::MenuItem("Scene Properties", NULL, &showSceneProperties)) {}
 				if (ImGui::MenuItem("Object Selection", NULL, &showObjectSelectionWindow)) {}
 				if (ImGui::MenuItem("Loaded Resources", NULL, &showLoadedResourcesWindow)) {}
-				if (ImGui::MenuItem("Materials", NULL, &showMaterialsManager)) {}
 				if (ImGui::MenuItem("Timeline Editor", NULL, &showTimelineEditorWindow)) {}
 				if (ImGui::MenuItem("ImGui Demo Window", NULL, &showDemoWindow)) {}
 
@@ -3282,7 +3517,7 @@ void RenderManager::renderImGuiContents()
 		}
 
 		const float PAD = 10.0f;
-		static int corner = 0;
+		static int corner = 3;
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
 		if (corner != -1)
@@ -3302,11 +3537,6 @@ void RenderManager::renderImGuiContents()
 		if (ImGui::Begin("Example: Simple overlay", &showAnalyticsOverlay, window_flags))
 		{
 			ImGui::Text(fpsReportString.c_str());
-			ImGui::Separator();
-			if (ImGui::IsMousePosValid())
-				ImGui::Text("Mouse Position: (%.1f,%.1f)", io.MousePos.x, io.MousePos.y);
-			else
-				ImGui::Text("Mouse Position: <invalid>");
 			/*if (ImGui::BeginPopupContextWindow())
 			{
 				if (ImGui::MenuItem("Custom", NULL, corner == -1)) corner = -1;
@@ -3404,456 +3634,468 @@ void RenderManager::renderImGuiContents()
 	}
 #endif
 
-	//
-	// Object Selection Window
-	//
-	static int imGuizmoTransformOperation = 0;
-	static int imGuizmoTransformMode = 0;
-	if (showObjectSelectionWindow)
+	if (!MainLoop::getInstance().timelineViewerMode)
 	{
-		if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow))
+		//
+		// Object Selection Window
+		//
+		static int imGuizmoTransformOperation = 0;
+		static int imGuizmoTransformMode = 0;
+		if (showObjectSelectionWindow)
 		{
-			ImGui::Combo("##Transform operation combo", &imGuizmoTransformOperation, "Translate\0Rotate\0Scale\0Bounds");
-			ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
-
-			GLFWwindow* windowRef = MainLoop::getInstance().window;
-			auto objs = getSelectedObjects();
-			if (!objs.empty() &&
-				!ImGuizmo::IsUsing() &&
-				glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+			if (ImGui::Begin("Scene Object List", &showObjectSelectionWindow))
 			{
-				static bool heldQDownPrev = false;
-				if (!heldQDownPrev && glfwGetKey(windowRef, GLFW_KEY_Q))
-					imGuizmoTransformMode = (int)!(bool)imGuizmoTransformMode;		// Switch between local and world transformation
-				heldQDownPrev = glfwGetKey(windowRef, GLFW_KEY_Q) == GLFW_PRESS;
+				ImGui::Combo("##Transform operation combo", &imGuizmoTransformOperation, "Translate\0Rotate\0Scale\0Bounds");
+				ImGui::Combo("##Transform mode combo", &imGuizmoTransformMode, "Local\0World");
 
-				if (glfwGetKey(windowRef, GLFW_KEY_W))
-					imGuizmoTransformOperation = 0;
-				if (glfwGetKey(windowRef, GLFW_KEY_E))
-					imGuizmoTransformOperation = 1;
-				if (glfwGetKey(windowRef, GLFW_KEY_R))
-					imGuizmoTransformOperation = 2;
-				if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_SHIFT)) &&
-					glfwGetKey(windowRef, GLFW_KEY_DELETE))
+				GLFWwindow* windowRef = MainLoop::getInstance().window;
+				auto objs = getSelectedObjects();
+				if (!objs.empty() &&
+					!ImGuizmo::IsUsing() &&
+					glfwGetMouseButton(windowRef, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
 				{
-					deleteAllSelectedObjects();
-				}
+					static bool heldQDownPrev = false;
+					if (!heldQDownPrev && glfwGetKey(windowRef, GLFW_KEY_Q))
+						imGuizmoTransformMode = (int)!(bool)imGuizmoTransformMode;		// Switch between local and world transformation
+					heldQDownPrev = glfwGetKey(windowRef, GLFW_KEY_Q) == GLFW_PRESS;
 
-				//
-				// Press ctrl+d to copy a selected object
-				//
-				{
-					static bool objectDupeKeyboardShortcutLock = false;
-					if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
+					if (glfwGetKey(windowRef, GLFW_KEY_W))
+						imGuizmoTransformOperation = 0;
+					if (glfwGetKey(windowRef, GLFW_KEY_E))
+						imGuizmoTransformOperation = 1;
+					if (glfwGetKey(windowRef, GLFW_KEY_R))
+						imGuizmoTransformOperation = 2;
+					if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_SHIFT) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_SHIFT)) &&
+						glfwGetKey(windowRef, GLFW_KEY_DELETE))
 					{
-						if (!objectDupeKeyboardShortcutLock)
-						{
-							objectDupeKeyboardShortcutLock = true;
-
-							// NOTE: copypasta
-							for (size_t i = 0; i < objs.size(); i++)
-							{
-								nlohmann::json j = objs[i]->savePropertiesToJson();
-								j["baseObject"].erase("guid");
-								FileLoading::getInstance().createObjectWithJson(j);
-							}
-
-							if (objs.size() == 1)
-							{
-								// Select the last object if there's only one obj selected.
-								deselectAllSelectedObject();
-								addSelectObject(MainLoop::getInstance().objects.size() - 1);
-							}
-							else
-								// If there's a group selection, then just deselect everything. It's kinda a hassle to try to select everything i think.
-								deselectAllSelectedObject();
-						}
+						deleteAllSelectedObjects();
 					}
-					else
-						objectDupeKeyboardShortcutLock = false;
-				}
-			}
 
-			if (ImGui::BeginListBox("##listbox Scene Objects", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
-			{
-				//
-				// Display all of the objects in the scene
-				//
-				int shiftSelectRequest[] = { -1, -1 };
-				for (size_t n = 0; n < MainLoop::getInstance().objects.size(); n++)
-				{
-					const bool isSelected = isObjectSelected(n);
-					if (ImGui::Selectable(
-						(MainLoop::getInstance().objects[n]->name + "##" + MainLoop::getInstance().objects[n]->guid).c_str(),
-						isSelected
-					))
+					//
+					// Press ctrl+d to copy a selected object
+					//
 					{
-						bool isShiftHeld =
-							glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) ||
-							glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT);
-
-						if (isShiftHeld)
+						static bool objectDupeKeyboardShortcutLock = false;
+						if ((glfwGetKey(windowRef, GLFW_KEY_LEFT_CONTROL) || glfwGetKey(windowRef, GLFW_KEY_RIGHT_CONTROL)) && glfwGetKey(windowRef, GLFW_KEY_D))
 						{
-							if (!isSelected && !selectedObjectIndices.empty())
+							if (!objectDupeKeyboardShortcutLock)
 							{
-								shiftSelectRequest[0] = glm::min((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
-								shiftSelectRequest[1] = glm::max((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
+								objectDupeKeyboardShortcutLock = true;
+
+								// NOTE: copypasta
+								for (size_t i = 0; i < objs.size(); i++)
+								{
+									nlohmann::json j = objs[i]->savePropertiesToJson();
+									j["baseObject"].erase("guid");
+									FileLoading::getInstance().createObjectWithJson(j);
+								}
+
+								if (objs.size() == 1)
+								{
+									// Select the last object if there's only one obj selected.
+									deselectAllSelectedObject();
+									addSelectObject(MainLoop::getInstance().objects.size() - 1);
+								}
+								else
+									// If there's a group selection, then just deselect everything. It's kinda a hassle to try to select everything i think.
+									deselectAllSelectedObject();
 							}
 						}
 						else
-						{
-							if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
-								!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
-								deselectAllSelectedObject();
-
-							if (isObjectSelected(n))
-								deselectObject(n);
-							else
-								addSelectObject(n);
-						}
+							objectDupeKeyboardShortcutLock = false;
 					}
-
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndListBox();
-
-				//
-				// Finally Execute SHIFT+click group selection
-				//
-				if (shiftSelectRequest[0] >= 0 && shiftSelectRequest[1] >= 0)
-					for (size_t n = (size_t)shiftSelectRequest[0]; n <= (size_t)shiftSelectRequest[1]; n++)
-						addSelectObject(n);
-			}
-
-			//
-			// Popup for creating objects
-			//
-			if (ImGui::Button("Add Object.."))
-				ImGui::OpenPopup("add_object_popup");
-			if (ImGui::BeginPopup("add_object_popup"))
-			{
-				//
-				// @Palette: where to add objects to add in imgui
-				//
-				BaseObject* newObject = nullptr;
-				if (ImGui::Selectable("Player Character"))			newObject = new PlayerCharacter();
-				if (ImGui::Selectable("Directional Light"))			newObject = new DirectionalLight(true);
-				if (ImGui::Selectable("Point Light"))				newObject = new PointLight(true);
-				if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
-				if (ImGui::Selectable("Collectable Water Puddle"))	newObject = new WaterPuddle();
-				if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
-				if (ImGui::Selectable("Voxel Group"))				newObject = new VoxelGroup();
-				if (ImGui::Selectable("Spline Tool"))				newObject = new Spline();
-
-				if (newObject != nullptr)
-				{
-					if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
-						!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
-						deselectAllSelectedObject();
-					addSelectObject(MainLoop::getInstance().objects.size() - 1);
 				}
 
-				ImGui::EndPopup();
-			}
-		}
-		ImGui::End();
-	}
-
-	//
-	// Scene Properties window @PROPS
-	//
-	if (showSceneProperties)
-	{
-		if (ImGui::Begin("Scene Properties", &showSceneProperties))
-		{
-			ImGui::DragFloat("Camera Movement Speed", &MainLoop::getInstance().camera.speed, 0.05f);
-			ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
-			ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
-
-			ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
-			ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
-			ImGui::DragFloat("Cloud layer tile size", &cloudEffectInfo.cloudNoiseMainSize);
-			ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
-			ImGui::DragFloat3("Cloud layer detail tile offset", &cloudEffectInfo.cloudNoiseDetailOffset.x);
-			ImGui::DragFloat3("Cloud layer detail tile velocity", &cloudEffectInfo.cloudNoiseDetailVelocity.x);
-			ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
-			ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
-			ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);
-			ImGui::DragFloat("Cloud Ambient Density", &cloudEffectInfo.darknessThreshold, 0.01f);
-			ImGui::DragFloat("Cloud irradianceStrength", &cloudEffectInfo.irradianceStrength, 0.01f);
-			ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
-			ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
-			ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
-			ImGui::DragFloat2("Cloud near raymarch method distance", &cloudEffectInfo.raymarchCascadeLevels.x);
-			ImGui::DragFloat("Cloud farRaymarchStepsizeMultiplier", &cloudEffectInfo.farRaymarchStepsizeMultiplier, 0.01f, 0.01f);
-			//ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
-			ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
-			ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
-			ImGui::DragFloat("Cloud jitter scale", &cloudEffectInfo.cameraPosJitterScale);
-			ImGui::DragFloat("Cloud apply ss effect density", &ShaderExtCloud_effect::cloudEffectDensity);
-
-			ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
-			if (showCloudNoiseView)
-			{
-				ImGui::InputInt("Cloud noise channel", &debugCloudNoiseChannel);
-				ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
-			}
-
-			ImGui::Checkbox("Toggle Cloud TAA", &doCloudHistoryTAA);
-			if (!doCloudHistoryTAA)
-				ImGui::Checkbox("Toggle Cloud Color Floodfill", &doCloudColorFloodFill);
-			else
-				ImGui::Text("*NOTE: to show option for cloud color floodfill, disable cloud taa");
-			ImGui::Checkbox("Toggle Cloud Denoise (non-temporal method)", &doCloudDenoiseNontemporal);
-
-			static bool cloudHistoryTAAVelocityBufferTemp = false;
-			ImGui::Checkbox("Show Cloud History TAA Buffer", &cloudHistoryTAAVelocityBufferTemp);
-			if (cloudHistoryTAAVelocityBufferTemp)
-			{
-				ImGui::Image((void*)(intptr_t)cloudEffectBlurTexture->getHandle(), ImVec2(1024, 576));
-			}
-
-			static bool showLuminanceTextures = false;
-			ImGui::Checkbox("Show Luminance Texture", &showLuminanceTextures);
-			if (showLuminanceTextures)
-			{
-				ImGui::Image((void*)(intptr_t)hdrLumDownsampling->getHandle(), ImVec2(256, 256));
-				ImGui::Image((void*)(intptr_t)hdrLumAdaptation1x1, ImVec2(256, 256));
-				ImGui::Image((void*)(intptr_t)hdrLumAdaptationProcessed->getHandle(), ImVec2(256, 256));
-			}
-			ImGui::Separator();
-
-			static bool showSSAOTexture = false;
-			ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
-			if (showSSAOTexture)
-			{
-				ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(512, 288));
-			}
-
-			ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
-			ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
-			ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
-			ImGui::Separator();
-
-			static bool showBloomProcessingBuffers = false;
-			ImGui::Checkbox("Show Bloom preprocessing buffers", &showBloomProcessingBuffers);
-			if (showBloomProcessingBuffers)
-			{
-				static int colBufNum = 0;
-				ImGui::InputInt("Color Buffer Index", &colBufNum);
-				ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
-			}
-
-
-			ImGui::Separator();
-			ImGui::DragFloat("Volumetric Lighting Strength", &volumetricLightingStrength);
-			ImGui::DragFloat("External Volumetric Lighting Strength", &volumetricLightingStrengthExternal);
-
-			ImGui::Separator();
-			ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
-			ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
-
-			ImGui::Separator();
-			ImGui::DragFloat2("notifExtents", &notifExtents[0]);
-			ImGui::DragFloat2("notifPosition", &notifPosition[0]);
-			ImGui::DragFloat2("notifAdvance", &notifAdvance[0]);
-			ImGui::DragFloat2("notifHidingOffset", &notifHidingOffset[0]);
-			ImGui::ColorEdit3("notifColor1", &notifColor1[0]);
-			ImGui::ColorEdit3("notifColor2", &notifColor2[0]);
-			ImGui::DragFloat("notifMessageSize", &notifMessageSize);
-			ImGui::DragFloat("notifAnimTime", &notifAnimTime);
-			ImGui::DragFloat("notifHoldTime", &notifHoldTime);
-
-			ImGui::Separator();
-			ImGui::Text("Skybox properties");
-			ImGui::DragFloat("Time of Day", &GameState::getInstance().dayNightTime, 0.005f);
-			ImGui::DragFloat("Time of Day susumu sokudo", &GameState::getInstance().dayNightTimeSpeed, 0.001f);
-			ImGui::Checkbox("Is Daynight Time moving", &GameState::getInstance().isDayNightTimeMoving);
-			ImGui::DragFloat("Sun Radius", &skyboxParams.sunRadius, 0.01f);
-			ImGui::ColorEdit3("sunColor", &skyboxParams.sunColor[0]);
-			ImGui::ColorEdit3("skyColor1", &skyboxParams.skyColor1[0]);
-			ImGui::ColorEdit3("groundColor", &skyboxParams.groundColor[0]);
-			ImGui::DragFloat("Sun Intensity", &skyboxParams.sunIntensity, 0.01f);
-			ImGui::DragFloat("Global Exposure", &skyboxParams.globalExposure, 0.01f);
-			ImGui::DragFloat("Cloud Height", &skyboxParams.cloudHeight, 0.01f);
-			ImGui::DragFloat("perlinDim", &skyboxParams.perlinDim, 0.01f);
-			ImGui::DragFloat("perlinTime", &skyboxParams.perlinTime, 0.01f);
-
-			ImGui::DragInt("Which ibl map", (int*)&whichMap, 1.0f, 0, 4);
-			ImGui::DragFloat("Map Interpolation amount", &mapInterpolationAmt);
-
-			ImGui::Separator();
-			ImGui::Text("Player Stamina Properties");
-			ImGui::DragInt("Stamina Max", &GameState::getInstance().maxPlayerStaminaAmount);
-			ImGui::DragFloat("Stamina Current", &GameState::getInstance().currentPlayerStaminaAmount);
-		}
-		ImGui::End();
-	}
-
-	//
-	// Render out the properties panels of selected object
-	//
-	auto objs = getSelectedObjects();
-	if (objs.size() > 0)
-	{
-		ImGui::Begin("Selected Object Properties");
-		if (objs.size() == 1)
-		{
-			BaseObject* obj = objs[0];
-
-			//
-			// Property panel stuff that's the same with all objects
-			//
-			ImGui::Text((obj->name + " -- Properties").c_str());
-			ImGui::Text(("GUID: " + obj->guid).c_str());
-			ImGui::Separator();
-
-			ImGui::InputText("Name", &obj->name);
-			ImGui::Separator();
-
-			glm::mat4& transOriginal = obj->getTransform();
-			glm::mat4 transCopy = transOriginal;
-			PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(transCopy));
-
-			// To propogate the transform!!
-			if (!PhysicsUtils::epsilonEqualsMatrix(transOriginal, transCopy))
-				obj->setTransform(transCopy);
-
-			ImGui::Separator();
-
-			// Other property panel stuff
-			obj->imguiPropertyPanel();
-		}
-		else if (objs.size() > 1)
-		{
-			ImGui::Text("Multiple objects are currently selected");
-		}
-		ImGui::End();
-	}
-
-	//
-	// Loaded resources window
-	//
-	static int currentSelectLoadedResource = -1;
-	if (showLoadedResourcesWindow)
-	{
-		if (ImGui::Begin("Loaded Resources", &showLoadedResourcesWindow))
-		{
-			std::map<std::string, void*>::iterator it;
-			static std::string selectedKey;
-			std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
-			if (ImGui::BeginListBox("##listbox Loaded Resources", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
-			{
-				//
-				// Display all of the objects in the scene
-				//
-				int index = 0;
-				for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
+				if (ImGui::BeginListBox("##listbox Scene Objects", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
 				{
-					const bool isSelected = (currentSelectLoadedResource == index);
-					if (ImGui::Selectable(
-						(it->first).c_str(),
-						isSelected
-					))
+					//
+					// Display all of the objects in the scene
+					//
+					int shiftSelectRequest[] = { -1, -1 };
+					for (size_t n = 0; n < MainLoop::getInstance().objects.size(); n++)
 					{
-						selectedKey = it->first;
-						currentSelectLoadedResource = index;
+						const bool isSelected = isObjectSelected(n);
+						if (ImGui::Selectable(
+							(MainLoop::getInstance().objects[n]->name + "##" + MainLoop::getInstance().objects[n]->guid).c_str(),
+							isSelected
+						))
+						{
+							bool isShiftHeld =
+								glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_SHIFT) ||
+								glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_SHIFT);
+
+							if (isShiftHeld)
+							{
+								if (!isSelected && !selectedObjectIndices.empty())
+								{
+									shiftSelectRequest[0] = glm::min((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
+									shiftSelectRequest[1] = glm::max((size_t)selectedObjectIndices[selectedObjectIndices.size() - 1], n);
+								}
+							}
+							else
+							{
+								if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+									!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+									deselectAllSelectedObject();
+
+								if (isObjectSelected(n))
+									deselectObject(n);
+								else
+									addSelectObject(n);
+							}
+						}
+
+						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndListBox();
+
+					//
+					// Finally Execute SHIFT+click group selection
+					//
+					if (shiftSelectRequest[0] >= 0 && shiftSelectRequest[1] >= 0)
+						for (size_t n = (size_t)shiftSelectRequest[0]; n <= (size_t)shiftSelectRequest[1]; n++)
+							addSelectObject(n);
+				}
+
+				//
+				// Popup for creating objects
+				//
+				if (ImGui::Button("Add Object.."))
+					ImGui::OpenPopup("add_object_popup");
+				if (ImGui::BeginPopup("add_object_popup"))
+				{
+					//
+					// @Palette: where to add objects to add in imgui
+					//
+					BaseObject* newObject = nullptr;
+					if (ImGui::Selectable("Player Character"))			newObject = new PlayerCharacter();
+					if (ImGui::Selectable("Directional Light"))			newObject = new DirectionalLight(true);
+					if (ImGui::Selectable("Point Light"))				newObject = new PointLight(true);
+					if (ImGui::Selectable("Yosemite Terrain"))			newObject = new YosemiteTerrain();
+					if (ImGui::Selectable("Collectable Water Puddle"))	newObject = new WaterPuddle();
+					if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
+					if (ImGui::Selectable("Voxel Group"))				newObject = new VoxelGroup();
+					if (ImGui::Selectable("Spline Tool"))				newObject = new Spline();
+
+					if (newObject != nullptr)
+					{
+						if (!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) &&
+							!glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL))
+							deselectAllSelectedObject();
+						addSelectObject(MainLoop::getInstance().objects.size() - 1);
 					}
 
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndListBox();
-			}
-
-			//
-			// Reload prompt
-			//
-			if (currentSelectLoadedResource != -1)
-			{
-				ImGui::Separator();
-				if (ImGui::Button("Reload Resource"))
-				{
-					Resources::reloadResource(selectedKey);
+					ImGui::EndPopup();
 				}
 			}
-
+			ImGui::End();
 		}
-		ImGui::End();
-	}
 
-	//
-	// Materials manager window
-	// @NOTE: bc of how materials are created, I decided to remove this manager window. Maybe in the future we can have a different one that has insertable textures and whatnot eh.
-	//
-	if (showMaterialsManager)
-	{
-		//if (ImGui::Begin("Materials Manager", &showMaterialsManager))
-		//{
-		//	//
-		//	// List all materials
-		//	//
-		//	//std::map<std::string, void*>::iterator it;
-		//	//static std::string selectedKey;
-		//	//std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
-		//	//if (ImGui::BeginListBox("##listbox Current Materials", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
-		//	//{
-		//	//	int index = 0;
-		//	//	for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
-		//	//	{
-		//	//		const bool isSelected = (currentSelectLoadedResource == index);
-		//	//		if (ImGui::Selectable(
-		//	//			(it->first).c_str(),
-		//	//			isSelected
-		//	//		))
-		//	//		{
-		//	//			selectedKey = it->first;
-		//	//			currentSelectLoadedResource = index;
-		//	//		}
-		//	//
-		//	//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-		//	//		if (isSelected)
-		//	//			ImGui::SetItemDefaultFocus();
-		//	//	}
-		//	//	ImGui::EndListBox();
-		//	//}
+		//
+		// Scene Properties window @PROPS
+		//
+		if (showSceneProperties)
+		{
+			if (ImGui::Begin("Scene Properties", &showSceneProperties))
+			{
+				ImGui::DragFloat("Camera Movement Speed", &MainLoop::getInstance().camera.speed, 0.05f);
+				ImGui::DragFloat("Global Timescale", &MainLoop::getInstance().timeScale);
+				ImGui::Checkbox("Show shadowmap view", &showShadowMapView);
 
-		//	//
-		//	// Find if a material is being selected
-		//	//
-		//	Material* materialSelected = nullptr;
-		//	std::string materialName;
-		//	if (currentSelectLoadedResource != -1)
-		//	{
-		//		auto iterator = Resources::getResourceMap().begin();
-		//		std::advance(iterator, currentSelectLoadedResource);
+				ImGui::DragFloat("Cloud layer Y start", &cloudEffectInfo.cloudLayerY);
+				ImGui::DragFloat("Cloud layer thickness", &cloudEffectInfo.cloudLayerThickness);
+				ImGui::DragFloat("Cloud layer tile size", &cloudEffectInfo.cloudNoiseMainSize);
+				ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
+				ImGui::DragFloat3("Cloud layer detail tile offset", &cloudEffectInfo.cloudNoiseDetailOffset.x);
+				ImGui::DragFloat3("Cloud layer detail tile velocity", &cloudEffectInfo.cloudNoiseDetailVelocity.x);
+				ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
+				ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
+				ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);
+				ImGui::DragFloat("Cloud Ambient Density", &cloudEffectInfo.darknessThreshold, 0.01f);
+				ImGui::DragFloat("Cloud irradianceStrength", &cloudEffectInfo.irradianceStrength, 0.01f);
+				ImGui::DragFloat("Cloud absorption (sun)", &cloudEffectInfo.lightAbsorptionTowardsSun, 0.01f);
+				ImGui::DragFloat("Cloud absorption (cloud)", &cloudEffectInfo.lightAbsorptionThroughCloud, 0.01f);
+				ImGui::DragFloat("Cloud Raymarch offset", &cloudEffectInfo.raymarchOffset, 0.01f);
+				ImGui::DragFloat2("Cloud near raymarch method distance", &cloudEffectInfo.raymarchCascadeLevels.x);
+				ImGui::DragFloat("Cloud farRaymarchStepsizeMultiplier", &cloudEffectInfo.farRaymarchStepsizeMultiplier, 0.01f, 0.01f);
+				//ImGui::DragFloat("Cloud max raymarch length", &cloudEffectInfo.maxRaymarchLength);
+				ImGui::DragFloat4("Cloud phase Parameters", &cloudEffectInfo.phaseParameters.x);
+				ImGui::Checkbox("Cloud do blur pass", &cloudEffectInfo.doBlurPass);
+				ImGui::DragFloat("Cloud jitter scale", &cloudEffectInfo.cameraPosJitterScale);
+				ImGui::DragFloat("Cloud apply ss effect density", &ShaderExtCloud_effect::cloudEffectDensity);
 
-		//		// Check if starts with "material;"
-		//		if (iterator->first.find("material;") == 0)
-		//		{
-		//			materialName = iterator->first;
-		//			materialSelected = (Material*)iterator->second;
-		//		}
-		//	}
+				ImGui::Checkbox("Show Cloud noise view", &showCloudNoiseView);
+				if (showCloudNoiseView)
+				{
+					ImGui::InputInt("Cloud noise channel", &debugCloudNoiseChannel);
+					ImGui::DragFloat("Cloud noise view layer", &debugCloudNoiseLayerNum);
+				}
 
-		//	//
-		//	// Display material properties!!!
-		//	//
-		//	if (materialSelected == nullptr)
-		//	{
-		//		ImGui::Text("No material is currently selected from Loaded Resources");
-		//	}
-		//	else
-		//	{
-		//		ImGui::Text((materialName + " -- Properties").c_str());
-		//		ImGui::DragFloat2("Tiling", materialSelected->getTilingPtr(), 0.05f);
-		//		ImGui::DragFloat2("Offset", materialSelected->getOffsetPtr(), 0.05f);
-		//	}
-		//}
-		//ImGui::End();
+				ImGui::Checkbox("Toggle Cloud TAA", &doCloudHistoryTAA);
+				if (!doCloudHistoryTAA)
+					ImGui::Checkbox("Toggle Cloud Color Floodfill", &doCloudColorFloodFill);
+				else
+					ImGui::Text("*NOTE: to show option for cloud color floodfill, disable cloud taa");
+				ImGui::Checkbox("Toggle Cloud Denoise (non-temporal method)", &doCloudDenoiseNontemporal);
+
+				static bool cloudHistoryTAAVelocityBufferTemp = false;
+				ImGui::Checkbox("Show Cloud History TAA Buffer", &cloudHistoryTAAVelocityBufferTemp);
+				if (cloudHistoryTAAVelocityBufferTemp)
+				{
+					ImGui::Image((void*)(intptr_t)cloudEffectBlurTexture->getHandle(), ImVec2(1024, 576));
+				}
+
+				static bool showLuminanceTextures = false;
+				ImGui::Checkbox("Show Luminance Texture", &showLuminanceTextures);
+				if (showLuminanceTextures)
+				{
+					ImGui::Image((void*)(intptr_t)hdrLumDownsampling->getHandle(), ImVec2(256, 256));
+					ImGui::Image((void*)(intptr_t)hdrLumAdaptation1x1, ImVec2(256, 256));
+					ImGui::Image((void*)(intptr_t)hdrLumAdaptationProcessed->getHandle(), ImVec2(256, 256));
+				}
+				ImGui::Separator();
+
+				static bool showSSAOTexture = false;
+				ImGui::Checkbox("Show SSAO Texture", &showSSAOTexture);
+				if (showSSAOTexture)
+				{
+					ImGui::Image((void*)(intptr_t)ssaoTexture->getHandle(), ImVec2(512, 288));
+				}
+
+				ImGui::DragFloat("SSAO Scale", &ssaoScale, 0.001f);
+				ImGui::DragFloat("SSAO Bias", &ssaoBias, 0.001f);
+				ImGui::DragFloat("SSAO Radius", &ssaoRadius, 0.001f);
+				ImGui::Separator();
+
+				static bool showBloomProcessingBuffers = false;
+				ImGui::Checkbox("Show Bloom preprocessing buffers", &showBloomProcessingBuffers);
+				if (showBloomProcessingBuffers)
+				{
+					static int colBufNum = 0;
+					ImGui::InputInt("Color Buffer Index", &colBufNum);
+					ImGui::Image((void*)(intptr_t)bloomColorBuffers[colBufNum], ImVec2(512, 288));
+				}
+
+
+				ImGui::Separator();
+				ImGui::DragFloat("Volumetric Lighting Strength", &volumetricLightingStrength);
+				ImGui::DragFloat("External Volumetric Lighting Strength", &volumetricLightingStrengthExternal);
+
+				ImGui::Separator();
+				ImGui::DragFloat("Scene Tonemapping Exposure", &exposure);
+				ImGui::DragFloat("Bloom Intensity", &bloomIntensity, 0.05f, 0.0f, 5.0f);
+
+				ImGui::Separator();
+				ImGui::DragFloat2("notifExtents", &notifExtents[0]);
+				ImGui::DragFloat2("notifPosition", &notifPosition[0]);
+				ImGui::DragFloat2("notifAdvance", &notifAdvance[0]);
+				ImGui::DragFloat2("notifHidingOffset", &notifHidingOffset[0]);
+				ImGui::ColorEdit3("notifColor1", &notifColor1[0]);
+				ImGui::ColorEdit3("notifColor2", &notifColor2[0]);
+				ImGui::DragFloat("notifMessageSize", &notifMessageSize);
+				ImGui::DragFloat("notifAnimTime", &notifAnimTime);
+				ImGui::DragFloat("notifHoldTime", &notifHoldTime);
+
+				ImGui::Separator();
+				ImGui::Text("Skybox properties");
+				ImGui::DragFloat("Time of Day", &GameState::getInstance().dayNightTime, 0.005f);
+				ImGui::DragFloat("Time of Day susumu sokudo", &GameState::getInstance().dayNightTimeSpeed, 0.001f);
+				ImGui::Checkbox("Is Daynight Time moving", &GameState::getInstance().isDayNightTimeMoving);
+				ImGui::DragFloat("Sun Radius", &skyboxParams.sunRadius, 0.01f);
+				ImGui::ColorEdit3("sunColor", &skyboxParams.sunColor[0]);
+				ImGui::ColorEdit3("skyColor1", &skyboxParams.skyColor1[0]);
+				ImGui::ColorEdit3("groundColor", &skyboxParams.groundColor[0]);
+				ImGui::DragFloat("Sun Intensity", &skyboxParams.sunIntensity, 0.01f);
+				ImGui::DragFloat("Global Exposure", &skyboxParams.globalExposure, 0.01f);
+				ImGui::DragFloat("Cloud Height", &skyboxParams.cloudHeight, 0.01f);
+				ImGui::DragFloat("perlinDim", &skyboxParams.perlinDim, 0.01f);
+				ImGui::DragFloat("perlinTime", &skyboxParams.perlinTime, 0.01f);
+
+				ImGui::DragInt("Which ibl map", (int*)&whichMap, 1.0f, 0, 4);
+				ImGui::DragFloat("Map Interpolation amount", &mapInterpolationAmt);
+
+				ImGui::Separator();
+				ImGui::Text("Player Stamina Properties");
+				ImGui::DragInt("Stamina Max", &GameState::getInstance().maxPlayerStaminaAmount);
+				ImGui::DragFloat("Stamina Current", &GameState::getInstance().currentPlayerStaminaAmount);
+			}
+			ImGui::End();
+		}
+
+		//
+		// Render out the properties panels of selected object
+		//
+		auto objs = getSelectedObjects();
+		if (objs.size() > 0)
+		{
+			ImGui::Begin("Selected Object Properties");
+			if (objs.size() == 1)
+			{
+				BaseObject* obj = objs[0];
+
+				//
+				// Property panel stuff that's the same with all objects
+				//
+				ImGui::Text((obj->name + " -- Properties").c_str());
+				ImGui::Text(("GUID: " + obj->guid).c_str());
+				ImGui::Separator();
+
+				ImGui::InputText("Name", &obj->name);
+				ImGui::Separator();
+
+				glm::mat4& transOriginal = obj->getTransform();
+				glm::mat4 transCopy = transOriginal;
+				PhysicsUtils::imguiTransformMatrixProps(glm::value_ptr(transCopy));
+
+				// To propogate the transform!!
+				if (!PhysicsUtils::epsilonEqualsMatrix(transOriginal, transCopy))
+					obj->setTransform(transCopy);
+
+				ImGui::Separator();
+
+				// Other property panel stuff
+				obj->imguiPropertyPanel();
+			}
+			else if (objs.size() > 1)
+			{
+				ImGui::Text("Multiple objects are currently selected");
+			}
+			ImGui::End();
+		}
+
+		//
+		// Loaded resources window
+		//
+		static int currentSelectLoadedResource = -1;
+		if (showLoadedResourcesWindow)
+		{
+			if (ImGui::Begin("Loaded Resources", &showLoadedResourcesWindow))
+			{
+				std::map<std::string, void*>::iterator it;
+				static std::string selectedKey;
+				std::map<std::string, void*>& resMapRef = Resources::getResourceMap();
+				if (ImGui::BeginListBox("##listbox Loaded Resources", ImVec2(300, 25 * ImGui::GetTextLineHeightWithSpacing())))
+				{
+					//
+					// Display all of the objects in the scene
+					//
+					int index = 0;
+					for (it = resMapRef.begin(); it != resMapRef.end(); it++, index++)
+					{
+						const bool isSelected = (currentSelectLoadedResource == index);
+						if (ImGui::Selectable(
+							(it->first).c_str(),
+							isSelected
+						))
+						{
+							selectedKey = it->first;
+							currentSelectLoadedResource = index;
+						}
+
+						// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndListBox();
+				}
+
+				//
+				// Reload prompt
+				//
+				if (currentSelectLoadedResource != -1)
+				{
+					ImGui::Separator();
+					if (ImGui::Button("Reload Resource"))
+					{
+						Resources::reloadResource(selectedKey);
+					}
+				}
+
+			}
+			ImGui::End();
+		}
+		
+		//
+		// ImGuizmo (NOTE: keep this at the very end so that imguizmo stuff can be rendered after everything else in the background draw list has been rendered)
+		//
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
+		ImVec2 work_size = viewport->WorkSize;
+
+		if (!objs.empty() && !MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
+		{
+			ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
+			ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
+
+			transOperation = ImGuizmo::OPERATION::TRANSLATE;
+			if (imGuizmoTransformOperation == 1)
+				transOperation = ImGuizmo::OPERATION::ROTATE;
+			if (imGuizmoTransformOperation == 2)
+				transOperation = ImGuizmo::OPERATION::SCALE;
+			if (imGuizmoTransformOperation == 3)
+				transOperation = ImGuizmo::OPERATION::BOUNDS;
+
+			ImGuizmo::MODE transMode = ImGuizmo::MODE::LOCAL;
+			if (imGuizmoTransformMode == 1)
+				transMode = ImGuizmo::MODE::WORLD;
+
+			// Implement snapping if holding down control button(s)
+			float snapAmount = 0.0f;
+			if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
+				glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+			{
+				if (transOperation == ImGuizmo::OPERATION::ROTATE)
+					snapAmount = 45.0f;
+				else
+					snapAmount = 0.5f;
+			}
+			glm::vec3 snapValues(snapAmount);
+
+			glm::vec3 averagePosition(0.0f);
+			glm::quat latestOrientation;
+			if (transOperation == ImGuizmo::OPERATION::SCALE && ImGuizmo::IsUsing())
+			{
+				// Okay, I thought that this would be the fix for scale... but it's now just super buggy hahahaha
+				// I don't really care about scale, so we can keep it like this
+				//   -Timo
+				averagePosition = INTERNALselectionSystemAveragePosition;
+				latestOrientation = INTERNALselectionSystemLatestOrientation;
+			}
+			else
+			{
+				for (size_t i = 0; i < objs.size(); i++)
+				{
+					averagePosition += PhysicsUtils::getPosition(objs[i]->getTransform());
+					latestOrientation = PhysicsUtils::getRotation(objs[i]->getTransform());
+				}
+				averagePosition /= (float)objs.size();
+			}
+
+			glm::mat4 tempTrans = glm::translate(glm::mat4(1.0f), averagePosition) * glm::toMat4(latestOrientation);
+			glm::mat4 deltaMatrix;
+			bool changed =
+				ImGuizmo::Manipulate(
+					glm::value_ptr(cameraInfo.view),
+					glm::value_ptr(cameraInfo.projection),
+					transOperation,
+					transMode,
+					glm::value_ptr(tempTrans),
+					glm::value_ptr(deltaMatrix),
+					&snapValues.x
+				);
+
+			if (changed)
+			{
+				for (size_t i = 0; i < objs.size(); i++)
+					objs[i]->setTransform(deltaMatrix * objs[i]->getTransform());
+
+				INTERNALselectionSystemAveragePosition = averagePosition;
+				INTERNALselectionSystemLatestOrientation = latestOrientation;
+			}
+		}
+		tempDisableImGuizmoManipulateForOneFrame = false;
 	}
 
 	//
@@ -3963,6 +4205,16 @@ void RenderManager::renderImGuiContents()
 								transitionConditionGroups_j.push_back(transitionConditions_j);
 							}
 							asmNode_j["node_transition_condition_groups"] = transitionConditionGroups_j;
+
+							// Get the grapheditor delegate position in there
+							float gedPos[2] = { 0.0f, 0.0f };
+							auto gedPosRaw =
+								timelineViewerState.editor_ASMNodePreviewerDelegate.GetNode(
+									timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[asmNode.nodeName]
+								).mRect.Min;
+							gedPos[0] = gedPosRaw.x;
+							gedPos[1] = gedPosRaw.y;
+							asmNode_j["ged_pos"] = gedPos;
 
 							animationStateMachineContainer["asm_nodes"].push_back(asmNode_j);
 						}
@@ -4410,6 +4662,37 @@ void RenderManager::renderImGuiContents()
 								if (ImGui::Selectable((timelineViewerState.animationStateMachineNodes[i].nodeName + (timelineViewerState.animationStateMachineStartNode == i ? " (START NODE)" : "")).c_str(), isSelected))
 								{
 									timelineViewerState.editor_selectedASMNode = i;
+
+									//
+									// Move all the nodes to easy to see spots
+									//
+									const float totalHeight = (timelineViewerState.editor_ASMNodePreviewerDelegate.mNodes.size() - 1) * 200.0f;
+									float currentHeight = 0.0f;
+									for (auto& mNode : timelineViewerState.editor_ASMNodePreviewerDelegate.mNodes)
+									{
+										if (mNode.name == timelineViewerState.animationStateMachineNodes[i].nodeName)
+										{
+											mNode.x = 400;
+											mNode.y = totalHeight * 0.5f;
+										}
+										else
+										{
+											mNode.x = 0;
+											mNode.y = currentHeight;
+											currentHeight += 200.0f;
+										}
+									}
+
+									//
+									// Label only certain links as relevant
+									//
+									size_t relevantToNodeIndex = timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[timelineViewerState.animationStateMachineNodes[i].nodeName];
+									for (auto& mLink : timelineViewerState.editor_ASMNodePreviewerDelegate.mLinks)
+									{
+										mLink.irrelevant = (mLink.mOutputNodeIndex != relevantToNodeIndex);
+									}
+
+									timelineViewerState.editor_flag_ASMNodePreviewerRunFitAllNodes = true;
 								}
 
 								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -5132,90 +5415,34 @@ void RenderManager::renderImGuiContents()
 			}
 		}
 		ImGui::End();
-	} 
 
-	//
-	// ImGuizmo (NOTE: keep this at the very end so that imguizmo stuff can be rendered after everything else in the background draw list has been rendered)
-	//
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImVec2 work_pos = viewport->WorkPos;			// Use work area to avoid menu-bar/task-bar, if any!
-	ImVec2 work_size = viewport->WorkSize;
-
-	if (!objs.empty() && !MainLoop::getInstance().playMode && !tempDisableImGuizmoManipulateForOneFrame)
-	{
-		ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
-		ImGuizmo::SetRect(work_pos.x, work_pos.y, work_size.x, work_size.y);
-
-		transOperation = ImGuizmo::OPERATION::TRANSLATE;
-		if (imGuizmoTransformOperation == 1)
-			transOperation = ImGuizmo::OPERATION::ROTATE;
-		if (imGuizmoTransformOperation == 2)
-			transOperation = ImGuizmo::OPERATION::SCALE;
-		if (imGuizmoTransformOperation == 3)
-			transOperation = ImGuizmo::OPERATION::BOUNDS;
-
-		ImGuizmo::MODE transMode = ImGuizmo::MODE::LOCAL;
-		if (imGuizmoTransformMode == 1)
-			transMode = ImGuizmo::MODE::WORLD;
-
-		// Implement snapping if holding down control button(s)
-		float snapAmount = 0.0f;
-		if (glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS ||
-			glfwGetKey(MainLoop::getInstance().window, GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)
+		//
+		// Timeline Nodes Viewer
+		//
+		if (MainLoop::getInstance().timelineViewerMode && timelineViewerState.editor_selectedASMNode >= 0)
 		{
-			if (transOperation == ImGuizmo::OPERATION::ROTATE)
-				snapAmount = 45.0f;
-			else
-				snapAmount = 0.5f;
-		}
-		glm::vec3 snapValues(snapAmount);
-
-		glm::vec3 averagePosition(0.0f);
-		glm::quat latestOrientation;
-		if (transOperation == ImGuizmo::OPERATION::SCALE && ImGuizmo::IsUsing())
-		{
-			// Okay, I thought that this would be the fix for scale... but it's now just super buggy hahahaha
-			// I don't really care about scale, so we can keep it like this
-			//   -Timo
-			averagePosition = INTERNALselectionSystemAveragePosition;
-			latestOrientation = INTERNALselectionSystemLatestOrientation;
-		}
-		else
-		{
-			for (size_t i = 0; i < objs.size(); i++)
+			if (ImGui::Begin("Timeline Nodes Viewer"))
 			{
-				averagePosition += PhysicsUtils::getPosition(objs[i]->getTransform());
-				latestOrientation = PhysicsUtils::getRotation(objs[i]->getTransform());
+				// Graph Editor
+				static GraphEditor::Options options;
+				options.mMinimap = ImRect(ImVec2(0, 0), ImVec2(0, 0));
+				static GraphEditor::ViewState viewState;
+				static GraphEditor::FitOnScreen fit = GraphEditor::Fit_None;
+				if (ImGui::Button("Fit all nodes") || timelineViewerState.editor_flag_ASMNodePreviewerRunFitAllNodes)
+				{
+					timelineViewerState.editor_flag_ASMNodePreviewerRunFitAllNodes = false;
+					fit = GraphEditor::Fit_AllNodes;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Fit selected nodes"))
+				{
+					fit = GraphEditor::Fit_SelectedNodes;
+				}
+				GraphEditor::Show(timelineViewerState.editor_ASMNodePreviewerDelegate, options, viewState, true, &fit);
 			}
-			averagePosition /= (float)objs.size();
+			ImGui::End();
 		}
-
-		glm::mat4 tempTrans = glm::translate(glm::mat4(1.0f), averagePosition) * glm::toMat4(latestOrientation);
-		glm::mat4 deltaMatrix;
-		bool changed =
-			ImGuizmo::Manipulate(
-				glm::value_ptr(cameraInfo.view),
-				glm::value_ptr(cameraInfo.projection),
-				transOperation,
-				transMode,
-				glm::value_ptr(tempTrans),
-				glm::value_ptr(deltaMatrix),
-				&snapValues.x
-			);
-
-		if (changed)
-		{
-			for (size_t i = 0; i < objs.size(); i++)
-				objs[i]->setTransform(deltaMatrix * objs[i]->getTransform());
-
-			INTERNALselectionSystemAveragePosition = averagePosition;
-			INTERNALselectionSystemLatestOrientation = latestOrientation;
-		}
-	}
-	tempDisableImGuizmoManipulateForOneFrame = false;
-
-	glm::mat4 cameraViewCopy = cameraInfo.view;
-	ImGuizmo::ViewManipulate(glm::value_ptr(cameraViewCopy), 8.0f, ImVec2(work_pos.x + work_size.x - 128, work_pos.y), ImVec2(128, 128), 0x10101010);		// NOTE: because the matrix for the cameraview is calculated, there is nothing that this manipulate function does... sad.
+	} 
 }
 #endif
 

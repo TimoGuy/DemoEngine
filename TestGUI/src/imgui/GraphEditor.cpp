@@ -171,6 +171,9 @@ static void DisplayLinks(Delegate& delegate,
     for (LinkIndex linkIndex = 0; linkIndex < linkCount; linkIndex++)
     {
         const auto link = delegate.GetLink(linkIndex);
+        if (link.irrelevant)
+            continue;       // @TIMO MOD: This just allows for setting irrelevant links
+
         const auto nodeInput = delegate.GetNode(link.mInputNodeIndex);
         const auto nodeOutput = delegate.GetNode(link.mOutputNodeIndex);
         ImVec2 p1 = offset + GetOutputSlotPos(delegate, nodeInput, link.mInputSlotIndex, factor);
@@ -186,9 +189,16 @@ static void DisplayLinks(Delegate& delegate,
         if (options.mDisplayLinksAsCurves)
         {
             // curves
-             drawList->AddBezierCurve(p1, p1 + ImVec2(50, 0) * factor, p2 + ImVec2(-50, 0) * factor, p2, 0xFF000000, options.mLineThickness * 1.5f * factor);
-             drawList->AddBezierCurve(p1, p1 + ImVec2(50, 0) * factor, p2 + ImVec2(-50, 0) * factor, p2, col, options.mLineThickness * 1.5f * factor);
-             /*
+            drawList->AddBezierCurve(p1, p1 + ImVec2(50, 0) * factor, p2 + ImVec2(-50, 0) * factor, p2, 0xFF000000, options.mLineThickness * 1.5f * factor);
+            drawList->AddBezierCurve(p1, p1 + ImVec2(50, 0) * factor, p2 + ImVec2(-50, 0) * factor, p2, col, options.mLineThickness * 1.5f * factor);
+
+
+            //// TIMO WAY
+            //drawList->AddBezierCurve(p1, ImVec2(p2.x, p1.y), ImVec2(p1.x, p2.y), p2, 0xFF000000, options.mLineThickness * 1.5f * factor);
+            //drawList->AddBezierCurve(p1, ImVec2(p2.x, p1.y), ImVec2(p1.x, p2.y), p2, col, options.mLineThickness * 1.5f * factor);
+
+
+            /*
             ImVec2 p10 = p1 + ImVec2(20.f * factor, 0.f);
             ImVec2 p20 = p2 - ImVec2(20.f * factor, 0.f);
 
