@@ -76,6 +76,10 @@
             "timestamp_speed": 150.0,
             "track_xz_root_motion": false
         },
+        "Sheath_Weapon": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
         "Walking": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": true
@@ -104,7 +108,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     400.0,
-                    1000.0
+                    1200.0
                 ],
                 "loop_animation": true,
                 "node_name": "Idle",
@@ -173,6 +177,11 @@
                         {
                             "comparison_operator": 1,
                             "current_asm_node_name_ref": "WD_Idle",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        },
+                        {
+                            "comparison_operator": 1,
+                            "current_asm_node_name_ref": "WD_Moving",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
@@ -481,6 +490,11 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "triggerDrawWeapon"
+                        },
+                        {
+                            "comparison_operator": 1,
+                            "current_asm_node_name_ref": "SheathWeapon",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -510,6 +524,59 @@
                             "comparison_operator": 0,
                             "current_asm_node_name_ref": "DrawWeapon",
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Sheath_Weapon",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    0.0,
+                    2000.0
+                ],
+                "loop_animation": false,
+                "node_name": "SheathWeapon",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerSheathWeapon"
+                        },
+                        {
+                            "comparison_operator": 1,
+                            "current_asm_node_name_ref": "DrawWeapon",
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "blendWalkRun",
+                "animation_name_1": "Walking",
+                "animation_name_2": "Running",
+                "dont_transition_until_animation_finished": false,
+                "ged_pos": [
+                    0.0,
+                    2200.0
+                ],
+                "loop_animation": true,
+                "node_name": "WD_Moving",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "isMoving"
                         }
                     ]
                 ],
@@ -562,6 +629,11 @@
                 "value": 0.0,
                 "var_name": "triggerDrawWeapon",
                 "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "triggerSheathWeapon",
+                "variable_type": 0
             }
         ]
     },
@@ -585,6 +657,7 @@
         "Pick_Up_Bottle",
         "Running",
         "Running_Turn_Around",
+        "Sheath_Weapon",
         "Walking",
         "Wall_Climbing",
         "Wall_Hang",

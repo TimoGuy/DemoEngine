@@ -816,7 +816,10 @@ void PlayerCharacter::processMovement()
 		if (InputManager::getInstance().on_willWeaponPressed)
 		{
 			weaponDrawn = !weaponDrawn;
-			animatorStateMachine.setVariable("triggerDrawWeapon", true);
+			if (weaponDrawn)
+				animatorStateMachine.setVariable("triggerDrawWeapon", true);
+			else
+				animatorStateMachine.setVariable("triggerSheathWeapon", true);
 		}
 
 		if (isMoving)
