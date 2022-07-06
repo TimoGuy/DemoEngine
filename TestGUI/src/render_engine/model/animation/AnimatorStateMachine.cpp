@@ -7,6 +7,8 @@
 #include "../../render_manager/RenderManager.h"
 #include "../../../mainloop/MainLoop.h"
 
+#define CONTAINS_IN_VECTOR(v, key) (std::find(v.begin(), v.end(), key) != v.end())
+
 
 AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator* animator) : animatorPtr(animator)
 {
@@ -133,39 +135,22 @@ AnimatorStateMachine::AnimatorStateMachine(const std::string& asmFName, Animator
 				{
 					// Add a new rule that affects the relevantNodes for this condition group
 					auto comparisonOperator = (AnimationStateMachine_TransitionCondition::ASMComparisonOperator)(int)asmTranCondition_j["comparison_operator"];
-					std::string relevantNodesNewRule = asmTranCondition_j["current_asm_node_name_ref"];
+					std::vector<std::string> relevantNodesNewRules;
+					for (auto asmTranConditionNodeNameRef_j : asmTranCondition_j["current_asm_node_name_ref"])
+						relevantNodesNewRules.push_back(asmTranConditionNodeNameRef_j);
 
-					switch (comparisonOperator)
-					{
-					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::EQUAL:
+					if (comparisonOperator == AnimationStateMachine_TransitionCondition::ASMComparisonOperator::EQUAL)
 					{
 						auto itr = relevantNodes.cbegin();
 						while (itr != relevantNodes.cend())
 						{
-							if (*itr != relevantNodesNewRule)		// @NOTE: only *leave* those that are equal, hence the !=
+							if (!CONTAINS_IN_VECTOR(relevantNodesNewRules, *itr))		// @NOTE: only *leave* those that are equal, hence the !=
 							{
 								itr = relevantNodes.erase(itr);
 							}
 							else
 								itr++;
 						}
-					}
-					break;
-
-					case AnimationStateMachine_TransitionCondition::ASMComparisonOperator::NEQUAL:
-					{
-						auto itr = relevantNodes.cbegin();
-						while (itr != relevantNodes.cend())
-						{
-							if (*itr == relevantNodesNewRule)
-							{
-								itr = relevantNodes.erase(itr);
-							}
-							else
-								itr++;
-						}
-					}
-					break;
 					}
 				}
 				else

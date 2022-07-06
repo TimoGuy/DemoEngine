@@ -107,8 +107,8 @@
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
-                    400.0,
-                    1200.0
+                    0.0,
+                    0.0
                 ],
                 "loop_animation": true,
                 "node_name": "Idle",
@@ -120,8 +120,15 @@
                             "var_name": "isMoving"
                         },
                         {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "JumpingIdle",
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "Landing",
+                                "LedgeGrab",
+                                "RunningTurnAround",
+                                "SheathWeapon"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -133,16 +140,6 @@
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
                             "var_name": "isLedgeGrab"
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "Falling",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "MidairJumping",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
                             "compare_to_value": 0.0,
@@ -160,29 +157,9 @@
                             "var_name": "triggerFall"
                         },
                         {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "JumpingRun",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
                             "var_name": "triggerTurnAround"
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "DrawWeapon",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "WD_Idle",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "WD_Moving",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -197,7 +174,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    0.0
+                    200.0
                 ],
                 "loop_animation": true,
                 "node_name": "Moving",
@@ -209,8 +186,15 @@
                             "var_name": "isMoving"
                         },
                         {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "JumpingIdle",
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Moving",
+                                "Idle",
+                                "Landing",
+                                "LedgeGrab",
+                                "RunningTurnAround",
+                                "SheathWeapon"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -227,21 +211,6 @@
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
                             "var_name": "triggerJumping"
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "Falling",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "JumpingRun",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "MidairJumping",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
                             "compare_to_value": 0.0,
@@ -261,7 +230,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    200.0
+                    400.0
                 ],
                 "loop_animation": false,
                 "node_name": "JumpingIdle",
@@ -276,6 +245,21 @@
                             "compare_to_value": 0.0,
                             "comparison_operator": 0,
                             "var_name": "isMoving"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "JumpingIdle",
+                                "Landing",
+                                "LedgeGrab",
+                                "Falling",
+                                "RunningTurnAround",
+                                "MidairJumping",
+                                "JumpingRun"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -290,7 +274,7 @@
                 "dont_transition_until_animation_finished": true,
                 "ged_pos": [
                     0.0,
-                    400.0
+                    600.0
                 ],
                 "loop_animation": false,
                 "node_name": "Landing",
@@ -298,43 +282,12 @@
                     [
                         {
                             "comparison_operator": 0,
-                            "current_asm_node_name_ref": "Falling",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "compare_to_value": 1.0,
-                            "comparison_operator": 0,
-                            "var_name": "isGrounded"
-                        }
-                    ],
-                    [
-                        {
-                            "comparison_operator": 0,
-                            "current_asm_node_name_ref": "JumpingIdle",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "compare_to_value": 1.0,
-                            "comparison_operator": 0,
-                            "var_name": "isGrounded"
-                        }
-                    ],
-                    [
-                        {
-                            "comparison_operator": 0,
-                            "current_asm_node_name_ref": "MidairJumping",
-                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
-                        },
-                        {
-                            "compare_to_value": 1.0,
-                            "comparison_operator": 0,
-                            "var_name": "isGrounded"
-                        }
-                    ],
-                    [
-                        {
-                            "comparison_operator": 0,
-                            "current_asm_node_name_ref": "JumpingRun",
+                            "current_asm_node_name_ref": [
+                                "Falling",
+                                "JumpingRun",
+                                "JumpingIdle",
+                                "MidairJumping"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         },
                         {
@@ -355,7 +308,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    600.0
+                    800.0
                 ],
                 "loop_animation": false,
                 "node_name": "LedgeGrab",
@@ -379,7 +332,7 @@
                 "dont_transition_until_animation_finished": true,
                 "ged_pos": [
                     0.0,
-                    800.0
+                    1000.0
                 ],
                 "loop_animation": false,
                 "node_name": "Falling",
@@ -389,6 +342,23 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "triggerFall"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "JumpingIdle",
+                                "Landing",
+                                "LedgeGrab",
+                                "Falling",
+                                "RunningTurnAround",
+                                "MidairJumping",
+                                "JumpingRun",
+                                "DrawWeapon",
+                                "SheathWeapon"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -403,7 +373,7 @@
                 "dont_transition_until_animation_finished": true,
                 "ged_pos": [
                     0.0,
-                    1000.0
+                    1200.0
                 ],
                 "loop_animation": false,
                 "node_name": "RunningTurnAround",
@@ -413,6 +383,21 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "triggerTurnAround"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "JumpingIdle",
+                                "Landing",
+                                "LedgeGrab",
+                                "Falling",
+                                "RunningTurnAround",
+                                "MidairJumping",
+                                "JumpingRun"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -427,7 +412,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    1200.0
+                    1400.0
                 ],
                 "loop_animation": false,
                 "node_name": "MidairJumping",
@@ -437,6 +422,21 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "triggerMidairJumping"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "JumpingIdle",
+                                "Landing",
+                                "LedgeGrab",
+                                "Falling",
+                                "RunningTurnAround",
+                                "MidairJumping",
+                                "JumpingRun"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -451,7 +451,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    1400.0
+                    1600.0
                 ],
                 "loop_animation": false,
                 "node_name": "JumpingRun",
@@ -466,6 +466,21 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "isMoving"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Idle",
+                                "Moving",
+                                "JumpingIdle",
+                                "Landing",
+                                "LedgeGrab",
+                                "Falling",
+                                "RunningTurnAround",
+                                "MidairJumping",
+                                "JumpingRun"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
@@ -480,7 +495,7 @@
                 "dont_transition_until_animation_finished": true,
                 "ged_pos": [
                     0.0,
-                    1600.0
+                    1800.0
                 ],
                 "loop_animation": false,
                 "node_name": "DrawWeapon",
@@ -492,8 +507,18 @@
                             "var_name": "triggerDrawWeapon"
                         },
                         {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "SheathWeapon",
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "JumpingRun",
+                                "MidairJumping",
+                                "RunningTurnAround",
+                                "Falling",
+                                "LedgeGrab",
+                                "Landing",
+                                "JumpingIdle",
+                                "Moving",
+                                "Idle"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
@@ -509,7 +534,7 @@
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     0.0,
-                    1800.0
+                    2000.0
                 ],
                 "loop_animation": true,
                 "node_name": "WD_Idle",
@@ -522,7 +547,10 @@
                         },
                         {
                             "comparison_operator": 0,
-                            "current_asm_node_name_ref": "DrawWeapon",
+                            "current_asm_node_name_ref": [
+                                "DrawWeapon",
+                                "WD_Moving"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
@@ -538,7 +566,7 @@
                 "dont_transition_until_animation_finished": true,
                 "ged_pos": [
                     0.0,
-                    2000.0
+                    2200.0
                 ],
                 "loop_animation": false,
                 "node_name": "SheathWeapon",
@@ -550,8 +578,11 @@
                             "var_name": "triggerSheathWeapon"
                         },
                         {
-                            "comparison_operator": 1,
-                            "current_asm_node_name_ref": "DrawWeapon",
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "WD_Idle",
+                                "WD_Moving"
+                            ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
@@ -566,8 +597,8 @@
                 "animation_name_2": "Running",
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
-                    0.0,
-                    2200.0
+                    400.0,
+                    1200.0
                 ],
                 "loop_animation": true,
                 "node_name": "WD_Moving",
@@ -577,6 +608,14 @@
                             "compare_to_value": 1.0,
                             "comparison_operator": 0,
                             "var_name": "isMoving"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "WD_Idle",
+                                "SheathWeapon"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
                         }
                     ]
                 ],
