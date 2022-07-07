@@ -40,7 +40,7 @@
             "timestamp_speed": 1.0,
             "track_xz_root_motion": false
         },
-        "Idle_Sword_Drawn_horizontal": {
+        "WD_Idle": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
         },
@@ -529,7 +529,7 @@
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "",
-                "animation_name_1": "Idle_Sword_Drawn_horizontal",
+                "animation_name_1": "WD_Idle",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
@@ -687,7 +687,6 @@
         "Idle_Hip",
         "Idle_Spinny_Left",
         "Idle_Spinny_Right",
-        "Idle_Sword_Drawn_horizontal",
         "Jumping_From_Idle",
         "Jumping_From_Run",
         "Jumping_Midair",
@@ -700,6 +699,8 @@
         "Walking",
         "Wall_Climbing",
         "Wall_Hang",
+        "WD_Running",
+        "WD_Walking",
         "Write_In_Journal"
     ],
     "material_paths": {
