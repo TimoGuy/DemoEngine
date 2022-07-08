@@ -40,10 +40,6 @@
             "timestamp_speed": 1.0,
             "track_xz_root_motion": false
         },
-        "WD_Idle": {
-            "timestamp_speed": 42.0,
-            "track_xz_root_motion": false
-        },
         "Jumping_From_Idle": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
@@ -79,6 +75,18 @@
         "Sheath_Weapon": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
+        },
+        "WD_Idle": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
+        "WD_Running": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": true
+        },
+        "WD_Walking": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": true
         },
         "Walking": {
             "timestamp_speed": 42.0,
@@ -593,8 +601,8 @@
                 "animation_blend_boundary_1": 0.0,
                 "animation_blend_boundary_2": 1.0,
                 "animation_blend_variable": "blendWalkRun",
-                "animation_name_1": "Walking",
-                "animation_name_2": "Running",
+                "animation_name_1": "WD_Walking",
+                "animation_name_2": "WD_Running",
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
                     400.0,
@@ -699,6 +707,7 @@
         "Walking",
         "Wall_Climbing",
         "Wall_Hang",
+        "WD_Idle",
         "WD_Running",
         "WD_Walking",
         "Write_In_Journal"
