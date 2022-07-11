@@ -21,6 +21,27 @@ RULES:
 
 
 
+// SOL-10 (@STATUS: todo)
+	Create the game loop
+
+	This'll be a bigger task, but it'll be worth it to define bc everything else can fall into this.
+	The game loop is currently defined as such:
+	- Wake up
+	- Find water or solar for bottle and boots
+	- Platform and sneak from people (envious of your bod, essentially)
+		- Or attack them (See SOL-1)
+	- Explore throughout the day as much as you can
+	- Once nighttime falls, go back to bed or find a statue for boots and go back to bed
+
+
+
+
+
+
+
+
+
+
 // SOL-1 (@STATUS: todo) (@CHILDREN: SOL-2, SOL-3, SOL-4, SOL-8)
 	Create enemy AI (Type A)
 
@@ -155,5 +176,5 @@ RULES:
 	- Add child (@IN: ticket ID. Error if the task is a child (i.e. has a parent), bc I only want one layer of hierarchy... nothing more)
 	- Get status of task (@IN: ticket ID.)
 	- Change status of task (@IN: ticket ID, new status. error message if task has children... bc the childrens' statuses should dictate what the ticket status of the mother ticket is)
-	- Lint (NOTE: this is also run after every task. It essentially groups together all child tasks with parent tasks, updates the status of mother tasks, and moves task families to the correct kanban ('mikansei' or 'kanryou'), then makes sure there are exactly 10 carriage returns between tasks)
+	- Lint (NOTE: this is also run after every task. It essentially groups together all child tasks with parent tasks, updates the status of mother tasks, and moves task families to the correct kanban ('mikansei' or 'kanryou'), then makes sure there are exactly 10 carriage returns between tasks (i.e. check that there are 10CR *before* each task, bc that can space out the first task with the RULES section which is what's wanted.))
 	- Print command list (-h / --help)
