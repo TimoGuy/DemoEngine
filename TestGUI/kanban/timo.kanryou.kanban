@@ -1,0 +1,24 @@
+###############################################
+####                                       ####
+####            Timo's Kanban              ####
+####            (Kanryouhen)               ####
+####                                       ####
+###############################################
+
+RULES:
+	- All kanban tasks must be done in the general order (i.e. move tasks that you plan to do later to a later part in this note; be a bit less strict with task families)
+	- If a task/family of tasks are obsolete/ignored, mark as "done (obsolete)"
+	- If a task/family is blocked or cannot be solved in the current order or something is gonna be on backburner, physically move it to the best place for it to be
+	- Don't put misc tasks/bug fixes in this note. Only place stories/tasks/families in this note
+	- Put unfinished (todo, in progress, etc.) in the Mikanseihen note and all the finished (done, done(obsolete), etc.) in the Kanryouhen note
+
+
+
+
+
+
+
+
+
+
+/
