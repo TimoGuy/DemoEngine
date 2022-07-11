@@ -83,7 +83,7 @@ RULES:
 
 
 
-// SOL-5 (@STATUS: todo) (@CHILDREN: )
+// SOL-5 (@STATUS: todo) (@CHILDREN: SOL-6)
 	Create rocket boots feature.
 
 	CONTEXT: this is supposed to be the ancient weapon held by the old man. It's very versatile, and is the reason why player can do double jumps. With it, however, it needs to be powered by something (like how the bottle needs to be powered by water)... so figure that out. Maybe some kind of light or something? IDEA: have statues that have a huge rod that reaches the sky and you need to leave the boots at one of those statues so that their solar energy is recharged. They'll also charge if you leave them overnight, however, in the morning you'll have to return to the place you left them at.
