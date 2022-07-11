@@ -21,12 +21,29 @@ RULES:
 
 
 
-// SOL-1 (@STATUS: todo) (@CHILDREN: SOL-2, SOL-3, SOL-4)
+// SOL-1 (@STATUS: todo) (@CHILDREN: SOL-2, SOL-3, SOL-4, SOL-8)
 	Create enemy AI (Type A)
 
 	I want to have a pretty proficient enemy who's goal is to grapple the player and slam them onto the ground onto their back. By doing this, the player's bottle will crack (poise break) and a good amount of water will leak out, and continue leaking out for 10 seconds after getting up (interval can change... this should be editable).
 	
 	This enemy will have no weapons but rather just charge at the player in interesting ways.
+
+
+
+
+
+
+
+
+
+// SOL-8 (@STATUS: todo) (@PARENT: SOL-1)
+	Add ability for player to get hurt.
+
+	Player needs to be able to get hurt for there to be an enemy that has effect on the player.
+
+	- Player should have an animation of hurt
+	- Player should have red blinky from getting hurt
+	- Player should have some of their water from their bottle leaking out (particle effects in the future would be nice but not in the scope of this task)
 
 
 
@@ -72,7 +89,7 @@ RULES:
 // SOL-4 (@STATUS: todo) (@PARENT: SOL-1)
 	Add grappling and throwing/slamming to the enemy
 
-	Add the functionality for the enemy to be able to grab the player and slam them down and throw the player. 
+	Add the functionality for the enemy to be able to grab the player and slam them down and throw the player.
 
 
 
@@ -117,3 +134,26 @@ RULES:
 	Create a textbox system
 
 	<@TODO: fill in details>
+
+
+
+
+
+
+
+
+
+
+// SOL-9 (@STATUS: todo)
+	Create a kanban helper python script
+
+	The main reason why I'd have this is bc of difficulty of thinking of the id numbers. There should be a counter for the id numbers.
+
+	Has these commands:
+	- Create new task (return the created task ID)
+	- Delete task (@IN: ticket ID. return if success or not)
+	- Add child (@IN: ticket ID. Error if the task is a child (i.e. has a parent), bc I only want one layer of hierarchy... nothing more)
+	- Get status of task (@IN: ticket ID.)
+	- Change status of task (@IN: ticket ID, new status. error message if task has children... bc the childrens' statuses should dictate what the ticket status of the mother ticket is)
+	- Lint (NOTE: this is also run after every task. It essentially groups together all child tasks with parent tasks, updates the status of mother tasks, and moves task families to the correct kanban ('mikansei' or 'kanryou'), then makes sure there are exactly 10 carriage returns between tasks)
+	- Print command list (-h / --help)
