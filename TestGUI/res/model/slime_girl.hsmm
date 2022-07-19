@@ -12,6 +12,14 @@
             "timestamp_speed": 60.0,
             "track_xz_root_motion": false
         },
+        "CA_Goto_Sleep": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
+        "CA_Wake_Up": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
         "Draw_Water": {
             "timestamp_speed": 42.0,
             "track_xz_root_motion": false
@@ -605,8 +613,8 @@
                 "animation_name_2": "WD_Running",
                 "dont_transition_until_animation_finished": false,
                 "ged_pos": [
-                    400.0,
-                    1200.0
+                    0.0,
+                    2400.0
                 ],
                 "loop_animation": true,
                 "node_name": "WD_Moving",
@@ -624,6 +632,54 @@
                                 "SheathWeapon"
                             ],
                             "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "CA_Goto_Sleep",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    400.0,
+                    1400.0
+                ],
+                "loop_animation": true,
+                "node_name": "CA_Goto_Sleep",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerCAGotoSleep"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "CA_Wake_Up",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    0.0,
+                    2600.0
+                ],
+                "loop_animation": true,
+                "node_name": "CA_Wake_Up",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "triggerCAWakeUp"
                         }
                     ]
                 ],
@@ -681,6 +737,16 @@
                 "value": 0.0,
                 "var_name": "triggerSheathWeapon",
                 "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "triggerCAWakeUp",
+                "variable_type": 0
+            },
+            {
+                "value": 0.0,
+                "var_name": "triggerCAGotoSleep",
+                "variable_type": 0
             }
         ]
     },
@@ -688,6 +754,8 @@
         "Attack_light_horizontal",
         "Attack_light_vertical",
         "Attack_midair",
+        "CA_Goto_Sleep",
+        "CA_Wake_Up",
         "Draw_Water",
         "Draw_Weapon",
         "Falling",

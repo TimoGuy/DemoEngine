@@ -21,7 +21,7 @@ RULES:
 
 
 
-// SOL-10 (@STATUS: todo)
+// SOL-10 (@STATUS: in-progress)
 	Create the game loop
 
 	This'll be a bigger task, but it'll be worth it to define bc everything else can fall into this.
@@ -30,8 +30,32 @@ RULES:
 	- Find water or solar for bottle and boots
 	- Platform and sneak from people (envious of your bod, essentially)
 		- Or attack them (See SOL-1)
-	- Explore throughout the day as much as you can
+	- Explore throughout the day as much as you can, leaving boots to charge or pulling up water
 	- Once nighttime falls, go back to bed or find a statue for boots and go back to bed
+
+
+
+
+
+
+
+
+
+
+// SOL-12 (@STATUS: todo) (@PARENT: SOL-10)
+	Create a simple camera 
+
+
+
+
+
+
+
+
+
+
+// SOL-11 (@STATUS: in-progress) (@PARENT: SOL-10)
+	Create the wake up and go to sleep animations
 
 
 
@@ -48,6 +72,7 @@ RULES:
 	I want to have a pretty proficient enemy who's goal is to grapple the player and slam them onto the ground onto their back. By doing this, the player's bottle will crack (poise break) and a good amount of water will leak out, and continue leaking out for 10 seconds after getting up (interval can change... this should be editable).
 	
 	This enemy will have no weapons but rather just charge at the player in interesting ways.
+
 
 
 
