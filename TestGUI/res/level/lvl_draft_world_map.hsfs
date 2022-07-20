@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    91.16078186035156,
-                    8.667048454284668,
-                    68.91375732421875
+                    -5.786054611206055,
+                    5.90558385848999,
+                    -1.2630075216293335
                 ],
                 "rotation": [
                     0.0,
@@ -206,9 +206,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -7.191633399905584e-11,
+                    -7.5222834905464e-11,
                     9.937670707702637,
-                    8.487977174809203e-05
+                    8.487972081638873e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -229,7 +229,7 @@
                     259.6849670410156
                 ],
                 "rotation": [
-                    6.534168243408203,
+                    6.534167289733887,
                     12.692163467407227,
                     27.53373908996582
                 ],
@@ -325,9 +325,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    80.0,
-                    -16.0,
-                    28.0
+                    65.58715057373047,
+                    0.6790809631347656,
+                    67.44076538085938
                 ],
                 "rotation": [
                     0.0,
@@ -346,9 +346,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 0.0,
+            "moving_platform_spline_position_in_time": 87.24095916748047,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -423,6 +423,52 @@
                 }
             ],
             "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "0c5f309f57d2ff5db7a315e392ccff6ec957c4a86b8ef50f8e94810828516e19",
+                "name": "Bed",
+                "position": [
+                    -11.115202903747559,
+                    2.554687738418579,
+                    -7.96388053894043
+                ],
+                "rotation": [
+                    -179.9999237060547,
+                    13.696489334106445,
+                    -179.9999237060547
+                ],
+                "scale": [
+                    0.9999999403953552,
+                    1.0,
+                    0.9999999403953552
+                ]
+            },
+            "modelResourceName": "model;bed",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "06ed39ea4736a9fbc259eb29c6e951250b58a09290c61e61b8d436ce73bf2248",
+                "name": "Bed",
+                "position": [
+                    -13.127340316772461,
+                    2.5536422729492188,
+                    9.543127059936523
+                ],
+                "rotation": [
+                    -0.014439388178288937,
+                    -89.70326232910156,
+                    0.014497927390038967
+                ],
+                "scale": [
+                    0.9999999403953552,
+                    1.0,
+                    0.9999999403953552
+                ]
+            },
+            "modelResourceName": "model;bed",
+            "type": "ground"
         }
     ]
 }
