@@ -24,6 +24,10 @@ private:
 	physx::PxGeometry* geom;
 	RigidActorTypes rigidActorType = RigidActorTypes::STATIC;
 	ShapeTypes shapeType = ShapeTypes::COLLISION;
+
+#ifdef _DEVELOP
+	glm::vec3 cachedScale;
+#endif
 };
 
 class BoxCollider : public PhysicsComponent
