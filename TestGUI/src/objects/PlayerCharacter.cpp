@@ -65,7 +65,7 @@ void RopeSimulation::simulateRope(float gravityMultiplier)
 		// Limit to 45 degrees
 		if (limitTo45degrees)
 		{
-			const float sin45deg = 0.707106781f;
+			constexpr float sin45deg = 0.707106781f;
 			points[i].y = std::min(points[i].y, points[i - 1].y - distances[i - 1] * sin45deg);
 		}
 
