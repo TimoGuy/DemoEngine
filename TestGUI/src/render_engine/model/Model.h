@@ -43,12 +43,14 @@ public:
 	void setMaterials(std::map<std::string, Material*> materialMap);
 	void setDepthPriorityOfMeshesWithMaterial(const std::string& materialName, float depthPriority);		// NOTE: This doesn't matter except for the transparent render pass
 
-	std::vector<Mesh>& getMeshes() { return meshes; }
+	std::vector<Mesh>& getRenderMeshes() { return renderMeshes; }
+	std::vector<Mesh>& getPhysicsMeshes() { return (physicsMeshes.size() == 0) ? renderMeshes : physicsMeshes; }
 
 	glm::mat4 localTransform = glm::mat4(1.0f);
 
 private:
-	std::vector<Mesh> meshes;
+	std::vector<Mesh> renderMeshes;
+	std::vector<Mesh> physicsMeshes;
 	std::string directory;
 
 	std::vector<Animation> animations;

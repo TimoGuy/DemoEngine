@@ -472,7 +472,7 @@ void VoxelGroup::updateQuadMeshFromBitField()
 	{
 		voxel_model = new Model(quadMesh);
 
-		std::vector<Mesh>& meshes = voxel_model->getMeshes();
+		std::vector<Mesh>& meshes = voxel_model->getRenderMeshes();
 		nlohmann::json j;
 		j["color"] = { voxel_group_color.r, voxel_group_color.g, voxel_group_color.b };
 		for (size_t i = 0; i < meshes.size(); i++)

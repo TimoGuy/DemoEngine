@@ -68,10 +68,10 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 	std::vector<physx::PxU32> indices32;
 
 	//
-	// Extract meshes from model and conform to physx trianglemeshdesc
+	// Extract renderMeshes from model and conform to physx trianglemeshdesc
 	//
 	glm::vec3 xformScale = PhysicsUtils::getScale(newTransform);
-	const std::vector<Mesh>& modelMeshes = model->getMeshes();
+	const std::vector<Mesh>& modelMeshes = model->getPhysicsMeshes();
 	for (size_t i = 0; i < modelMeshes.size(); i++)
 	{
 		const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
