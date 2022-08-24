@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    289.8578796386719,
-                    123.29267120361328,
-                    50.614173889160156
+                    281.940673828125,
+                    123.35000610351563,
+                    18.29200553894043
                 ],
                 "rotation": [
                     0.0,
@@ -206,9 +206,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -8.183583671828032e-11,
+                    -8.92754550840813e-11,
                     9.937670707702637,
-                    8.487961895298213e-05
+                    8.487950981361791e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -325,9 +325,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    73.51927185058594,
-                    1.453969955444336,
-                    69.27313995361328
+                    69.36053466796875,
+                    -15.335132598876953,
+                    29.572200775146484
                 ],
                 "rotation": [
                     0.0,
@@ -348,7 +348,7 @@
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 102.24095916748047,
+            "moving_platform_spline_position_in_time": 14.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -435,13 +435,13 @@
                 ],
                 "rotation": [
                     -179.9999237060547,
-                    13.696493148803711,
+                    13.696496963500977,
                     -179.9999237060547
                 ],
                 "scale": [
-                    0.9999997019767761,
+                    0.999999463558197,
                     1.0,
-                    0.9999997019767761
+                    0.999999463558197
                 ]
             },
             "modelResourceName": "model;bed",
@@ -457,14 +457,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014438721351325512,
+                    -0.014438153244554996,
                     -89.70326232910156,
-                    0.014497261494398117
+                    0.01449669525027275
                 ],
                 "scale": [
-                    0.9999997019767761,
+                    0.999999463558197,
                     1.0,
-                    0.9999997019767761
+                    0.999999463558197
                 ]
             },
             "modelResourceName": "model;bed",
@@ -498,7 +498,7 @@
                 "guid": "f0d586fdbef86cfc928494ffe728a13f4cb1324948e53bc41b73437cc8ebec2a",
                 "name": "Gondola (Mockup)",
                 "position": [
-                    289.80718994140625,
+                    300.0,
                     120.0,
                     52.370723724365234
                 ],
@@ -514,6 +514,75 @@
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/gondola.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7984c1b885a75ca75aba5035dca8796015209f056628fff7fc9e84afbbed18d8",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    300.0,
+                    120.0,
+                    52.370723724365234
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "3d2a9166f0903b87cc3c479e914b2ff73454564669fb100478569b67066ba34e",
+                "name": "Gondola (Mockup)",
+                "position": [
+                    320.0,
+                    120.0,
+                    52.370723724365234
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e66b866342ceb8a9bf7f23dd334cbf3f8b0802b51c91d304cca7705368dd8915",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    320.0,
+                    120.0,
+                    52.370723724365234
+                ],
+                "rotation": [
+                    -179.99989318847656,
+                    -5.008956122765085e-06,
+                    -179.99989318847656
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
             "type": "ground"
         }
     ]
