@@ -25,7 +25,9 @@ uniform vec2 raymarchCascadeLevels;
 uniform float farRaymarchStepsizeMultiplier;
 //uniform float maxRaymarchLength;
 
-uniform float densityOffset;
+uniform float densityOffsetInner;
+uniform float densityOffsetOuter;
+uniform float densityOffsetChangeRadius;
 uniform float densityMultiplier;
 uniform float densityRequirement;
 
@@ -143,6 +145,7 @@ float sampleDensityAtPoint(vec3 point)
         0.533333333 * noiseDetail.r
         + 0.2666667 * noiseDetail.g
         + 0.1333333 * noiseDetail.b;
+    const float densityOffset = dot(point.xz, point.xz) < densityOffsetChangeRadius * densityOffsetChangeRadius ? densityOffsetInner : densityOffsetOuter;
     return (density - 0.15 * detailSubtract + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
 }
 

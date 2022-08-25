@@ -2478,7 +2478,9 @@ void RenderManager::renderScene()
 	cloudEffectShader->setFloat("cloudNoiseMainSize", cloudEffectInfo.cloudNoiseMainSize);
 	cloudEffectShader->setFloat("cloudNoiseDetailSize", cloudEffectInfo.cloudNoiseDetailSize);
 	cloudEffectShader->setVec3("cloudNoiseDetailOffset", cloudEffectInfo.cloudNoiseDetailOffset);
-	cloudEffectShader->setFloat("densityOffset", cloudEffectInfo.densityOffset);
+	cloudEffectShader->setFloat("densityOffsetInner", cloudEffectInfo.densityOffsetInner);
+	cloudEffectShader->setFloat("densityOffsetOuter", cloudEffectInfo.densityOffsetOuter);
+	cloudEffectShader->setFloat("densityOffsetChangeRadius", cloudEffectInfo.densityOffsetChangeRadius);
 	cloudEffectShader->setFloat("densityMultiplier", cloudEffectInfo.densityMultiplier);
 	cloudEffectShader->setFloat("densityRequirement", cloudEffectInfo.densityRequirement);
 	cloudEffectShader->setFloat("ambientDensity", cloudEffectInfo.darknessThreshold);		// @NOTE: play around with this value. (I think 0.4 works well at daytime  -Timo) (Ambient Density in cloud_effect_screenspace.frag)
@@ -3795,7 +3797,9 @@ void RenderManager::renderImGuiContents()
 				ImGui::DragFloat("Cloud layer detail tile size", &cloudEffectInfo.cloudNoiseDetailSize);
 				ImGui::DragFloat3("Cloud layer detail tile offset", &cloudEffectInfo.cloudNoiseDetailOffset.x);
 				ImGui::DragFloat3("Cloud layer detail tile velocity", &cloudEffectInfo.cloudNoiseDetailVelocity.x);
-				ImGui::DragFloat("Cloud density offset", &cloudEffectInfo.densityOffset, 0.01f);
+				ImGui::DragFloat("Cloud inner density offset", &cloudEffectInfo.densityOffsetInner, 0.01f);
+				ImGui::DragFloat("Cloud outer density offset", &cloudEffectInfo.densityOffsetOuter, 0.01f);
+				ImGui::DragFloat("Cloud inner/outer change radius", &cloudEffectInfo.densityOffsetChangeRadius, 1.0f);
 				ImGui::DragFloat("Cloud density multiplier", &cloudEffectInfo.densityMultiplier, 0.01f);
 				ImGui::DragFloat("Cloud density requirement", &cloudEffectInfo.densityRequirement, 0.01f);
 				ImGui::DragFloat("Cloud Ambient Density", &cloudEffectInfo.darknessThreshold, 0.01f);
