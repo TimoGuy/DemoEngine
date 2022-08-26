@@ -4200,12 +4200,14 @@ void RenderManager::renderImGuiContents()
 
 							// Get the grapheditor delegate position in there
 							float gedPos[2] = { 0.0f, 0.0f };
-							auto gedPosRaw =
-								timelineViewerState.editor_ASMNodePreviewerDelegate.GetNode(
-									timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[asmNode.nodeName]
-								).mRect.Min;
-							gedPos[0] = gedPosRaw.x;
-							gedPos[1] = gedPosRaw.y;
+							const size_t gedNodeIndex = timelineViewerState.editor_ASMNodePreviewerDelegate.mNodeNameToIndex[asmNode.nodeName];
+							if (gedNodeIndex < timelineViewerState.editor_ASMNodePreviewerDelegate.GetNodeCount())
+							{
+								auto gedPosRaw =
+									timelineViewerState.editor_ASMNodePreviewerDelegate.GetNode(gedNodeIndex).mRect.Min;
+								gedPos[0] = gedPosRaw.x;
+								gedPos[1] = gedPosRaw.y;
+							}
 							asmNode_j["ged_pos"] = gedPos;
 
 							animationStateMachineContainer["asm_nodes"].push_back(asmNode_j);

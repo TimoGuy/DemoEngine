@@ -230,7 +230,9 @@ void FileLoading::saveFile(bool withPrompt)
 	std::vector<nlohmann::json> objects;
 	for (BaseObject* bo : MainLoop::getInstance().objects)
 	{
-		objects.push_back(bo->savePropertiesToJson());
+		nlohmann::json props = bo->savePropertiesToJson();
+		if (!props.empty())
+			objects.push_back(props);
 	}
 
 	nlohmann::json fullObject;
