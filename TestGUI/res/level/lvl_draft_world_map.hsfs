@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    281.940673828125,
-                    123.35000610351563,
-                    18.29200553894043
+                    281.7735900878906,
+                    123.3499984741211,
+                    15.13160514831543
                 ],
                 "rotation": [
                     0.0,
@@ -114,7 +114,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -137,9 +137,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -9.754169694176085e-11,
+                    -9.836832043363941e-11,
                     9.937670707702637,
-                    8.487938612233847e-05
+                    8.487937157042325e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -215,7 +215,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -256,9 +256,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    69.36053466796875,
-                    -15.335132598876953,
-                    29.572200775146484
+                    73.51927185058594,
+                    1.453969955444336,
+                    69.27313995361328
                 ],
                 "rotation": [
                     0.0,
@@ -279,7 +279,7 @@
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 14.0,
+            "moving_platform_spline_position_in_time": 102.24095916748047,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -366,13 +366,13 @@
                 ],
                 "rotation": [
                     -179.9999237060547,
-                    13.696501731872559,
+                    13.696502685546875,
                     -179.9999237060547
                 ],
                 "scale": [
-                    0.9999991059303284,
+                    0.9999990463256836,
                     1.0,
-                    0.9999991059303284
+                    0.9999990463256836
                 ]
             },
             "modelResourceName": "model;bed",
@@ -388,14 +388,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014437125995755196,
+                    -0.014437016099691391,
                     -89.70326232910156,
-                    0.01449566800147295
+                    0.01449555717408657
                 ],
                 "scale": [
-                    0.9999991059303284,
+                    0.9999990463256836,
                     1.0,
-                    0.9999991059303284
+                    0.9999990463256836
                 ]
             },
             "modelResourceName": "model;bed",
@@ -444,7 +444,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola.glb",
+            "modelResourceName": "model;gondola",
             "type": "ground"
         },
         {
@@ -490,7 +490,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola.glb",
+            "modelResourceName": "model;gondola",
             "type": "ground"
         },
         {
