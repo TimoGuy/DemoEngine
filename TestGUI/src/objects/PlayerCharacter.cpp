@@ -942,7 +942,7 @@ void PlayerCharacter::processMovement()
 
 	((PlayerPhysics*)getPhysicsComponent())->velocity = velocity;
 
-	model->localTransform =
+	modelLocalTransform =
 		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
 		glm::eulerAngleXYZ(0.0f, atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform()));
@@ -1628,7 +1628,7 @@ void PlayerCharacter::processAnimation()
 	if (MainLoop::getInstance().playMode)
 #endif
 	{
-		const glm::mat4 globalTransform = getTransform() * model->localTransform;
+		const glm::mat4 globalTransform = getTransform() * modelLocalTransform;
 
 		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime)
 		{
@@ -1709,16 +1709,16 @@ void PlayerCharacter::processAnimation()
 		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		if (weaponDrawn)
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+			bottleModelLocalTransform = modelLocalTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+			bottleModelLocalTransform = modelLocalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		// Calculate the fit AABB for just the water mesh inside the bottle
 		bool first = true;
 		glm::vec2 topAndBottom;
 		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
 		{
-			glm::vec3 origin = getTransform() * bottleModel->localTransform * glm::vec4(aabbConstructionBalls[i].origin, 1.0f);
+			glm::vec3 origin = getTransform() * bottleModelLocalTransform * glm::vec4(aabbConstructionBalls[i].origin, 1.0f);
 			const float top = origin.y + aabbConstructionBalls[i].radius;
 			const float bottom = origin.y - aabbConstructionBalls[i].radius;
 
@@ -1897,7 +1897,7 @@ void PlayerCharacter::imguiRender()
 	{
 		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
 		{
-			PhysicsUtils::imguiRenderSphereCollider(getTransform() * bottleModel->localTransform * glm::translate(glm::mat4(1.0f), aabbConstructionBalls[i].origin), aabbConstructionBalls[i].radius);
+			PhysicsUtils::imguiRenderSphereCollider(getTransform() * bottleModelLocalTransform * glm::translate(glm::mat4(1.0f), aabbConstructionBalls[i].origin), aabbConstructionBalls[i].radius);
 		}
 	}
 }

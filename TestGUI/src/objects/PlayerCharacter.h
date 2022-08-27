@@ -155,10 +155,12 @@ public:
 	// OLD PLAYERRENDER
 	//
 	Model* model;
+	glm::mat4 modelLocalTransform = glm::mat4(1.0f);
 	Animator animator;
 	AnimatorStateMachine animatorStateMachine;
 
 	Model* bottleModel;
+	glm::mat4 bottleModelLocalTransform = glm::mat4(1.0f);
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	glm::vec3 cameraPosition;

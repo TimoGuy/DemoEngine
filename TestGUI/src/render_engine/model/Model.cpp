@@ -140,7 +140,7 @@ bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* 
 	out_whichMeshesInView.reserve(renderMeshes.size());
 	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
-		const bool withinViewFrustum = viewFrustum->checkIfInViewFrustum(renderMeshes[i].bounds, modelMatrix * localTransform);
+		const bool withinViewFrustum = viewFrustum->checkIfInViewFrustum(renderMeshes[i].bounds, modelMatrix);
 		out_whichMeshesInView.push_back(withinViewFrustum);
 		if (withinViewFrustum)
 			modelIsChottoDakeDemoInViewFrustum = true;
@@ -155,7 +155,7 @@ void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const s
 	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
 		if (whichMeshesInView == nullptr || (*whichMeshesInView)[i])
-			renderMeshes[i].render(modelMatrix * localTransform, shaderOverride, boneTransforms, renderStage);
+			renderMeshes[i].render(modelMatrix, shaderOverride, boneTransforms, renderStage);
 	}
 }
 
@@ -184,7 +184,7 @@ void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 		RenderAABB cookedBounds =
 			PhysicsUtils::fitAABB(
 				renderMeshes[i].bounds,
-				trans * localTransform
+				trans
 			);
 
 		physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);

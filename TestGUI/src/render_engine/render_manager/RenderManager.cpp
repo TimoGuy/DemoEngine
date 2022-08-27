@@ -51,6 +51,7 @@
 #include "../../objects/RiverDropoff.h"
 #include "../../objects/VoxelGroup.h"
 #include "../../objects/Spline.h"
+#include "../../objects/GondolaPath.h"
 
 #define CONTAINS_IN_VECTOR(v, key) (std::find(v.begin(), v.end(), key) != v.end())
 #define REMOVE_FROM_VECTOR(v, elem) v.erase(std::remove(v.begin(), v.end(), elem), v.end())
@@ -3100,7 +3101,7 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 
 				std::map<std::string, Material*> materialAssignmentMap;
 				materialAssignmentMap[key] = materialToAssign;
-				modelForTimelineViewer->getModelFromIndex(0)->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+				modelForTimelineViewer->getModelFromIndex(0).model->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
 
 				// Assign to the timelineViewerState
 				timelineViewerState.materialPathsMap[key] = materialPath;
@@ -3116,8 +3117,8 @@ void routineCreateAndInsertInTheModel(const char* modelMetadataPath, nlohmann::j
 	// Load in the state
 
 	// Animation Names and Inclusions in model
-	std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
-	std::vector<std::string> animationNameList = modelForTimelineViewer->getModelFromIndex(0)->getAnimationNameList();
+	std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0).model->getAnimations();
+	std::vector<std::string> animationNameList = modelForTimelineViewer->getModelFromIndex(0).model->getAnimationNameList();
 	for (size_t i = 0; i < animationNameList.size(); i++)
 	{
 		std::string name = animationNameList[i];
@@ -3765,6 +3766,7 @@ void RenderManager::renderImGuiContents()
 					if (ImGui::Selectable("River Dropoff Area"))		newObject = new RiverDropoff();
 					if (ImGui::Selectable("Voxel Group"))				newObject = new VoxelGroup();
 					if (ImGui::Selectable("Spline Tool"))				newObject = new Spline();
+					if (ImGui::Selectable("GondolaPath"))				newObject = new GondolaPath();
 
 					if (newObject != nullptr)
 					{
@@ -4297,7 +4299,7 @@ void RenderManager::renderImGuiContents()
 
 								std::map<std::string, Material*> materialAssignmentMap;
 								materialAssignmentMap[materialNameList[selectedMaterial]] = materialToAssign;
-								modelForTimelineViewer->getModelFromIndex(0)->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
+								modelForTimelineViewer->getModelFromIndex(0).model->setMaterials(materialAssignmentMap);	// You'll get a butt ton of errors since there's only one material name in here, but who cares eh  -Timo
 
 								// Assign to the timelineViewerState
 								timelineViewerState.materialPathsMap[materialNameList[selectedMaterial]] = stagedMaterialName;
@@ -4355,7 +4357,7 @@ void RenderManager::renderImGuiContents()
 						// Select Animation to edit
 						//
 						ImGui::Separator();
-						std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0)->getAnimations();
+						std::vector<Animation> modelAnimations = modelForTimelineViewer->getModelFromIndex(0).model->getAnimations();
 						if (ImGui::BeginCombo("Selected Animation", timelineViewerState.editor_selectedAnimation == -1 ? "Select..." : modelAnimations[timelineViewerState.editor_selectedAnimation].getName().c_str()))
 						{
 							if (ImGui::Selectable("Select...", timelineViewerState.editor_selectedAnimation == -1))
@@ -4405,7 +4407,7 @@ void RenderManager::renderImGuiContents()
 							//
 							// Preview Animation
 							//
-							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0)->getAnimations()[timelineViewerState.editor_selectedAnimation];
+							Animation& currentAnim = modelForTimelineViewer->getModelFromIndex(0).model->getAnimations()[timelineViewerState.editor_selectedAnimation];
 							float animationDuration = currentAnim.getDuration() / currentAnim.getTicksPerSecond();
 							if (animationDuration > 0.0f)
 							{

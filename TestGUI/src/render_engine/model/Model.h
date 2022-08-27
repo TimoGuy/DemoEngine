@@ -46,8 +46,6 @@ public:
 	std::vector<Mesh>& getRenderMeshes() { return renderMeshes; }
 	std::vector<Mesh>& getPhysicsMeshes() { return (physicsMeshes.size() == 0) ? renderMeshes : physicsMeshes; }
 
-	glm::mat4 localTransform = glm::mat4(1.0f);
-
 private:
 	std::vector<Mesh> renderMeshes;
 	std::vector<Mesh> physicsMeshes;

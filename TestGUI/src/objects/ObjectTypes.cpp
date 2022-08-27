@@ -6,6 +6,7 @@
 #include "RiverDropoff.h"
 #include "VoxelGroup.h"
 #include "Spline.h"
+#include "GondolaPath.h"
 
 // @Palette: this is where you dictate the json type of the object
 const std::string PlayerCharacter::TYPE_NAME =		"player";
@@ -16,3 +17,4 @@ const std::string WaterPuddle::TYPE_NAME =			"water_puddle";
 const std::string RiverDropoff::TYPE_NAME =			"river_dropoff";
 const std::string VoxelGroup::TYPE_NAME =			"voxel_group";
 const std::string Spline::TYPE_NAME =				"spline";
+const std::string GondolaPath::TYPE_NAME =			"gondola_path";

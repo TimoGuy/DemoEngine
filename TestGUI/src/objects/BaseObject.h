@@ -154,9 +154,10 @@ class Model;
 class Animator;
 struct ModelWithMetadata
 {
-	Model* model;
-	bool renderModelInShadow;
-	Animator* modelAnimator;
+	Model* model = nullptr;
+	bool renderModelInShadow = true;
+	Animator* modelAnimator = nullptr;
+	glm::mat4* localTransform = new glm::mat4(1.0f);
 };
 
 enum class TextAlignment
@@ -190,7 +191,7 @@ public:
 	// @TODO: @GIANT: You need to add a function to the main game loop to update the animator. This will finally use the modelAniamtor field...
 
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
-	Model* getModelFromIndex(size_t index);
+	ModelWithMetadata getModelFromIndex(size_t index);
 	void clearAllModels();
 
 	void addTextToRender(TextRenderer* textRenderer);

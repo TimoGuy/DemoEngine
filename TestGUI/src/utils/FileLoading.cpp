@@ -16,6 +16,7 @@
 #include "../objects/RiverDropoff.h"
 #include "../objects/VoxelGroup.h"
 #include "../objects/Spline.h"
+#include "../objects/GondolaPath.h"
 
 #include "tinyfiledialogs.h"
 
@@ -178,6 +179,7 @@ void FileLoading::createObjectWithJson(nlohmann::json& object)
 	if (object["type"] == RiverDropoff::TYPE_NAME)		buildingObject = new RiverDropoff();
 	if (object["type"] == VoxelGroup::TYPE_NAME)		buildingObject = new VoxelGroup();
 	if (object["type"] == Spline::TYPE_NAME)			buildingObject = new Spline();
+	if (object["type"] == GondolaPath::TYPE_NAME)		buildingObject = new GondolaPath();
 
 	//
 	// @@@@TODO: Because the properties are getting loaded after the constructor has run, then
