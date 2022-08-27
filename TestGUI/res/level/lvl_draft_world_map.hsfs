@@ -114,7 +114,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -137,9 +137,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -1.0167482134004757e-10,
+                    -1.0498131530756183e-10,
                     9.937670707702637,
-                    8.487931336276233e-05
+                    8.487927698297426e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -215,7 +215,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -388,14 +388,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014436442404985428,
+                    -0.014436217024922371,
                     -89.70326232910156,
-                    0.014494989067316055
+                    0.014494760893285275
                 ],
                 "scale": [
-                    0.9999988079071045,
+                    0.9999986290931702,
                     1.0,
-                    0.9999988079071045
+                    0.9999986290931702
                 ]
             },
             "modelResourceName": "model;bed",
@@ -669,9 +669,9 @@
                     0.0
                 ],
                 "scale": [
-                    0.9999999403953552,
+                    0.9999998807907104,
                     1.0,
-                    0.9999999403953552
+                    0.9999998807907104
                 ]
             },
             "modelResourceName": "model;gondola_rails_bottom_curve_r_xl",
@@ -692,12 +692,104 @@
                     0.0
                 ],
                 "scale": [
-                    0.9999999403953552,
+                    0.9999998807907104,
                     1.0,
-                    0.9999999403953552
+                    0.9999998807907104
                 ]
             },
             "modelResourceName": "model;gondola_rails_bottom_curve_r",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "db13275927c0c7738f646190f71bbbb55a307c0f889af9d5882c4a82805751ba",
+                "name": "Gondola Rail Straight (Mockup)",
+                "position": [
+                    300.0,
+                    120.0,
+                    152.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;gondola_rails_bottom_enter",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "bef8947bce39aef36190804f831b1b4d82d4b2b5c51c05a771fb4bdacfe0e6c6",
+                "name": "Gondola Rail Straight (Mockup)",
+                "position": [
+                    320.0,
+                    120.0,
+                    152.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;gondola_rails_bottom_enter",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "a23cfc88ac5b46d37049ab9350cd0e7485d7f808fc7120ed9f0b195b40c2848f",
+                "name": "Gondola Rail Straight (Mockup)",
+                "position": [
+                    300.0,
+                    120.0,
+                    252.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;gondola_rails_top_exit",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "0e07fa41780d1c63557bb485a80071a12fd7378085e4bcfb0923e70d2ec94427",
+                "name": "Gondola Rail Straight (Mockup)",
+                "position": [
+                    320.0,
+                    120.0,
+                    252.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;gondola_rails_top_exit",
             "type": "ground"
         }
     ]
