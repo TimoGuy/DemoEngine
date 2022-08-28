@@ -100,7 +100,7 @@ void YosemiteTerrain::INTERNALrecreatePhysicsComponent(std::string modelResource
 	else
 	{
 		Model* fetchedModel = (Model*)Resources::getResource(modelResourceName);
-		physicsComponent = new TriangleMeshCollider(this, fetchedModel, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
+		physicsComponent = new TriangleMeshCollider(this, { { fetchedModel } }, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 	}
 }
 

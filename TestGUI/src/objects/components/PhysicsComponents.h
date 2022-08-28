@@ -6,10 +6,16 @@
 
 class Model;
 
+struct ModelWithTransform
+{
+	Model* model = nullptr;
+	glm::mat4 localTransform = glm::mat4(1.0f);
+};
+
 class TriangleMeshCollider : public PhysicsComponent
 {
 public:
-	TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
+	TriangleMeshCollider(BaseObject* bo, std::vector<ModelWithTransform> models, RigidActorTypes rigidActorType, ShapeTypes shapeType = ShapeTypes::COLLISION);
 	~TriangleMeshCollider();
 
 	void physicsUpdate();
@@ -19,7 +25,7 @@ public:
 private:
 	void routineCreateTriangleMeshGeometry(const glm::mat4& newTransform);
 
-	Model* model;
+	std::vector<ModelWithTransform> models;
 	physx::PxShape* shape;
 	physx::PxGeometry* geom;
 	RigidActorTypes rigidActorType = RigidActorTypes::STATIC;

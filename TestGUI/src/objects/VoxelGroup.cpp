@@ -563,7 +563,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 		delete physicsComponent;
 
 	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSplineGUID.empty());
-	physicsComponent = new TriangleMeshCollider(this, voxel_model, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
+	physicsComponent = new TriangleMeshCollider(this, { { voxel_model } }, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
 	rigidbodyIsDynamic = shouldBeDynamicRigidbody;
 	//setTransform(getTransform());		// NOTE: this is to prevent weird interpolation skipping
 }

@@ -14,6 +14,11 @@
 #include "../render_engine/resources/Resources.h"
 #include "../render_engine/render_manager/RenderManager.h"
 
+#ifdef _DEVELOP
+#include "../imgui/imgui.h"
+#include "../imgui/ImGuizmo.h"
+#endif
+
 
 GondolaPath::GondolaPath()
 {
@@ -21,6 +26,33 @@ GondolaPath::GondolaPath()
 
 	refreshResources();
 	renderComponent = new RenderComponent(this);
+
+	trackModels.clear();
+	for (auto& path : trackModelPaths)
+	{
+		trackModels.push_back((Model*)Resources::getResource(path));
+	}
+
+	// TEMP
+	trackModelConnectionOffsets.clear();
+	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
+	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(-37.2923228578, 0, -90.0316316157)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(-43.1501872341, 0, -104.173767239)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(37.2923228578, 0, -90.0316316157)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, -45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(43.1501872341, 0, -104.173767239)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, -45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
+	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(-37.2923228578, 0, -90.0316316157)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(-43.1501872341, 0, -104.173767239)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, 45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(37.2923228578, 0, -90.0316316157)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, -45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(43.1501872341, 0, -104.173767239)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, -45, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, 17.275, -97.983)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(20, 0, 0)))));
+	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, -15.212, -86.263)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(-20, 0, 0)))));
+
+	trackModelConnectionOffsets.resize(trackModels.size(), glm::mat4(1.0f));
 }
 
 GondolaPath::~GondolaPath()
@@ -36,6 +68,11 @@ void GondolaPath::loadPropertiesFromJson(nlohmann::json& object)
 	// 	numWaterServings = object["num_water_servings"];
 
 	refreshResources();
+
+	if (object.contains("gondola_path_ids"))
+		for (auto segmentId : object["gondola_path_ids"])
+			addPieceToGondolaPath((int)segmentId);
+	recalculateGondolaPathOffsets();
 }
 
 nlohmann::json GondolaPath::savePropertiesToJson()
@@ -44,7 +81,9 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 	j["type"] = TYPE_NAME;
 	j["baseObject"] = BaseObject::savePropertiesToJson();
 
-	// j["num_water_servings"] = numWaterServings;
+	j["gondola_path_ids"] = nlohmann::json::array();
+	for (auto& segment : trackSegments)
+		j["gondola_path_ids"].push_back(segment.pieceType);
 
 	return j;
 }
@@ -56,26 +95,79 @@ void GondolaPath::preRenderUpdate()
 
 void GondolaPath::refreshResources()
 {
-	trackModels.clear();
-	for (auto& path : trackModelPaths)
-	{
-		trackModels.push_back((Model*)Resources::getResource(path));
-	}
-
-	// TEMP
-	trackModelConnectionOffsets.clear();
-	trackModelConnectionOffsets.resize(trackModels.size(), glm::mat4(1.0f));
 }
 
 #ifdef _DEVELOP
 void GondolaPath::imguiPropertyPanel()
 {
-	for (size_t i = 0; i < trackModelPaths.size(); i++)
+	// Track segment models
+	if (ImGui::TreeNode("Track segment models"))
 	{
-		if (ImGui::Button(("Add: " + trackModelPaths[i]).c_str()))
+		for (size_t i = 0; i < trackModelPaths.size(); i++)
 		{
-			addPieceToGondolaPath((int)i);
+			if (ImGui::Button(("Add: " + trackModelPaths[i] + "##" + std::to_string(i)).c_str()))
+			{
+				addPieceToGondolaPath((int)i);
+			}
 		}
+
+		ImGui::TreePop();
+	}
+
+	// Connection Offsets
+	ImGui::Separator();
+	if (ImGui::TreeNode("Connection offsets"))
+	{
+		bool refreshPathOffsetsPls = false;
+		for (size_t i = 0; i < trackModelConnectionOffsets.size(); i++)
+		{
+			ImGui::Text(("OffsetPiece #" + std::to_string(i)).c_str());
+			bool plsCopy = false;
+			float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(trackModelConnectionOffsets[i]), matrixTranslation, matrixRotation, matrixScale);
+			plsCopy |= ImGui::DragFloat3(("Pos##GondolaOffsetPerPiece" + std::to_string(i)).c_str(), matrixTranslation, 0.0025f);
+			plsCopy |= ImGui::DragFloat3(("Rot##GondolaOffsetPerPiece" + std::to_string(i)).c_str(), matrixRotation, 0.0025f);
+			plsCopy |= ImGui::DragFloat3(("Sca##GondolaOffsetPerPiece" + std::to_string(i)).c_str(), matrixScale, 0.0025f);
+			if (plsCopy)
+				ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, glm::value_ptr(trackModelConnectionOffsets[i]));
+			refreshPathOffsetsPls |= plsCopy;
+		}
+		if (refreshPathOffsetsPls)
+			recalculateGondolaPathOffsets();
+
+		ImGui::TreePop();
+	}
+
+	// TrackSegments
+	ImGui::Separator();
+	if (ImGui::TreeNode("Edit track segments"))
+	{
+		for (size_t i = 0; i < trackSegments.size(); i++)
+		{
+			GondolaPath::TrackSegment& trackSegment = trackSegments[i];
+			if (ImGui::Button(("X## Delete and remove a certain track segment" + std::to_string(i)).c_str()))
+			{
+				// DELETE!!!
+			}
+			ImGui::SameLine();
+			if (ImGui::BeginCombo(("Track Segment #" + std::to_string(i)).c_str(), trackModelPaths[trackSegment.pieceType].c_str()))
+			{
+				for (size_t pieceType = 0; pieceType < trackModelPaths.size(); pieceType++)
+				{
+					const bool isSelected = (trackSegment.pieceType == pieceType);
+					if (ImGui::Selectable(trackModelPaths[pieceType].c_str(), isSelected))
+					{
+						changePieceOfGondolaPath(i, (int)pieceType);
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+		}
+
+		ImGui::TreePop();
 	}
 }
 
@@ -86,12 +178,20 @@ void GondolaPath::imguiRender()
 
 void GondolaPath::addPieceToGondolaPath(int pieceType)
 {
-	trackSegments.push_back({ pieceType, glm::mat4(1.0f) });
+	trackSegments.push_back({ pieceType, new glm::mat4(1.0f) });
 
 	size_t currentIndex = trackSegments.size() - 1;
 	Model* modelToUse = trackModels[pieceType];
 
-	renderComponent->addModelToRender({ modelToUse, true, nullptr, &trackSegments[currentIndex].localTransform });
+	renderComponent->addModelToRender({ modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
+	recalculateGondolaPathOffsets();
+}
+
+void GondolaPath::changePieceOfGondolaPath(size_t index, int pieceType)
+{
+	trackSegments[index].pieceType = pieceType;
+	Model* modelToUse = trackModels[pieceType];
+	renderComponent->changeModelToRender(index, { modelToUse, true, nullptr, trackSegments[index].localTransform });
 	recalculateGondolaPathOffsets();
 }
 
@@ -100,7 +200,17 @@ void GondolaPath::recalculateGondolaPathOffsets()
 	glm::mat4 currentTransform(1.0f);
 	for (auto& segment : trackSegments)
 	{
-		segment.localTransform = currentTransform;
+		*segment.localTransform = currentTransform;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
 	}
+
+	if (physicsComponent != nullptr)
+		delete physicsComponent;
+
+	std::vector<ModelWithTransform> modelsWithTransform;
+	for (auto& segment : trackSegments)
+		modelsWithTransform.push_back({ trackModels[segment.pieceType], *segment.localTransform });
+	physicsComponent = new TriangleMeshCollider(this, modelsWithTransform, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
+
+	setTransform(getTransform());		// @NOTE: if the physicscomponent was created inside loadPropertiesFromJson after BaseObject::loadPropertiesFromJson(), then a bug would appear where the position would get reset to 0,0,0 bc the transform wasn't propagated to the physicscomponent, hence this piece of code. (aka the fix)
 }

@@ -433,8 +433,8 @@ PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTr
 
 	refreshResources();
 	renderComponent = new RenderComponent(this);
-	renderComponent->addModelToRender({ model, true, &animator });
-	renderComponent->addModelToRender({ bottleModel, true, nullptr });
+	renderComponent->addModelToRender({ model, true, &animator, &modelLocalTransform });
+	renderComponent->addModelToRender({ bottleModel, true, nullptr, &bottleModelLocalTransform });
 
 	playerCamera.priority = 10;
 	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);

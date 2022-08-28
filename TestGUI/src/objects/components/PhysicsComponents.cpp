@@ -15,7 +15,7 @@
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // TriangleMeshCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), model(model), rigidActorType(rigidActorType)
+TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, std::vector<ModelWithTransform> models, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), models(models), rigidActorType(rigidActorType)
 {
 	routineCreateTriangleMeshGeometry(baseObject->getTransform());
 }
@@ -71,34 +71,37 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 	// Extract renderMeshes from model and conform to physx trianglemeshdesc
 	//
 	glm::vec3 xformScale = PhysicsUtils::getScale(newTransform);
-	const std::vector<Mesh>& modelMeshes = model->getPhysicsMeshes();
-	for (size_t i = 0; i < modelMeshes.size(); i++)
+	for (auto& model : models)
 	{
-		const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
-		const std::vector<uint32_t>& indices = modelMeshes[i].getIndices();
-
-		nbVerts += (physx::PxU32)vertices.size();
-		nbIndices += (physx::PxU32)indices.size();
-
-		//
-		// Add in vertices
-		//
-		for (size_t j = 0; j < vertices.size(); j++)
+		const std::vector<Mesh>& modelMeshes = model.model->getPhysicsMeshes();
+		for (size_t i = 0; i < modelMeshes.size(); i++)
 		{
-			const glm::vec3 vec = vertices[j].position * xformScale;
-			verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
-		}
+			const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
+			const std::vector<uint32_t>& indices = modelMeshes[i].getIndices();
 
-		//
-		// Add in indices
-		//
-		for (size_t j = 0; j < indices.size(); j++)
-		{
-			indices32.push_back(indices[j] + baseIndex);
-		}
+			nbVerts += (physx::PxU32)vertices.size();
+			nbIndices += (physx::PxU32)indices.size();
 
-		// Bump counter
-		baseIndex += (uint32_t)vertices.size();
+			//
+			// Add in vertices
+			//
+			for (size_t j = 0; j < vertices.size(); j++)
+			{
+				const glm::vec3 vec = glm::vec3(model.localTransform * glm::vec4(vertices[j].position, 1.0f)) * xformScale;
+				verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
+			}
+
+			//
+			// Add in indices
+			//
+			for (size_t j = 0; j < indices.size(); j++)
+			{
+				indices32.push_back(indices[j] + baseIndex);
+			}
+
+			// Bump counter
+			baseIndex += (uint32_t)vertices.size();
+		}
 	}
 
 	physx::PxTriangleMeshDesc meshDesc;

@@ -17,7 +17,7 @@ public:
 	nlohmann::json savePropertiesToJson();
 
 	LightComponent* getLightComponent() { return nullptr; }
-	PhysicsComponent* getPhysicsComponent() { return nullptr; }
+	PhysicsComponent* getPhysicsComponent() { return physicsComponent; }
 	RenderComponent* getRenderComponent() { return renderComponent; }
 
 	void refreshResources();
@@ -28,6 +28,7 @@ public:
 #endif
 
 private:
+	PhysicsComponent* physicsComponent = nullptr;
 	RenderComponent* renderComponent = nullptr;
 
 	std::vector<std::string> trackModelPaths = {
@@ -53,11 +54,12 @@ private:
 
 	struct TrackSegment
 	{
-		int pieceType;
-		glm::mat4 localTransform;	// NOTE: this is the calculated ultimate value, not the offset!
+		int pieceType = 0;
+		glm::mat4* localTransform = nullptr;	// NOTE: this is the calculated ultimate value, not the offset!
 	};
 
 	std::vector<TrackSegment> trackSegments;
 	void addPieceToGondolaPath(int pieceType);
+	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void recalculateGondolaPathOffsets();
 };

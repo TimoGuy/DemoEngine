@@ -260,6 +260,11 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
+void RenderComponent::changeModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata)
+{
+	modelsWithMetadata[index] = modelWithMetadata;
+}
+
 ModelWithMetadata RenderComponent::getModelFromIndex(size_t index)
 {
 	return modelsWithMetadata[index];
@@ -289,14 +294,14 @@ void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader
 		// Short circuit out of loop if none of meshes are in view frustum.
 		// Also creates a reference to the meshes of which ones are in the view frustum.
 		std::vector<bool> whichMeshesInView;
-		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform(), viewFrustum, whichMeshesInView))
+		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform() * *mwmd.localTransform, viewFrustum, whichMeshesInView))
 			continue;
 		
 		std::vector<glm::mat4>* boneTransforms = nullptr;
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), zPassShader, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
+		mwmd.model->render(baseObject->getTransform() * *mwmd.localTransform, zPassShader, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
 	}
 }
 
@@ -313,7 +318,7 @@ void RenderComponent::renderShadow(Shader* shader)		// @Copypasta
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), shader, nullptr, boneTransforms, RenderStage::OVERRIDE);
+		mwmd.model->render(baseObject->getTransform() * *mwmd.localTransform, shader, nullptr, boneTransforms, RenderStage::OVERRIDE);
 	}
 }
 
@@ -338,7 +343,7 @@ void RenderComponent::TEMPrenderImguiModelBounds()
 {
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
 	{
-		modelsWithMetadata[i].model->TEMPrenderImguiModelBounds(baseObject->getTransform());
+		modelsWithMetadata[i].model->TEMPrenderImguiModelBounds(baseObject->getTransform() * *modelsWithMetadata[i].localTransform);
 	}
 }
 #endif
