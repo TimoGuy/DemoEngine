@@ -291,6 +291,12 @@ void RenderComponent::addTextToRender(TextRenderer* textRenderer)
 	MainLoop::getInstance().renderManager->addTextRenderer(textRenderer);
 }
 
+void RenderComponent::removeTextRenderer(TextRenderer* textRenderer)
+{
+	textRenderers.erase(std::remove(textRenderers.begin(), textRenderers.end(), textRenderer), textRenderers.end());
+	MainLoop::getInstance().renderManager->removeTextRenderer(textRenderer);
+}
+
 void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader)								// @Copypasta
 {
 #ifdef _DEVELOP

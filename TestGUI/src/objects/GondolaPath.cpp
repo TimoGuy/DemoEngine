@@ -90,7 +90,32 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 
 void GondolaPath::preRenderUpdate()
 {
-	
+	//
+	// Update positions of the text renderers
+	//
+	glm::mat4 currentTransform(1.0f);
+	for (size_t i = 0; i < trackSegments.size(); i++)
+	{
+		if (MainLoop::getInstance().playMode)
+		{
+			// Hide the textrenderers
+			trackSegmentTextRenderers[i]->text = "";
+			continue;
+		}
+
+		// Change the position of the textrenderers
+		auto& segment = trackSegments[i];
+
+		*segment.localTransform = currentTransform;
+
+		glm::vec3 p1 = glm::vec3(currentTransform * glm::vec4(0, 0, 0, 1));
+		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
+		glm::vec3 p2 = glm::vec3(currentTransform * glm::vec4(0, 0, 0, 1));
+		glm::vec3 midpt = (p1 + p2) / 2.0f + PhysicsUtils::getPosition(getTransform());
+		midpt.y += 25.0f;
+		trackSegmentTextRenderers[i]->modelMatrix = glm::translate(glm::mat4(1.0f), midpt - MainLoop::getInstance().camera.position) * glm::inverse(MainLoop::getInstance().camera.calculateViewMatrix()) * glm::scale(glm::mat4(1.0f), glm::vec3(0.6f));		// @COPYPASTA
+		trackSegmentTextRenderers[i]->text = std::to_string(i + 1);
+	}
 }
 
 void GondolaPath::refreshResources()
@@ -166,7 +191,7 @@ void GondolaPath::imguiPropertyPanel()
 				break;	// @HACK: prevent there being any out of bounds exceptions
 			}
 			ImGui::SameLine();
-			if (ImGui::BeginCombo(("Track Segment #" + std::to_string(i)).c_str(), trackModelPaths[trackSegment.pieceType].c_str()))
+			if (ImGui::BeginCombo(("#" + std::to_string(i + 1) + " Track Segment").c_str(), trackModelPaths[trackSegment.pieceType].c_str()))
 			{
 				for (size_t pieceType = 0; pieceType < trackModelPaths.size(); pieceType++)
 				{
@@ -206,6 +231,10 @@ void GondolaPath::addPieceToGondolaPath(int pieceType, int index)
 		renderComponent->addModelToRender({ modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
 	else
 		renderComponent->insertModelToRender(currentIndex, { modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
+
+	trackSegmentTextRenderers.push_back(new TextRenderer{ std::to_string(trackSegmentTextRenderers.size() + 1), getTransform(), glm::vec3(0.5, 1, 0), TextAlignment::CENTER, TextAlignment::BOTTOM });
+	renderComponent->addTextToRender(trackSegmentTextRenderers[trackSegmentTextRenderers.size() - 1]);
+
 	recalculateGondolaPathOffsets();
 }
 
@@ -221,14 +250,20 @@ void GondolaPath::removePieceOfGondolaPath(size_t index)
 {
 	trackSegments.erase(trackSegments.begin() + index);
 	renderComponent->removeModelToRender(index);
+
+	renderComponent->removeTextRenderer(trackSegmentTextRenderers[trackSegmentTextRenderers.size() - 1]);
+	trackSegmentTextRenderers.erase(trackSegmentTextRenderers.begin() + trackSegmentTextRenderers.size() - 1);
+
 	recalculateGondolaPathOffsets();
 }
 
 void GondolaPath::recalculateGondolaPathOffsets()
 {
 	glm::mat4 currentTransform(1.0f);
-	for (auto& segment : trackSegments)
+	for (size_t i = 0; i < trackSegments.size(); i++)
 	{
+		auto& segment = trackSegments[i];
+
 		*segment.localTransform = currentTransform;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
 	}

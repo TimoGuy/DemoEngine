@@ -198,6 +198,7 @@ public:
 	void clearAllModels();
 
 	void addTextToRender(TextRenderer* textRenderer);
+	void removeTextRenderer(TextRenderer* textRenderer);
 
 	void render(const ViewFrustum* viewFrustum, Shader* zPassShader);
 	void renderShadow(Shader* shader);

@@ -59,6 +59,7 @@ private:
 	};
 
 	std::vector<TrackSegment> trackSegments;
+	std::vector<TextRenderer*> trackSegmentTextRenderers;
 	void addPieceToGondolaPath(int pieceType, int index = -1);
 	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void removePieceOfGondolaPath(size_t index);
