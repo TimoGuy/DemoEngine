@@ -59,20 +59,20 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 	}
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-
-	physx::PxU32 nbVerts = 0;
-	physx::PxU32 nbIndices = 0;
-	uint32_t baseIndex = 0;
-
-	std::vector<physx::PxVec3> verts;
-	std::vector<physx::PxU32> indices32;
-
-	//
-	// Extract renderMeshes from model and conform to physx trianglemeshdesc
-	//
 	glm::vec3 xformScale = PhysicsUtils::getScale(newTransform);
+
 	for (auto& model : models)
 	{
+		physx::PxU32 nbVerts = 0;
+		physx::PxU32 nbIndices = 0;
+		uint32_t baseIndex = 0;
+
+		std::vector<physx::PxVec3> verts;
+		std::vector<physx::PxU32> indices32;
+
+		//
+		// Extract renderMeshes from model and conform to physx trianglemeshdesc
+		//
 		const std::vector<Mesh>& modelMeshes = model.model->getPhysicsMeshes();
 		for (size_t i = 0; i < modelMeshes.size(); i++)
 		{
@@ -102,50 +102,51 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 			// Bump counter
 			baseIndex += (uint32_t)vertices.size();
 		}
-	}
 
-	physx::PxTriangleMeshDesc meshDesc;
-	meshDesc.points.count = nbVerts;
-	meshDesc.points.stride = sizeof(physx::PxVec3);
-	meshDesc.points.data = &verts[0];
-	
-	meshDesc.triangles.count = nbIndices / 3;
-	meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
-	meshDesc.triangles.data = &indices32[0];
+		physx::PxTriangleMeshDesc meshDesc;
+		meshDesc.points.count = nbVerts;
+		meshDesc.points.stride = sizeof(physx::PxVec3);
+		meshDesc.points.data = &verts[0];
+		
+		meshDesc.triangles.count = nbIndices / 3;
+		meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
+		meshDesc.triangles.data = &indices32[0];
 
-	physx::PxDefaultMemoryOutputStream writeBuffer;
-	physx::PxTriangleMeshCookingResult::Enum result;
-	bool status = MainLoop::getInstance().physicsCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
-	if (!status)
-		return;
+		physx::PxDefaultMemoryOutputStream writeBuffer;
+		physx::PxTriangleMeshCookingResult::Enum result;
+		bool status = MainLoop::getInstance().physicsCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
+		if (!status)
+			return;
 
-	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-	physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
+		physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+		physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
 
-	physx::PxTriangleMeshGeometry triGeom;
-	triGeom.triangleMesh = triMesh;
-	geom = &triGeom;
+		physx::PxTriangleMeshGeometry triGeom;
+		triGeom.triangleMesh = triMesh;
+		geom = &triGeom;
 
-	//
-	// Create the rigidbody actor!
-	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
-	//
-	shape = physx::PxRigidActorExt::createExclusiveShape(*body, *geom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
+		//
+		// Create the rigidbody actor!
+		// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
+		//
+		shape = physx::PxRigidActorExt::createExclusiveShape(*body, *geom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
 
-	physx::PxFilterData filterData;
-	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
-	shape->setQueryFilterData(filterData);
+		physx::PxFilterData filterData;
+		filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+		shape->setQueryFilterData(filterData);
 
-	if (shapeType == ShapeTypes::TRIGGER)
-	{
-		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
-		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+		if (shapeType == ShapeTypes::TRIGGER)
+		{
+			shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+		}
+
+		triMesh->release();
 	}
 
 	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
 	MainLoop::getInstance().physicsScene->addActor(*body);
-	triMesh->release();
 	cachedScale = xformScale;
 }
 
