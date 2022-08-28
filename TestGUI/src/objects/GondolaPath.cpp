@@ -100,20 +100,6 @@ void GondolaPath::refreshResources()
 #ifdef _DEVELOP
 void GondolaPath::imguiPropertyPanel()
 {
-	// Track segment models
-	if (ImGui::TreeNode("Track segment models"))
-	{
-		for (size_t i = 0; i < trackModelPaths.size(); i++)
-		{
-			if (ImGui::Button(("Add: " + trackModelPaths[i] + "##" + std::to_string(i)).c_str()))
-			{
-				addPieceToGondolaPath((int)i);
-			}
-		}
-
-		ImGui::TreePop();
-	}
-
 	// Connection Offsets
 	ImGui::Separator();
 	if (ImGui::TreeNode("Connection offsets"))
@@ -142,12 +128,42 @@ void GondolaPath::imguiPropertyPanel()
 	ImGui::Separator();
 	if (ImGui::TreeNode("Edit track segments"))
 	{
-		for (size_t i = 0; i < trackSegments.size(); i++)
+		for (size_t i = 0; i < trackSegments.size() + 1; i++)
 		{
+			// Add section
+			static size_t showPopupIndex = 0;
+			if (ImGui::Button(("Add track segment...##" + std::to_string(i)).c_str()))
+			{
+				ImGui::OpenPopup("add_track_segment_popup");
+				showPopupIndex = i;
+			}
+			if (ImGui::BeginPopup("add_track_segment_popup"))
+			{
+				if (i == showPopupIndex)
+				{
+					for (size_t pathIndex = 0; pathIndex < trackModelPaths.size(); pathIndex++)
+					{
+						if (ImGui::Button(("Add: " + trackModelPaths[pathIndex] + "##" + std::to_string(pathIndex)).c_str()))
+						{
+							addPieceToGondolaPath((int)pathIndex, (i == trackSegments.size()) ? -1 : (int)i);
+							ImGui::CloseCurrentPopup();
+						}
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (i == trackSegments.size())
+				break;	// Cancel out of the add section bc this last button's gonna be the actual add button
+
+			// Edit section
 			GondolaPath::TrackSegment& trackSegment = trackSegments[i];
 			if (ImGui::Button(("X## Delete and remove a certain track segment" + std::to_string(i)).c_str()))
 			{
 				// DELETE!!!
+				removePieceOfGondolaPath(i);
+				break;	// @HACK: prevent there being any out of bounds exceptions
 			}
 			ImGui::SameLine();
 			if (ImGui::BeginCombo(("Track Segment #" + std::to_string(i)).c_str(), trackModelPaths[trackSegment.pieceType].c_str()))
@@ -176,14 +192,20 @@ void GondolaPath::imguiRender()
 }
 #endif
 
-void GondolaPath::addPieceToGondolaPath(int pieceType)
+void GondolaPath::addPieceToGondolaPath(int pieceType, int index)
 {
-	trackSegments.push_back({ pieceType, new glm::mat4(1.0f) });
+	size_t currentIndex = index < 0 ? trackSegments.size() : (size_t)index;
+	if (index < 0)
+		trackSegments.push_back({ pieceType, new glm::mat4(1.0f) });
+	else
+		trackSegments.insert(trackSegments.begin() + currentIndex, { pieceType, new glm::mat4(1.0f) });
 
-	size_t currentIndex = trackSegments.size() - 1;
 	Model* modelToUse = trackModels[pieceType];
 
-	renderComponent->addModelToRender({ modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
+	if (index < 0)
+		renderComponent->addModelToRender({ modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
+	else
+		renderComponent->insertModelToRender(currentIndex, { modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
 	recalculateGondolaPathOffsets();
 }
 
@@ -192,6 +214,13 @@ void GondolaPath::changePieceOfGondolaPath(size_t index, int pieceType)
 	trackSegments[index].pieceType = pieceType;
 	Model* modelToUse = trackModels[pieceType];
 	renderComponent->changeModelToRender(index, { modelToUse, true, nullptr, trackSegments[index].localTransform });
+	recalculateGondolaPathOffsets();
+}
+
+void GondolaPath::removePieceOfGondolaPath(size_t index)
+{
+	trackSegments.erase(trackSegments.begin() + index);
+	renderComponent->removeModelToRender(index);
 	recalculateGondolaPathOffsets();
 }
 

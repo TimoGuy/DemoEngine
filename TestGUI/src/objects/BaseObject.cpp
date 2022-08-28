@@ -260,9 +260,19 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
+void RenderComponent::insertModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata)
+{
+	modelsWithMetadata.insert(modelsWithMetadata.begin() + index, modelWithMetadata);
+}
+
 void RenderComponent::changeModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata)
 {
 	modelsWithMetadata[index] = modelWithMetadata;
+}
+
+void RenderComponent::removeModelToRender(size_t index)
+{
+	modelsWithMetadata.erase(modelsWithMetadata.begin() + index);
 }
 
 ModelWithMetadata RenderComponent::getModelFromIndex(size_t index)

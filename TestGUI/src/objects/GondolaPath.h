@@ -55,11 +55,12 @@ private:
 	struct TrackSegment
 	{
 		int pieceType = 0;
-		glm::mat4* localTransform = nullptr;	// NOTE: this is the calculated ultimate value, not the offset!
+		glm::mat4* localTransform = nullptr;	// NOTE: this is the calculated ultimate value, not the defined offset! (see trackModelConnectionOffsets)
 	};
 
 	std::vector<TrackSegment> trackSegments;
-	void addPieceToGondolaPath(int pieceType);
+	void addPieceToGondolaPath(int pieceType, int index = -1);
 	void changePieceOfGondolaPath(size_t index, int pieceType);
+	void removePieceOfGondolaPath(size_t index);
 	void recalculateGondolaPathOffsets();
 };
