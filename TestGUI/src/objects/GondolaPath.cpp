@@ -20,6 +20,10 @@
 #endif
 
 
+std::vector<glm::mat4> GondolaPath::trackModelConnectionOffsets;
+std::vector<glm::vec3*> GondolaPath::trackPathQuadraticBezierPoints;
+std::vector<std::vector<glm::vec3>> GondolaPath::_trackPathBezierCurvePoints_cached;
+
 GondolaPath::GondolaPath()
 {
 	name = "Gondola Path";
@@ -33,7 +37,6 @@ GondolaPath::GondolaPath()
 		trackModels.push_back((Model*)Resources::getResource(path));
 	}
 
-	// TEMP
 	trackModelConnectionOffsets.clear();
 	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
 	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
@@ -53,6 +56,28 @@ GondolaPath::GondolaPath()
 	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, -15.212, -86.263)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(-20, 0, 0)))));
 
 	trackModelConnectionOffsets.resize(trackModels.size(), glm::mat4(1.0f));
+
+	trackPathQuadraticBezierPoints.clear();
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(-0.5f, 0.0f, -51.6f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(-1.9f, 0.0f, -63.3f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.5f, 0.0f, -51.6f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(1.9f, 0.0f, -63.3f));
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(nullptr);
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(-0.5f, 0.0f, -51.6f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(-1.9f, 0.0f, -63.3f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.5f, 0.0f, -51.6f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(1.9f, 0.0f, -63.3f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.0f, 0.0f, -53.2f));
+	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.0f, 0.0f, -41.8f));
+
+	trackPathQuadraticBezierPoints.resize(trackModels.size(), nullptr);
+
+	recalculateGondolaBezierCurvePoints();
 }
 
 GondolaPath::~GondolaPath()
@@ -96,7 +121,7 @@ void GondolaPath::preRenderUpdate()
 	glm::mat4 currentTransform(1.0f);
 	for (size_t i = 0; i < trackSegments.size(); i++)
 	{
-		if (MainLoop::getInstance().playMode)
+		if (MainLoop::getInstance().playMode || _is_selected <= 0)
 		{
 			// Hide the textrenderers
 			trackSegmentTextRenderers[i]->text = "";
@@ -116,6 +141,9 @@ void GondolaPath::preRenderUpdate()
 		trackSegmentTextRenderers[i]->modelMatrix = glm::translate(glm::mat4(1.0f), midpt - MainLoop::getInstance().camera.position) * glm::inverse(MainLoop::getInstance().camera.calculateViewMatrix()) * glm::scale(glm::mat4(1.0f), glm::vec3(0.6f));		// @COPYPASTA
 		trackSegmentTextRenderers[i]->text = std::to_string(i + 1);
 	}
+
+	// @HACK: flag to see if imguiPropertyPanel() was executed.
+	_is_selected--;
 }
 
 void GondolaPath::refreshResources()
@@ -123,8 +151,16 @@ void GondolaPath::refreshResources()
 }
 
 #ifdef _DEVELOP
+
+static bool showGondolaPathDebugPaths = false;
+
 void GondolaPath::imguiPropertyPanel()
 {
+	_is_selected = 2;
+
+	// Basic Props
+	ImGui::Checkbox("Show debug paths", &showGondolaPathDebugPaths);
+
 	// Connection Offsets
 	ImGui::Separator();
 	if (ImGui::TreeNode("Connection offsets"))
@@ -147,6 +183,24 @@ void GondolaPath::imguiPropertyPanel()
 			recalculateGondolaPathOffsets();
 
 		ImGui::TreePop();
+	}
+
+	// Bezier Curves
+	ImGui::Separator();
+	if (ImGui::TreeNode("Connection Path Bezier Curves"))
+	{
+		for (size_t i = 0; i < trackPathQuadraticBezierPoints.size(); i++)
+		{
+			if (trackPathQuadraticBezierPoints[i] == nullptr)
+				continue;
+
+			ImGui::Text(trackModelPaths[i].c_str());
+			bool changed = ImGui::DragFloat3(("Pos##GondolaPathBezierCurvesConnectionPos" + std::to_string(i)).c_str(), &trackPathQuadraticBezierPoints[i]->x, 0.1f);
+			if (changed)
+			{
+				recalculateGondolaBezierCurvePoints();
+			}
+		}
 	}
 
 	// TrackSegments
@@ -214,6 +268,28 @@ void GondolaPath::imguiPropertyPanel()
 
 void GondolaPath::imguiRender()
 {
+	if (showGondolaPathDebugPaths && _is_selected > 0)
+	{
+		for (size_t i = 0; i < trackSegments.size(); i++)
+		{
+			auto& segment = trackSegments[i];
+			glm::vec3 point1 = getTransform() * *segment.localTransform * glm::vec4(0, 0, 0, 1);
+			glm::vec3 point2 = getTransform() * *segment.localTransform * trackModelConnectionOffsets[segment.pieceType] * glm::vec4(0, 0, 0, 1);
+
+			glm::vec3* bezierPt = trackPathQuadraticBezierPoints[segment.pieceType];
+			if (bezierPt == nullptr)
+				PhysicsUtils::imguiRenderLine(point1, point2, ImColor(1.0f, 0.0f, 0.0f));
+			else
+			{
+				for (size_t j = 0; j < _trackPathBezierCurvePoints_cached[segment.pieceType].size() + 1; j++)
+				{
+					glm::vec3 linePoint1 = (j == 0) ? point1 : getTransform() * *segment.localTransform * glm::vec4(_trackPathBezierCurvePoints_cached[segment.pieceType][j - 1], 1);
+					glm::vec3 linePoint2 = (j == _trackPathBezierCurvePoints_cached[segment.pieceType].size()) ? point2 : getTransform() * *segment.localTransform * glm::vec4(_trackPathBezierCurvePoints_cached[segment.pieceType][j], 1);
+					PhysicsUtils::imguiRenderLine(linePoint1, linePoint2, ImColor(1.0f, 0.0f, 0.0f));
+				}
+			}
+		}
+	}
 }
 #endif
 
@@ -277,4 +353,39 @@ void GondolaPath::recalculateGondolaPathOffsets()
 	physicsComponent = new TriangleMeshCollider(this, modelsWithTransform, RigidActorTypes::STATIC); // RigidActorTypes::KINEMATIC);
 
 	setTransform(getTransform());		// @NOTE: if the physicscomponent was created inside loadPropertiesFromJson after BaseObject::loadPropertiesFromJson(), then a bug would appear where the position would get reset to 0,0,0 bc the transform wasn't propagated to the physicscomponent, hence this piece of code. (aka the fix)
+}
+
+void GondolaPath::recalculateGondolaBezierCurvePoints()		// @NOTE: this is really only for the debug view
+{
+	_trackPathBezierCurvePoints_cached.clear();
+
+	for (size_t i = 0; i < trackPathQuadraticBezierPoints.size(); i++)
+	{
+		if (trackPathQuadraticBezierPoints[i] == nullptr)
+		{
+			_trackPathBezierCurvePoints_cached.push_back({});
+			continue;
+		}
+
+		constexpr size_t numSlicesBezier = 15;
+		glm::vec3 point1 = glm::vec3(0, 0, 0);
+		glm::vec3 midPoint = *trackPathQuadraticBezierPoints[i];
+		glm::vec3 point2 = trackModelConnectionOffsets[i] * glm::vec4(0, 0, 0, 1);
+		
+		float t_interval = 1.0f / (float)(numSlicesBezier + 1);
+		float t = t_interval;
+
+		std::vector<glm::vec3> calculatedPoints;
+		for (size_t slice = 0; slice < numSlicesBezier; slice++, t += t_interval)
+		{
+			glm::vec3 vec3a = PhysicsUtils::lerp(point1, midPoint, glm::vec3(t));
+			glm::vec3 vec3b = PhysicsUtils::lerp(midPoint, point2, glm::vec3(t));
+
+			calculatedPoints.push_back(
+				PhysicsUtils::lerp(vec3a, vec3b, glm::vec3(t))
+			);
+		}
+
+		_trackPathBezierCurvePoints_cached.push_back(calculatedPoints);
+	}
 }

@@ -23,6 +23,7 @@ public:
 	void refreshResources();
 
 #ifdef _DEVELOP
+	int _is_selected = false;	// @HACK
 	void imguiPropertyPanel();
 	void imguiRender();
 #endif
@@ -50,7 +51,9 @@ private:
 		"model;gondola_rails_top_curve_down"
 	};
 	std::vector<Model*> trackModels;
-	std::vector<glm::mat4> trackModelConnectionOffsets;
+	static std::vector<glm::mat4> trackModelConnectionOffsets;
+	static std::vector<glm::vec3*> trackPathQuadraticBezierPoints;
+	static std::vector<std::vector<glm::vec3>> _trackPathBezierCurvePoints_cached;
 
 	struct TrackSegment
 	{
@@ -64,4 +67,5 @@ private:
 	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void removePieceOfGondolaPath(size_t index);
 	void recalculateGondolaPathOffsets();
+	static void recalculateGondolaBezierCurvePoints();
 };
