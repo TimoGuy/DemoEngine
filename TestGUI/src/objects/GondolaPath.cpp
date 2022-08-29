@@ -77,7 +77,7 @@ GondolaPath::GondolaPath()
 
 	trackPathQuadraticBezierPoints.resize(trackModels.size(), nullptr);
 
-	recalculateGondolaBezierCurvePoints();
+	recalculateCachedGondolaBezierCurvePoints();
 }
 
 GondolaPath::~GondolaPath()
@@ -146,8 +146,21 @@ void GondolaPath::preRenderUpdate()
 	_is_selected--;
 }
 
+void GondolaPath::physicsUpdate()
+{
+	//
+	// Update all gondola movement paths
+	//
+
+}
+
 void GondolaPath::refreshResources()
 {
+	for (auto& gondola : gondolasUnderControl)
+	{
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
+		body->setKinematicTarget();
+	}
 }
 
 #ifdef _DEVELOP
@@ -198,7 +211,7 @@ void GondolaPath::imguiPropertyPanel()
 			bool changed = ImGui::DragFloat3(("Pos##GondolaPathBezierCurvesConnectionPos" + std::to_string(i)).c_str(), &trackPathQuadraticBezierPoints[i]->x, 0.1f);
 			if (changed)
 			{
-				recalculateGondolaBezierCurvePoints();
+				recalculateCachedGondolaBezierCurvePoints();
 			}
 		}
 	}
@@ -336,12 +349,15 @@ void GondolaPath::removePieceOfGondolaPath(size_t index)
 void GondolaPath::recalculateGondolaPathOffsets()
 {
 	glm::mat4 currentTransform(1.0f);
+	float linearSpaceCurrentPosition = 0.0f;
 	for (size_t i = 0; i < trackSegments.size(); i++)
 	{
 		auto& segment = trackSegments[i];
 
 		*segment.localTransform = currentTransform;
+		segment.startPositionLinearSpace = linearSpaceCurrentPosition;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
+		linearSpaceCurrentPosition += trackModelConnectionOffsets[segment.pieceType];
 	}
 
 	if (physicsComponent != nullptr)
@@ -355,14 +371,16 @@ void GondolaPath::recalculateGondolaPathOffsets()
 	setTransform(getTransform());		// @NOTE: if the physicscomponent was created inside loadPropertiesFromJson after BaseObject::loadPropertiesFromJson(), then a bug would appear where the position would get reset to 0,0,0 bc the transform wasn't propagated to the physicscomponent, hence this piece of code. (aka the fix)
 }
 
-void GondolaPath::recalculateGondolaBezierCurvePoints()		// @NOTE: this is really only for the debug view
+void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is really only for the debug view
 {
+	_trackPathLengths_cached.clear();
 	_trackPathBezierCurvePoints_cached.clear();
 
 	for (size_t i = 0; i < trackPathQuadraticBezierPoints.size(); i++)
 	{
 		if (trackPathQuadraticBezierPoints[i] == nullptr)
 		{
+			_trackPathLengths_cached.push_back(glm::length(glm::vec3(trackModelConnectionOffsets[i] * glm::vec4(0, 0, 0, 1))));
 			_trackPathBezierCurvePoints_cached.push_back({});
 			continue;
 		}
@@ -385,7 +403,15 @@ void GondolaPath::recalculateGondolaBezierCurvePoints()		// @NOTE: this is reall
 				PhysicsUtils::lerp(vec3a, vec3b, glm::vec3(t))
 			);
 		}
-
 		_trackPathBezierCurvePoints_cached.push_back(calculatedPoints);
+
+		float bezierCurveLength = 0.0f;
+		for (size_t ptInd = 0; ptInd < calculatedPoints.size() + 1; i++)
+		{
+			glm::vec3 a = (ptInd == 0) ? point1 : calculatedPoints[ptInd - 1];
+			glm::vec3 b = (ptInd == calculatedPoints.size()) ? point2 : calculatedPoints[ptInd];
+			bezierCurveLength += glm::length(a - b);
+		}
+		_trackPathLengths_cached.push_back(bezierCurveLength);
 	}
 }

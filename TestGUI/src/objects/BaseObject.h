@@ -73,7 +73,7 @@ private:
 };
 
 #ifdef _DEVELOP
-// This is for creating a rendercomponent that you need to connect to 0,0,0
+// @NOTE: this is used in various places... maybe not best practice? @TODO
 class DummyBaseObject : public BaseObject
 {
 public:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BaseObject.h"
+#include "../render_engine/model/animation/Animator.h"
 
 
 class GondolaPath : public BaseObject
@@ -12,6 +13,7 @@ public:
 	~GondolaPath();
 
 	void preRenderUpdate();
+	void physicsUpdate();
 
 	void loadPropertiesFromJson(nlohmann::json& object);
 	nlohmann::json savePropertiesToJson();
@@ -32,6 +34,9 @@ private:
 	PhysicsComponent* physicsComponent = nullptr;
 	RenderComponent* renderComponent = nullptr;
 
+	//
+	// Gondola Paths
+	//
 	std::vector<std::string> trackModelPaths = {
 		"model;gondola_rails_bottom_enter",
 		"model;gondola_rails_bottom_exit",
@@ -53,12 +58,14 @@ private:
 	std::vector<Model*> trackModels;
 	static std::vector<glm::mat4> trackModelConnectionOffsets;
 	static std::vector<glm::vec3*> trackPathQuadraticBezierPoints;
+	static std::vector<float> _trackPathLengths_cached;
 	static std::vector<std::vector<glm::vec3>> _trackPathBezierCurvePoints_cached;
 
 	struct TrackSegment
 	{
 		int pieceType = 0;
 		glm::mat4* localTransform = nullptr;	// NOTE: this is the calculated ultimate value, not the defined offset! (see trackModelConnectionOffsets)
+		float startPositionLinearSpace = 0.0f;	// NOTE: this is the calculated value
 	};
 
 	std::vector<TrackSegment> trackSegments;
@@ -67,5 +74,20 @@ private:
 	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void removePieceOfGondolaPath(size_t index);
 	void recalculateGondolaPathOffsets();
-	static void recalculateGondolaBezierCurvePoints();
+	static void recalculateCachedGondolaBezierCurvePoints();
+
+	
+
+	//
+	// Gondolas
+	//
+	Model* gondolaModel;
+	struct GondolaModelMetadata
+	{
+		Animator animator;
+		glm::mat4 localTransform;
+		BaseObject* dummyObject;
+		PhysicsComponent* headlessPhysicsComponent;
+	};
+	std::vector<GondolaModelMetadata> gondolasUnderControl;
 };
