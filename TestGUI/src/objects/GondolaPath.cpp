@@ -357,7 +357,7 @@ void GondolaPath::recalculateGondolaPathOffsets()
 		*segment.localTransform = currentTransform;
 		segment.startPositionLinearSpace = linearSpaceCurrentPosition;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
-		linearSpaceCurrentPosition += trackModelConnectionOffsets[segment.pieceType];
+		linearSpaceCurrentPosition += _trackPathLengths_cached[segment.pieceType];
 	}
 
 	if (physicsComponent != nullptr)
@@ -371,7 +371,7 @@ void GondolaPath::recalculateGondolaPathOffsets()
 	setTransform(getTransform());		// @NOTE: if the physicscomponent was created inside loadPropertiesFromJson after BaseObject::loadPropertiesFromJson(), then a bug would appear where the position would get reset to 0,0,0 bc the transform wasn't propagated to the physicscomponent, hence this piece of code. (aka the fix)
 }
 
-void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is really only for the debug view
+void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is really only for the debug view	@NOTE: not anymore!
 {
 	_trackPathLengths_cached.clear();
 	_trackPathBezierCurvePoints_cached.clear();
