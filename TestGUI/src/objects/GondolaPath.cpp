@@ -359,6 +359,7 @@ void GondolaPath::recalculateGondolaPathOffsets()
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
 		linearSpaceCurrentPosition += _trackPathLengths_cached[segment.pieceType];
 	}
+	totalTrackLinearSpace = linearSpaceCurrentPosition;
 
 	if (physicsComponent != nullptr)
 		delete physicsComponent;
