@@ -65,19 +65,19 @@ private:
 	{
 		int pieceType = 0;
 		glm::mat4* localTransform = nullptr;	// NOTE: this is the calculated ultimate value, not the defined offset! (see trackModelConnectionOffsets)
-		float startPositionLinearSpace = 0.0f;	// NOTE: this is the calculated value
 	};
 
 	std::vector<TrackSegment> trackSegments;
 	std::vector<TextRenderer*> trackSegmentTextRenderers;
 	float totalTrackLinearSpace;
+	bool wrapTrackSegments = true;
 
 	void addPieceToGondolaPath(int pieceType, int index = -1);
 	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void removePieceOfGondolaPath(size_t index);
 	void recalculateGondolaPathOffsets();
 	static void recalculateCachedGondolaBezierCurvePoints();
-
+	physx::PxTransform getBodyTransformFromGondolaPathLinearPosition(float& linearPosition);	// The use of a reference is so that auto clamping or wrapping can be done.
 	
 
 	//
@@ -87,9 +87,12 @@ private:
 	struct GondolaModelMetadata
 	{
 		Animator animator;
-		glm::mat4 localTransform;
 		BaseObject* dummyObject;
+		RenderComponent* headlessRenderComponent;
 		PhysicsComponent* headlessPhysicsComponent;
+		float currentLinearPosition;
 	};
 	std::vector<GondolaModelMetadata> gondolasUnderControl;
+
+	void recalculateGondolaTransformFromLinearPosition();
 };

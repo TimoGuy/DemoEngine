@@ -22,6 +22,7 @@
 
 std::vector<glm::mat4> GondolaPath::trackModelConnectionOffsets;
 std::vector<glm::vec3*> GondolaPath::trackPathQuadraticBezierPoints;
+std::vector<float> GondolaPath::_trackPathLengths_cached;
 std::vector<std::vector<glm::vec3>> GondolaPath::_trackPathBezierCurvePoints_cached;
 
 GondolaPath::GondolaPath()
@@ -78,6 +79,10 @@ GondolaPath::GondolaPath()
 	trackPathQuadraticBezierPoints.resize(trackModels.size(), nullptr);
 
 	recalculateCachedGondolaBezierCurvePoints();
+
+	gondolaModel = (Model*)Resources::getResource("model;gondola");
+	gondolasUnderControl.clear();
+	recalculateGondolaTransformFromLinearPosition();
 }
 
 GondolaPath::~GondolaPath()
@@ -97,7 +102,9 @@ void GondolaPath::loadPropertiesFromJson(nlohmann::json& object)
 	if (object.contains("gondola_path_ids"))
 		for (auto segmentId : object["gondola_path_ids"])
 			addPieceToGondolaPath((int)segmentId);
+
 	recalculateGondolaPathOffsets();
+	recalculateGondolaTransformFromLinearPosition();
 }
 
 nlohmann::json GondolaPath::savePropertiesToJson()
@@ -151,16 +158,16 @@ void GondolaPath::physicsUpdate()
 	//
 	// Update all gondola movement paths
 	//
+	for (auto& gondola : gondolasUnderControl)
+	{
+		gondola.currentLinearPosition += 2.0f;
+	}
 
+	recalculateGondolaTransformFromLinearPosition();
 }
 
 void GondolaPath::refreshResources()
 {
-	for (auto& gondola : gondolasUnderControl)
-	{
-		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
-		body->setKinematicTarget();
-	}
 }
 
 #ifdef _DEVELOP
@@ -220,6 +227,9 @@ void GondolaPath::imguiPropertyPanel()
 	ImGui::Separator();
 	if (ImGui::TreeNode("Edit track segments"))
 	{
+		ImGui::Checkbox("Wrap track segments", &wrapTrackSegments);
+		ImGui::Separator();
+
 		for (size_t i = 0; i < trackSegments.size() + 1; i++)
 		{
 			// Add section
@@ -274,6 +284,38 @@ void GondolaPath::imguiPropertyPanel()
 				ImGui::EndCombo();
 			}
 		}
+
+		ImGui::TreePop();
+	}
+
+	// Gondolas Under Control
+	ImGui::Separator();
+	if (ImGui::TreeNode("Edit Gondolas Under Control"))
+	{
+		bool linearPosChanged = false;
+		int gondolaId = 1;
+		for (auto& gondola : gondolasUnderControl)
+		{
+			linearPosChanged |=
+				ImGui::DragFloat(("Linear Position of Gondola #" + std::to_string(gondolaId)).c_str(), &gondola.currentLinearPosition);
+			gondolaId++;
+		}
+
+		if (linearPosChanged)
+			recalculateGondolaTransformFromLinearPosition();
+
+		if (ImGui::Button("Create Gondola Under Control"))
+		{
+			GondolaModelMetadata gmm;
+			gmm.animator = Animator(&gondolaModel->getAnimations());
+			gmm.dummyObject = new DummyBaseObject();
+			gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
+			gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, &gmm.animator });
+			gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
+			gmm.currentLinearPosition = 0.0f;
+			gondolasUnderControl.push_back(gmm);
+		}
+
 
 		ImGui::TreePop();
 	}
@@ -355,7 +397,6 @@ void GondolaPath::recalculateGondolaPathOffsets()
 		auto& segment = trackSegments[i];
 
 		*segment.localTransform = currentTransform;
-		segment.startPositionLinearSpace = linearSpaceCurrentPosition;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
 		linearSpaceCurrentPosition += _trackPathLengths_cached[segment.pieceType];
 	}
@@ -406,13 +447,54 @@ void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is
 		}
 		_trackPathBezierCurvePoints_cached.push_back(calculatedPoints);
 
+		// @NOTE: getting the track length right here cannot be just a debug view thing! I need it for the track length calculations  -Timo
 		float bezierCurveLength = 0.0f;
-		for (size_t ptInd = 0; ptInd < calculatedPoints.size() + 1; i++)
+		for (size_t ptInd = 0; ptInd < calculatedPoints.size() + 1; ptInd++)
 		{
 			glm::vec3 a = (ptInd == 0) ? point1 : calculatedPoints[ptInd - 1];
 			glm::vec3 b = (ptInd == calculatedPoints.size()) ? point2 : calculatedPoints[ptInd];
 			bezierCurveLength += glm::length(a - b);
 		}
 		_trackPathLengths_cached.push_back(bezierCurveLength);
+	}
+}
+
+physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(float& linearPosition)
+{
+	// Auto wrapping/clamping
+	if (wrapTrackSegments)
+		linearPosition = fmodf(linearPosition, totalTrackLinearSpace);
+	else
+		linearPosition = glm::clamp(linearPosition, 0.0f, totalTrackLinearSpace);
+
+	// Find the current segment it's at
+	size_t segmentIndex = 0;
+	float localLinearPosition = linearPosition;
+	while (localLinearPosition >= _trackPathLengths_cached[trackSegments[segmentIndex].pieceType])
+	{
+		if (segmentIndex == trackSegments.size() - 1)
+			break;
+		localLinearPosition -= _trackPathLengths_cached[trackSegments[segmentIndex].pieceType];
+		segmentIndex++;
+	}
+	
+	TrackSegment* segment = &trackSegments[segmentIndex];
+	float scaleValue = localLinearPosition / _trackPathLengths_cached[segment->pieceType];
+
+	// Get the position and orientation of the segment it's at
+	return PhysicsUtils::createTransform(
+		glm::translate(getTransform() * *segment->localTransform, glm::mix(glm::vec3(0.0f), PhysicsUtils::getPosition(trackModelConnectionOffsets[segment->pieceType]), scaleValue)) *
+			glm::toMat4(glm::slerp(glm::quat(), PhysicsUtils::getRotation(trackModelConnectionOffsets[segment->pieceType]), scaleValue))
+	);
+}
+
+void GondolaPath::recalculateGondolaTransformFromLinearPosition()
+{
+	for (auto& gondola : gondolasUnderControl)
+	{
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
+		physx::PxTransform trans = getBodyTransformFromGondolaPathLinearPosition(gondola.currentLinearPosition);
+		body->setKinematicTarget(trans);
+		gondola.dummyObject->INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
 	}
 }
