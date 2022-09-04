@@ -292,12 +292,17 @@ void GondolaPath::imguiPropertyPanel()
 	ImGui::Separator();
 	if (ImGui::TreeNode("Edit Gondolas Under Control"))
 	{
+		ImGui::DragFloat("Gondola Bogie Spacing", &gondolaBogieSpacing);
+
+		ImGui::Separator();
+		ImGui::Text("Gondola Linear Positions");
+
 		bool linearPosChanged = false;
 		int gondolaId = 1;
 		for (auto& gondola : gondolasUnderControl)
 		{
 			linearPosChanged |=
-				ImGui::DragFloat(("Linear Position of Gondola #" + std::to_string(gondolaId)).c_str(), &gondola.currentLinearPosition);
+				ImGui::DragFloat(("Linear Position of Gondola #" + std::to_string(gondolaId)).c_str(), &gondola.currentLinearPosition, 0.1f);
 			gondolaId++;
 		}
 
@@ -310,10 +315,12 @@ void GondolaPath::imguiPropertyPanel()
 			gmm.animator = Animator(&gondolaModel->getAnimations());
 			gmm.dummyObject = new DummyBaseObject();
 			gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
-			gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, &gmm.animator });
+			gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, nullptr/*&gmm.animator*/ });		// @FIXME: add in the correct gondola door animation behavior!!!
 			gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
 			gmm.currentLinearPosition = 0.0f;
 			gondolasUnderControl.push_back(gmm);
+
+			recalculateGondolaTransformFromLinearPosition();
 		}
 
 
@@ -325,6 +332,7 @@ void GondolaPath::imguiRender()
 {
 	if (showGondolaPathDebugPaths && _is_selected > 0)
 	{
+		// Draw the bezier curves
 		for (size_t i = 0; i < trackSegments.size(); i++)
 		{
 			auto& segment = trackSegments[i];
@@ -344,6 +352,11 @@ void GondolaPath::imguiRender()
 				}
 			}
 		}
+
+		// Draw the bogie spacing indicators
+		glm::vec3 frontBogiePoint = getTransform() * glm::vec4(0, 0, gondolaBogieSpacing / 2.0f, 1);
+		glm::vec3 backBogiePoint = getTransform() * glm::vec4(0, 0, -gondolaBogieSpacing / 2.0f, 1);
+		PhysicsUtils::imguiRenderLine(backBogiePoint, frontBogiePoint);
 	}
 }
 #endif
@@ -428,9 +441,6 @@ void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is
 		}
 
 		constexpr size_t numSlicesBezier = 15;
-		glm::vec3 point1 = glm::vec3(0, 0, 0);
-		glm::vec3 midPoint = *trackPathQuadraticBezierPoints[i];
-		glm::vec3 point2 = trackModelConnectionOffsets[i] * glm::vec4(0, 0, 0, 1);
 		
 		float t_interval = 1.0f / (float)(numSlicesBezier + 1);
 		float t = t_interval;
@@ -438,17 +448,14 @@ void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is
 		std::vector<glm::vec3> calculatedPoints;
 		for (size_t slice = 0; slice < numSlicesBezier; slice++, t += t_interval)
 		{
-			glm::vec3 vec3a = PhysicsUtils::lerp(point1, midPoint, glm::vec3(t));
-			glm::vec3 vec3b = PhysicsUtils::lerp(midPoint, point2, glm::vec3(t));
-
-			calculatedPoints.push_back(
-				PhysicsUtils::lerp(vec3a, vec3b, glm::vec3(t))
-			);
+			calculatedPoints.push_back(getPiecePositionAsVec4(i, t));
 		}
 		_trackPathBezierCurvePoints_cached.push_back(calculatedPoints);
 
 		// @NOTE: getting the track length right here cannot be just a debug view thing! I need it for the track length calculations  -Timo
 		float bezierCurveLength = 0.0f;
+		glm::vec3 point1 = glm::vec3(0, 0, 0);
+		glm::vec3 point2 = trackModelConnectionOffsets[i] * glm::vec4(0, 0, 0, 1);
 		for (size_t ptInd = 0; ptInd < calculatedPoints.size() + 1; ptInd++)
 		{
 			glm::vec3 a = (ptInd == 0) ? point1 : calculatedPoints[ptInd - 1];
@@ -461,9 +468,65 @@ void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is
 
 physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(float& linearPosition)
 {
+	glm::vec3 thisBogiePosition = getGondolaPathPositionAsVec4(linearPosition);
+
+	// Move the other bogie position until it ~matches~ the gondolaBogieSpacing
+	constexpr float itsGoodEnoughThreshold = 0.1f;
+	float scoochAmount = gondolaBogieSpacing;	// Start out with this, and then go halvsies
+	float otherBogieLinearPosition = linearPosition + scoochAmount;
+	float prevSignedDistanceSign = 1.0f;
+	glm::vec3 otherBogiePosition;
+
+	for (size_t _ = 0; _ < 100; _++)	// @NOTE: this acts as a timeout if you don't take 100 steps
+	{
+		// Test to see if the searched position is close enough to the exact answer
+		otherBogiePosition = getGondolaPathPositionAsVec4(otherBogieLinearPosition);
+		float signedDistanceFromTarget = gondolaBogieSpacing - glm::length(otherBogiePosition - thisBogiePosition);
+		if (abs(signedDistanceFromTarget) < itsGoodEnoughThreshold)
+			break;
+
+		// Adjust the length of the search
+		float newSignedDistanceSign = glm::sign(signedDistanceFromTarget);
+		if (prevSignedDistanceSign != newSignedDistanceSign)
+		{
+			scoochAmount *= -0.5f;
+			prevSignedDistanceSign = newSignedDistanceSign;
+		}
+
+		// Scooch
+		otherBogieLinearPosition += scoochAmount;
+	}
+
+	// Calculate the position and orientation of this answer
+	glm::vec3 bogiesMidpoint = (thisBogiePosition + otherBogiePosition) * 0.5f;
+	glm::vec3 bogiesLookDirection = glm::normalize(otherBogiePosition - thisBogiePosition);
+	return  PhysicsUtils::createTransform(
+		glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))) * glm::quat(glm::vec3(0, 1, 0), bogiesLookDirection))
+		//glm::lookAt(bogiesMidpoint + bogiesLookDirection, bogiesMidpoint, glm::vec3(0, 1, 0))
+	);
+}
+
+void GondolaPath::recalculateGondolaTransformFromLinearPosition()
+{
+	for (auto& gondola : gondolasUnderControl)
+	{
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
+		physx::PxTransform trans = getBodyTransformFromGondolaPathLinearPosition(gondola.currentLinearPosition);
+		body->setKinematicTarget(trans);
+		gondola.dummyObject->INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
+	}
+}
+
+glm::vec4 GondolaPath::getGondolaPathPositionAsVec4(float& linearPosition)
+{
 	// Auto wrapping/clamping
 	if (wrapTrackSegments)
-		linearPosition = fmodf(linearPosition, totalTrackLinearSpace);
+	{
+		if (linearPosition < 0.0f)
+			linearPosition += totalTrackLinearSpace;
+		if (linearPosition >= totalTrackLinearSpace)
+			linearPosition -= totalTrackLinearSpace;
+	}
 	else
 		linearPosition = glm::clamp(linearPosition, 0.0f, totalTrackLinearSpace);
 
@@ -477,24 +540,33 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 		localLinearPosition -= _trackPathLengths_cached[trackSegments[segmentIndex].pieceType];
 		segmentIndex++;
 	}
-	
+
 	TrackSegment* segment = &trackSegments[segmentIndex];
 	float scaleValue = localLinearPosition / _trackPathLengths_cached[segment->pieceType];
 
-	// Get the position and orientation of the segment it's at
-	return PhysicsUtils::createTransform(
-		glm::translate(getTransform() * *segment->localTransform, glm::mix(glm::vec3(0.0f), PhysicsUtils::getPosition(trackModelConnectionOffsets[segment->pieceType]), scaleValue)) *
-			glm::toMat4(glm::slerp(glm::quat(), PhysicsUtils::getRotation(trackModelConnectionOffsets[segment->pieceType]), scaleValue))
-	);
+	glm::vec3 ret = getTransform() * *segment->localTransform * getPiecePositionAsVec4(segment->pieceType, scaleValue);
+	return glm::vec4(ret, 1.0f);
 }
 
-void GondolaPath::recalculateGondolaTransformFromLinearPosition()
+glm::vec4 GondolaPath::getPiecePositionAsVec4(int pieceType, float scaleValue)
 {
-	for (auto& gondola : gondolasUnderControl)
+	size_t i = (size_t)pieceType;
+
+	glm::vec3 point1 = glm::vec3(0, 0, 0);
+	glm::vec3 point2 = trackModelConnectionOffsets[i] * glm::vec4(0, 0, 0, 1);
+
+	if (trackPathQuadraticBezierPoints[i] == nullptr)
 	{
-		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
-		physx::PxTransform trans = getBodyTransformFromGondolaPathLinearPosition(gondola.currentLinearPosition);
-		body->setKinematicTarget(trans);
-		gondola.dummyObject->INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
+		// Get lerp of just the linear line
+		return glm::vec4(PhysicsUtils::lerp(point1, point2, glm::vec3(scaleValue)), 1.0f);
+	}
+	else
+	{
+		// This is a bezier curve
+		glm::vec3 midPoint = *trackPathQuadraticBezierPoints[i];
+		glm::vec3 vec3a = PhysicsUtils::lerp(point1, midPoint, glm::vec3(scaleValue));
+		glm::vec3 vec3b = PhysicsUtils::lerp(midPoint, point2, glm::vec3(scaleValue));
+
+		return glm::vec4(PhysicsUtils::lerp(vec3a, vec3b, glm::vec3(scaleValue)), 1.0f);
 	}
 }
