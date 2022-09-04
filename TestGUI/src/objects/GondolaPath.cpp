@@ -94,14 +94,17 @@ void GondolaPath::loadPropertiesFromJson(nlohmann::json& object)
 {
 	BaseObject::loadPropertiesFromJson(object["baseObject"]);
 
-	// if (object.contains("num_water_servings"))
-	// 	numWaterServings = object["num_water_servings"];
-
 	refreshResources();
 
 	if (object.contains("gondola_path_ids"))
 		for (auto segmentId : object["gondola_path_ids"])
 			addPieceToGondolaPath((int)segmentId);
+
+	if (object.contains("gondolas_under_control"))
+	{
+		for (auto guc : object["gondolas_under_control"])
+			createGondolaUnderControl(guc["linear_position"]);
+	}
 
 	recalculateGondolaPathOffsets();
 	recalculateGondolaTransformFromLinearPosition();
@@ -116,6 +119,14 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 	j["gondola_path_ids"] = nlohmann::json::array();
 	for (auto& segment : trackSegments)
 		j["gondola_path_ids"].push_back(segment.pieceType);
+
+	j["gondolas_under_control"] = nlohmann::json::array();
+	for (auto& guc : gondolasUnderControl)
+	{
+		nlohmann::json guc_json;
+		guc_json["linear_position"] = guc.currentLinearPosition;
+		j["gondolas_under_control"].push_back(guc_json);
+	}
 
 	return j;
 }
@@ -311,15 +322,7 @@ void GondolaPath::imguiPropertyPanel()
 
 		if (ImGui::Button("Create Gondola Under Control"))
 		{
-			GondolaModelMetadata gmm;
-			gmm.animator = Animator(&gondolaModel->getAnimations());
-			gmm.dummyObject = new DummyBaseObject();
-			gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
-			gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, nullptr/*&gmm.animator*/ });		// @FIXME: add in the correct gondola door animation behavior!!!
-			gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
-			gmm.currentLinearPosition = 0.0f;
-			gondolasUnderControl.push_back(gmm);
-
+			createGondolaUnderControl(0.0f);
 			recalculateGondolaTransformFromLinearPosition();
 		}
 
@@ -483,7 +486,10 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 		otherBogiePosition = getGondolaPathPositionAsVec4(otherBogieLinearPosition);
 		float signedDistanceFromTarget = gondolaBogieSpacing - glm::length(otherBogiePosition - thisBogiePosition);
 		if (abs(signedDistanceFromTarget) < itsGoodEnoughThreshold)
+		{
+			//std::cout << "Num of calculations until good enough: " << _ << std::endl;
 			break;
+		}
 
 		// Adjust the length of the search
 		float newSignedDistanceSign = glm::sign(signedDistanceFromTarget);
@@ -509,6 +515,18 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 		glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(gondolaBodyRotationEuler))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection))//glm::lookAt(glm::vec3(0.0f), bogiesLookDirection, glm::vec3(0, 1, 0))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection) * glm::quat(glm::radians(glm::vec3(90, 0, 0))))
 		//glm::lookAt(bogiesMidpoint, bogiesMidpoint + bogiesLookDirection, glm::vec3(0, 1, 0))
 	);
+}
+
+void GondolaPath::createGondolaUnderControl(float linearPosition)
+{
+	GondolaModelMetadata gmm;
+	gmm.animator = Animator(&gondolaModel->getAnimations());
+	gmm.dummyObject = new DummyBaseObject();
+	gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
+	gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, nullptr/*&gmm.animator*/ });		// @FIXME: add in the correct gondola door animation behavior!!!
+	gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
+	gmm.currentLinearPosition = linearPosition;
+	gondolasUnderControl.push_back(gmm);
 }
 
 void GondolaPath::recalculateGondolaTransformFromLinearPosition()

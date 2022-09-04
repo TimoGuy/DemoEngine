@@ -95,6 +95,7 @@ private:
 	std::vector<GondolaModelMetadata> gondolasUnderControl;
 
 	float gondolaBogieSpacing = 61.0f;
+	void createGondolaUnderControl(float linearPosition);
 	void recalculateGondolaTransformFromLinearPosition();
 	glm::vec4 getGondolaPathPositionAsVec4(float& linearPosition);
 	static glm::vec4 getPiecePositionAsVec4(int pieceType, float scaleValue);

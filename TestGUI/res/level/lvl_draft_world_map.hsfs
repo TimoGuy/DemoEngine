@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    312.29473876953125,
-                    117.33293151855469,
-                    -92.5301513671875
+                    307.2887268066406,
+                    117.33292388916016,
+                    -92.26033020019531
                 ],
                 "rotation": [
                     0.0,
@@ -114,7 +114,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -137,9 +137,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -1.1242094061225671e-10,
+                    -1.1407418759601384e-10,
                     9.937670707702637,
-                    8.487913146382198e-05
+                    8.487911691190675e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -160,7 +160,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -201,9 +201,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    73.51927185058594,
-                    1.453969955444336,
-                    69.27313995361328
+                    55.11735534667969,
+                    -8.071205139160156,
+                    46.74909973144531
                 ],
                 "rotation": [
                     0.0,
@@ -224,7 +224,7 @@
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
             "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 102.24095916748047,
+            "moving_platform_spline_position_in_time": 50.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -333,14 +333,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014434057287871838,
+                    -0.014433489181101322,
                     -89.70326232910156,
-                    0.01449259277433157
+                    0.014492025598883629
                 ],
                 "scale": [
-                    0.9999979138374329,
+                    0.9999977350234985,
                     1.0,
-                    0.9999979138374329
+                    0.9999977350234985
                 ]
             },
             "modelResourceName": "model;bed",
@@ -390,29 +390,6 @@
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
-            "type": "ground"
-        },
-        {
-            "baseObject": {
-                "guid": "3d2a9166f0903b87cc3c479e914b2ff73454564669fb100478569b67066ba34e",
-                "name": "Gondola (Mockup)",
-                "position": [
-                    320.0,
-                    120.0,
-                    52.370723724365234
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "modelResourceName": "model;gondola",
             "type": "ground"
         },
         {
@@ -528,6 +505,11 @@
                 9,
                 8
             ],
+            "gondolas_under_control": [
+                {
+                    "linear_position": 0.0
+                }
+            ],
             "type": "gondola_path"
         },
         {
@@ -619,6 +601,11 @@
                 11,
                 9,
                 8
+            ],
+            "gondolas_under_control": [
+                {
+                    "linear_position": 0.0
+                }
             ],
             "type": "gondola_path"
         }
