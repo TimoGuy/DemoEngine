@@ -499,10 +499,15 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 
 	// Calculate the position and orientation of this answer
 	glm::vec3 bogiesMidpoint = (thisBogiePosition + otherBogiePosition) * 0.5f;
-	glm::vec3 bogiesLookDirection = glm::normalize(otherBogiePosition - thisBogiePosition);
-	return  PhysicsUtils::createTransform(
-		glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(glm::radians(glm::vec3(90, 0, 0))) * glm::quat(glm::vec3(0, 1, 0), bogiesLookDirection))
-		//glm::lookAt(bogiesMidpoint + bogiesLookDirection, bogiesMidpoint, glm::vec3(0, 1, 0))
+	glm::vec3 bogiesLookDirection = otherBogiePosition - thisBogiePosition;
+	glm::vec3 bogiesLookDirectionXZ = glm::vec3(bogiesLookDirection.x, 0.0f, bogiesLookDirection.z);
+	glm::vec3 bogiesLookDirectionXZY = glm::vec3(glm::length(bogiesLookDirectionXZ), 0.0f, bogiesLookDirection.y);
+	glm::vec3 gondolaBodyRotationEuler(atan2f(bogiesLookDirectionXZY.x, bogiesLookDirectionXZY.z) - 3.1415926535f * 0.5f, atan2f(bogiesLookDirectionXZ.x, bogiesLookDirectionXZ.z), 0.0f);
+
+
+	return PhysicsUtils::createTransform(
+		glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(gondolaBodyRotationEuler))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection))//glm::lookAt(glm::vec3(0.0f), bogiesLookDirection, glm::vec3(0, 1, 0))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection) * glm::quat(glm::radians(glm::vec3(90, 0, 0))))
+		//glm::lookAt(bogiesMidpoint, bogiesMidpoint + bogiesLookDirection, glm::vec3(0, 1, 0))
 	);
 }
 
