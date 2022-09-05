@@ -134,6 +134,7 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 
 void GondolaPath::preRenderUpdate()
 {
+#ifdef _DEVELOP
 	//
 	// Update positions of the text renderers
 	//
@@ -163,6 +164,7 @@ void GondolaPath::preRenderUpdate()
 
 	// @HACK: flag to see if imguiPropertyPanel() was executed.
 	_is_selected--;
+#endif
 }
 
 void GondolaPath::physicsUpdate()

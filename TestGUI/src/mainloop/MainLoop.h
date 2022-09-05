@@ -41,7 +41,7 @@ public:
 	float physicsCalcTimeAnchor = 0.0f;
 
 #ifdef _DEVELOP
-	bool playMode = false;
+	bool playMode = true;
 	float timeScale = 1.0f;
 
 	bool timelineViewerMode = false;

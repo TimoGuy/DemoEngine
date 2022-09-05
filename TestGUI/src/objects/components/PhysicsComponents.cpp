@@ -30,6 +30,7 @@ void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 {
+#ifdef _DEVELOP
 	glm::vec3 newScale = PhysicsUtils::getScale(newTransform);
 	if (newScale != cachedScale)
 	{
@@ -37,6 +38,7 @@ void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 		routineCreateTriangleMeshGeometry(newTransform);
 	}
 	else
+#endif
 	{
 		// NOTE: You shouldn't need to recreate the mesh if scale isn't affected
 		physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
@@ -147,7 +149,9 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 
 	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
 	MainLoop::getInstance().physicsScene->addActor(*body);
+#ifdef _DEVELOP
 	cachedScale = xformScale;
+#endif
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------

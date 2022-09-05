@@ -84,7 +84,7 @@ public:
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
-	physx::PxVec3 velocity;
+	physx::PxVec3 velocity = physx::PxVec3(0.0f);
 
 	physx::PxCapsuleController* controller;
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);

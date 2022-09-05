@@ -3702,6 +3702,9 @@ void RenderManager::renderImGuiContents()
 					int shiftSelectRequest[] = { -1, -1 };
 					for (size_t n = 0; n < MainLoop::getInstance().objects.size(); n++)
 					{
+						if (dynamic_cast<DummyBaseObject*>(MainLoop::getInstance().objects[n]))		// Prevent ability to select dummy objects
+							continue;
+
 						const bool isSelected = isObjectSelected(n);
 						if (ImGui::Selectable(
 							(MainLoop::getInstance().objects[n]->name + "##" + MainLoop::getInstance().objects[n]->guid).c_str(),

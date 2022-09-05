@@ -72,8 +72,8 @@ private:
 	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
-#ifdef _DEVELOP
-// @NOTE: this is used in various places... maybe not best practice? @TODO
+
+// @NOTE: this is used in various places... maybe not best practice?    @TODO figure out if there should be a better system for spawning objects within another object (i.e. gondolapath... note that it's only used so that htere's a baseobject ref for controlling the positioning of the physicscomponents for each of the gondolas)
 class DummyBaseObject : public BaseObject
 {
 public:
@@ -89,7 +89,6 @@ public:
 
 	void refreshResources() {}
 };
-#endif
 
 
 //
