@@ -68,7 +68,9 @@ private:
 	};
 
 	std::vector<TrackSegment> trackSegments;
+#ifdef _DEVELOP
 	std::vector<TextRenderer*> trackSegmentTextRenderers;
+#endif
 	float totalTrackLinearSpace;
 	bool wrapTrackSegments = true;
 

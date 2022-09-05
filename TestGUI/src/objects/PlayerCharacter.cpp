@@ -344,8 +344,10 @@ void PlayerPhysics::physicsUpdate()
 	//#ifdef _DEVELOP
 		// Set a save point for the player if press pause!
 	static physx::PxExtendedVec3 savedPlayerResetPoint{ 0, 4, 0 };
-	if (InputManager::getInstance().pausePressed)
+	static bool firstSavedPlayerResetPoint = true;
+	if (InputManager::getInstance().pausePressed || firstSavedPlayerResetPoint)
 	{
+		firstSavedPlayerResetPoint = false;
 		savedPlayerResetPoint = controller->getFootPosition();
 		std::cout << "::PLAYER:: set reset point to { " << savedPlayerResetPoint.x << ", " << savedPlayerResetPoint.y << ", " << savedPlayerResetPoint.z << " }" << std::endl;
 	}
@@ -669,7 +671,7 @@ void PlayerCharacter::processMovement()
 	{
 		float cameraDistance = camOffset.z;
 
-		const bool collideWithGeometry = false;				// Well hey, let's just enable it for now.	// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
+		const bool collideWithGeometry = true;             // Well hey, let's just enable it for now.	// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
 		if (collideWithGeometry)
 		{
 			const float hitDistancePadding = 0.75f;

@@ -383,8 +383,10 @@ void GondolaPath::addPieceToGondolaPath(int pieceType, int index)
 	else
 		renderComponent->insertModelToRender(currentIndex, { modelToUse, true, nullptr, trackSegments[currentIndex].localTransform });
 
+#ifdef _DEVELOP
 	trackSegmentTextRenderers.push_back(new TextRenderer{ std::to_string(trackSegmentTextRenderers.size() + 1), getTransform(), glm::vec3(0.5, 1, 0), TextAlignment::CENTER, TextAlignment::BOTTOM });
 	renderComponent->addTextToRender(trackSegmentTextRenderers[trackSegmentTextRenderers.size() - 1]);
+#endif
 
 	recalculateGondolaPathOffsets();
 }
@@ -402,8 +404,10 @@ void GondolaPath::removePieceOfGondolaPath(size_t index)
 	trackSegments.erase(trackSegments.begin() + index);
 	renderComponent->removeModelToRender(index);
 
+#ifdef _DEVELOP
 	renderComponent->removeTextRenderer(trackSegmentTextRenderers[trackSegmentTextRenderers.size() - 1]);
 	trackSegmentTextRenderers.erase(trackSegmentTextRenderers.begin() + trackSegmentTextRenderers.size() - 1);
+#endif
 
 	recalculateGondolaPathOffsets();
 }
