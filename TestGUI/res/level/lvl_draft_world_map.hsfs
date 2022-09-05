@@ -507,7 +507,8 @@
             ],
             "gondolas_under_control": [
                 {
-                    "linear_position": 0.0
+                    "linear_position": 0.0,
+		    "movement_speed": 2.0
                 }
             ],
             "type": "gondola_path"
@@ -604,7 +605,8 @@
             ],
             "gondolas_under_control": [
                 {
-                    "linear_position": 0.0
+                    "linear_position": 0.0,
+		    "movement_speed": -2.0
                 }
             ],
             "type": "gondola_path"

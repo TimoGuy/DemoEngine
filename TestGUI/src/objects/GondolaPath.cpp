@@ -103,7 +103,7 @@ void GondolaPath::loadPropertiesFromJson(nlohmann::json& object)
 	if (object.contains("gondolas_under_control"))
 	{
 		for (auto guc : object["gondolas_under_control"])
-			createGondolaUnderControl(guc["linear_position"]);
+			createGondolaUnderControl(guc["linear_position"], guc["movement_speed"]);
 	}
 
 	recalculateGondolaPathOffsets();
@@ -125,6 +125,7 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 	{
 		nlohmann::json guc_json;
 		guc_json["linear_position"] = guc.currentLinearPosition;
+		guc_json["movement_speed"] = guc.movementSpeed;
 		j["gondolas_under_control"].push_back(guc_json);
 	}
 
@@ -171,7 +172,7 @@ void GondolaPath::physicsUpdate()
 	//
 	for (auto& gondola : gondolasUnderControl)
 	{
-		gondola.currentLinearPosition += 2.0f;
+		gondola.currentLinearPosition += gondola.movementSpeed;
 	}
 
 	recalculateGondolaTransformFromLinearPosition();
@@ -314,6 +315,7 @@ void GondolaPath::imguiPropertyPanel()
 		{
 			linearPosChanged |=
 				ImGui::DragFloat(("Linear Position of Gondola #" + std::to_string(gondolaId)).c_str(), &gondola.currentLinearPosition, 0.1f);
+			ImGui::DragFloat(("Speed of Gondola #" + std::to_string(gondolaId)).c_str(), &gondola.movementSpeed, 0.1f);
 			gondolaId++;
 		}
 
@@ -322,7 +324,7 @@ void GondolaPath::imguiPropertyPanel()
 
 		if (ImGui::Button("Create Gondola Under Control"))
 		{
-			createGondolaUnderControl(0.0f);
+			createGondolaUnderControl(0.0f, 2.0f);
 			recalculateGondolaTransformFromLinearPosition();
 		}
 
@@ -517,7 +519,7 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 	);
 }
 
-void GondolaPath::createGondolaUnderControl(float linearPosition)
+void GondolaPath::createGondolaUnderControl(float linearPosition, float movementSpeed)
 {
 	GondolaModelMetadata gmm;
 	gmm.animator = Animator(&gondolaModel->getAnimations());
@@ -526,6 +528,7 @@ void GondolaPath::createGondolaUnderControl(float linearPosition)
 	gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, nullptr/*&gmm.animator*/ });		// @FIXME: add in the correct gondola door animation behavior!!!
 	gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
 	gmm.currentLinearPosition = linearPosition;
+	gmm.movementSpeed = movementSpeed;
 	gondolasUnderControl.push_back(gmm);
 }
 

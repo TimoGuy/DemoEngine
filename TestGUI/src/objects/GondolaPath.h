@@ -91,11 +91,12 @@ private:
 		RenderComponent* headlessRenderComponent;
 		PhysicsComponent* headlessPhysicsComponent;
 		float currentLinearPosition;
+		float movementSpeed;
 	};
 	std::vector<GondolaModelMetadata> gondolasUnderControl;
 
 	float gondolaBogieSpacing = 61.0f;
-	void createGondolaUnderControl(float linearPosition);
+	void createGondolaUnderControl(float linearPosition, float movementSpeed);
 	void recalculateGondolaTransformFromLinearPosition();
 	glm::vec4 getGondolaPathPositionAsVec4(float& linearPosition);
 	static glm::vec4 getPiecePositionAsVec4(int pieceType, float scaleValue);
