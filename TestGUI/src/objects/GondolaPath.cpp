@@ -20,6 +20,44 @@
 #endif
 
 
+std::vector<std::string> GondolaPath::trackModelPaths = {
+	"model;gondola_rails_bottom_enter",
+	"model;gondola_rails_bottom_exit",
+	"model;gondola_rails_bottom_straight",
+	"model;gondola_rails_bottom_curve_l",
+	"model;gondola_rails_bottom_curve_l_xl",
+	"model;gondola_rails_bottom_curve_r",
+	"model;gondola_rails_bottom_curve_r_xl",
+	"model;gondola_rails_top_enter",
+	"model;gondola_rails_top_exit",
+	"model;gondola_rails_top_straight",
+	"model;gondola_rails_top_curve_left",
+	"model;gondola_rails_top_curve_left_xl",
+	"model;gondola_rails_top_curve_right",
+	"model;gondola_rails_top_curve_right_xl",
+	"model;gondola_rails_top_curve_up",
+	"model;gondola_rails_top_curve_down",
+	"model;gondola_sign_stop_mark",
+};
+std::vector<int> GondolaPath::trackModelTypes = {
+	0,		// Normal Track
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1,		// Stop at this Track for @HARDCODE amount of time
+};
 std::vector<glm::mat4> GondolaPath::trackModelConnectionOffsets;
 std::vector<glm::vec3*> GondolaPath::trackPathQuadraticBezierPoints;
 std::vector<float> GondolaPath::_trackPathLengths_cached;
@@ -55,6 +93,7 @@ GondolaPath::GondolaPath()
 	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(43.1501872341, 0, -104.173767239)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(0, -45, 0)))));
 	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, 17.275, -97.983)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(20, 0, 0)))));
 	trackModelConnectionOffsets.push_back(glm::translate(glm::mat4(1.0f), glm::vec3(0, -15.212, -86.263)) * glm::toMat4(glm::quat(glm::radians(glm::vec3(-20, 0, 0)))));
+	trackModelConnectionOffsets.push_back(glm::mat4(1.0f));
 
 	trackModelConnectionOffsets.resize(trackModels.size(), glm::mat4(1.0f));
 
@@ -75,6 +114,7 @@ GondolaPath::GondolaPath()
 	trackPathQuadraticBezierPoints.push_back(new glm::vec3(1.9f, 0.0f, -63.3f));
 	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.0f, 0.0f, -53.2f));
 	trackPathQuadraticBezierPoints.push_back(new glm::vec3(0.0f, 0.0f, -41.8f));
+	trackPathQuadraticBezierPoints.push_back(nullptr);
 
 	trackPathQuadraticBezierPoints.resize(trackModels.size(), nullptr);
 
@@ -87,7 +127,18 @@ GondolaPath::GondolaPath()
 
 GondolaPath::~GondolaPath()
 {
+	if (physicsComponent != nullptr)
+		delete physicsComponent;
 	delete renderComponent;
+
+	for (auto& guc : gondolasUnderControl)
+	{
+		delete guc.headlessPhysicsComponent;
+		delete guc.headlessRenderComponent;
+		delete guc.dummyObject;
+		delete guc.animatorStateMachine;
+		delete guc.animator;
+	}
 }
 
 void GondolaPath::loadPropertiesFromJson(nlohmann::json& object)
@@ -134,6 +185,10 @@ nlohmann::json GondolaPath::savePropertiesToJson()
 
 void GondolaPath::preRenderUpdate()
 {
+	// Update all gondola animatorStateMachines
+	for (auto& gondola : gondolasUnderControl)
+		gondola.animatorStateMachine->updateStateMachine(MainLoop::getInstance().deltaTime);
+
 #ifdef _DEVELOP
 	//
 	// Update positions of the text renderers
@@ -174,9 +229,75 @@ void GondolaPath::physicsUpdate()
 	//
 	for (auto& gondola : gondolasUnderControl)
 	{
-		gondola.currentLinearPosition += gondola.movementSpeed;
+		const static float WAIT_AT_STATION_TIME = 5.0f;
+		const static float SIGNED_DISTANCE_STOPPED_PADDING = 5.0f;
+
+		// Short circuit wait timer
+		if (gondola._stoppingPointWaitTimer > 0.0f)
+		{
+			if (gondola._stoppingPointWaitTimer < 1.0f)
+				gondola.animatorStateMachine->setVariable("isDoorOpen", false);
+
+			gondola._stoppingPointWaitTimer -= MainLoop::getInstance().physicsDeltaTime;
+			continue;
+		}
+
+		// Find next stopping point linear position
+		float movementSpeedSign = (gondola.movementSpeed < 0.0f) ? -1.0f : 1.0f;
+		float signedDistanceToNextStoppingPoint = glm::abs(gondola.movementSpeed);		// Maximum value of movement
+		if (gondola._nextStoppingPointLinearPosition < 0.0f)
+		{
+			float bestLinearDistance;
+			for (auto& trackSegment : trackSegments)
+			{
+				if (trackModelTypes[trackSegment.pieceType] != 1)
+					continue;
+
+				float testingSignedDistance = (trackSegment.linearPosition - gondola.currentLinearPosition) * movementSpeedSign;
+				if (testingSignedDistance <= SIGNED_DISTANCE_STOPPED_PADDING)
+					continue;		// Stopping point is already behind, throw it out
+				else if (gondola._nextStoppingPointLinearPosition < 0.0f)
+				{
+					// First set... comparison fuyou
+					bestLinearDistance = testingSignedDistance;
+					gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition;
+				}
+				else
+				{
+					// See closest signed distance to 0 without bust (<0.0f)
+					if (bestLinearDistance > testingSignedDistance)
+					{
+						bestLinearDistance = testingSignedDistance;
+						gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition;
+					}
+				}
+			}
+		}
+		else
+		{
+			// Find the right signed distance to the next stopping point and control the speed
+			signedDistanceToNextStoppingPoint = (gondola._nextStoppingPointLinearPosition - gondola.currentLinearPosition) * movementSpeedSign;
+
+			if (signedDistanceToNextStoppingPoint < SIGNED_DISTANCE_STOPPED_PADDING)
+			{
+				gondola._nextStoppingPointLinearPosition = -1.0f;	// Flag this as needing recalculation
+				gondola._stoppingPointWaitTimer = WAIT_AT_STATION_TIME;		// Start wait cycle
+				gondola._movementSpeedDamper = 0.1f;
+				gondola.animatorStateMachine->setVariable("isDoorOpen", true);
+				continue;		// Short circuit
+			}
+			signedDistanceToNextStoppingPoint *= .005f;		// Decrease in preparation for actual movement (this @HARDCODE value makes gondola slow down right before the station)
+		}
+
+		// Re-increase the speed damper if not at full speed yet
+		if (gondola._movementSpeedDamper < 1.0f)
+			gondola._movementSpeedDamper = glm::min(1.0f, gondola._movementSpeedDamper + MainLoop::getInstance().physicsDeltaTime);
+
+		// Slow down when getting up to the signed distance
+		gondola.currentLinearPosition += glm::clamp(signedDistanceToNextStoppingPoint, 0.0f, glm::abs(gondola.movementSpeed)) * gondola._movementSpeedDamper * movementSpeedSign;
 	}
 
+	// Convert the new calculated linear position to world transform
 	recalculateGondolaTransformFromLinearPosition();
 }
 
@@ -421,6 +542,7 @@ void GondolaPath::recalculateGondolaPathOffsets()
 		auto& segment = trackSegments[i];
 
 		*segment.localTransform = currentTransform;
+		segment.linearPosition = linearSpaceCurrentPosition;
 		currentTransform *= trackModelConnectionOffsets[segment.pieceType];
 		linearSpaceCurrentPosition += _trackPathLengths_cached[segment.pieceType];
 	}
@@ -527,11 +649,12 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 
 void GondolaPath::createGondolaUnderControl(float linearPosition, float movementSpeed)
 {
-	GondolaModelMetadata gmm;
-	gmm.animator = Animator(&gondolaModel->getAnimations());
+	IndividualGondolaMetadata gmm;
+	gmm.animator = new Animator(&gondolaModel->getAnimations());
+	gmm.animatorStateMachine = new AnimatorStateMachine("gondola", gmm.animator);
 	gmm.dummyObject = new DummyBaseObject();
 	gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
-	gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, nullptr/*&gmm.animator*/ });		// @FIXME: add in the correct gondola door animation behavior!!!
+	gmm.headlessRenderComponent->addModelToRender({ gondolaModel, true, gmm.animator });		// @FIXME: add in the correct gondola door animation behavior!!!
 	gmm.headlessPhysicsComponent = new TriangleMeshCollider(gmm.dummyObject, { { gondolaModel } }, RigidActorTypes::KINEMATIC);
 	gmm.currentLinearPosition = linearPosition;
 	gmm.movementSpeed = movementSpeed;

@@ -73,7 +73,7 @@ glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
 	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
 
 	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
-	glm::quat rotation = glm::slerp(rotation2, rotation1, alpha);
+	glm::quat rotation = glm::normalize(glm::lerp(rotation2, rotation1, alpha));  //glm::slerp(rotation2, rotation1, alpha);
 	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
 
 	// Compose all these together (trans * rot * scale)
