@@ -16,11 +16,12 @@ class RenderComponent;
 
 struct PhysicsTransformState
 {
+	static float interpolationAlpha;
 	glm::mat4 previousTransform;
 	glm::mat4 currentTransform;
 
 	void updateTransform(glm::mat4 newTransform);
-	glm::mat4 getInterpolatedTransform(float alpha);
+	glm::mat4 getInterpolatedTransform();
 };
 
 class BaseObject
@@ -64,7 +65,7 @@ public:
 	// INTERNAL FUNCTIONS (for physics)
 	//
 	void INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform);
-	void INTERNALfetchInterpolatedPhysicsTransform(float alpha);
+	void INTERNALfetchInterpolatedPhysicsTransform();
 
 private:
 	glm::mat4 transform;

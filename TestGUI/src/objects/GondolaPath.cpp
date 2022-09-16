@@ -70,6 +70,9 @@ GondolaPath::GondolaPath()
 	refreshResources();
 	renderComponent = new RenderComponent(this);
 
+	//
+	// Load in all the track models (NOTE: this only really has to be done once)
+	//
 	trackModels.clear();
 	for (auto& path : trackModelPaths)
 	{
@@ -187,7 +190,12 @@ void GondolaPath::preRenderUpdate()
 {
 	// Update all gondola animatorStateMachines
 	for (auto& gondola : gondolasUnderControl)
+	{
 		gondola.animatorStateMachine->updateStateMachine(MainLoop::getInstance().deltaTime);
+		glm::mat4 invTransform = glm::inverse(getTransform());
+		gondola.animator->setBoneTransformation("Bogie.Back", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0, 0)));//gondola.bogieBackPTS.getInterpolatedTransform() * invTransform);
+		gondola.animator->setBoneTransformation("Bogie.Front", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0, 0)));//gondola.bogieFrontPTS.getInterpolatedTransform() * invTransform);
+	}
 
 #ifdef _DEVELOP
 	//
@@ -255,8 +263,19 @@ void GondolaPath::physicsUpdate()
 
 				float testingSignedDistance = (trackSegment.linearPosition - gondola.currentLinearPosition) * movementSpeedSign;
 				if (testingSignedDistance <= SIGNED_DISTANCE_STOPPED_PADDING)
-					continue;		// Stopping point is already behind, throw it out
-				else if (gondola._nextStoppingPointLinearPosition < 0.0f)
+				{
+					//if (wrapTrackSegments)
+					//{
+					//	// Retry finding the signed distance
+					//	testingSignedDistance = (trackSegment.linearPosition - (gondola.currentLinearPosition - totalTrackLinearSpace)) * movementSpeedSign;		// @COPYPASTA
+					//	if (testingSignedDistance <= SIGNED_DISTANCE_STOPPED_PADDING)
+					//		continue;		// Stopping point is already behind, throw it out
+					//}
+					//else
+						continue;		// Stopping point is already behind, throw it out
+				}
+
+				if (gondola._nextStoppingPointLinearPosition < 0.0f)
 				{
 					// First set... comparison fuyou
 					bestLinearDistance = testingSignedDistance;
@@ -599,7 +618,7 @@ void GondolaPath::recalculateCachedGondolaBezierCurvePoints()		// @NOTE: this is
 	}
 }
 
-physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(float& linearPosition)
+physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(float& linearPosition, IndividualGondolaMetadata& gondola)
 {
 	glm::vec3 thisBogiePosition = getGondolaPathPositionAsVec4(linearPosition);
 
@@ -639,18 +658,29 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 	glm::vec3 bogiesLookDirectionXZ = glm::vec3(bogiesLookDirection.x, 0.0f, bogiesLookDirection.z);
 	glm::vec3 bogiesLookDirectionXZY = glm::vec3(glm::length(bogiesLookDirectionXZ), 0.0f, bogiesLookDirection.y);
 	glm::vec3 gondolaBodyRotationEuler(atan2f(bogiesLookDirectionXZY.x, bogiesLookDirectionXZY.z) - 3.1415926535f * 0.5f, atan2f(bogiesLookDirectionXZ.x, bogiesLookDirectionXZ.z), 0.0f);
+	glm::mat4 gondolaBodyTransform = glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(gondolaBodyRotationEuler));
 
+	// Update the bogie positions for the gondola's transform state
+	glm::mat4 gondolaBodyTransformInv = glm::inverse(gondolaBodyTransform);
+	
+	glm::vec3 backDeltaPos = thisBogiePosition - PhysicsUtils::getPosition(gondola.bogieBackPTS.currentTransform);
+	backDeltaPos = gondolaBodyTransformInv * glm::vec4(backDeltaPos, 1.0f);
+	glm::vec3 bogieBackRotationEuler = glm::vec3(0.0f, atan2f(backDeltaPos.x, backDeltaPos.z), 0.0f);
+	gondola.bogieBackPTS.updateTransform(glm::translate(glm::mat4(1.0f), thisBogiePosition) * glm::toMat4(glm::quat(bogieBackRotationEuler)));
 
-	return PhysicsUtils::createTransform(
-		glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(gondolaBodyRotationEuler))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection))//glm::lookAt(glm::vec3(0.0f), bogiesLookDirection, glm::vec3(0, 1, 0))//glm::toMat4(glm::quat(glm::vec3(0, 0, 1), bogiesLookDirection) * glm::quat(glm::radians(glm::vec3(90, 0, 0))))
-		//glm::lookAt(bogiesMidpoint, bogiesMidpoint + bogiesLookDirection, glm::vec3(0, 1, 0))
-	);
+	glm::vec3 frontDeltaPos = otherBogiePosition - PhysicsUtils::getPosition(gondola.bogieFrontPTS.currentTransform);
+	frontDeltaPos = gondolaBodyTransformInv * glm::vec4(frontDeltaPos, 1.0f);
+	glm::vec3 bogieFrontRotationEuler = glm::vec3(0.0f, atan2f(frontDeltaPos.x, frontDeltaPos.z), 0.0f);
+	gondola.bogieFrontPTS.updateTransform(glm::translate(glm::mat4(1.0f), otherBogiePosition) * glm::toMat4(glm::quat(bogieFrontRotationEuler)));
+
+	// Create physics transform
+	return PhysicsUtils::createTransform(gondolaBodyTransform);
 }
 
 void GondolaPath::createGondolaUnderControl(float linearPosition, float movementSpeed)
 {
 	IndividualGondolaMetadata gmm;
-	gmm.animator = new Animator(&gondolaModel->getAnimations());
+	gmm.animator = new Animator(&gondolaModel->getAnimations(), { "Bogie.Front", "Bogie.Back" });
 	gmm.animatorStateMachine = new AnimatorStateMachine("gondola", gmm.animator);
 	gmm.dummyObject = new DummyBaseObject();
 	gmm.headlessRenderComponent = new RenderComponent(gmm.dummyObject);
@@ -666,7 +696,7 @@ void GondolaPath::recalculateGondolaTransformFromLinearPosition()
 	for (auto& gondola : gondolasUnderControl)
 	{
 		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)gondola.headlessPhysicsComponent->getActor();
-		physx::PxTransform trans = getBodyTransformFromGondolaPathLinearPosition(gondola.currentLinearPosition);
+		physx::PxTransform trans = getBodyTransformFromGondolaPathLinearPosition(gondola.currentLinearPosition, gondola);
 		body->setKinematicTarget(trans);
 		gondola.dummyObject->INTERNALsubmitPhysicsCalculation(PhysicsUtils::physxTransformToGlmMatrix(trans));
 	}

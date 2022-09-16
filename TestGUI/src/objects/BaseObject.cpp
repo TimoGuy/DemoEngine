@@ -41,22 +41,23 @@ std::string generate_hex(const uint32_t len)
 	return ss.str();
 }
 
+float PhysicsTransformState::interpolationAlpha = 0.0f;
 void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
 {
 	previousTransform = currentTransform;
 	currentTransform = newTransform;
 }
 
-glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
+glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 {
 	// Easy out
 	if (currentTransform == previousTransform)
 		return currentTransform;
 
 	// Easy out2
-	if (alpha >= 1.0f)
+	if (interpolationAlpha >= 1.0f)
 		return currentTransform;
-	if (alpha <= 0.0f)
+	if (interpolationAlpha <= 0.0f)
 		return previousTransform;
 
 	glm::vec3 scale1;
@@ -72,9 +73,9 @@ glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
 	glm::vec4 perspective2;
 	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
 
-	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
-	glm::quat rotation = glm::normalize(glm::lerp(rotation2, rotation1, alpha));  //glm::slerp(rotation2, rotation1, alpha);
-	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
+	glm::vec3 translation = glm::mix(translation2, translation1, interpolationAlpha);
+	glm::quat rotation = glm::normalize(glm::lerp(rotation2, rotation1, interpolationAlpha));  //glm::slerp(rotation2, rotation1, interpolationAlpha);
+	glm::vec3 scale = glm::mix(scale2, scale1, interpolationAlpha);
 
 	// Compose all these together (trans * rot * scale)
 	return glm::scale(glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation), scale);
@@ -169,9 +170,9 @@ void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
 	physicsTransformState.updateTransform(newTransform);
 }
 
-void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
+void BaseObject::INTERNALfetchInterpolatedPhysicsTransform()
 {
-	transform = physicsTransformState.getInterpolatedTransform(alpha);		// Do this without propagating transforms
+	transform = physicsTransformState.getInterpolatedTransform();		// Do this without propagating transforms
 }
 
 LightComponent::LightComponent(BaseObject* baseObject, bool castsShadows) : baseObject(baseObject), castsShadows(castsShadows)

@@ -60,12 +60,14 @@ private:
 	float totalTrackLinearSpace;
 	bool wrapTrackSegments = true;
 
+	struct IndividualGondolaMetadata;
+
 	void addPieceToGondolaPath(int pieceType, int index = -1);
 	void changePieceOfGondolaPath(size_t index, int pieceType);
 	void removePieceOfGondolaPath(size_t index);
 	void recalculateGondolaPathOffsets();
 	static void recalculateCachedGondolaBezierCurvePoints();
-	physx::PxTransform getBodyTransformFromGondolaPathLinearPosition(float& linearPosition);	// The use of a reference is so that auto clamping or wrapping can be done.
+	physx::PxTransform getBodyTransformFromGondolaPathLinearPosition(float& linearPosition, IndividualGondolaMetadata& gondola);	// The use of a reference is so that auto clamping or wrapping can be done.
 	
 
 	//
@@ -84,6 +86,7 @@ private:
 		float _movementSpeedDamper = 1.0f;	// Moves from [~0.1 - 1.0]
 		float _nextStoppingPointLinearPosition = -1.0f;
 		float _stoppingPointWaitTimer = 0.0f;
+		PhysicsTransformState bogieBackPTS, bogieFrontPTS;
 	};
 	std::vector<IndividualGondolaMetadata> gondolasUnderControl;
 
