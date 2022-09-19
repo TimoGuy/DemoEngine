@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\audio_engine\AudioEngine.cpp" />
+    <ClCompile Include="src\objects\GondolaPath.cpp" />
     <ClCompile Include="src\render_engine\material\Shader.cpp" />
     <ClCompile Include="src\objects\Spline.cpp" />
     <ClCompile Include="src\imgui\GraphEditor.cpp" />
@@ -331,6 +332,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\audio_engine\AudioEngine.h" />
+    <ClInclude Include="src\objects\GondolaPath.h" />
     <ClInclude Include="src\render_engine\material\Shader.h" />
     <ClInclude Include="src\objects\Spline.h" />
     <ClInclude Include="src\imgui\GraphEditor.h" />

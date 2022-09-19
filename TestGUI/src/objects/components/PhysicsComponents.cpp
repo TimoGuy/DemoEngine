@@ -15,7 +15,7 @@
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
 // TriangleMeshCollider Class
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------
-TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, Model* model, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), model(model), rigidActorType(rigidActorType)
+TriangleMeshCollider::TriangleMeshCollider(BaseObject* bo, std::vector<ModelWithTransform> models, RigidActorTypes rigidActorType, ShapeTypes shapeType) : PhysicsComponent(bo), models(models), rigidActorType(rigidActorType)
 {
 	routineCreateTriangleMeshGeometry(baseObject->getTransform());
 }
@@ -30,8 +30,20 @@ void TriangleMeshCollider::physicsUpdate() { baseObject->physicsUpdate(); }
 
 void TriangleMeshCollider::propagateNewTransform(const glm::mat4& newTransform)
 {
-	// REDO THE TRI MESH!!!!
-	routineCreateTriangleMeshGeometry(newTransform);
+#ifdef _DEVELOP
+	glm::vec3 newScale = PhysicsUtils::getScale(newTransform);
+	if (newScale != cachedScale)
+	{
+		// REDO THE TRI MESH!!!!
+		routineCreateTriangleMeshGeometry(newTransform);
+	}
+	else
+#endif
+	{
+		// NOTE: You shouldn't need to recreate the mesh if scale isn't affected
+		physx::PxTransform trans = PhysicsUtils::createTransform(newTransform);
+		body->setGlobalPose(trans);
+	}
 }
 
 physx::PxTransform TriangleMeshCollider::getGlobalPose()
@@ -49,90 +61,97 @@ void TriangleMeshCollider::routineCreateTriangleMeshGeometry(const glm::mat4& ne
 	}
 
 	body = PhysicsUtils::createRigidActor(MainLoop::getInstance().physicsPhysics, PhysicsUtils::createTransform(baseObject->getTransform()), rigidActorType);
-
-	physx::PxU32 nbVerts = 0;
-	physx::PxU32 nbIndices = 0;
-	uint32_t baseIndex = 0;
-
-	std::vector<physx::PxVec3> verts;
-	std::vector<physx::PxU32> indices32;
-
-	//
-	// Extract meshes from model and conform to physx trianglemeshdesc
-	//
 	glm::vec3 xformScale = PhysicsUtils::getScale(newTransform);
-	const std::vector<Mesh>& modelMeshes = model->getMeshes();
-	for (size_t i = 0; i < modelMeshes.size(); i++)
+
+	for (auto& model : models)
 	{
-		const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
-		const std::vector<uint32_t>& indices = modelMeshes[i].getIndices();
+		physx::PxU32 nbVerts = 0;
+		physx::PxU32 nbIndices = 0;
+		uint32_t baseIndex = 0;
 
-		nbVerts += (physx::PxU32)vertices.size();
-		nbIndices += (physx::PxU32)indices.size();
+		std::vector<physx::PxVec3> verts;
+		std::vector<physx::PxU32> indices32;
 
 		//
-		// Add in vertices
+		// Extract renderMeshes from model and conform to physx trianglemeshdesc
 		//
-		for (size_t j = 0; j < vertices.size(); j++)
+		const std::vector<Mesh>& modelMeshes = model.model->getPhysicsMeshes();
+		for (size_t i = 0; i < modelMeshes.size(); i++)
 		{
-			const glm::vec3 vec = vertices[j].position * xformScale;
-			verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
+			const std::vector<Vertex>& vertices = modelMeshes[i].getVertices();
+			const std::vector<uint32_t>& indices = modelMeshes[i].getIndices();
+
+			nbVerts += (physx::PxU32)vertices.size();
+			nbIndices += (physx::PxU32)indices.size();
+
+			//
+			// Add in vertices
+			//
+			for (size_t j = 0; j < vertices.size(); j++)
+			{
+				const glm::vec3 vec = glm::vec3(model.localTransform * glm::vec4(vertices[j].position, 1.0f)) * xformScale;
+				verts.push_back(physx::PxVec3(vec.x, vec.y, vec.z));
+			}
+
+			//
+			// Add in indices
+			//
+			for (size_t j = 0; j < indices.size(); j++)
+			{
+				indices32.push_back(indices[j] + baseIndex);
+			}
+
+			// Bump counter
+			baseIndex += (uint32_t)vertices.size();
 		}
 
+		physx::PxTriangleMeshDesc meshDesc;
+		meshDesc.points.count = nbVerts;
+		meshDesc.points.stride = sizeof(physx::PxVec3);
+		meshDesc.points.data = &verts[0];
+		
+		meshDesc.triangles.count = nbIndices / 3;
+		meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
+		meshDesc.triangles.data = &indices32[0];
+
+		physx::PxDefaultMemoryOutputStream writeBuffer;
+		physx::PxTriangleMeshCookingResult::Enum result;
+		bool status = MainLoop::getInstance().physicsCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
+		if (!status)
+			return;
+
+		physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+		physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
+
+		physx::PxTriangleMeshGeometry triGeom;
+		triGeom.triangleMesh = triMesh;
+		geom = &triGeom;
+
 		//
-		// Add in indices
+		// Create the rigidbody actor!
+		// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
 		//
-		for (size_t j = 0; j < indices.size(); j++)
+		shape = physx::PxRigidActorExt::createExclusiveShape(*body, *geom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
+
+		physx::PxFilterData filterData;
+		filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
+		shape->setQueryFilterData(filterData);
+
+		if (shapeType == ShapeTypes::TRIGGER)
 		{
-			indices32.push_back(indices[j] + baseIndex);
+			shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+			shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
+			shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
 		}
 
-		// Bump counter
-		baseIndex += (uint32_t)vertices.size();
-	}
-
-	physx::PxTriangleMeshDesc meshDesc;
-	meshDesc.points.count = nbVerts;
-	meshDesc.points.stride = sizeof(physx::PxVec3);
-	meshDesc.points.data = &verts[0];
-	
-	meshDesc.triangles.count = nbIndices / 3;
-	meshDesc.triangles.stride = 3 * sizeof(physx::PxU32);
-	meshDesc.triangles.data = &indices32[0];
-
-	physx::PxDefaultMemoryOutputStream writeBuffer;
-	physx::PxTriangleMeshCookingResult::Enum result;
-	bool status = MainLoop::getInstance().physicsCooking->cookTriangleMesh(meshDesc, writeBuffer, &result);
-	if (!status)
-		return;
-
-	physx::PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-	physx::PxTriangleMesh* triMesh = MainLoop::getInstance().physicsPhysics->createTriangleMesh(readBuffer);
-
-	physx::PxTriangleMeshGeometry triGeom;
-	triGeom.triangleMesh = triMesh;
-	geom = &triGeom;
-
-	//
-	// Create the rigidbody actor!
-	// @TODO: start here again, this is where you take the triMesh and connect it to the actor as a shape!!!!
-	//
-	shape = physx::PxRigidActorExt::createExclusiveShape(*body, *geom, *MainLoop::getInstance().defaultPhysicsMaterial);			// @NOTE: When the actor gets released, that's when the exclusiveshape gets released too
-
-	physx::PxFilterData filterData;
-	filterData.word0 = (physx::PxU32)PhysicsUtils::Word0Tags::UNTAGGED;
-	shape->setQueryFilterData(filterData);
-
-	if (shapeType == ShapeTypes::TRIGGER)
-	{
-		shape->setFlag(physx::PxShapeFlag::eSCENE_QUERY_SHAPE, false);
-		shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, false);
-		shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, true);
+		triMesh->release();
 	}
 
 	body->setGlobalPose(PhysicsUtils::createTransform(baseObject->getTransform()));
 	MainLoop::getInstance().physicsScene->addActor(*body);
-	triMesh->release();
+#ifdef _DEVELOP
+	cachedScale = xformScale;
+#endif
 }
 
 // -----------------------------------------------------------------------------------------------------------------------------------------------------------

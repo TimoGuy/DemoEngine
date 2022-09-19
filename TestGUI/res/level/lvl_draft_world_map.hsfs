@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    368.4307861328125,
-                    2684.572021484375,
-                    49.86564254760742
+                    343.49658203125,
+                    143.31735229492188,
+                    76.95860290527344
                 ],
                 "rotation": [
                     0.0,
@@ -61,80 +61,11 @@
         {
             "baseObject": {
                 "guid": "ac26cfc667e4b13d4b33d942eb4816d92608b285d39a514adaef5515f32a5bcc",
-                "name": "The WALL (First En)",
+                "name": "The WALL",
                 "position": [
                     0.0,
                     -200.0,
                     0.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    400.0,
-                    400.0,
-                    400.0
-                ]
-            },
-            "modelResourceName": "model;the_wall",
-            "type": "ground"
-        },
-        {
-            "baseObject": {
-                "guid": "e054369ceaabcb54be2bddd2f0731547b3136d214e1f88af1ab04cbcc6ce1b3a",
-                "name": "The WALL (Garden En)",
-                "position": [
-                    -9500.0,
-                    -200.0,
-                    0.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    400.0,
-                    400.0,
-                    400.0
-                ]
-            },
-            "modelResourceName": "model;the_wall",
-            "type": "ground"
-        },
-        {
-            "baseObject": {
-                "guid": "26d7c2998da48837660a4b8243c139407c9cd3531f5d26e925383f5ac98ae001",
-                "name": "The WALL (Monster En)",
-                "position": [
-                    -9500.0,
-                    -200.0,
-                    9500.0
-                ],
-                "rotation": [
-                    0.0,
-                    -0.0,
-                    0.0
-                ],
-                "scale": [
-                    400.0,
-                    400.0,
-                    400.0
-                ]
-            },
-            "modelResourceName": "model;the_wall",
-            "type": "ground"
-        },
-        {
-            "baseObject": {
-                "guid": "51837060380d9510af96181af16f5a0a2be9581c254edd696bfd554de1711b72",
-                "name": "The WALL (Broken En)",
-                "position": [
-                    0.0,
-                    -200.0,
-                    9500.0
                 ],
                 "rotation": [
                     0.0,
@@ -183,7 +114,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -206,9 +137,9 @@
                     -278.9263000488281
                 ],
                 "rotation": [
-                    -6.943646352342014e-11,
+                    -1.1407418759601384e-10,
                     9.937670707702637,
-                    8.487980085192248e-05
+                    8.487911691190675e-05
                 ],
                 "scale": [
                     11.499999046325684,
@@ -221,61 +152,6 @@
         },
         {
             "baseObject": {
-                "guid": "4c1aa5a7e2902e66d2190cbdb2ecd8cebc44e1c8dcd63c8cf49deedb023217bf",
-                "name": "Voxel Group (unnamed)",
-                "position": [
-                    218.81613159179688,
-                    46.17728042602539,
-                    259.6849670410156
-                ],
-                "rotation": [
-                    6.5341691970825195,
-                    12.692163467407227,
-                    27.53373908996582
-                ],
-                "scale": [
-                    1.0000004768371582,
-                    0.999999463558197,
-                    0.9999996423721313
-                ]
-            },
-            "moving_platform_angular_velocity": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "moving_platform_spline_guid": "",
-            "moving_platform_spline_move_backwards": false,
-            "moving_platform_spline_mvt_mode": 0,
-            "moving_platform_spline_position_in_time": 0.0,
-            "moving_platform_spline_pp_hold_time": 0.0,
-            "moving_platform_spline_speed": 0.0,
-            "moving_platform_velocity": [
-                0.0,
-                0.0,
-                0.0
-            ],
-            "type": "voxel_group",
-            "voxel_bit_field": "15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;5:1;15:0;85:1;",
-            "voxel_group_color": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "voxel_group_offset": [
-                0,
-                0,
-                19
-            ],
-            "voxel_group_size": [
-                102,
-                1,
-                20
-            ],
-            "voxel_render_size": 4.0
-        },
-        {
-            "baseObject": {
                 "guid": "67971bf002f487765e22a792247efe128d84659d3ce0b964956f2cc06b6ab1c9",
                 "name": "world.jojos.prop1",
                 "position": [
@@ -284,7 +160,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -318,6 +194,373 @@
                 ]
             },
             "modelResourceName": "model;custommodel;res/model/world.first_cave.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
+                "name": "Voxel Group (world.first_cave)",
+                "position": [
+                    55.16800308227539,
+                    -5.966333389282227,
+                    51.726463317871094
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "moving_platform_angular_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
+            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_mvt_mode": 2,
+            "moving_platform_spline_position_in_time": 54.24095916748047,
+            "moving_platform_spline_pp_hold_time": 1.0,
+            "moving_platform_spline_speed": 50.0,
+            "moving_platform_velocity": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "type": "voxel_group",
+            "voxel_bit_field": "16:1;",
+            "voxel_group_color": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "voxel_group_offset": [
+                2,
+                0,
+                2
+            ],
+            "voxel_group_size": [
+                4,
+                1,
+                4
+            ],
+            "voxel_render_size": 4.0
+        },
+        {
+            "baseObject": {
+                "guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
+                "name": "Spline (world.first_cave)",
+                "position": [
+                    80.0,
+                    -16.0,
+                    28.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "closed_loop": false,
+            "spline_control_points": [
+                {
+                    "local_control_point": [
+                        -34.800174713134766,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                {
+                    "local_control_point": [
+                        23.21532440185547,
+                        0.0,
+                        0.0
+                    ],
+                    "position": [
+                        -6.480049133300781,
+                        17.453969955444336,
+                        41.27313995361328
+                    ]
+                }
+            ],
+            "type": "spline"
+        },
+        {
+            "baseObject": {
+                "guid": "0c5f309f57d2ff5db7a315e392ccff6ec957c4a86b8ef50f8e94810828516e19",
+                "name": "Bed",
+                "position": [
+                    -11.115202903747559,
+                    2.554687738418579,
+                    -7.96388053894043
+                ],
+                "rotation": [
+                    -179.9999237060547,
+                    13.696503639221191,
+                    -179.9999237060547
+                ],
+                "scale": [
+                    0.9999989867210388,
+                    1.0,
+                    0.9999989867210388
+                ]
+            },
+            "modelResourceName": "model;bed",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "06ed39ea4736a9fbc259eb29c6e951250b58a09290c61e61b8d436ce73bf2248",
+                "name": "Bed",
+                "position": [
+                    -13.127340316772461,
+                    2.5536422729492188,
+                    9.543127059936523
+                ],
+                "rotation": [
+                    -0.014432464726269245,
+                    -89.70326232910156,
+                    0.014491000212728977
+                ],
+                "scale": [
+                    0.9999974370002747,
+                    1.0,
+                    0.9999974370002747
+                ]
+            },
+            "modelResourceName": "model;bed",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "9bc169f9746f7a14a8523a4a2d269d927f2b7bc95df10211bd382275d63712f1",
+                "name": "Ladder (Mockup)",
+                "position": [
+                    266.688232421875,
+                    119.59061431884766,
+                    12.2992582321167
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/ladder_50.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "7984c1b885a75ca75aba5035dca8796015209f056628fff7fc9e84afbbed18d8",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    300.0,
+                    120.0,
+                    80.8707275390625
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "e66b866342ceb8a9bf7f23dd334cbf3f8b0802b51c91d304cca7705368dd8915",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    320.0,
+                    120.0,
+                    80.8707275390625
+                ],
+                "rotation": [
+                    -179.99989318847656,
+                    -5.008956122765085e-06,
+                    -179.99989318847656
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "5b69b2d59af39fcab38c43566f5868aa8128d19e13ef1fc96b9e148b35394708",
+                "name": "Gondola Path",
+                "position": [
+                    300.0,
+                    120.0,
+                    132.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "gondola_path_ids": [
+                2,
+                16,
+                2,
+                3,
+                1,
+                7,
+                10,
+                14,
+                14,
+                9,
+                9,
+                15,
+                15,
+                8,
+                0,
+                6,
+                2,
+                2,
+                16,
+                2,
+                1
+            ],
+            "gondolas_under_control": [
+                {
+                    "linear_position": 50.70000076293945,
+                    "movement_speed": 2.0
+                }
+            ],
+            "type": "gondola_path"
+        },
+        {
+            "baseObject": {
+                "guid": "1db266a92928be54b3b463265d57837a569a59aa2f554ba3514b844fe78e670a",
+                "name": "Gondola Path",
+                "position": [
+                    320.0,
+                    120.0,
+                    132.0
+                ],
+                "rotation": [
+                    0.0,
+                    -0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "gondola_path_ids": [
+                2,
+                16,
+                2,
+                4,
+                1,
+                7,
+                11,
+                14,
+                14,
+                9,
+                9,
+                15,
+                15,
+                8,
+                0,
+                5,
+                2,
+                2,
+                16,
+                2,
+                1
+            ],
+            "gondolas_under_control": [
+                {
+                    "linear_position": 1196.0999755859375,
+                    "movement_speed": -2.0
+                }
+            ],
+            "type": "gondola_path"
+        },
+        {
+            "baseObject": {
+                "guid": "2a93c85cfec46b06b9e0c8e67512e5ed599ea4ddce9ab53e1621242f733cb0e0",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    -536.9993286132813,
+                    374.9977111816406,
+                    -344.5233459472656
+                ],
+                "rotation": [
+                    -0.00014729207032360137,
+                    44.97203063964844,
+                    -0.00014729207032360137
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ffb0b627d1dc9965725df760889773c5cd476f5cc03719b510b410aa9d559cdc",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    -522.850341796875,
+                    374.9976501464844,
+                    -358.6585693359375
+                ],
+                "rotation": [
+                    -179.99986267089844,
+                    -44.97203063964844,
+                    180.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
             "type": "ground"
         }
     ]

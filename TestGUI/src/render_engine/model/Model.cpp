@@ -130,17 +130,17 @@ Model::Model(const std::vector<Vertex>& quadMesh)
 	}
 
 	// Finally, create the mesh
-	meshes.push_back(Mesh(glm::vec3(0.0f), vertices, indices, modelRenderAABB, "Material"));		// Default material name
+	renderMeshes.push_back(Mesh(glm::vec3(0.0f), vertices, indices, modelRenderAABB, "Material"));		// Default material name
 }
 
 bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* viewFrustum, std::vector<bool>& out_whichMeshesInView)
 {
 	bool modelIsChottoDakeDemoInViewFrustum = false;
 
-	out_whichMeshesInView.reserve(meshes.size());
-	for (size_t i = 0; i < meshes.size(); i++)
+	out_whichMeshesInView.reserve(renderMeshes.size());
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
-		const bool withinViewFrustum = viewFrustum->checkIfInViewFrustum(meshes[i].bounds, modelMatrix * localTransform);
+		const bool withinViewFrustum = viewFrustum->checkIfInViewFrustum(renderMeshes[i].bounds, modelMatrix);
 		out_whichMeshesInView.push_back(withinViewFrustum);
 		if (withinViewFrustum)
 			modelIsChottoDakeDemoInViewFrustum = true;
@@ -152,10 +152,10 @@ bool Model::getIfInViewFrustum(const glm::mat4& modelMatrix, const ViewFrustum* 
 
 void Model::render(const glm::mat4& modelMatrix, Shader* shaderOverride, const std::vector<bool>* whichMeshesInView, const std::vector<glm::mat4>* boneTransforms, RenderStage renderStage)
 {
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
 		if (whichMeshesInView == nullptr || (*whichMeshesInView)[i])
-			meshes[i].render(modelMatrix * localTransform, shaderOverride, boneTransforms, renderStage);
+			renderMeshes[i].render(modelMatrix, shaderOverride, boneTransforms, renderStage);
 	}
 }
 
@@ -168,23 +168,23 @@ std::vector<std::string> Model::getAnimationNameList()
 std::vector<std::string> Model::getMaterialNameList()
 {
 	std::vector<std::string> materialNameList;
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
-		if (std::find(materialNameList.begin(), materialNameList.end(), meshes[i].getMaterialName()) != materialNameList.end())
+		if (std::find(materialNameList.begin(), materialNameList.end(), renderMeshes[i].getMaterialName()) != materialNameList.end())
 			continue;	// Uniques only pls
-		materialNameList.push_back(meshes[i].getMaterialName());
+		materialNameList.push_back(renderMeshes[i].getMaterialName());
 	}
 	return materialNameList;
 }
 
 void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 {
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
 		RenderAABB cookedBounds =
 			PhysicsUtils::fitAABB(
-				meshes[i].bounds,
-				trans * localTransform
+				renderMeshes[i].bounds,
+				trans
 			);
 
 		physx::PxBoxGeometry boxGeometry(cookedBounds.extents.x, cookedBounds.extents.y, cookedBounds.extents.z);
@@ -199,19 +199,19 @@ void Model::TEMPrenderImguiModelBounds(glm::mat4 trans)
 
 void Model::setMaterials(std::map<std::string, Material*> materialMap)
 {
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
-		meshes[i].pickFromMaterialList(materialMap);
+		renderMeshes[i].pickFromMaterialList(materialMap);
 	}
 }
 
 
 void Model::setDepthPriorityOfMeshesWithMaterial(const std::string& materialName, float depthPriority)
 {
-	for (size_t i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < renderMeshes.size(); i++)
 	{
-		if (meshes[i].getMaterialName() == materialName)
-			meshes[i].setDepthPriority(depthPriority);
+		if (renderMeshes[i].getMaterialName() == materialName)
+			renderMeshes[i].setDepthPriority(depthPriority);
 	}
 }
 
@@ -259,7 +259,10 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 	for (size_t i = 0; i < node->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshes.push_back(processMesh(mesh, scene));
+		if (mesh->mName == aiString("COLLISION_MESH"))
+			physicsMeshes.push_back(processMesh(mesh, scene));
+		else
+			renderMeshes.push_back(processMesh(mesh, scene));
 	}
 
 	// Recursive part: continue going down the children

@@ -472,7 +472,7 @@ void VoxelGroup::updateQuadMeshFromBitField()
 	{
 		voxel_model = new Model(quadMesh);
 
-		std::vector<Mesh>& meshes = voxel_model->getMeshes();
+		std::vector<Mesh>& meshes = voxel_model->getRenderMeshes();
 		nlohmann::json j;
 		j["color"] = { voxel_group_color.r, voxel_group_color.g, voxel_group_color.b };
 		for (size_t i = 0; i < meshes.size(); i++)
@@ -563,7 +563,7 @@ void VoxelGroup::INTERNALrecreatePhysicsComponent()
 		delete physicsComponent;
 
 	const bool shouldBeDynamicRigidbody = !(velocity.isZero() && angularVelocity.isZero() && assignedSplineGUID.empty());
-	physicsComponent = new TriangleMeshCollider(this, voxel_model, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
+	physicsComponent = new TriangleMeshCollider(this, { { voxel_model } }, shouldBeDynamicRigidbody ? RigidActorTypes::KINEMATIC : RigidActorTypes::STATIC);
 	rigidbodyIsDynamic = shouldBeDynamicRigidbody;
 	//setTransform(getTransform());		// NOTE: this is to prevent weird interpolation skipping
 }

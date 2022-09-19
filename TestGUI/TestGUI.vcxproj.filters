@@ -189,6 +189,9 @@
     <ClCompile Include="src\render_engine\model\animation\AnimatorStateMachine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\objects\GondolaPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\fragment.frag">
@@ -505,6 +508,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render_engine\model\animation\AnimatorStateMachine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\objects\GondolaPath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

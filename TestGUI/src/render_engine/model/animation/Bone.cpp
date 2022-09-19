@@ -107,14 +107,21 @@ int Bone::getScaleIndex(float animationTime)
 // MAKE SURE YOU APPLY THIS TO ALL MODELS THAT WILL USE ROOT MOTION!
 //     -Timo
 //
-void Bone::INTERNALmutateBoneAsRootBoneXZ()
+glm::vec3 Bone::INTERNALgetRootBoneXZDeltaPosition()
 {
 	if (numPositions <= 1)
-		return;		// @NOTE: bc there are no positions/just a single position, there is no root motion here, thus doing nothing.  -Timo
+		return glm::vec3(0.0f);		// @NOTE: bc there are no positions/just a single position, there is no root motion here, thus doing nothing.  -Timo
 
 	size_t endIndex = (size_t)glm::max((int)0, (int)numPositions - 1);
 	glm::vec3 deltaPosition = positions[endIndex].position - positions[0].position;
 	deltaPosition.y = 0.0f;		// Just do XZ axes
+	return deltaPosition;
+}
+
+
+void Bone::INTERNALmutateBoneWithXZDeltaPosition(const glm::vec3& xzDeltaPosition)
+{
+	size_t endIndex = (size_t)glm::max((int)0, (int)numPositions - 1);
 	float startTime = positions[0].timeStamp;
 	float endTime = positions[endIndex].timeStamp;
 
@@ -122,7 +129,7 @@ void Bone::INTERNALmutateBoneAsRootBoneXZ()
 	for (size_t i = 0; i < positions.size(); i++)
 	{
 		float timeStampNormalized = (positions[i].timeStamp - startTime) / (endTime - startTime);
-		positions[i].position -= deltaPosition * timeStampNormalized;
+		positions[i].position -= xzDeltaPosition * timeStampNormalized;
 	}
 }
 

@@ -18,6 +18,10 @@
                 "animation_name_1": "Idle",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
+                "ged_pos": [
+                    0.0,
+                    0.0
+                ],
                 "loop_animation": false,
                 "node_name": "waterFull",
                 "node_transition_condition_groups": [
@@ -38,6 +42,10 @@
                 "animation_name_1": "No_Water",
                 "animation_name_2": "",
                 "dont_transition_until_animation_finished": false,
+                "ged_pos": [
+                    2.7570741176605225,
+                    236.95196533203125
+                ],
                 "loop_animation": false,
                 "node_name": "waterEmpty",
                 "node_transition_condition_groups": [

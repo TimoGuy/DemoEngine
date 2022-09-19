@@ -16,11 +16,12 @@ class RenderComponent;
 
 struct PhysicsTransformState
 {
+	static float interpolationAlpha;
 	glm::mat4 previousTransform;
 	glm::mat4 currentTransform;
 
 	void updateTransform(glm::mat4 newTransform);
-	glm::mat4 getInterpolatedTransform(float alpha);
+	glm::mat4 getInterpolatedTransform();
 };
 
 class BaseObject
@@ -64,7 +65,7 @@ public:
 	// INTERNAL FUNCTIONS (for physics)
 	//
 	void INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform);
-	void INTERNALfetchInterpolatedPhysicsTransform(float alpha);
+	void INTERNALfetchInterpolatedPhysicsTransform();
 
 private:
 	glm::mat4 transform;
@@ -72,8 +73,8 @@ private:
 	PhysicsTransformState physicsTransformState;		// INTERNAL for physics
 };
 
-#ifdef _DEVELOP
-// This is for creating a rendercomponent that you need to connect to 0,0,0
+
+// @NOTE: this is used in various places... maybe not best practice?    @TODO figure out if there should be a better system for spawning objects within another object (i.e. gondolapath... note that it's only used so that htere's a baseobject ref for controlling the positioning of the physicscomponents for each of the gondolas)
 class DummyBaseObject : public BaseObject
 {
 public:
@@ -89,7 +90,6 @@ public:
 
 	void refreshResources() {}
 };
-#endif
 
 
 //
@@ -154,9 +154,10 @@ class Model;
 class Animator;
 struct ModelWithMetadata
 {
-	Model* model;
-	bool renderModelInShadow;
-	Animator* modelAnimator;
+	Model* model = nullptr;
+	bool renderModelInShadow = true;
+	Animator* modelAnimator = nullptr;
+	glm::mat4* localTransform = new glm::mat4(1.0f);
 };
 
 enum class TextAlignment
@@ -190,10 +191,14 @@ public:
 	// @TODO: @GIANT: You need to add a function to the main game loop to update the animator. This will finally use the modelAniamtor field...
 
 	void addModelToRender(const ModelWithMetadata& modelWithMetadata);
-	Model* getModelFromIndex(size_t index);
+	void insertModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata);
+	void changeModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata);
+	void removeModelToRender(size_t index);
+	ModelWithMetadata getModelFromIndex(size_t index);
 	void clearAllModels();
 
 	void addTextToRender(TextRenderer* textRenderer);
+	void removeTextRenderer(TextRenderer* textRenderer);
 
 	void render(const ViewFrustum* viewFrustum, Shader* zPassShader);
 	void renderShadow(Shader* shader);

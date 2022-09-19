@@ -67,6 +67,24 @@ void Animation::readMissingBones(const aiAnimation* animation, Model& model, Ani
 	int& boneCount = model.getBoneCount();
 
 	//
+	// Read the XZ Deltaposition of the root motion if wanted
+	//
+	glm::vec3 rootMotionXZDeltaPosition(0.0f);
+	if (animationMetadata.trackXZRootMotion)
+	{
+		for (uint32_t i = 0; i < size; i++)
+		{
+			auto channel = animation->mChannels[i];
+			std::string boneName = channel->mNodeName.data;
+			if (boneName == "Root")		// @TODO: having the option to manually select which "root bone" is the actual mother root bone in an .hsmm file would be super useful probably! Or not necessary (bc it's not necessary atm)  -Timo
+			{
+				Bone dummyBone(boneInfoMap[boneName].id, channel);		// @NOTE: DO NOT INSERT THIS INTO THE BONE MAP SINCE ITS A DUMMY!
+				rootMotionXZDeltaPosition = dummyBone.INTERNALgetRootBoneXZDeltaPosition();
+			}
+		}
+	}
+
+	//
 	// Read channels
 	//
 	for (uint32_t i = 0; i < size; i++)
@@ -82,8 +100,8 @@ void Animation::readMissingBones(const aiAnimation* animation, Model& model, Ani
 		}
 
 		Bone newBone(boneInfoMap[boneName].id, channel);
-		if (animationMetadata.trackXZRootMotion && boneName == "Root")
-			newBone.INTERNALmutateBoneAsRootBoneXZ();
+		if (animationMetadata.trackXZRootMotion && (boneName == "Root" || boneName == "Hand Attachment"))		// @TODO: these are the identified root nodes for the character model... however, manually selecting these in an .hsmm file is the only solution (@NOTE: trying to figure out the root node from the assimp data is not going to work)  -Timo
+			newBone.INTERNALmutateBoneWithXZDeltaPosition(rootMotionXZDeltaPosition);
 
 		bones.insert(
 			bones.begin(),

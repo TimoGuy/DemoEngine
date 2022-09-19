@@ -124,7 +124,9 @@ struct CloudEffectInformation
 	float cloudNoiseDetailSize = 160.0f;
 	glm::vec3 cloudNoiseDetailOffset = { 0.0f, 0.0f, 0.0f };
 	glm::vec3 cloudNoiseDetailVelocity = { 1.0f, 0.0f, 2.0f };		// @NOTE: good and subtle eh!  -Timo
-	float densityOffset = -0.3f;
+	float densityOffsetInner = -0.3f;		// @NOTE: Inside the walls where it's cooler
+	float densityOffsetOuter = -0.15f;		// @NOTE: Outside the walls, where the fire ppl live
+	float densityOffsetChangeRadius = 4000.0f;	// The separation between the inner and outer areas... right where the wall is is where the change happens.
 	float densityMultiplier = 300.0f;
 	float densityRequirement = 8.0f;
 	float darknessThreshold = 0.01f;  // 0.37f;  // 0.07f;

@@ -84,7 +84,7 @@ public:
 	void propagateNewTransform(const glm::mat4& newTransform);
 	physx::PxTransform getGlobalPose();
 
-	physx::PxVec3 velocity;
+	physx::PxVec3 velocity = physx::PxVec3(0.0f);
 
 	physx::PxCapsuleController* controller;
 	physx::PxVec3 tempUp = physx::PxVec3(0.0f, 1.0f, 0.0f);
@@ -155,10 +155,12 @@ public:
 	// OLD PLAYERRENDER
 	//
 	Model* model;
+	glm::mat4 modelLocalTransform = glm::mat4(1.0f);
 	Animator animator;
 	AnimatorStateMachine animatorStateMachine;
 
 	Model* bottleModel;
+	glm::mat4 bottleModelLocalTransform = glm::mat4(1.0f);
 	glm::mat4 bottleModelMatrix, bottleHandModelMatrix;
 
 	glm::vec3 cameraPosition;

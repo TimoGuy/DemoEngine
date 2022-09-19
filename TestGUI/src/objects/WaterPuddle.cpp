@@ -19,12 +19,13 @@ WaterPuddle::WaterPuddle() : numWaterServings(1)
 {
 	name = "Water Puddle";
 
+	modelTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
+
 	physicsComponent = new SphereCollider(this, 4.0f, RigidActorTypes::STATIC, ShapeTypes::TRIGGER);
 
 	refreshResources();
 	renderComponent = new RenderComponent(this);
-	model->localTransform = glm::translate(glm::mat4(1.0f), glm::vec3(0, -2.1f, 0));
-	renderComponent->addModelToRender({ model, true, &animator });
+	renderComponent->addModelToRender({ model, true, &animator, &modelTransform });
 	waterServingsText = { std::to_string(numWaterServings), getTransform(), glm::vec3(1, 1, 0), TextAlignment::CENTER, TextAlignment::BOTTOM };
 	renderComponent->addTextToRender(&waterServingsText);
 }

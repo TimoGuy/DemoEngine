@@ -41,22 +41,23 @@ std::string generate_hex(const uint32_t len)
 	return ss.str();
 }
 
+float PhysicsTransformState::interpolationAlpha = 0.0f;
 void PhysicsTransformState::updateTransform(glm::mat4 newTransform)
 {
 	previousTransform = currentTransform;
 	currentTransform = newTransform;
 }
 
-glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
+glm::mat4 PhysicsTransformState::getInterpolatedTransform()
 {
 	// Easy out
 	if (currentTransform == previousTransform)
 		return currentTransform;
 
 	// Easy out2
-	if (alpha >= 1.0f)
+	if (interpolationAlpha >= 1.0f)
 		return currentTransform;
-	if (alpha <= 0.0f)
+	if (interpolationAlpha <= 0.0f)
 		return previousTransform;
 
 	glm::vec3 scale1;
@@ -72,9 +73,9 @@ glm::mat4 PhysicsTransformState::getInterpolatedTransform(float alpha)
 	glm::vec4 perspective2;
 	glm::decompose(previousTransform, scale2, rotation2, translation2, skew2, perspective2);
 
-	glm::vec3 translation = glm::mix(translation2, translation1, alpha);
-	glm::quat rotation = glm::slerp(rotation2, rotation1, alpha);
-	glm::vec3 scale = glm::mix(scale2, scale1, alpha);
+	glm::vec3 translation = glm::mix(translation2, translation1, interpolationAlpha);
+	glm::quat rotation = glm::normalize(glm::lerp(rotation2, rotation1, interpolationAlpha));  //glm::slerp(rotation2, rotation1, interpolationAlpha);
+	glm::vec3 scale = glm::mix(scale2, scale1, interpolationAlpha);
 
 	// Compose all these together (trans * rot * scale)
 	return glm::scale(glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation), scale);
@@ -169,9 +170,9 @@ void BaseObject::INTERNALsubmitPhysicsCalculation(glm::mat4 newTransform)
 	physicsTransformState.updateTransform(newTransform);
 }
 
-void BaseObject::INTERNALfetchInterpolatedPhysicsTransform(float alpha)
+void BaseObject::INTERNALfetchInterpolatedPhysicsTransform()
 {
-	transform = physicsTransformState.getInterpolatedTransform(alpha);		// Do this without propagating transforms
+	transform = physicsTransformState.getInterpolatedTransform();		// Do this without propagating transforms
 }
 
 LightComponent::LightComponent(BaseObject* baseObject, bool castsShadows) : baseObject(baseObject), castsShadows(castsShadows)
@@ -260,9 +261,24 @@ void RenderComponent::addModelToRender(const ModelWithMetadata& modelWithMetadat
 	modelsWithMetadata.push_back(modelWithMetadata);
 }
 
-Model* RenderComponent::getModelFromIndex(size_t index)
+void RenderComponent::insertModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata)
 {
-	return modelsWithMetadata[index].model;
+	modelsWithMetadata.insert(modelsWithMetadata.begin() + index, modelWithMetadata);
+}
+
+void RenderComponent::changeModelToRender(size_t index, const ModelWithMetadata& modelWithMetadata)
+{
+	modelsWithMetadata[index] = modelWithMetadata;
+}
+
+void RenderComponent::removeModelToRender(size_t index)
+{
+	modelsWithMetadata.erase(modelsWithMetadata.begin() + index);
+}
+
+ModelWithMetadata RenderComponent::getModelFromIndex(size_t index)
+{
+	return modelsWithMetadata[index];
 }
 
 void RenderComponent::clearAllModels()
@@ -274,6 +290,12 @@ void RenderComponent::addTextToRender(TextRenderer* textRenderer)
 {
 	textRenderers.push_back(textRenderer);
 	MainLoop::getInstance().renderManager->addTextRenderer(textRenderer);
+}
+
+void RenderComponent::removeTextRenderer(TextRenderer* textRenderer)
+{
+	textRenderers.erase(std::remove(textRenderers.begin(), textRenderers.end(), textRenderer), textRenderers.end());
+	MainLoop::getInstance().renderManager->removeTextRenderer(textRenderer);
 }
 
 void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader)								// @Copypasta
@@ -289,14 +311,14 @@ void RenderComponent::render(const ViewFrustum* viewFrustum, Shader* zPassShader
 		// Short circuit out of loop if none of meshes are in view frustum.
 		// Also creates a reference to the meshes of which ones are in the view frustum.
 		std::vector<bool> whichMeshesInView;
-		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform(), viewFrustum, whichMeshesInView))
+		if (!mwmd.model->getIfInViewFrustum(baseObject->getTransform() * *mwmd.localTransform, viewFrustum, whichMeshesInView))
 			continue;
 		
 		std::vector<glm::mat4>* boneTransforms = nullptr;
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), zPassShader, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
+		mwmd.model->render(baseObject->getTransform() * *mwmd.localTransform, zPassShader, &whichMeshesInView, boneTransforms, RenderStage::Z_PASS);
 	}
 }
 
@@ -313,7 +335,7 @@ void RenderComponent::renderShadow(Shader* shader)		// @Copypasta
 		if (mwmd.modelAnimator != nullptr)
 			boneTransforms = mwmd.modelAnimator->getFinalBoneMatrices();
 
-		mwmd.model->render(baseObject->getTransform(), shader, nullptr, boneTransforms, RenderStage::OVERRIDE);
+		mwmd.model->render(baseObject->getTransform() * *mwmd.localTransform, shader, nullptr, boneTransforms, RenderStage::OVERRIDE);
 	}
 }
 
@@ -338,7 +360,7 @@ void RenderComponent::TEMPrenderImguiModelBounds()
 {
 	for (size_t i = 0; i < modelsWithMetadata.size(); i++)
 	{
-		modelsWithMetadata[i].model->TEMPrenderImguiModelBounds(baseObject->getTransform());
+		modelsWithMetadata[i].model->TEMPrenderImguiModelBounds(baseObject->getTransform() * *modelsWithMetadata[i].localTransform);
 	}
 }
 #endif

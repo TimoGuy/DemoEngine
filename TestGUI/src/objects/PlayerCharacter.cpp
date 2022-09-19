@@ -65,7 +65,7 @@ void RopeSimulation::simulateRope(float gravityMultiplier)
 		// Limit to 45 degrees
 		if (limitTo45degrees)
 		{
-			const float sin45deg = 0.707106781f;
+			constexpr float sin45deg = 0.707106781f;
 			points[i].y = std::min(points[i].y, points[i - 1].y - distances[i - 1] * sin45deg);
 		}
 
@@ -344,8 +344,10 @@ void PlayerPhysics::physicsUpdate()
 	//#ifdef _DEVELOP
 		// Set a save point for the player if press pause!
 	static physx::PxExtendedVec3 savedPlayerResetPoint{ 0, 4, 0 };
-	if (InputManager::getInstance().pausePressed)
+	static bool firstSavedPlayerResetPoint = true;
+	if (InputManager::getInstance().pausePressed || firstSavedPlayerResetPoint)
 	{
+		firstSavedPlayerResetPoint = false;
 		savedPlayerResetPoint = controller->getFootPosition();
 		std::cout << "::PLAYER:: set reset point to { " << savedPlayerResetPoint.x << ", " << savedPlayerResetPoint.y << ", " << savedPlayerResetPoint.z << " }" << std::endl;
 	}
@@ -433,8 +435,8 @@ PlayerCharacter::PlayerCharacter() : bottleModelMatrix(PhysicsUtils::createGLMTr
 
 	refreshResources();
 	renderComponent = new RenderComponent(this);
-	renderComponent->addModelToRender({ model, true, &animator });
-	renderComponent->addModelToRender({ bottleModel, true, nullptr });
+	renderComponent->addModelToRender({ model, true, &animator, &modelLocalTransform });
+	renderComponent->addModelToRender({ bottleModel, true, nullptr, &bottleModelLocalTransform });
 
 	playerCamera.priority = 10;
 	MainLoop::getInstance().camera.addVirtualCamera(&playerCamera);
@@ -669,7 +671,7 @@ void PlayerCharacter::processMovement()
 	{
 		float cameraDistance = camOffset.z;
 
-		const bool collideWithGeometry = true;				// Well hey, let's just enable it for now.	// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
+		const bool collideWithGeometry = true;             // Well hey, let's just enable it for now.	// @TEMP: it's getting a bit annoying, so I'll turn off the camera moving in just to see how that's like
 		if (collideWithGeometry)
 		{
 			const float hitDistancePadding = 0.75f;
@@ -816,6 +818,10 @@ void PlayerCharacter::processMovement()
 		if (InputManager::getInstance().on_willWeaponPressed)
 		{
 			weaponDrawn = !weaponDrawn;
+			if (weaponDrawn)
+				animatorStateMachine.setVariable("triggerDrawWeapon", true);
+			else
+				animatorStateMachine.setVariable("triggerSheathWeapon", true);
 		}
 
 		if (isMoving)
@@ -938,7 +944,7 @@ void PlayerCharacter::processMovement()
 
 	((PlayerPhysics*)getPhysicsComponent())->velocity = velocity;
 
-	model->localTransform =
+	modelLocalTransform =
 		glm::translate(glm::mat4(1.0f), glm::vec3(0, modelOffsetY, 0)) *
 		glm::eulerAngleXYZ(0.0f, atan2f(facingDirection.x, facingDirection.y), glm::radians(characterLeanValue * 20.0f)) *
 		glm::scale(glm::mat4(1.0f), PhysicsUtils::getScale(getTransform()));
@@ -1624,7 +1630,7 @@ void PlayerCharacter::processAnimation()
 	if (MainLoop::getInstance().playMode)
 #endif
 	{
-		const glm::mat4 globalTransform = getTransform() * model->localTransform;
+		const glm::mat4 globalTransform = getTransform() * modelLocalTransform;
 
 		if (rightSideburn.isFirstTime || leftSideburn.isFirstTime)
 		{
@@ -1705,16 +1711,16 @@ void PlayerCharacter::processAnimation()
 		//	bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		if (weaponDrawn)
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
+			bottleModelLocalTransform = modelLocalTransform * animator.getBoneTransformation("Hand Attachment").globalTransformation * bottleHandModelMatrix;
 		else
-			bottleModel->localTransform = model->localTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
+			bottleModelLocalTransform = modelLocalTransform * animator.getBoneTransformation("Back Attachment").globalTransformation * bottleModelMatrix;
 
 		// Calculate the fit AABB for just the water mesh inside the bottle
 		bool first = true;
 		glm::vec2 topAndBottom;
 		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
 		{
-			glm::vec3 origin = getTransform() * bottleModel->localTransform * glm::vec4(aabbConstructionBalls[i].origin, 1.0f);
+			glm::vec3 origin = getTransform() * bottleModelLocalTransform * glm::vec4(aabbConstructionBalls[i].origin, 1.0f);
 			const float top = origin.y + aabbConstructionBalls[i].radius;
 			const float bottom = origin.y - aabbConstructionBalls[i].radius;
 
@@ -1893,7 +1899,7 @@ void PlayerCharacter::imguiRender()
 	{
 		for (size_t i = 0; i < aabbConstructionBalls.size(); i++)
 		{
-			PhysicsUtils::imguiRenderSphereCollider(getTransform() * bottleModel->localTransform * glm::translate(glm::mat4(1.0f), aabbConstructionBalls[i].origin), aabbConstructionBalls[i].radius);
+			PhysicsUtils::imguiRenderSphereCollider(getTransform() * bottleModelLocalTransform * glm::translate(glm::mat4(1.0f), aabbConstructionBalls[i].origin), aabbConstructionBalls[i].radius);
 		}
 	}
 }

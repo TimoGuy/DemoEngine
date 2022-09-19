@@ -1,0 +1,106 @@
+{
+    "animation_details": {
+        "0.T_POSE": {
+            "timestamp_speed": 1.0,
+            "track_xz_root_motion": false
+        },
+        "Door_Close": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        },
+        "Door_Open": {
+            "timestamp_speed": 42.0,
+            "track_xz_root_motion": false
+        }
+    },
+    "animation_state_machine": {
+        "asm_nodes": [
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "0.T_POSE",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    0.0,
+                    0.0
+                ],
+                "loop_animation": false,
+                "node_name": "StartState",
+                "node_transition_condition_groups": [],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Door_Open",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    0.0,
+                    200.0
+                ],
+                "loop_animation": false,
+                "node_name": "Door_Open",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 1.0,
+                            "comparison_operator": 0,
+                            "var_name": "IsDoorOpen"
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            },
+            {
+                "animation_blend_boundary_1": 0.0,
+                "animation_blend_boundary_2": 1.0,
+                "animation_blend_variable": "",
+                "animation_name_1": "Door_Close",
+                "animation_name_2": "",
+                "dont_transition_until_animation_finished": true,
+                "ged_pos": [
+                    400.0,
+                    200.0
+                ],
+                "loop_animation": false,
+                "node_name": "Door_Close",
+                "node_transition_condition_groups": [
+                    [
+                        {
+                            "compare_to_value": 0.0,
+                            "comparison_operator": 0,
+                            "var_name": "IsDoorOpen"
+                        },
+                        {
+                            "comparison_operator": 0,
+                            "current_asm_node_name_ref": [
+                                "Door_Open"
+                            ],
+                            "var_name": "JASDKFHASKDGH#@$H@K!%K!H@#KH!@#K!$BFBNSDAFNANSDF  "
+                        }
+                    ]
+                ],
+                "transition_time": 0.0
+            }
+        ],
+        "asm_start_node_index": 0,
+        "asm_variables": [
+            {
+                "value": 0.0,
+                "var_name": "IsDoorOpen",
+                "variable_type": 0
+            }
+        ]
+    },
+    "included_anims": [
+        "0.T_POSE",
+        "Door_Close",
+        "Door_Open"
+    ],
+    "material_paths": null,
+    "model_path": "res\\model\\gondola.glb"
+}

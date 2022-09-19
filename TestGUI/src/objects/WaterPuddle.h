@@ -48,6 +48,7 @@ private:
 	// OLD WATERPUDDLERENDER
 	//
 	Model* model;
+	glm::mat4 modelTransform;
 	Animator animator;
 	AnimatorStateMachine animatorStateMachine;
 	std::map<std::string, Material*> materials;

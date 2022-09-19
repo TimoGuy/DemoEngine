@@ -345,14 +345,14 @@ void MainLoop::run()
 		//
 		// Take all physics objects and update their transforms (interpolation)
 		//
-		float interpolationAlpha = accumulatedTimeForPhysics / this->physicsDeltaTime;
+		PhysicsTransformState::interpolationAlpha = accumulatedTimeForPhysics / this->physicsDeltaTime;
 #ifdef _DEVELOP
 		if (!playMode)
-			interpolationAlpha = 1.0f;
+			PhysicsTransformState::interpolationAlpha = 1.0f;
 #endif
 		for (size_t i = 0; i < physicsObjects.size(); i++)
 		{
-			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform(interpolationAlpha);
+			physicsObjects[i]->baseObject->INTERNALfetchInterpolatedPhysicsTransform();
 		}
 
 		//

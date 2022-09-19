@@ -48,7 +48,8 @@ public:
 	int getRotationIndex(float animationTime);
 	int getScaleIndex(float animationTime);
 
-	void INTERNALmutateBoneAsRootBoneXZ();
+	glm::vec3 INTERNALgetRootBoneXZDeltaPosition();
+	void INTERNALmutateBoneWithXZDeltaPosition(const glm::vec3& xzDeltaPosition);
 
 private:
 	float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);

@@ -112,6 +112,7 @@ struct Link
     SlotIndex mInputSlotIndex;
     NodeIndex mOutputNodeIndex;
     SlotIndex mOutputSlotIndex;
+    bool irrelevant = false;
 };
 
 struct Delegate
