@@ -241,7 +241,7 @@ void GondolaPath::physicsUpdate()
 	//
 	for (auto& gondola : gondolasUnderControl)
 	{
-		const static float WAIT_AT_STATION_TIME = 5.0f;
+		constexpr float WAIT_AT_STATION_TIME = 5.0f;
 		constexpr float STOPPING_POINT_OFFSET = -50.0f;
 
 		// Short circuit wait timer
@@ -270,7 +270,10 @@ void GondolaPath::physicsUpdate()
 					float testingSignedDistance = ((trackSegment.linearPosition + STOPPING_POINT_OFFSET) - (gondola.currentLinearPosition + gondolaBogieSpacing * 0.5f)) * movementSpeedSign;
 					if (testingSignedDistance <= 0.0f)
 					{
-						// @NOTE: @NOTE: this is the section that was intended to use wrapping train lines... but it's buggy and doesn't work... so for now I'm just gonna do simple line like structures  -Timo
+						//
+						// @NOTE: @NOTE: this is the section that was intended to use wrapping train lines...
+						// but it's buggy and doesn't work... so for now I'm just gonna do simple line like structures  -Timo
+						//
 						//if (wrapTrackSegments)
 						//{
 						//	// Retry finding the signed distance
@@ -324,7 +327,7 @@ void GondolaPath::physicsUpdate()
 				gondola.currentLinearPosition = gondola._nextStoppingPointLinearPosition - gondolaBogieSpacing * 0.5f;	// Clamp to the station position
 				gondola._nextStoppingPointLinearPosition = -1.0f;	// Flag this as needing recalculation
 				gondola._stoppingPointWaitTimer = WAIT_AT_STATION_TIME;		// Start wait cycle
-				gondola._movementSpeedDamper = 0.1f;
+				gondola._movementSpeedDamper = 0.0f;
 				gondola.animatorStateMachine->setVariable("isDoorOpen", true);
 				continue;		// Short circuit
 			}
@@ -722,6 +725,8 @@ void GondolaPath::createGondolaUnderControl(float linearPosition, float movement
 	gmm.currentLinearPosition = linearPosition;
 	gmm.movementSpeed = movementSpeed;
 	gondolasUnderControl.push_back(gmm);
+
+	gondolasUnderControl[gondolasUnderControl.size() - 1].animatorStateMachine->setVariable("isDoorOpen", true);
 }
 
 void GondolaPath::recalculateGondolaTransformFromLinearPosition()

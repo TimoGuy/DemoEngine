@@ -91,9 +91,9 @@ private:
 		PhysicsComponent* headlessPhysicsComponent;
 		float currentLinearPosition;
 		float movementSpeed;
-		float _movementSpeedDamper = 1.0f;	// Moves from [~0.1 - 1.0]
+		float _movementSpeedDamper = 0.0f;	// Moves from [~0.0 - 1.0]
 		float _nextStoppingPointLinearPosition = -1.0f;
-		float _stoppingPointWaitTimer = 0.0f;
+		float _stoppingPointWaitTimer = 5.0f;	// @NOTE: @HARDCODE: this is supposed to be the same as WAIT_AT_STATION_TIME
 		BogieChaseOrientation bogieBackOrientation, bogieFrontOrientation;
 	};
 	std::vector<IndividualGondolaMetadata> gondolasUnderControl;

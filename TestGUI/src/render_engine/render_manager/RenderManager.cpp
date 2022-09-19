@@ -2187,6 +2187,10 @@ void RenderManager::renderScene()
 	INTERNALzPassShader->use();
 	ViewFrustum cookedViewFrustum = ViewFrustum::createFrustumFromCamera(MainLoop::getInstance().camera);		// @Optimize: this can be optimized via a mat4 that just changes the initial view frustum
 	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
 #ifdef _DEVELOP
 	if (MainLoop::getInstance().timelineViewerMode && modelForTimelineViewer != nullptr)
 	{
@@ -2200,6 +2204,8 @@ void RenderManager::renderScene()
 		// NOTE: viewfrustum culling is handled at the mesh level with some magic. Peek in if ya wanna. -Timo
 		MainLoop::getInstance().renderObjects[i]->render(&cookedViewFrustum, INTERNALzPassShader);
 	}
+
+	glDisable(GL_CULL_FACE);
 
 	//
 	// Capture z-passed screen for SSAO
@@ -2640,6 +2646,11 @@ void RenderManager::renderScene()
 	// OPAQUE RENDER QUEUE
 	//
 	this->repopulateAnimationUBO = true;	// Reset materials at the start of every frame
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+
 	glDepthFunc(GL_EQUAL);		// NOTE: this is so that the Z prepass gets used and only fragments that are actually visible will get rendered
 	for (size_t i = 0; i < opaqueRQ.meshesToRender.size(); i++)
 	{
@@ -2679,9 +2690,6 @@ void RenderManager::renderScene()
 	// TRANSPARENT RENDER QUEUE
 	//
 	this->repopulateAnimationUBO = true;	// @NOTE: For @Intel GPUs (and likely AMD too), the UBO needs to be repopulated at the beginning of the transparent render queue or else one thing lacks the skeletal animation weirdly  -Timo
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
 
 	std::sort(
 		transparentRQ.commandingIndices.begin(),
