@@ -74,6 +74,14 @@ private:
 	// Gondolas
 	//
 	Model* gondolaModel;
+	struct BogieChaseOrientation
+	{
+		// @NOTE: use PhysicsTransformState::interpolationAlpha to calculate the lerp scale value
+		glm::quat _calculatedNlerpOrientationA,
+			      _calculatedNlerpOrientationB;
+		glm::vec3 prevObjSpaceUp;
+		glm::vec3 prevWorldSpacePosition;
+	};
 	struct IndividualGondolaMetadata
 	{
 		Animator* animator;
@@ -86,7 +94,7 @@ private:
 		float _movementSpeedDamper = 1.0f;	// Moves from [~0.1 - 1.0]
 		float _nextStoppingPointLinearPosition = -1.0f;
 		float _stoppingPointWaitTimer = 0.0f;
-		PhysicsTransformState bogieBackPTS, bogieFrontPTS;
+		BogieChaseOrientation bogieBackOrientation, bogieFrontOrientation;
 	};
 	std::vector<IndividualGondolaMetadata> gondolasUnderControl;
 

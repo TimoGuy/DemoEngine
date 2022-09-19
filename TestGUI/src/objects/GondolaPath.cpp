@@ -192,9 +192,13 @@ void GondolaPath::preRenderUpdate()
 	for (auto& gondola : gondolasUnderControl)
 	{
 		gondola.animatorStateMachine->updateStateMachine(MainLoop::getInstance().deltaTime);
-		glm::mat4 invTransform = glm::inverse(getTransform());
-		gondola.animator->setBoneTransformation("Bogie.Back", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0, 0)));//gondola.bogieBackPTS.getInterpolatedTransform() * invTransform);
-		gondola.animator->setBoneTransformation("Bogie.Front", glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 0, 0)));//gondola.bogieFrontPTS.getInterpolatedTransform() * invTransform);
+		
+		// @NOTE: very @TEMP
+		glm::vec3 bogieFrontPosition = gondola.animator->getBoneTransformation("Bogie.Front").globalTransformation * glm::vec4(0, 0, 0, 1);
+		glm::vec3 bogieBackPosition = gondola.animator->getBoneTransformation("Bogie.Back").globalTransformation * glm::vec4(0, 0, 0, 1);
+
+		gondola.animator->setBoneTransformation("Bogie.Back", glm::translate(glm::mat4(1.0f), bogieBackPosition) * glm::toMat4(glm::normalize(glm::lerp(gondola.bogieBackOrientation._calculatedNlerpOrientationA, gondola.bogieBackOrientation._calculatedNlerpOrientationB, PhysicsTransformState::interpolationAlpha))));
+		gondola.animator->setBoneTransformation("Bogie.Front", glm::translate(glm::mat4(1.0f), bogieFrontPosition) * glm::toMat4(glm::normalize(glm::lerp(gondola.bogieFrontOrientation._calculatedNlerpOrientationA, gondola.bogieFrontOrientation._calculatedNlerpOrientationB, PhysicsTransformState::interpolationAlpha))));
 	}
 
 #ifdef _DEVELOP
@@ -661,17 +665,23 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 	glm::mat4 gondolaBodyTransform = glm::translate(glm::mat4(1.0f), bogiesMidpoint) * glm::toMat4(glm::quat(gondolaBodyRotationEuler));
 
 	// Update the bogie positions for the gondola's transform state
-	glm::mat4 gondolaBodyTransformInv = glm::inverse(gondolaBodyTransform);
-	
-	glm::vec3 backDeltaPos = thisBogiePosition - PhysicsUtils::getPosition(gondola.bogieBackPTS.currentTransform);
-	backDeltaPos = gondolaBodyTransformInv * glm::vec4(backDeltaPos, 1.0f);
-	glm::vec3 bogieBackRotationEuler = glm::vec3(0.0f, atan2f(backDeltaPos.x, backDeltaPos.z), 0.0f);
-	gondola.bogieBackPTS.updateTransform(glm::translate(glm::mat4(1.0f), thisBogiePosition) * glm::toMat4(glm::quat(bogieBackRotationEuler)));
+	glm::vec3 gondolaSpaceUp = gondolaBodyTransform * glm::vec4(0, 1, 0, 0);
+	glm::mat4 to010WorldUp = glm::toMat4(glm::quat(gondolaSpaceUp, glm::vec3(0, 1, 0)));
 
-	glm::vec3 frontDeltaPos = otherBogiePosition - PhysicsUtils::getPosition(gondola.bogieFrontPTS.currentTransform);
-	frontDeltaPos = gondolaBodyTransformInv * glm::vec4(frontDeltaPos, 1.0f);
-	glm::vec3 bogieFrontRotationEuler = glm::vec3(0.0f, atan2f(frontDeltaPos.x, frontDeltaPos.z), 0.0f);
-	gondola.bogieFrontPTS.updateTransform(glm::translate(glm::mat4(1.0f), otherBogiePosition) * glm::toMat4(glm::quat(bogieFrontRotationEuler)));
+	glm::vec3 bogieBackDeltaPosition = to010WorldUp * glm::vec4(thisBogiePosition - gondola.bogieBackOrientation.prevWorldSpacePosition, 1.0f);
+	glm::vec3 bogieFrontDeltaPosition = to010WorldUp * glm::vec4(otherBogiePosition - gondola.bogieFrontOrientation.prevWorldSpacePosition, 1.0f);
+
+	gondola.bogieBackOrientation.prevWorldSpacePosition = thisBogiePosition;
+	gondola.bogieFrontOrientation.prevWorldSpacePosition = otherBogiePosition;
+
+	glm::vec3 bogieBackRotationEuler = glm::vec3(0.0f, atan2f(bogieBackDeltaPosition.x, bogieBackDeltaPosition.z) - gondolaBodyRotationEuler.y, 0.0f);
+	glm::vec3 bogieFrontRotationEuler = glm::vec3(0.0f, atan2f(bogieFrontDeltaPosition.x, bogieFrontDeltaPosition.z) - gondolaBodyRotationEuler.y, 0.0f);
+
+	gondola.bogieBackOrientation._calculatedNlerpOrientationA = gondola.bogieBackOrientation._calculatedNlerpOrientationB;
+	gondola.bogieBackOrientation._calculatedNlerpOrientationB = glm::quat(bogieBackRotationEuler);
+
+	gondola.bogieFrontOrientation._calculatedNlerpOrientationA = gondola.bogieFrontOrientation._calculatedNlerpOrientationB;
+	gondola.bogieFrontOrientation._calculatedNlerpOrientationB = glm::quat(bogieFrontRotationEuler);
 
 	// Create physics transform
 	return PhysicsUtils::createTransform(gondolaBodyTransform);
