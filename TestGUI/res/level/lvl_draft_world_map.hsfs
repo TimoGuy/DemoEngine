@@ -5,9 +5,9 @@
                 "guid": "8244a188e08e930ca0bd8cadff24054e3564497c6181e19566f9c209fe22c973",
                 "name": "Player Controller",
                 "position": [
-                    307.2887268066406,
-                    117.33292388916016,
-                    -92.26033020019531
+                    343.49658203125,
+                    143.31735229492188,
+                    76.95860290527344
                 ],
                 "rotation": [
                     0.0,
@@ -201,9 +201,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    55.11735534667969,
-                    -8.071205139160156,
-                    46.74909973144531
+                    55.16800308227539,
+                    -5.966333389282227,
+                    51.726463317871094
                 ],
                 "rotation": [
                     0.0,
@@ -222,9 +222,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
-            "moving_platform_spline_move_backwards": false,
+            "moving_platform_spline_move_backwards": true,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 50.0,
+            "moving_platform_spline_position_in_time": 54.24095916748047,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -333,14 +333,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014433147385716438,
+                    -0.014432464726269245,
                     -89.70326232910156,
-                    0.014491685666143894
+                    0.014491000212728977
                 ],
                 "scale": [
-                    0.9999976754188538,
+                    0.9999974370002747,
                     1.0,
-                    0.9999976754188538
+                    0.9999974370002747
                 ]
             },
             "modelResourceName": "model;bed",
@@ -436,79 +436,31 @@
                 ]
             },
             "gondola_path_ids": [
-                0,
                 2,
                 16,
                 2,
                 3,
-                6,
                 1,
                 7,
-                14,
-                14,
-                14,
-                14,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                15,
-                15,
-                15,
-                15,
                 10,
-                10,
-                10,
-                10,
-                9,
-                9,
-                9,
-                9,
-                9,
-                13,
-                13,
-                9,
-                9,
-                10,
-                10,
-                15,
-                15,
-                15,
-                15,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                14,
-                14,
                 14,
                 14,
                 9,
                 9,
-                10,
-                10,
-                9,
-                10,
-                10,
-                13,
-                13,
-                9,
-                10,
-                10,
-                13,
-                10,
-                9,
-                8
+                15,
+                15,
+                8,
+                0,
+                6,
+                2,
+                2,
+                16,
+                2,
+                1
             ],
             "gondolas_under_control": [
                 {
-                    "linear_position": 0.0,
+                    "linear_position": 50.70000076293945,
                     "movement_speed": 2.0
                 }
             ],
@@ -535,83 +487,81 @@
                 ]
             },
             "gondola_path_ids": [
-                0,
                 2,
                 16,
                 2,
                 4,
-                5,
                 1,
                 7,
-                14,
-                14,
-                14,
-                14,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                15,
-                15,
-                15,
-                15,
                 11,
-                11,
-                11,
-                11,
-                9,
-                9,
-                9,
-                9,
-                9,
-                12,
-                12,
-                9,
-                9,
-                11,
-                11,
-                15,
-                15,
-                15,
-                15,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                9,
-                14,
-                14,
                 14,
                 14,
                 9,
                 9,
-                11,
-                11,
-                9,
-                11,
-                11,
-                12,
-                12,
-                9,
-                11,
-                11,
-                12,
-                11,
-                9,
-                8
+                15,
+                15,
+                8,
+                0,
+                5,
+                2,
+                2,
+                16,
+                2,
+                1
             ],
             "gondolas_under_control": [
                 {
-                    "linear_position": 0.0,
+                    "linear_position": 1196.0999755859375,
                     "movement_speed": -2.0
                 }
             ],
             "type": "gondola_path"
+        },
+        {
+            "baseObject": {
+                "guid": "2a93c85cfec46b06b9e0c8e67512e5ed599ea4ddce9ab53e1621242f733cb0e0",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    -536.9993286132813,
+                    374.9977111816406,
+                    -344.5233459472656
+                ],
+                "rotation": [
+                    -0.00014729207032360137,
+                    44.97203063964844,
+                    -0.00014729207032360137
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
+        },
+        {
+            "baseObject": {
+                "guid": "ffb0b627d1dc9965725df760889773c5cd476f5cc03719b510b410aa9d559cdc",
+                "name": "Gondola Station (Mockup)",
+                "position": [
+                    -522.850341796875,
+                    374.9976501464844,
+                    -358.6585693359375
+                ],
+                "rotation": [
+                    -179.99986267089844,
+                    -44.97203063964844,
+                    180.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "type": "ground"
         }
     ]
 }

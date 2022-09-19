@@ -242,7 +242,7 @@ void GondolaPath::physicsUpdate()
 	for (auto& gondola : gondolasUnderControl)
 	{
 		const static float WAIT_AT_STATION_TIME = 5.0f;
-		const static float SIGNED_DISTANCE_STOPPED_PADDING = 5.0f;
+		constexpr float STOPPING_POINT_OFFSET = -50.0f;
 
 		// Short circuit wait timer
 		if (gondola._stoppingPointWaitTimer > 0.0f)
@@ -256,60 +256,81 @@ void GondolaPath::physicsUpdate()
 
 		// Find next stopping point linear position
 		float movementSpeedSign = (gondola.movementSpeed < 0.0f) ? -1.0f : 1.0f;
-		float signedDistanceToNextStoppingPoint = glm::abs(gondola.movementSpeed);		// Maximum value of movement
+		float signedDistanceToNextStoppingPoint = glm::abs(gondola.movementSpeed);		// Maximum value of movement (NOTE: this is init'd to this so that if it's not changed then this will be the movement amount)
 		if (gondola._nextStoppingPointLinearPosition < 0.0f)
 		{
-			float bestLinearDistance;
-			for (auto& trackSegment : trackSegments)
+			float bestLinearDistance = -1.0f;
+			while (bestLinearDistance < 0.0f)
 			{
-				if (trackModelTypes[trackSegment.pieceType] != 1)
-					continue;
+				for (auto& trackSegment : trackSegments)
+				{
+					if (trackModelTypes[trackSegment.pieceType] != 1)
+						continue;
 
-				float testingSignedDistance = (trackSegment.linearPosition - gondola.currentLinearPosition) * movementSpeedSign;
-				if (testingSignedDistance <= SIGNED_DISTANCE_STOPPED_PADDING)
-				{
-					//if (wrapTrackSegments)
-					//{
-					//	// Retry finding the signed distance
-					//	testingSignedDistance = (trackSegment.linearPosition - (gondola.currentLinearPosition - totalTrackLinearSpace)) * movementSpeedSign;		// @COPYPASTA
-					//	if (testingSignedDistance <= SIGNED_DISTANCE_STOPPED_PADDING)
-					//		continue;		// Stopping point is already behind, throw it out
-					//}
-					//else
-						continue;		// Stopping point is already behind, throw it out
-				}
-
-				if (gondola._nextStoppingPointLinearPosition < 0.0f)
-				{
-					// First set... comparison fuyou
-					bestLinearDistance = testingSignedDistance;
-					gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition;
-				}
-				else
-				{
-					// See closest signed distance to 0 without bust (<0.0f)
-					if (bestLinearDistance > testingSignedDistance)
+					float testingSignedDistance = ((trackSegment.linearPosition + STOPPING_POINT_OFFSET) - (gondola.currentLinearPosition + gondolaBogieSpacing * 0.5f)) * movementSpeedSign;
+					if (testingSignedDistance <= 0.0f)
 					{
+						// @NOTE: @NOTE: this is the section that was intended to use wrapping train lines... but it's buggy and doesn't work... so for now I'm just gonna do simple line like structures  -Timo
+						//if (wrapTrackSegments)
+						//{
+						//	// Retry finding the signed distance
+						//	testingSignedDistance = (trackSegment.linearPosition - (gondola.currentLinearPosition - totalTrackLinearSpace)) * movementSpeedSign;		// @COPYPASTA
+						//	if (testingSignedDistance <= 0.0f)
+						//		continue;		// Stopping point is already behind, throw it out
+						//}
+						//else
+						continue;		// Stopping point is already behind, throw it out
+					}
+
+					//
+					// Apply passed signedDistance for the stopping track segment!
+					//
+					if (gondola._nextStoppingPointLinearPosition < 0.0f)
+					{
+						// First set... comparison fuyou
 						bestLinearDistance = testingSignedDistance;
-						gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition;
+						gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition + STOPPING_POINT_OFFSET;
+					}
+					else
+					{
+						// See closest signed distance to 0 without bust (<0.0f)
+						if (bestLinearDistance > testingSignedDistance)
+						{
+							bestLinearDistance = testingSignedDistance;
+							gondola._nextStoppingPointLinearPosition = trackSegment.linearPosition + STOPPING_POINT_OFFSET;
+						}
 					}
 				}
+
+				// Break out with the success!
+				if (bestLinearDistance > 0.0f)
+					break;
+
+				// Try again flipped if couldn't find a next stopping point
+				gondola.movementSpeed = -gondola.movementSpeed;
+				movementSpeedSign = -movementSpeedSign;
 			}
 		}
 		else
 		{
 			// Find the right signed distance to the next stopping point and control the speed
-			signedDistanceToNextStoppingPoint = (gondola._nextStoppingPointLinearPosition - gondola.currentLinearPosition) * movementSpeedSign;
+			signedDistanceToNextStoppingPoint = (gondola._nextStoppingPointLinearPosition - (gondola.currentLinearPosition + gondolaBogieSpacing * 0.5f)) * movementSpeedSign;
 
-			if (signedDistanceToNextStoppingPoint < SIGNED_DISTANCE_STOPPED_PADDING)
+			if (signedDistanceToNextStoppingPoint < 0.0f)
 			{
+				//
+				// Flag as made it to the station
+				//
+				gondola.currentLinearPosition = gondola._nextStoppingPointLinearPosition - gondolaBogieSpacing * 0.5f;	// Clamp to the station position
 				gondola._nextStoppingPointLinearPosition = -1.0f;	// Flag this as needing recalculation
 				gondola._stoppingPointWaitTimer = WAIT_AT_STATION_TIME;		// Start wait cycle
 				gondola._movementSpeedDamper = 0.1f;
 				gondola.animatorStateMachine->setVariable("isDoorOpen", true);
 				continue;		// Short circuit
 			}
-			signedDistanceToNextStoppingPoint *= .005f;		// Decrease in preparation for actual movement (this @HARDCODE value makes gondola slow down right before the station)
+
+			// Decrease in preparation for actual movement (this @HARDCODE value makes gondola slow down right before the station)
+			signedDistanceToNextStoppingPoint = (signedDistanceToNextStoppingPoint + 5.0f) * 0.005f;
 		}
 
 		// Re-increase the speed damper if not at full speed yet
@@ -505,8 +526,8 @@ void GondolaPath::imguiRender()
 		}
 
 		// Draw the bogie spacing indicators
-		glm::vec3 frontBogiePoint = getTransform() * glm::vec4(0, 0, gondolaBogieSpacing / 2.0f, 1);
-		glm::vec3 backBogiePoint = getTransform() * glm::vec4(0, 0, -gondolaBogieSpacing / 2.0f, 1);
+		glm::vec3 frontBogiePoint = getTransform() * glm::vec4(0, 0, gondolaBogieSpacing * 0.5f, 1);
+		glm::vec3 backBogiePoint = getTransform() * glm::vec4(0, 0, -gondolaBogieSpacing * 0.5f, 1);
 		PhysicsUtils::imguiRenderLine(backBogiePoint, frontBogiePoint);
 	}
 }
@@ -678,10 +699,12 @@ physx::PxTransform GondolaPath::getBodyTransformFromGondolaPathLinearPosition(fl
 	glm::vec3 bogieFrontRotationEuler = glm::vec3(0.0f, atan2f(bogieFrontDeltaPosition.x, bogieFrontDeltaPosition.z) - gondolaBodyRotationEuler.y, 0.0f);
 
 	gondola.bogieBackOrientation._calculatedNlerpOrientationA = gondola.bogieBackOrientation._calculatedNlerpOrientationB;
-	gondola.bogieBackOrientation._calculatedNlerpOrientationB = glm::quat(bogieBackRotationEuler);
+	if (glm::length2(bogieBackDeltaPosition) > 0.01f)		// Removes flipping when the gondola slows down to a halt
+		gondola.bogieBackOrientation._calculatedNlerpOrientationB = glm::quat(bogieBackRotationEuler);
 
 	gondola.bogieFrontOrientation._calculatedNlerpOrientationA = gondola.bogieFrontOrientation._calculatedNlerpOrientationB;
-	gondola.bogieFrontOrientation._calculatedNlerpOrientationB = glm::quat(bogieFrontRotationEuler);
+	if (glm::length2(bogieFrontDeltaPosition) > 0.01f)		// Removes flipping when the gondola slows down to a halt
+		gondola.bogieFrontOrientation._calculatedNlerpOrientationB = glm::quat(bogieFrontRotationEuler);
 
 	// Create physics transform
 	return PhysicsUtils::createTransform(gondolaBodyTransform);
