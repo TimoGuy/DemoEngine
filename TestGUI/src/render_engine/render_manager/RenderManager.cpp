@@ -2638,17 +2638,6 @@ void RenderManager::renderScene()
 
 	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	////
-	//// @Remember: this is how to: Draw Text
-	////
-	//if (!shadowVersion)
-	//{
-	//	unsigned int programId = text_program_id;
-	//	glm::mat4 modelMatrix =
-	//		glm::translate(textPosition);
-	//	renderText(programId, "Hi there bobby!", modelMatrix, cameraProjection * cameraView, glm::vec3(0.5f, 1.0f, 0.1f));
-	//}
-
 	//
 	// OPAQUE RENDER QUEUE
 	//
