@@ -2213,40 +2213,43 @@ void RenderManager::renderScene()
 	glViewport(0, 0, (GLsizei)MainLoop::getInstance().camera.width, (GLsizei)MainLoop::getInstance().camera.height);  // ssaoFBOSize, ssaoFBOSize);
 	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	ssaoProgramId->use();
-	ssaoProgramId->setSampler("rotationTexture", ssaoRotationTexture->getHandle());
-	ssaoProgramId->setVec2("fullResolution", { MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height });
-	ssaoProgramId->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
-	ssaoProgramId->setFloat("cameraFOV", MainLoop::getInstance().camera.fov);
-	ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
-	ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
-	ssaoProgramId->setFloat("zFar", MainLoop::getInstance().camera.zFar);
-	ssaoProgramId->setFloat("powExponent", ssaoScale);
-	ssaoProgramId->setFloat("radius", ssaoRadius);
-	ssaoProgramId->setFloat("bias", ssaoBias);
-	glm::vec4 projInfoPerspective = {
-		2.0f / (cameraInfo.projection[0][0]),							// (x) * (R - L)/N
-		2.0f / (cameraInfo.projection[1][1]),							// (y) * (T - B)/N
-		-(1.0f - cameraInfo.projection[2][0]) / cameraInfo.projection[0][0],  // L/N
-		-(1.0f + cameraInfo.projection[2][1]) / cameraInfo.projection[1][1],  // B/N
-	};
-	ssaoProgramId->setVec4("projInfo", projInfoPerspective);
-	renderQuad();
+	if (!isWireFrameMode)
+	{
+		ssaoProgramId->use();
+		ssaoProgramId->setSampler("rotationTexture", ssaoRotationTexture->getHandle());
+		ssaoProgramId->setVec2("fullResolution", { MainLoop::getInstance().camera.width, MainLoop::getInstance().camera.height });
+		ssaoProgramId->setVec2("invFullResolution", { 1.0f / MainLoop::getInstance().camera.width, 1.0f / MainLoop::getInstance().camera.height });
+		ssaoProgramId->setFloat("cameraFOV", MainLoop::getInstance().camera.fov);
+		ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
+		ssaoProgramId->setFloat("zNear", MainLoop::getInstance().camera.zNear);
+		ssaoProgramId->setFloat("zFar", MainLoop::getInstance().camera.zFar);
+		ssaoProgramId->setFloat("powExponent", ssaoScale);
+		ssaoProgramId->setFloat("radius", ssaoRadius);
+		ssaoProgramId->setFloat("bias", ssaoBias);
+		glm::vec4 projInfoPerspective = {
+			2.0f / (cameraInfo.projection[0][0]),							// (x) * (R - L)/N
+			2.0f / (cameraInfo.projection[1][1]),							// (y) * (T - B)/N
+			-(1.0f - cameraInfo.projection[2][0]) / cameraInfo.projection[0][0],  // L/N
+			-(1.0f + cameraInfo.projection[2][1]) / cameraInfo.projection[1][1],  // B/N
+		};
+		ssaoProgramId->setVec4("projInfo", projInfoPerspective);
+		renderQuad();
 
-	//
-	// Blur SSAO pass
-	//
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurXProgramId->use();
-	blurXProgramId->setSampler("textureMap", ssaoTexture->getHandle());
-	renderQuad();
+		//
+		// Blur SSAO pass
+		//
+		glBindFramebuffer(GL_FRAMEBUFFER, ssaoBlurFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		blurXProgramId->use();
+		blurXProgramId->setSampler("textureMap", ssaoTexture->getHandle());
+		renderQuad();
 
-	glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
-	glClear(GL_COLOR_BUFFER_BIT);
-	blurYProgramId->use();
-	blurYProgramId->setSampler("textureMap", ssaoBlurTexture->getHandle());
-	renderQuad();
+		glBindFramebuffer(GL_FRAMEBUFFER, ssaoFBO);
+		glClear(GL_COLOR_BUFFER_BIT);
+		blurYProgramId->use();
+		blurYProgramId->setSampler("textureMap", ssaoBlurTexture->getHandle());
+		renderQuad();
+	}
 
 	glBlitNamedFramebuffer(
 		zPrePassFBO,
@@ -2256,6 +2259,8 @@ void RenderManager::renderScene()
 		GL_DEPTH_BUFFER_BIT,
 		GL_NEAREST
 	);
+
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//
 	// Generate the irradiance and prefilter maps from interpolating and spinning the prebaked ones
@@ -2630,6 +2635,8 @@ void RenderManager::renderScene()
 	renderQuad();
 
 	glDepthMask(GL_TRUE);
+
+	if (isWireFrameMode)	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	////
 	//// @Remember: this is how to: Draw Text
