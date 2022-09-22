@@ -491,18 +491,18 @@ void main()
 
     vec3 ambient = (kD * diffuse + specular) * ao;
     
-    //
-    // @ATMOS: combine atmospheric scattering
-    //
-    const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
-    const float myDepth = length(mainCameraPosition - fragPosition);
-    vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0));
-    vec3 LoAtmos = mix(atmosValues.rgb, Lo, atmosValues.a);
+    ////
+    //// @ATMOS: combine atmospheric scattering
+    ////
+    //const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
+    //const float myDepth = length(mainCameraPosition - fragPosition);
+    //vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0));
+    //vec3 LoAtmos = mix(atmosValues.rgb, Lo, atmosValues.a);
 
     //
     // Combine the colors with the shading
     //
-    vec3 color = ambient + LoAtmos;
+    vec3 color = ambient;// + LoAtmos;
     FragColor = vec4(color, fadeAlpha);
 
     FragColor.rgb = clamp(FragColor.rgb, vec3(0.0), vec3(5000.0));

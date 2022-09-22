@@ -2,7 +2,6 @@
 
 in vec2 texCoord;
 layout (location=0) out vec4 fragmentColor;
-//layout (location=1) out vec4 calculatedDepthValue;
 
 uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseViewMatrix;
@@ -103,7 +102,6 @@ const float planetRadius = 6351e2;  // 6361e2;  // 6365e2;
 
 // @NOTE: NB_RAYMARCH_STEPS could be 16 for low quality.
 // @NOTE: NB_RAYMARCH_STEPS was set to 64 and then I changed it to 32... looks pretty fine to me eh!
-#define NB_RAYMARCH_STEPS_SUPER_CLOSE 256
 #define NB_RAYMARCH_STEPS 32
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
@@ -123,7 +121,7 @@ vec4 textureArrayInterpolate(sampler3D tex, float numTexLayers, vec3 str)
     return color;
 }
 
-float sampleDensityAtPoint(vec3 point)
+float sampleDensityAtPoint(vec3 point, bool useDetailMap)
 {
     // Sample density cutoff from height below cloud layer
     float distanceFromCloudY = cloudLayerY - (length(point + vec3(0, cameraBaseHeight, 0)) - cameraBaseHeight);		// @NOTE: switched to this. Due to long distance clouds creating artifacts.  @NOTE: Hey, it seems like this doesn't hurt performance too much. That length() function is FAST! It took 2-5fps (270->265fps), so that's little!
@@ -135,18 +133,22 @@ float sampleDensityAtPoint(vec3 point)
     const float sampleScale = 1.0 / cloudNoiseMainSize;
     const float sampleScaleDetailed = 1.0 / cloudNoiseDetailSize;
     vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale * point.xzy);
-    //vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * (point + cloudNoiseDetailOffset).xzy);
     float density =
         0.5333333 * noise.r
 		+ 0.2666667 * noise.g
 		+ 0.1333333 * noise.b
 		+ 0.0666667 * noise.a;
-    //float detailSubtract =
-    //    0.533333333 * noiseDetail.r
-    //    + 0.2666667 * noiseDetail.g
-    //    + 0.1333333 * noiseDetail.b;
     const float densityOffset = dot(point.xz, point.xz) < densityOffsetChangeRadius * densityOffsetChangeRadius ? densityOffsetInner : densityOffsetOuter;
-    return (density/* - 0.15 * detailSubtract*/ + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
+    if (useDetailMap)
+    {
+        vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * (point + cloudNoiseDetailOffset).xzy);
+        float detailSubtract =
+            0.533333333 * noiseDetail.r
+            + 0.2666667 * noiseDetail.g
+            + 0.1333333 * noiseDetail.b;
+        return (density/* - 0.15 * detailSubtract*/ + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.15 * detailSubtract amount is hardcoded. Make a slider sometime eh!
+    }
+    return (density + densityOffset) * densityMultiplier * densityMult;
 }
 
 float offsetAmount()
@@ -175,12 +177,12 @@ float inScatterLightMarch(vec3 position)
 
     for (int i = 0; i < NB_IN_SCATTER_RAYMARCH_STEPS - 1; i++)
     {
-        inScatterDensity += max(0.0, sampleDensityAtPoint(position) * inScatterStepWeight);
+        inScatterDensity += max(0.0, sampleDensityAtPoint(position, false) * inScatterStepWeight);
         position += inScatterDeltaStepIncrement;        // @NOTE: since density is already sampled at the first spot, move first, then sample density!
     }
 
     float transmittance = exp(-inScatterDensity * lightAbsorptionTowardsSun);
-    return 0.37 + transmittance * (1.0 - 0.37);     // @HARCODE: this used to be the darknessThreshold variable
+    return 0.7 + transmittance * (1.0 - 0.7);     // @HARCODE: this used to be the darknessThreshold variable
 }
 
 // Henyey-Greenstein
@@ -223,7 +225,6 @@ void main()
     {
         // Outer sphere collision failed. Abort clouds
         fragmentColor = vec4(0, 0, 0, 1.0);
-       // calculatedDepthValue = vec4(0.0);
         return;
     }
 
@@ -234,7 +235,6 @@ void main()
     {
         // Inside planet. Abort clouds
         fragmentColor = vec4(0, 0, 0, 1.0);
-        //calculatedDepthValue = vec4(0.0);
         return;
     }
 
@@ -249,7 +249,6 @@ void main()
         if (isect_inner.y > isect_planet.x)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
-            //calculatedDepthValue = vec4(0.0);
             return;
         }
 
@@ -274,17 +273,15 @@ void main()
 
 
     // Setup raymarching
-    //calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
     const float offsetAmount = offsetAmount();
     /*const*/ float rayLength = min(t1, maxRaymarchLength()) - t0;
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
-    const float SUPER_CLOSE_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS_SUPER_CLOSE);
     const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
     const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
     //float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(raymarchCascadeLevels.x, raymarchCascadeLevels.y, t0 + distanceTraveled));
-    float RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : t0 + distanceTraveled > raymarchCascadeLevels.x ? NEAR_RAYMARCH_STEP_SIZE : SUPER_CLOSE_RAYMARCH_STEP_SIZE;
+    float RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : NEAR_RAYMARCH_STEP_SIZE;
 
     // Resize t0 to line up with the view space orientation
     t0 = floor(t0 / RAYMARCH_STEP_SIZE) * RAYMARCH_STEP_SIZE;
@@ -304,14 +301,12 @@ void main()
         if (depthTestSqr < depthCurrentPos)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
-            //calculatedDepthValue = vec4(0, 0, 0, 1);        // @NOTE: this is a special value (< mainCameraZNear) so that it doesn't get processed in the flood fill and leak into the actual geometry when it's rendered (see pbr.frag with the depth comparison with the cloudDepthTexture)  -Timo.
             return;
         }
 
         if (depthTestSqr < depthTargetPos)
         {
             targetPosition = worldSpaceFragPosition;
-            //calculatedDepthValue = vec4(0, 0, 0, 1);    // @NOTE: this block means that there is geometry blocking the raymarch from going to infinity. If this fails, then keep the depth value as 0.0 (the bail value)
         }
     }
 
@@ -366,32 +361,30 @@ void main()
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
-        float density = sampleDensityAtPoint(offsetCurrentPosition);
+        float density = sampleDensityAtPoint(offsetCurrentPosition, false);
 
         if (density > densityRequirement)
         {
             float inScatterTransmittance = inScatterLightMarch(offsetCurrentPosition);
 
             float d = density * RAYMARCH_STEP_SIZE * lightAbsorptionThroughCloud;
-            lightEnergy += density * RAYMARCH_STEP_SIZE * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            lightEnergy += density * RAYMARCH_STEP_SIZE * transmittance * exp(-d) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
             transmittance *= exp(-d);
             
-            //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
-            //calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
             atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth));
             
             // Calculate Ambient Light Energy (https://shaderbits.com/blog/creating-volumetric-ray-marcher)
             const vec3 directionFromOrigin = normalize(offsetCurrentPosition + vec3(0, cameraBaseHeight, 0));
             float shadowDensity = 0.0;
-            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.05);
-            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.10);
-            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.20);
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.05, false);
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.10, false);
+            shadowDensity += sampleDensityAtPoint(offsetCurrentPosition + directionFromOrigin * 0.20, false);
 
             // Calculate the irradiance in the direction of the ray
             const vec3 sampleDirection = vec3(0, -1, 0);  // @NOTE: the sampleDirection was changed from the view direction to straight down bc ambient light reflecting off the ground would be in the straight down view direction.
 	        vec3 irradiance = texture(irradianceMap, sampleDirection).rgb;
-            ambientLightEnergy = exp(-shadowDensity * ambientDensity) * d * irradiance * irradianceStrength;
+            ambientLightEnergy += exp(-shadowDensity * ambientDensity) * d * irradiance * irradianceStrength;
             
             // Break out when good enough
             if (transmittance < 0.01)
@@ -399,8 +392,7 @@ void main()
         }
 
         // Update deltaStepIncrement
-        //RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(raymarchCascadeLevels.x, raymarchCascadeLevels.y, t0 + distanceTraveled));
-        RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : t0 + distanceTraveled > raymarchCascadeLevels.x ? NEAR_RAYMARCH_STEP_SIZE : SUPER_CLOSE_RAYMARCH_STEP_SIZE;
+        RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : NEAR_RAYMARCH_STEP_SIZE;
         deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
 
         // Advance march
