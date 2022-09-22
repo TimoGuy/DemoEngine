@@ -102,7 +102,7 @@ const float planetRadius = 6351e2;  // 6361e2;  // 6365e2;
 
 // @NOTE: NB_RAYMARCH_STEPS could be 16 for low quality.
 // @NOTE: NB_RAYMARCH_STEPS was set to 64 and then I changed it to 32... looks pretty fine to me eh!
-#define NB_RAYMARCH_STEPS 32
+#define NB_RAYMARCH_STEPS 64
 #define NB_IN_SCATTER_RAYMARCH_STEPS 8
 
 float maxRaymarchLength()       // @NOTE: this is probs best to do cpu side instead of on every pixel, especially since this is using just consts.
@@ -260,14 +260,10 @@ void main()
     else if (isect_outer.x > 0.0)
     {
         t0 = isect_outer.x;
-        //t1 = isect_inner.x;
-        //t1 = (isect_inner.y > isect_planet.x) ? isect_inner.x : isect_inner.y;        // @TRIPPY
         t1 = (isect_planet.x < isect_outer.y) ? isect_inner.x : isect_outer.y;      // @NOTE: so this looks so much better, however, it's not perfect. And I think the reason behind it is the raylength being very large, forcing the raymarch in the far area to be sparser
     }
     // t0 is between cloud boundaries. t1 is whichever exiting boundary is closer. (inner.x, outer.y). When collision failed, 1e5 may not be a large enough number????  -Timo
     else
-        //t1 = min(isect_inner.x, isect_outer.y);
-        //t1 = min((isect_inner.y > isect_planet.x) ? isect_inner.x : isect_inner.y, isect_outer.y);        // @TRIPPY
         t1 = min((isect_planet.x < isect_outer.y) ? isect_inner.x : isect_outer.y, isect_outer.y);      // @NOTE: so this looks so much better, however, it's not perfect. And I think the reason behind it is the raylength being very large, forcing the raymarch in the far area to be sparser
 
 
@@ -275,13 +271,10 @@ void main()
     // Setup raymarching
     
     const float offsetAmount = offsetAmount();
-    /*const*/ float rayLength = min(t1, maxRaymarchLength()) - t0;
+    const float rayLength = min(length(worldSpaceFragPosition - mainCameraPosition), min(t1, maxRaymarchLength())) - t0 - offsetAmount;
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
-    const float NEAR_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
-    const float FAR_RAYMARCH_STEP_SIZE = rayLength / float(NB_RAYMARCH_STEPS) * farRaymarchStepsizeMultiplier;
-    //float RAYMARCH_STEP_SIZE = mix(NEAR_RAYMARCH_STEP_SIZE, FAR_RAYMARCH_STEP_SIZE, smoothstep(raymarchCascadeLevels.x, raymarchCascadeLevels.y, t0 + distanceTraveled));
-    float RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : NEAR_RAYMARCH_STEP_SIZE;
+    const float RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS);
 
     // Resize t0 to line up with the view space orientation
     t0 = floor(t0 / RAYMARCH_STEP_SIZE) * RAYMARCH_STEP_SIZE;
@@ -326,7 +319,6 @@ void main()
     /////////////////////////}
     
     vec3 deltaPosition = targetPosition - currentPosition;
-    rayLength = min(length(worldSpaceFragPosition - mainCameraPosition) - t0, rayLength) - offsetAmount;
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
     
@@ -358,6 +350,7 @@ void main()
     while (distanceTraveled < rayLength)
     {
         //count++;
+
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
@@ -392,7 +385,6 @@ void main()
         }
 
         // Update deltaStepIncrement
-        RAYMARCH_STEP_SIZE = t0 + distanceTraveled > raymarchCascadeLevels.y ? FAR_RAYMARCH_STEP_SIZE : NEAR_RAYMARCH_STEP_SIZE;
         deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
 
         // Advance march
