@@ -6,7 +6,7 @@
                 "name": "Player Controller",
                 "position": [
                     343.49658203125,
-                    143.31735229492188,
+                    143.27484130859375,
                     76.95860290527344
                 ],
                 "rotation": [
@@ -114,7 +114,7 @@
                     2.8574676513671875
                 ],
                 "rotation": [
-                    180.0,
+                    -180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -160,7 +160,7 @@
                     -294.4202880859375
                 ],
                 "rotation": [
-                    -180.0,
+                    180.0,
                     -69.68495178222656,
                     -179.9999237060547
                 ],
@@ -201,9 +201,9 @@
                 "guid": "ffe3eca47989f26459ac951da21ae33129dc44e38596281ac42ceca720a9954d",
                 "name": "Voxel Group (world.first_cave)",
                 "position": [
-                    55.16800308227539,
-                    -5.966333389282227,
-                    51.726463317871094
+                    55.38248825073242,
+                    -8.832915306091309,
+                    44.947898864746094
                 ],
                 "rotation": [
                     0.0,
@@ -222,9 +222,9 @@
                 0.0
             ],
             "moving_platform_spline_guid": "b284ca62c4051fcf19d4d0f2dbb0667b3389a68f72a381d2bcec3a90196d9114",
-            "moving_platform_spline_move_backwards": true,
+            "moving_platform_spline_move_backwards": false,
             "moving_platform_spline_mvt_mode": 2,
-            "moving_platform_spline_position_in_time": 54.24095916748047,
+            "moving_platform_spline_position_in_time": 47.0,
             "moving_platform_spline_pp_hold_time": 1.0,
             "moving_platform_spline_speed": 50.0,
             "moving_platform_velocity": [
@@ -333,14 +333,14 @@
                     9.543127059936523
                 ],
                 "rotation": [
-                    -0.014432238414883614,
+                    -0.01443212479352951,
                     -89.70326232910156,
-                    0.014490772970020771
+                    0.014490658417344093
                 ],
                 "scale": [
-                    0.9999973773956299,
+                    0.9999973177909851,
                     1.0,
-                    0.9999973773956299
+                    0.9999973177909851
                 ]
             },
             "modelResourceName": "model;bed",
@@ -389,7 +389,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "modelResourceName": "model;gondola_station",
             "type": "ground"
         },
         {
@@ -412,7 +412,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "modelResourceName": "model;gondola_station",
             "type": "ground"
         },
         {
@@ -537,7 +537,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "modelResourceName": "model;gondola_station",
             "type": "ground"
         },
         {
@@ -552,7 +552,7 @@
                 "rotation": [
                     -179.99986267089844,
                     -44.97203063964844,
-                    -180.0
+                    180.0
                 ],
                 "scale": [
                     1.0,
@@ -560,7 +560,7 @@
                     1.0
                 ]
             },
-            "modelResourceName": "model;custommodel;res/model/gondola_station.glb",
+            "modelResourceName": "model;gondola_station",
             "type": "ground"
         }
     ]

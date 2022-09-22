@@ -626,6 +626,11 @@ void* loadResource(const std::string& resourceName, bool isUnloading)
 	if (resourceName == "texture;pbrSlimeVestNormal")					return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_NormalGL.jpg", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 	if (resourceName == "texture;pbrSlimeVestRoughness")				return loadTexture2D(resourceName, isUnloading, "res/slime_girl/Fabric018/1K-JPG/Fabric018_1K_Roughness.jpg", GL_RED, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
 
+	// Material "TenjiBlock"
+	if (resourceName == "material;tenjiBlock")							return loadPBRMaterial(resourceName, isUnloading, "texture;tenjiBlockAlbedo", "texture;tenjiBlockNormal", "texture;pbr0Value", "texture;pbr0_5Value");
+	if (resourceName == "texture;tenjiBlockAlbedo")						return loadTexture2D(resourceName, isUnloading, "res/texture/TenjiBlock/tenji_block_albedo.png", GL_RGB, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+	if (resourceName == "texture;tenjiBlockNormal")						return loadTexture2D(resourceName, isUnloading, "res/texture/TenjiBlock/tenji_block_normal.png", GL_RGBA, GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
+
 	//
 	// Load Model from .hsmm file
 	// @NOTE: this is the last "model;" prefix resource

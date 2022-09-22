@@ -29,6 +29,15 @@
 //		Arseniy Tepp
 //
 
+
+// Enable dedicated gpu
+extern "C"
+{
+	__declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
+
 // NOTE: below is the difference between debug/checked and release.
 // With release, we want to disable the console, so subsystem is set to Windows.
 #ifdef _DEVELOP
