@@ -135,18 +135,18 @@ float sampleDensityAtPoint(vec3 point)
     const float sampleScale = 1.0 / cloudNoiseMainSize;
     const float sampleScaleDetailed = 1.0 / cloudNoiseDetailSize;
     vec4 noise = textureArrayInterpolate(cloudNoiseTexture, 128.0, sampleScale * point.xzy);
-    vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * (point + cloudNoiseDetailOffset).xzy);
+    //vec4 noiseDetail = textureArrayInterpolate(cloudNoiseDetailTexture, 32.0, sampleScaleDetailed * (point + cloudNoiseDetailOffset).xzy);
     float density =
         0.5333333 * noise.r
 		+ 0.2666667 * noise.g
 		+ 0.1333333 * noise.b
 		+ 0.0666667 * noise.a;
-    float detailSubtract =
-        0.533333333 * noiseDetail.r
-        + 0.2666667 * noiseDetail.g
-        + 0.1333333 * noiseDetail.b;
+    //float detailSubtract =
+    //    0.533333333 * noiseDetail.r
+    //    + 0.2666667 * noiseDetail.g
+    //    + 0.1333333 * noiseDetail.b;
     const float densityOffset = dot(point.xz, point.xz) < densityOffsetChangeRadius * densityOffsetChangeRadius ? densityOffsetInner : densityOffsetOuter;
-    return (density - 0.15 * detailSubtract + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
+    return (density/* - 0.15 * detailSubtract*/ + densityOffset) * densityMultiplier * densityMult;   // @HARDCODE: the 0.25 * detailSubtract amount is hardcoded. Make a slider sometime eh!
 }
 
 float offsetAmount()
@@ -180,7 +180,7 @@ float inScatterLightMarch(vec3 position)
     }
 
     float transmittance = exp(-inScatterDensity * lightAbsorptionTowardsSun);
-    return transmittance;
+    return 0.37 + transmittance * (1.0 - 0.37);     // @HARCODE: this used to be the darknessThreshold variable
 }
 
 // Henyey-Greenstein
@@ -277,7 +277,7 @@ void main()
     //calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
     const float offsetAmount = offsetAmount();
-    /*const*/ float rayLength = min(t1 - t0, maxRaymarchLength());
+    /*const*/ float rayLength = min(t1, maxRaymarchLength()) - t0;
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
     const float SUPER_CLOSE_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS_SUPER_CLOSE);
@@ -331,7 +331,7 @@ void main()
     /////////////////////////}
     
     vec3 deltaPosition = targetPosition - currentPosition;
-    rayLength = min(length(worldSpaceFragPosition - mainCameraPosition), rayLength);
+    rayLength = min(length(worldSpaceFragPosition - mainCameraPosition) - t0, rayLength) - offsetAmount;
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
     
@@ -358,11 +358,11 @@ void main()
     vec3 ambientLightEnergy = vec3(0.0);
     vec4 atmosValues = vec4(0.0);
 
-    int count = 0;
+    //int count = 0;    // @DEBUG: see how many times a cloud's textures were calculated
 
     while (distanceTraveled < rayLength)
     {
-        count++;
+        //count++;
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
@@ -372,9 +372,9 @@ void main()
         {
             float inScatterTransmittance = inScatterLightMarch(offsetCurrentPosition);
 
-            float d = density - densityRequirement;
-            lightEnergy += inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;
-            transmittance = 0.0;
+            float d = density * RAYMARCH_STEP_SIZE * lightAbsorptionThroughCloud;
+            lightEnergy += density * RAYMARCH_STEP_SIZE * transmittance * (1.0 - exp(-d * 2.0)) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            transmittance *= exp(-d);
             
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
@@ -391,8 +391,11 @@ void main()
             // Calculate the irradiance in the direction of the ray
             const vec3 sampleDirection = vec3(0, -1, 0);  // @NOTE: the sampleDirection was changed from the view direction to straight down bc ambient light reflecting off the ground would be in the straight down view direction.
 	        vec3 irradiance = texture(irradianceMap, sampleDirection).rgb;
-            ambientLightEnergy = exp(-shadowDensity * ambientDensity)/* * d*/ * irradiance * irradianceStrength;
-            break;
+            ambientLightEnergy = exp(-shadowDensity * ambientDensity) * d * irradiance * irradianceStrength;
+            
+            // Break out when good enough
+            if (transmittance < 0.01)
+                break;
         }
 
         // Update deltaStepIncrement

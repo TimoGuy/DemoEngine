@@ -127,8 +127,8 @@ struct CloudEffectInformation
 	float densityOffsetInner = -0.3f;		// @NOTE: Inside the walls where it's cooler
 	float densityOffsetOuter = -0.15f;		// @NOTE: Outside the walls, where the fire ppl live
 	float densityOffsetChangeRadius = 4000.0f;	// The separation between the inner and outer areas... right where the wall is is where the change happens.
-	float densityMultiplier = 300.0f;
-	float densityRequirement = 8.0f;
+	float densityMultiplier = 0.062f;
+	float densityRequirement = 0.0f;
 	float darknessThreshold = 0.01f;  // 0.37f;  // 0.07f;
 	float irradianceStrength = 1.0f;
 	float lightAbsorptionTowardsSun = 0.01f;
@@ -137,7 +137,7 @@ struct CloudEffectInformation
 	glm::vec2 raymarchCascadeLevels = { 275.0f, 6000.0f };
 	float farRaymarchStepsizeMultiplier = 1.0f;
 	//float maxRaymarchLength = 5000.0f;
-	glm::vec4 phaseParameters = { 0.83f, 0.3f, 5.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
+	glm::vec4 phaseParameters = { 0.83f, 0.3f, 3.0f, 0.15f };		// @HARDCODE: Forward scattering, Backscattering, BaseBrightness, PhaseFactor
 	bool doBlurPass = false;
 	float cameraPosJitterScale = 0.2f;
 };
