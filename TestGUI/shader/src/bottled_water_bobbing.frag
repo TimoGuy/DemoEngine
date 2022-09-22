@@ -54,7 +54,6 @@ uniform float farPlane;
 // ext: cloud_effect
 uniform sampler2D cloudEffect;
 uniform float cloudEffectDensity;
-uniform sampler2D cloudDepthTexture;
 uniform vec3 mainCameraPosition;
 uniform sampler3D atmosphericScattering;
 
@@ -502,17 +501,6 @@ void main()
     //
     vec3 color = ambient + LoAtmos;
     FragColor = vec4(color, fadeAlpha);
-
-    //
-    // @CLOUDS: combine clouds
-    //
-    const float cloudDepth = texture(cloudDepthTexture, ssSampleCoord).r;
-    const float cloudDepthDiff = cloudDepth - myDepth;
-    if (cloudDepth >= 0.01 && cloudDepthDiff < 0.0)     // @NOTE: block out the special bail value (0.0)
-    {
-        const vec4 cloudEffectColor = texture(cloudEffect, ssSampleCoord);        // @NOTE: the alpha channel is transmittance, not traditional alpha  -Timo
-        FragColor.rgb = mix(cloudEffectColor.rgb, FragColor.rgb, exp(cloudDepthDiff * (1.0 - cloudEffectColor.a) * cloudEffectDensity));      // cloudDepthDiff is already negative for -d
-    }
 
     FragColor.rgb = clamp(FragColor.rgb, vec3(0.0), vec3(5000.0));
 

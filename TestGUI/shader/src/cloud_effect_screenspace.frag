@@ -2,7 +2,7 @@
 
 in vec2 texCoord;
 layout (location=0) out vec4 fragmentColor;
-layout (location=1) out vec4 calculatedDepthValue;
+//layout (location=1) out vec4 calculatedDepthValue;
 
 uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseViewMatrix;
@@ -223,7 +223,7 @@ void main()
     {
         // Outer sphere collision failed. Abort clouds
         fragmentColor = vec4(0, 0, 0, 1.0);
-        calculatedDepthValue = vec4(0.0);
+       // calculatedDepthValue = vec4(0.0);
         return;
     }
 
@@ -234,7 +234,7 @@ void main()
     {
         // Inside planet. Abort clouds
         fragmentColor = vec4(0, 0, 0, 1.0);
-        calculatedDepthValue = vec4(0.0);
+        //calculatedDepthValue = vec4(0.0);
         return;
     }
 
@@ -249,7 +249,7 @@ void main()
         if (isect_inner.y > isect_planet.x)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
-            calculatedDepthValue = vec4(0.0);
+            //calculatedDepthValue = vec4(0.0);
             return;
         }
 
@@ -274,10 +274,10 @@ void main()
 
 
     // Setup raymarching
-    calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
+    //calculatedDepthValue = vec4(mainCameraZFar, 0, 0, 1);
     
     const float offsetAmount = offsetAmount();
-    const float rayLength = min(t1 - t0, maxRaymarchLength());
+    /*const*/ float rayLength = min(t1 - t0, maxRaymarchLength());
     float distanceTraveled = offsetAmount;      // @NOTE: offset the distanceTraveled by the starting offset value
 
     const float SUPER_CLOSE_RAYMARCH_STEP_SIZE = cloudLayerThickness / float(NB_RAYMARCH_STEPS_SUPER_CLOSE);
@@ -290,36 +290,6 @@ void main()
     t0 = floor(t0 / RAYMARCH_STEP_SIZE) * RAYMARCH_STEP_SIZE;
     vec3 currentPosition = mainCameraPosition + rd * t0;
     vec3 targetPosition  = mainCameraPosition + rd * t1;
-
-
-
-
-
-
-    ////////////////////////vec3 currentPosition = mainCameraPosition;
-    ////////////////////////vec3 projectedDeltaPosition = (worldSpaceFragPosition - mainCameraPosition);
-    ////////////////////////projectedDeltaPosition /= abs(projectedDeltaPosition.y);       // @NOTE: This projects this to (0, +-1, 0)... so I guess it technically isn't being normalized though hahaha
-    ////////////////////////
-    ////////////////////////// Find the Y points where the collisions would happen
-    ////////////////////////if (mainCameraPosition.y > cloudLayerY ||
-    ////////////////////////    mainCameraPosition.y < cloudLayerY - cloudLayerThickness)
-    ////////////////////////{
-    ////////////////////////    float nearY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? cloudLayerThickness : 0.0);     // @NOTE: if the camera position is not contained within the cloud layer, then a nearY is calculated.
-    ////////////////////////
-    ////////////////////////    // @NOTE: essentially what this is checking is that the looking direction should be down when the nearY is below (+ * -), or looking direction upwards with nearY being above (- * +), so it should equate a neg. number at all times. If they're positive that means that it's a messup
-    ////////////////////////    if ((mainCameraPosition.y - nearY) * (projectedDeltaPosition.y) > 0.0)
-    ////////////////////////    {
-    ////////////////////////        fragmentColor = vec4(0, 0, 0, 1.0);
-    ////////////////////////        return;
-    ////////////////////////    }
-    ////////////////////////
-    ////////////////////////    // Recalculate the currentPosition
-    ////////////////////////    currentPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - nearY);
-    ////////////////////////}
-    ////////////////////////
-    ////////////////////////// Calc the raymarch start/end points
-    ////////////////////////const float farY = cloudLayerY - (projectedDeltaPosition.y > 0.0 ? 0.0 : cloudLayerThickness);
-    ////////////////////////vec3 targetPosition = mainCameraPosition + projectedDeltaPosition * abs(mainCameraPosition.y - farY);
 
     // Check for depth test
     if (z != 1.0)
@@ -334,14 +304,14 @@ void main()
         if (depthTestSqr < depthCurrentPos)
         {
             fragmentColor = vec4(0, 0, 0, 1.0);
-            calculatedDepthValue = vec4(0, 0, 0, 1);        // @NOTE: this is a special value (< mainCameraZNear) so that it doesn't get processed in the flood fill and leak into the actual geometry when it's rendered (see pbr.frag with the depth comparison with the cloudDepthTexture)  -Timo.
+            //calculatedDepthValue = vec4(0, 0, 0, 1);        // @NOTE: this is a special value (< mainCameraZNear) so that it doesn't get processed in the flood fill and leak into the actual geometry when it's rendered (see pbr.frag with the depth comparison with the cloudDepthTexture)  -Timo.
             return;
         }
 
         if (depthTestSqr < depthTargetPos)
         {
             targetPosition = worldSpaceFragPosition;
-            calculatedDepthValue = vec4(0, 0, 0, 1);    // @NOTE: this block means that there is geometry blocking the raymarch from going to infinity. If this fails, then keep the depth value as 0.0 (the bail value)
+            //calculatedDepthValue = vec4(0, 0, 0, 1);    // @NOTE: this block means that there is geometry blocking the raymarch from going to infinity. If this fails, then keep the depth value as 0.0 (the bail value)
         }
     }
 
@@ -361,6 +331,7 @@ void main()
     /////////////////////////}
     
     vec3 deltaPosition = targetPosition - currentPosition;
+    rayLength = min(length(worldSpaceFragPosition - mainCameraPosition), rayLength);
     const vec3 deltaPositionNormalized = normalize(deltaPosition);
     vec3 deltaStepIncrement = deltaPositionNormalized * RAYMARCH_STEP_SIZE;
     
@@ -407,7 +378,7 @@ void main()
             
             //calculatedDepthValue = vec4(vec3(clamp((distanceTraveled - mainCameraZNear) / (mainCameraZFar - mainCameraZNear), 0.0, 1.0)), 1.0);
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);
-            calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
+            //calculatedDepthValue = vec4(vec3(clamp(distanceTraveledActual, mainCameraZNear, mainCameraZFar)), 1.0);
             atmosValues = texture(atmosphericScattering, vec3(texCoord, distanceTraveledActual / cloudMaxDepth));
             
             // Calculate Ambient Light Energy (https://shaderbits.com/blog/creating-volumetric-ray-marcher)
