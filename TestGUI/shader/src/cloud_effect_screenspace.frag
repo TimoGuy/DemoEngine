@@ -182,7 +182,7 @@ float inScatterLightMarch(vec3 position)
     }
 
     float transmittance = exp(-inScatterDensity * lightAbsorptionTowardsSun);
-    return 0.7 + transmittance * (1.0 - 0.7);     // @HARCODE: this used to be the darknessThreshold variable
+    return transmittance;
 }
 
 // Henyey-Greenstein
@@ -354,14 +354,14 @@ void main()
         // Keep the offset relevant depending on the RAYMARCH_STEP_SIZE
         const vec3 offsetCurrentPosition = currentPosition + deltaStepIncrement * offsetAmount;
 
-        float density = sampleDensityAtPoint(offsetCurrentPosition, false);
+        float density = sampleDensityAtPoint(offsetCurrentPosition, false) - densityRequirement;
 
-        if (density > densityRequirement)
+        if (density > 0.0)
         {
             float inScatterTransmittance = inScatterLightMarch(offsetCurrentPosition);
 
-            float d = density * RAYMARCH_STEP_SIZE * lightAbsorptionThroughCloud;
-            lightEnergy += density * RAYMARCH_STEP_SIZE * transmittance * exp(-d) * inScatterTransmittance * phaseValue;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
+            float d = density * RAYMARCH_STEP_SIZE;
+            lightEnergy += density * transmittance * exp(-d * 2.0) * inScatterTransmittance * phaseValue * lightAbsorptionThroughCloud;       // Beer's-Powder approximation (https://www.guerrilla-games.com/media/News/Files/The-Real-time-Volumetric-Cloudscapes-of-Horizon-Zero-Dawn.pdf PAGE 64)
             transmittance *= exp(-d);
             
             const float distanceTraveledActual = length(offsetCurrentPosition - mainCameraPosition);

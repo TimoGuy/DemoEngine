@@ -127,8 +127,8 @@ struct CloudEffectInformation
 	float densityOffsetInner = -0.3f;		// @NOTE: Inside the walls where it's cooler
 	float densityOffsetOuter = -0.15f;		// @NOTE: Outside the walls, where the fire ppl live
 	float densityOffsetChangeRadius = 4000.0f;	// The separation between the inner and outer areas... right where the wall is is where the change happens.
-	float densityMultiplier = 0.062f;
-	float densityRequirement = 0.0f;
+	float densityMultiplier = 6.252f;
+	float densityRequirement = 0.26f;
 	float darknessThreshold = 0.01f;  // 0.37f;  // 0.07f;
 	float irradianceStrength = 1.0f;
 	float lightAbsorptionTowardsSun = 0.01f;
