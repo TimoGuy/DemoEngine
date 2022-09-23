@@ -494,6 +494,11 @@ void main()
     ////
     //// @ATMOS: combine atmospheric scattering
     ////
+    //// @NOTE: the reason why this is commented out is because it appears that this doesn't do anything.
+    ////    Though the fog effect looks pretty from afar, it's fairly unnoticable and doesn't give any
+    ////    kind of benefit unless if the distance is like 32000 or some crazy high number like that.
+    ////    So it's disabled  -Timo
+    ////
     //const vec2 ssSampleCoord = gl_FragCoord.xy * invFullResolution;
     //const float myDepth = length(mainCameraPosition - fragPosition);
     //vec4 atmosValues = texture(atmosphericScattering, vec3(ssSampleCoord, myDepth / 32000.0));
