@@ -425,7 +425,7 @@ void main()
 
             shadowIndex++;  // Bump up if shadow was used
         }
-        else if (lightPositions[i].w == 0.0f)
+        else if (lightPositions[i].w == 0.0)
         {
             // Directional light
             L = -lightDirections[i].xyz;                    // NOTE: this SHOULD be put into the uniform already normalized so no need to do this step here
@@ -433,7 +433,7 @@ void main()
             attenuation = 1.0f;
             radiance = lightColors[i].xyz * attenuation;
 
-	        if (lightDirections[i].a == 1)
+	        //if (lightDirections[i].a == 1)
                 shadow = shadowCalculationCSM(-L, fragPosition);
 
             // NOTE: no shadowIndex++ here bc the CSM is its own entity

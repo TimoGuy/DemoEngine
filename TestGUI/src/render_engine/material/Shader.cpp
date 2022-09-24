@@ -131,16 +131,15 @@ Shader::~Shader()
 
 void Shader::use()
 {
+	if (currentlyBound != this)
+	{
+		glUseProgram(programId);
+		currentlyBound = this;
+	}
+
 	resetSamplers();	// New shader means new textures, so we need to reset the texture binding counter
 	for (size_t i = 0; i < extensions.size(); i++)
 		extensions[i]->setupExtension();
-
-	if (currentlyBound == this)
-		return;
-
-	glUseProgram(programId);
-	currentlyBound = this;
-
 }
 
 
